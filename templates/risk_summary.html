@@ -384,19 +384,17 @@
 </section>
 
 <!-- Priority Alert (if high risk) -->
-{% if hazards[0][1] | float >= 7 %}
 <section class="py-3">
     <div class="container">
         <div class="priority-alert">
             <h4><i class="fas fa-exclamation-triangle me-2"></i>High Priority Alert</h4>
-            <p class="mb-3">Your area has a high risk score for {{ hazards[0][0] }} ({{ hazards[0][1] }}/10). Immediate preparation is strongly recommended.</p>
-            <a href="{{ url_for(hazards[0][0].lower()) }}" class="btn btn-lg">
-                <i class="fas fa-arrow-right me-2"></i>Get {{ hazards[0][0] }} Safety Plan Now
+            <p class="mb-3">Your area has a high risk score. Immediate preparation is strongly recommended.</p>
+            <a href="{{ url_for('unified_hazard_map') }}" class="btn btn-lg">
+                <i class="fas fa-arrow-right me-2"></i>Explore Unified Hazard Map
             </a>
         </div>
     </div>
 </section>
-{% endif %}
 
 <!-- Risk Cards -->
 <section class="py-5">
