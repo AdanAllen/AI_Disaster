@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Unified Risk Map - Disaster Prep Assistant{% endblock %}
+{% block title %}Interactive Risk Map - Disaster Prep Assistant{% endblock %}
 
 {% block head %}
 <style>
@@ -11,11 +11,14 @@
         --text-dark: #2c3e50;
         --bg-light: #f8f9fa;
         --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        --chat-primary: #6c63ff;
+        --chat-secondary: #4834d4;
     }
 
     body {
         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     .page-header {
@@ -62,9 +65,19 @@
         margin-bottom: 0;
     }
 
-    .unified-container {
+    .main-container {
         max-width: 1400px;
         margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 2rem;
+        height: calc(100vh - 200px);
+        min-height: 600px;
+    }
+
+    .map-section {
+        display: flex;
+        flex-direction: column;
     }
 
     .control-panel {
@@ -72,22 +85,22 @@
         border-radius: 20px;
         box-shadow: var(--card-shadow);
         padding: 1.5rem;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
         position: relative;
         z-index: 10;
     }
 
     .risk-overview {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
         gap: 1rem;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
     }
 
     .risk-card {
         background: linear-gradient(135deg, #ffffff, #f8f9fa);
         border-radius: 15px;
-        padding: 1.5rem;
+        padding: 1.2rem;
         text-align: center;
         border-left: 5px solid;
         transition: all 0.3s ease;
@@ -109,9 +122,9 @@
     }
 
     .risk-score {
-        font-size: 2.5rem;
+        font-size: 2rem;
         font-weight: 800;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.3rem;
     }
 
     .risk-card.wildfire .risk-score { color: var(--wildfire-color); }
@@ -120,14 +133,15 @@
 
     .risk-label {
         font-weight: 700;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.3rem;
         color: var(--text-dark);
+        font-size: 0.9rem;
     }
 
     .risk-level {
-        font-size: 0.9rem;
-        padding: 0.3rem 0.8rem;
-        border-radius: 20px;
+        font-size: 0.8rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 15px;
         color: white;
         font-weight: 600;
     }
@@ -139,12 +153,9 @@
     .layer-controls {
         display: flex;
         flex-wrap: wrap;
-        gap: 1rem;
+        gap: 0.8rem;
         align-items: center;
         justify-content: center;
-        margin-top: 1.5rem;
-        padding-top: 1.5rem;
-        border-top: 2px solid #e9ecef;
     }
 
     .layer-toggle {
@@ -153,12 +164,13 @@
         gap: 0.5rem;
         background: #f8f9fa;
         border: 2px solid #dee2e6;
-        border-radius: 25px;
-        padding: 0.8rem 1.2rem;
+        border-radius: 20px;
+        padding: 0.6rem 1rem;
         cursor: pointer;
         transition: all 0.3s ease;
         user-select: none;
         font-weight: 600;
+        font-size: 0.9rem;
     }
 
     .layer-toggle:hover {
@@ -177,7 +189,7 @@
     .layer-toggle.live.active { border-color: #dc3545; color: #dc3545; }
 
     .layer-icon {
-        font-size: 1.2rem;
+        font-size: 1rem;
     }
 
     .map-container {
@@ -186,7 +198,7 @@
         box-shadow: var(--card-shadow);
         overflow: hidden;
         position: relative;
-        height: 70vh;
+        flex: 1;
         min-height: 500px;
     }
 
@@ -215,7 +227,7 @@
     .active-layer-badge {
         background: rgba(255,255,255,0.2);
         padding: 0.3rem 0.8rem;
-        border-radius: 15px;
+        border-radius: 12px;
         font-size: 0.8rem;
         backdrop-filter: blur(10px);
     }
@@ -230,101 +242,210 @@
         z-index: 1 !important;
     }
 
-    .quick-actions {
+    /* Chatbot Styles */
+    .chatbot-section {
+        display: flex;
+        flex-direction: column;
         background: white;
         border-radius: 20px;
         box-shadow: var(--card-shadow);
-        padding: 2rem;
-        margin-top: 2rem;
+        overflow: hidden;
+        height: 100%;
     }
 
-    .action-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
-        margin-top: 1.5rem;
-    }
-
-    .action-card {
-        background: linear-gradient(135deg, #ffffff, #f8f9fa);
-        border-radius: 15px;
-        padding: 1.5rem;
+    .chatbot-header {
+        background: linear-gradient(90deg, var(--chat-primary), var(--chat-secondary));
+        color: white;
+        padding: 1rem 1.5rem;
         text-align: center;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
     }
 
-    .action-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        border-color: #dee2e6;
-    }
-
-    .action-icon {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-        color: var(--text-dark);
-    }
-
-    .action-card h5 {
+    .chatbot-header h3 {
+        margin: 0;
         font-weight: 700;
-        margin-bottom: 1rem;
-        color: var(--text-dark);
+        font-size: 1.2rem;
     }
 
-    .btn-action {
+    .chatbot-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        background: #fafafa;
+        max-height: calc(100vh - 400px);
+    }
+
+    .chat-message {
+        margin-bottom: 1rem;
+        display: flex;
+        gap: 0.8rem;
+    }
+
+    .chat-message.user {
+        flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 0.8rem;
+        flex-shrink: 0;
+    }
+
+    .user .message-avatar {
+        background: var(--chat-primary);
+    }
+
+    .bot .message-avatar {
         background: var(--text-dark);
+    }
+
+    .message-content {
+        background: white;
+        padding: 0.8rem 1rem;
+        border-radius: 15px;
+        max-width: 75%;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        line-height: 1.4;
+        font-size: 0.9rem;
+        white-space: pre-wrap;
+    }
+
+    .user .message-content {
+        background: var(--chat-primary);
+        color: white;
+        border-bottom-right-radius: 5px;
+    }
+
+    .bot .message-content {
+        border-bottom-left-radius: 5px;
+        border-left: 3px solid var(--text-dark);
+    }
+
+    .chatbot-input-container {
+        padding: 1rem;
+        background: white;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .chatbot-input-group {
+        display: flex;
+        gap: 0.5rem;
+        align-items: flex-end;
+    }
+
+    .chatbot-input {
+        flex: 1;
+        border: 2px solid #e9ecef;
+        border-radius: 20px;
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        resize: none;
+        min-height: 38px;
+        max-height: 100px;
+    }
+
+    .chatbot-input:focus {
+        outline: none;
+        border-color: var(--chat-primary);
+        box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
+    }
+
+    .chatbot-submit {
+        background: var(--chat-primary);
         color: white;
         border: none;
-        border-radius: 25px;
-        padding: 0.8rem 1.5rem;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-block;
+        border-radius: 50%;
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
         transition: all 0.3s ease;
+        flex-shrink: 0;
     }
 
-    .btn-action:hover {
-        background: #495057;
-        color: white;
-        transform: translateY(-2px);
+    .chatbot-submit:hover {
+        background: var(--chat-secondary);
+        transform: scale(1.05);
     }
 
-    .legend {
-        position: absolute;
-        bottom: 20px;
-        right: 20px;
-        background: rgba(255,255,255,0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 10px;
-        padding: 1rem;
-        z-index: 1000;
-        max-width: 250px;
-        display: none;
+    .chatbot-submit:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
     }
 
-    .legend.show { display: block; }
-
-    .legend h6 {
-        margin-bottom: 0.8rem;
-        font-weight: 700;
-        color: var(--text-dark);
-    }
-
-    .legend-item {
+    .typing-indicator {
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        margin-bottom: 0.5rem;
-        font-size: 0.9rem;
+        color: #666;
+        font-style: italic;
+        padding: 0.5rem;
     }
 
-    .legend-color {
-        width: 20px;
+    .typing-dots {
+        display: flex;
+        gap: 2px;
+    }
+
+    .typing-dot {
+        width: 4px;
         height: 4px;
-        border-radius: 2px;
+        background: var(--chat-primary);
+        border-radius: 50%;
+        animation: typing 1.4s infinite;
     }
 
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-8px); }
+    }
+
+    .quick-questions {
+        padding: 0.5rem 1rem;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .quick-questions h6 {
+        margin: 0 0 0.5rem 0;
+        font-size: 0.8rem;
+        color: #666;
+        font-weight: 600;
+    }
+
+    .quick-question {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 15px;
+        padding: 0.4rem 0.8rem;
+        margin: 0.3rem 0.3rem 0.3rem 0;
+        display: inline-block;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: var(--text-dark);
+    }
+
+    .quick-question:hover {
+        background: var(--chat-primary);
+        color: white;
+        border-color: var(--chat-primary);
+    }
+
+    /* Error/Loading States */
     .error-message {
         background: #fff3cd;
         border: 1px solid #ffeaa7;
@@ -336,28 +457,29 @@
         font-weight: 600;
     }
 
-    .loading-spinner {
-        text-align: center;
-        padding: 2rem;
-        color: #6c757d;
-    }
-
-    .spinner {
-        display: inline-block;
-        width: 40px;
-        height: 40px;
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid var(--text-dark);
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+    .layer-loading {
+        opacity: 0.6;
     }
 
     /* Responsive Design */
+    @media (max-width: 1200px) {
+        .main-container {
+            grid-template-columns: 1fr;
+            grid-template-rows: auto 1fr;
+            height: auto;
+            gap: 1.5rem;
+        }
+
+        .chatbot-section {
+            order: -1;
+            height: 400px;
+        }
+
+        .chatbot-messages {
+            max-height: 250px;
+        }
+    }
+
     @media (max-width: 768px) {
         .page-header {
             margin: -2rem -15px 1rem -15px;
@@ -366,6 +488,11 @@
 
         .page-header h1 {
             font-size: 2.2rem;
+        }
+
+        .main-container {
+            padding: 0;
+            gap: 1rem;
         }
 
         .risk-overview {
@@ -382,19 +509,36 @@
         }
 
         .map-container {
-            height: 50vh;
-        }
-
-        .legend {
-            position: relative;
-            bottom: auto;
-            right: auto;
-            margin-top: 1rem;
+            height: 400px;
         }
 
         .active-layers {
             margin-top: 0.5rem;
+            justify-content: center;
         }
+
+        .message-content {
+            max-width: 85%;
+        }
+    }
+
+    /* Scrollbar Styling */
+    .chatbot-messages::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .chatbot-messages::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 2px;
+    }
+
+    .chatbot-messages::-webkit-scrollbar-thumb {
+        background: var(--chat-primary);
+        border-radius: 2px;
+    }
+
+    .chatbot-messages::-webkit-scrollbar-thumb:hover {
+        background: var(--chat-secondary);
     }
 </style>
 {% endblock %}
@@ -404,154 +548,141 @@
 <div class="page-header">
     <div class="container">
         <div class="page-header-content">
-            <h1><i class="fas fa-layer-group me-3"></i>Unified Risk Assessment Map</h1>
-            <p class="lead">Interactive hazard visualization for ZIP {{ zip_code }}</p>
+            <h1><i class="fas fa-layer-group me-3"></i>Interactive Risk Assessment</h1>
+            <p class="lead">Multi-hazard visualization with AI assistant for ZIP {{ zip_code }}</p>
         </div>
     </div>
 </div>
 
-<div class="container unified-container">
-    <!-- Risk Overview & Controls -->
-    <div class="control-panel">
-        <h3 class="text-center mb-4 fw-bold"><i class="fas fa-chart-bar me-2"></i>Your Risk Profile</h3>
-        
-        <div class="risk-overview">
-            <div class="risk-card wildfire" data-hazard="wildfire" onclick="toggleRiskFocus('wildfire')">
-                <div class="risk-score">{{ "%.1f"|format(risk_scores.wildfire.score) }}/10</div>
-                <div class="risk-label">Wildfire Risk</div>
-                <span class="risk-level {% if risk_scores.wildfire.score >= 7 %}level-high{% elif risk_scores.wildfire.score >= 4 %}level-moderate{% else %}level-low{% endif %}">
-                    {% if risk_scores.wildfire.score >= 7 %}High{% elif risk_scores.wildfire.score >= 4 %}Moderate{% else %}Low{% endif %}
-                </span>
-            </div>
+<div class="container">
+    <div class="main-container">
+        <!-- Map Section -->
+        <div class="map-section">
+            <!-- Risk Overview & Controls -->
+            <div class="control-panel">
+                <div class="risk-overview">
+                    <div class="risk-card wildfire" data-hazard="wildfire" onclick="toggleRiskFocus('wildfire')">
+                        <div class="risk-score">{{ "%.1f"|format(risk_scores.wildfire.score) }}/10</div>
+                        <div class="risk-label">Wildfire Risk</div>
+                        <span class="risk-level {% if risk_scores.wildfire.score >= 7 %}level-high{% elif risk_scores.wildfire.score >= 4 %}level-moderate{% else %}level-low{% endif %}">
+                            {% if risk_scores.wildfire.score >= 7 %}High{% elif risk_scores.wildfire.score >= 4 %}Moderate{% else %}Low{% endif %}
+                        </span>
+                    </div>
 
-            <div class="risk-card flood" data-hazard="flood" onclick="toggleRiskFocus('flood')">
-                <div class="risk-score">{{ "%.1f"|format(risk_scores.flood.score) }}/10</div>
-                <div class="risk-label">Flood Risk</div>
-                <span class="risk-level {% if risk_scores.flood.score >= 7 %}level-high{% elif risk_scores.flood.score >= 4 %}level-moderate{% else %}level-low{% endif %}">
-                    {% if risk_scores.flood.score >= 7 %}High{% elif risk_scores.flood.score >= 4 %}Moderate{% else %}Low{% endif %}
-                </span>
-            </div>
+                    <div class="risk-card flood" data-hazard="flood" onclick="toggleRiskFocus('flood')">
+                        <div class="risk-score">{{ "%.1f"|format(risk_scores.flood.score) }}/10</div>
+                        <div class="risk-label">Flood Risk</div>
+                        <span class="risk-level {% if risk_scores.flood.score >= 7 %}level-high{% elif risk_scores.flood.score >= 4 %}level-moderate{% else %}level-low{% endif %}">
+                            {% if risk_scores.flood.score >= 7 %}High{% elif risk_scores.flood.score >= 4 %}Moderate{% else %}Low{% endif %}
+                        </span>
+                    </div>
 
-            <div class="risk-card earthquake" data-hazard="earthquake" onclick="toggleRiskFocus('earthquake')">
-                <div class="risk-score">{{ "%.1f"|format(risk_scores.earthquake.score) }}/10</div>
-                <div class="risk-label">Earthquake Risk</div>
-                <span class="risk-level {% if risk_scores.earthquake.score >= 7 %}level-high{% elif risk_scores.earthquake.score >= 4 %}level-moderate{% else %}level-low{% endif %}">
-                    {% if risk_scores.earthquake.score >= 7 %}High{% elif risk_scores.earthquake.score >= 4 %}Moderate{% else %}Low{% endif %}
-                </span>
-            </div>
-        </div>
+                    <div class="risk-card earthquake" data-hazard="earthquake" onclick="toggleRiskFocus('earthquake')">
+                        <div class="risk-score">{{ "%.1f"|format(risk_scores.earthquake.score) }}/10</div>
+                        <div class="risk-label">Earthquake Risk</div>
+                        <span class="risk-level {% if risk_scores.earthquake.score >= 7 %}level-high{% elif risk_scores.earthquake.score >= 4 %}level-moderate{% else %}level-low{% endif %}">
+                            {% if risk_scores.earthquake.score >= 7 %}High{% elif risk_scores.earthquake.score >= 4 %}Moderate{% else %}Low{% endif %}
+                        </span>
+                    </div>
+                </div>
 
-        <!-- Layer Toggle Controls -->
-        <div class="layer-controls">
-            <div class="layer-toggle zip active" id="zip-toggle" onclick="toggleLayer('zip')">
-                <i class="fas fa-map-marker-alt layer-icon"></i>
-                <span>Your ZIP ({{ zip_code }})</span>
-            </div>
+                <!-- Layer Toggle Controls -->
+                <div class="layer-controls">
+                    <div class="layer-toggle zip active" id="zip-toggle" onclick="toggleLayer('zip')">
+                        <i class="fas fa-map-marker-alt layer-icon"></i>
+                        <span>Your ZIP ({{ zip_code }})</span>
+                    </div>
 
-            <div class="layer-toggle wildfire" id="wildfire-toggle" onclick="toggleLayer('wildfire')">
-                <i class="fas fa-fire layer-icon"></i>
-                <span>Wildfire Zones</span>
-            </div>
+                    <div class="layer-toggle wildfire" id="wildfire-toggle" onclick="toggleLayer('wildfire')">
+                        <i class="fas fa-fire layer-icon"></i>
+                        <span>Wildfire Zones</span>
+                    </div>
 
-            <div class="layer-toggle flood" id="flood-toggle" onclick="toggleLayer('flood')">
-                <i class="fas fa-water layer-icon"></i>
-                <span>Flood Zones</span>
-            </div>
+                    <div class="layer-toggle flood" id="flood-toggle" onclick="toggleLayer('flood')">
+                        <i class="fas fa-water layer-icon"></i>
+                        <span>Flood Zones</span>
+                    </div>
 
-            <div class="layer-toggle earthquake" id="earthquake-toggle" onclick="toggleLayer('earthquake')">
-                <i class="fas fa-mountain layer-icon"></i>
-                <span>Fault Lines</span>
-            </div>
+                    <div class="layer-toggle earthquake" id="earthquake-toggle" onclick="toggleLayer('earthquake')">
+                        <i class="fas fa-mountain layer-icon"></i>
+                        <span>Fault Lines</span>
+                    </div>
 
-            <div class="layer-toggle live" id="live-toggle" onclick="toggleLayer('live')">
-                <i class="fas fa-broadcast-tower layer-icon"></i>
-                <span>Live Earthquakes</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Interactive Map -->
-    <div class="map-container">
-        <div class="map-header">
-            <div class="map-title">
-                <i class="fas fa-map"></i>
-                <span>Multi-Hazard Risk Map</span>
-            </div>
-            <div class="active-layers" id="active-layers">
-                <div class="active-layer-badge">ZIP {{ zip_code }}</div>
-            </div>
-        </div>
-        <div id="map"></div>
-        
-        <!-- Map Legend -->
-        <div class="legend" id="map-legend">
-            <h6><i class="fas fa-info-circle me-2"></i>Legend</h6>
-            <div id="legend-content">
-                <div class="legend-item">
-                    <div class="legend-color" style="background: #000000;"></div>
-                    <span>Your ZIP Code</span>
+                    <div class="layer-toggle live" id="live-toggle" onclick="toggleLayer('live')">
+                        <i class="fas fa-broadcast-tower layer-icon"></i>
+                        <span>Live Earthquakes</span>
+                    </div>
                 </div>
             </div>
+
+            <!-- Interactive Map -->
+            <div class="map-container">
+                <div class="map-header">
+                    <div class="map-title">
+                        <i class="fas fa-map"></i>
+                        <span>Multi-Hazard Risk Map</span>
+                    </div>
+                    <div class="active-layers" id="active-layers">
+                        <div class="active-layer-badge">ZIP {{ zip_code }}</div>
+                    </div>
+                </div>
+                <div id="map"></div>
+            </div>
         </div>
-    </div>
 
-    <!-- Quick Actions -->
-    <div class="quick-actions">
-        <h3 class="text-center mb-4 fw-bold"><i class="fas fa-rocket me-2"></i>Get Your Personalized Safety Plans</h3>
-        
-        <div class="action-grid">
-            <div class="action-card">
-                <i class="fas fa-fire action-icon" style="color: var(--wildfire-color);"></i>
-                <h5>Wildfire Safety Plan</h5>
-                <p class="mb-3">Risk Score: {{ "%.1f"|format(risk_scores.wildfire.score) }}/10</p>
-                <a href="{{ url_for('wildfire') }}" class="btn-action">
-                    <i class="fas fa-shield-alt me-2"></i>Get Plan
-                </a>
+        <!-- AI Chatbot Section -->
+        <div class="chatbot-section">
+            <div class="chatbot-header">
+                <h3><i class="fas fa-robot me-2"></i>AI Risk Assistant</h3>
+                <div style="font-size: 0.8rem; opacity: 0.9;">Ask about safety plans, evacuation routes, supplies, or any emergency question</div>
             </div>
 
-            <div class="action-card">
-                <i class="fas fa-water action-icon" style="color: var(--flood-color);"></i>
-                <h5>Flood Safety Plan</h5>
-                <p class="mb-3">Risk Score: {{ "%.1f"|format(risk_scores.flood.score) }}/10</p>
-                <a href="{{ url_for('flood') }}" class="btn-action">
-                    <i class="fas fa-shield-alt me-2"></i>Get Plan
-                </a>
+            <!-- Quick Questions -->
+            <div class="quick-questions">
+                <h6>Quick Questions:</h6>
+                <div class="quick-question" onclick="askQuickQuestion('What should I do if there\'s a wildfire near my area?')">
+                    🔥 Wildfire emergency steps
+                </div>
+                <div class="quick-question" onclick="askQuickQuestion('How do I prepare an earthquake emergency kit?')">
+                    📦 Emergency kit checklist
+                </div>
+                <div class="quick-question" onclick="askQuickQuestion('What are the evacuation routes from my ZIP code?')">
+                    🛣️ Evacuation routes
+                </div>
+                <div class="quick-question" onclick="askQuickQuestion('How can I make my home more disaster-resistant?')">
+                    🏠 Home preparation
+                </div>
             </div>
 
-            <div class="action-card">
-                <i class="fas fa-mountain action-icon" style="color: var(--earthquake-color);"></i>
-                <h5>Earthquake Safety Plan</h5>
-                <p class="mb-3">Risk Score: {{ "%.1f"|format(risk_scores.earthquake.score) }}/10</p>
-                <a href="{{ url_for('earthquake') }}" class="btn-action">
-                    <i class="fas fa-shield-alt me-2"></i>Get Plan
-                </a>
+            <!-- Chat Messages -->
+            <div class="chatbot-messages" id="chatbot-messages">
+                <div class="chat-message bot">
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content">Hello! I'm your personal disaster preparedness assistant. Based on your location in ZIP {{ zip_code }}, I can see you have:
+
+• {% if risk_scores.wildfire.score >= 7 %}High{% elif risk_scores.wildfire.score >= 4 %}Moderate{% else %}Low{% endif %} wildfire risk ({{ "%.1f"|format(risk_scores.wildfire.score) }}/10)
+• {% if risk_scores.earthquake.score >= 7 %}High{% elif risk_scores.earthquake.score >= 4 %}Moderate{% else %}Low{% endif %} earthquake risk ({{ "%.1f"|format(risk_scores.earthquake.score) }}/10) 
+• {% if risk_scores.flood.score >= 7 %}High{% elif risk_scores.flood.score >= 4 %}Moderate{% else %}Low{% endif %} flood risk ({{ "%.1f"|format(risk_scores.flood.score) }}/10)
+
+I can help you create personalized safety plans, understand evacuation procedures, prepare emergency kits, and answer any questions about disaster preparedness for your specific area.
+
+What would you like to know about staying safe in your neighborhood?</div>
+                </div>
             </div>
 
-            <div class="action-card">
-                <i class="fas fa-broadcast-tower action-icon" style="color: #dc3545;"></i>
-                <h5>Live Earthquake Monitor</h5>
-                <p class="mb-3">Real-time seismic activity</p>
-                <a href="{{ url_for('live_earthquake_map') }}" class="btn-action">
-                    <i class="fas fa-eye me-2"></i>View Live
-                </a>
-            </div>
-
-            <div class="action-card">
-                <i class="fas fa-book-open action-icon" style="color: #28a745;"></i>
-                <h5>Emergency Resources</h5>
-                <p class="mb-3">Guides and local contacts</p>
-                <a href="{{ url_for('resources') }}" class="btn-action">
-                    <i class="fas fa-external-link-alt me-2"></i>View Resources
-                </a>
-            </div>
-
-            <div class="action-card">
-                <i class="fas fa-info-circle action-icon" style="color: #17a2b8;"></i>
-                <h5>About This Tool</h5>
-                <p class="mb-3">Learn about our mission</p>
-                <a href="{{ url_for('about') }}" class="btn-action">
-                    <i class="fas fa-question-circle me-2"></i>Learn More
-                </a>
+            <!-- Chat Input -->
+            <div class="chatbot-input-container">
+                <div class="chatbot-input-group">
+                    <textarea 
+                        class="chatbot-input" 
+                        id="chatbot-input"
+                        placeholder="Ask about safety plans, emergency supplies, evacuation routes..."
+                        rows="1"
+                    ></textarea>
+                    <button class="chatbot-submit" id="chatbot-submit" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -562,541 +693,729 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-// Global variables
-let map;
-let layers = {
-    zip: null,
-    wildfire: null,
-    flood: null,
-    earthquake: null,
-    live: null
-};
-let activeHazard = null;
+    // Global variables
+    let map;
+    let layers = {
+        zip: null,
+        wildfire: null,
+        flood: null,
+        earthquake: null,
+        live: null
+    };
+    let activeHazard = null;
+    let chatHistory = [];
 
-// Initialize map
-function initMap() {
-    map = L.map('map').setView([37.75, -122.2], 10);
-    
-    // Base tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors',
-        maxZoom: 18
-    }).addTo(map);
-    
-    // Load ZIP boundary first
-    loadZipBoundary();
-}
+    // Initialize map
+    function initMap() {
+        map = L.map('map').setView([37.75, -122.2], 10);
+        
+        // Base tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(map);
+        
+        // Load ZIP boundary first
+        loadZipBoundary();
+    }
 
-// Load ZIP code boundary
-function loadZipBoundary() {
-    const zipCode = "{{ zip_code }}";
-    
-    fetch(`/api/zip-boundary/${zipCode}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                console.warn('ZIP boundary error:', data.error);
-                return;
-            }
-            
-            layers.zip = L.geoJSON(data, {
-                style: {
+    // Load ZIP code boundary
+    function loadZipBoundary() {
+        const zipCode = "{{ zip_code }}";
+        
+        fetch(`/api/zip-boundary/${zipCode}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.warn('ZIP boundary error:', data.error);
+                    // Create fallback boundary
+                    const zipBounds = [
+                        [37.7, -122.3],
+                        [37.8, -122.3],
+                        [37.8, -122.1],
+                        [37.7, -122.1],
+                        [37.7, -122.3]
+                    ];
+                    
+                    layers.zip = L.polygon(zipBounds, {
+                        color: '#000000',
+                        weight: 4,
+                        fillColor: '#000000',
+                        fillOpacity: 0.1,
+                        dashArray: '10, 5'
+                    }).addTo(map);
+                    
+                    map.fitBounds(layers.zip.getBounds());
+                    return;
+                }
+                
+                layers.zip = L.geoJSON(data, {
+                    style: {
+                        color: '#000000',
+                        weight: 4,
+                        fillColor: '#000000',
+                        fillOpacity: 0.1,
+                        dashArray: '10, 5'
+                    }
+                }).addTo(map);
+                
+                // Fit map to ZIP bounds
+                if (layers.zip.getBounds && layers.zip.getBounds().isValid()) {
+                    map.fitBounds(layers.zip.getBounds());
+                }
+            })
+            .catch(error => {
+                console.error('Error loading ZIP boundary:', error);
+                // Create fallback boundary
+                const zipBounds = [
+                    [37.7, -122.3],
+                    [37.8, -122.3],
+                    [37.8, -122.1],
+                    [37.7, -122.1],
+                    [37.7, -122.3]
+                ];
+                
+                layers.zip = L.polygon(zipBounds, {
                     color: '#000000',
                     weight: 4,
                     fillColor: '#000000',
                     fillOpacity: 0.1,
                     dashArray: '10, 5'
-                }
-            }).addTo(map);
-            
-            // Fit map to ZIP bounds
-            if (layers.zip.getBounds && layers.zip.getBounds().isValid()) {
+                }).addTo(map);
+                
                 map.fitBounds(layers.zip.getBounds());
-            }
-        })
-        .catch(error => console.error('Error loading ZIP boundary:', error));
-}
+            });
+    }
 
-// Toggle layer visibility
-function toggleLayer(layerType) {
-    const toggle = document.getElementById(`${layerType}-toggle`);
-    const isActive = toggle.classList.contains('active');
-    
-    if (isActive) {
-        // Remove layer
-        if (layers[layerType]) {
-            map.removeLayer(layers[layerType]);
-            layers[layerType] = null;
+    // Toggle layer visibility with proper loading/error handling
+    function toggleLayer(layerType) {
+        const toggle = document.getElementById(`${layerType}-toggle`);
+        const isActive = toggle.classList.contains('active');
+        
+        if (isActive) {
+            // Remove layer
+            if (layers[layerType]) {
+                map.removeLayer(layers[layerType]);
+                layers[layerType] = null;
+            }
+            toggle.classList.remove('active');
+            resetToggleContent(layerType);
+            updateActiveLayers();
+        } else {
+            // Add layer with loading state
+            setLoadingState(layerType, true);
+            toggle.classList.add('active');
+            loadLayer(layerType);
+            updateActiveLayers();
         }
+    }
+
+    // Set loading state for toggles
+    function setLoadingState(layerType, isLoading) {
+        const toggle = document.getElementById(`${layerType}-toggle`);
+        
+        if (isLoading) {
+            toggle.classList.add('layer-loading');
+            const iconElement = toggle.querySelector('.layer-icon');
+            iconElement.className = 'fas fa-spinner fa-spin layer-icon';
+            const textElement = toggle.querySelector('span');
+            textElement.textContent = 'Loading...';
+        } else {
+            toggle.classList.remove('layer-loading');
+            resetToggleContent(layerType);
+        }
+    }
+
+    // Reset toggle content to original state
+    function resetToggleContent(layerType) {
+        const toggle = document.getElementById(`${layerType}-toggle`);
+        const iconElement = toggle.querySelector('.layer-icon');
+        const textElement = toggle.querySelector('span');
+        
+        const icons = {
+            wildfire: 'fas fa-fire',
+            flood: 'fas fa-water',
+            earthquake: 'fas fa-mountain',
+            live: 'fas fa-broadcast-tower',
+            zip: 'fas fa-map-marker-alt'
+        };
+        
+        const labels = {
+            wildfire: 'Wildfire Zones',
+            flood: 'Flood Zones', 
+            earthquake: 'Fault Lines',
+            live: 'Live Earthquakes',
+            zip: `Your ZIP ({{ zip_code }})`
+        };
+        
+        iconElement.className = `${icons[layerType]} layer-icon`;
+        textElement.textContent = labels[layerType];
+    }
+
+    // Load specific layer data
+    function loadLayer(layerType) {
+        switch(layerType) {
+            case 'wildfire':
+                loadWildfireZones();
+                break;
+            case 'flood':
+                loadFloodZones();
+                break;
+            case 'earthquake':
+                loadFaultLines();
+                break;
+            case 'live':
+                loadLiveEarthquakes();
+                break;
+        }
+    }
+
+    // Load wildfire hazard zones
+    function loadWildfireZones() {
+        fetch('/api/wildfire-zones')
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showError('wildfire', data.error);
+                    return;
+                }
+                
+                layers.wildfire = L.geoJSON(data, {
+                    style: function(feature) {
+                        const hazClass = feature.properties.HAZ_CLASS || "Unknown";
+                        return {
+                            color: getWildfireColor(hazClass),
+                            weight: 2,
+                            fillColor: getWildfireColor(hazClass),
+                            fillOpacity: 0.6
+                        };
+                    },
+                    onEachFeature: (feature, layer) => {
+                        let popup = '<strong>Wildfire Hazard Zone</strong><br>';
+                        for (const key in feature.properties) {
+                            const val = feature.properties[key];
+                            if (val) popup += `<strong>${key}:</strong> ${val}<br>`;
+                        }
+                        layer.bindPopup(popup);
+                    }
+                }).addTo(map);
+                
+                setLoadingState('wildfire', false);
+                console.log('Wildfire zones loaded successfully');
+                
+            })
+            .catch(error => showError('wildfire', 'Failed to load wildfire zones'));
+    }
+
+    // Load flood zones
+    function loadFloodZones() {
+        fetch('/api/flood-zones')
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showError('flood', data.error);
+                    return;
+                }
+
+                layers.flood = L.geoJSON(data, {
+                    style: function(feature) {
+                        const risk = getFloodRiskLevel(feature);
+                        return {
+                            color: getFloodColor(risk),
+                            fillColor: getFloodColor(risk),
+                            weight: 1,
+                            fillOpacity: 0.6
+                        };
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const risk = getFloodRiskLevel(feature);
+                        let popup = '<strong>Flood Control Zone</strong><br>';
+                        for (const key in feature.properties) {
+                            const val = feature.properties[key];
+                            if (val) popup += `<strong>${key}:</strong> ${val}<br>`;
+                        }
+                        popup += `<strong>Risk Level:</strong> ${risk}`;
+                        layer.bindPopup(popup);
+                    }
+                }).addTo(map);
+
+                setLoadingState('flood', false);
+                console.log('Flood zones loaded successfully');
+                
+            })
+            .catch(error => showError('flood', 'Failed to load flood zones'));
+    }
+
+    // Load fault lines
+    function loadFaultLines() {
+        fetch('/api/fault-lines')
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showError('earthquake', data.error);
+                    return;
+                }
+                
+                layers.earthquake = L.geoJSON(data, {
+                    style: {
+                        color: '#795548',
+                        weight: 3,
+                        opacity: 0.8
+                    },
+                    onEachFeature: (feature, layer) => {
+                        let popup = '<strong>Fault Line</strong><br>';
+                        for (const key in feature.properties) {
+                            const val = feature.properties[key];
+                            if (val) popup += `<strong>${key}:</strong> ${val}<br>`;
+                        }
+                        layer.bindPopup(popup);
+                    }
+                }).addTo(map);
+                
+                setLoadingState('earthquake', false);
+                console.log('Fault lines loaded successfully');
+                
+            })
+            .catch(error => showError('earthquake', 'Failed to load fault lines'));
+    }
+
+    // Load live earthquakes
+    function loadLiveEarthquakes() {
+        fetch('/api/live-earthquakes')
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showError('live', data.error);
+                    return;
+                }
+                
+                layers.live = L.geoJSON(data, {
+                    pointToLayer: (feature, latlng) => {
+                        const magnitude = feature.properties.mag || 0;
+                        const radius = Math.max(magnitude * 3, 3);
+                        
+                        return L.circleMarker(latlng, {
+                            radius: radius,
+                            fillColor: getEarthquakeColor(magnitude),
+                            color: '#fff',
+                            weight: 2,
+                            opacity: 1,
+                            fillOpacity: 0.8
+                        });
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const props = feature.properties;
+                        const popup = `
+                            <strong>Recent Earthquake</strong><br>
+                            <strong>Magnitude:</strong> ${props.mag || 'Unknown'}<br>
+                            <strong>Location:</strong> ${props.place || 'Unknown'}<br>
+                            <strong>Time:</strong> ${new Date(props.time).toLocaleString()}<br>
+                            <strong>Depth:</strong> ${props.depth || 'Unknown'} km
+                        `;
+                        layer.bindPopup(popup);
+                    }
+                }).addTo(map);
+                
+                setLoadingState('live', false);
+                console.log('Live earthquake data loaded successfully');
+                
+            })
+            .catch(error => showError('live', 'Failed to load live earthquake data'));
+    }
+
+    // Color functions
+    function getWildfireColor(hazardClass) {
+        switch(hazardClass) {
+            case 'Very High': return '#d73027';
+            case 'High': return '#fc8d59';
+            case 'Moderate': return '#fee08b';
+            case 'Low': return '#d9ef8b';
+            default: return '#cccccc';
+        }
+    }
+
+    function getFloodRiskLevel(feature) {
+        const zone = (feature.properties.FLD_ZONE || '').toUpperCase();
+        if (zone === 'VE') return 'Very High';
+        if (zone === 'AE' || zone === 'A') return 'High';
+        if (zone === 'AO' || zone === 'AH') return 'Moderate';
+        if (zone === 'X') return 'Low';
+        return 'Unknown';
+    }
+
+    function getFloodColor(risk) {
+        switch (risk) {
+            case 'Very High': return '#d32f2f';
+            case 'High': return '#f57c00';
+            case 'Moderate': return '#fbc02d';
+            case 'Low': return '#388e3c';
+            default: return '#9e9e9e';
+        }
+    }
+
+    function getEarthquakeColor(magnitude) {
+        if (magnitude >= 5) return '#d73027';
+        if (magnitude >= 3) return '#fc8d59';
+        if (magnitude >= 1) return '#fee08b';
+        return '#d9ef8b';
+    }
+
+    // Update active layers display
+    function updateActiveLayers() {
+        const activeLayers = document.getElementById('active-layers');
+        const activeToggles = document.querySelectorAll('.layer-toggle.active');
+        
+        activeLayers.innerHTML = '';
+        
+        activeToggles.forEach(toggle => {
+            const layerName = toggle.querySelector('span').textContent;
+            if (!layerName.includes('Loading')) {
+                const badge = document.createElement('div');
+                badge.className = 'active-layer-badge';
+                badge.textContent = layerName;
+                activeLayers.appendChild(badge);
+            }
+        });
+        
+        if (activeLayers.children.length === 0) {
+            const badge = document.createElement('div');
+            badge.className = 'active-layer-badge';
+            badge.textContent = 'No layers active';
+            activeLayers.appendChild(badge);
+        }
+    }
+
+    // Toggle risk focus (highlight specific risk card)
+    function toggleRiskFocus(hazardType) {
+        // Remove active class from all risk cards
+        document.querySelectorAll('.risk-card').forEach(card => {
+            card.classList.remove('active');
+        });
+        
+        // Add active class to clicked card
+        const clickedCard = document.querySelector(`.risk-card.${hazardType}`);
+        if (clickedCard) {
+            clickedCard.classList.add('active');
+            
+            // Auto-enable the corresponding layer if not already active
+            const layerToggle = document.getElementById(`${hazardType}-toggle`);
+            if (layerToggle && !layerToggle.classList.contains('active')) {
+                toggleLayer(hazardType);
+            }
+            
+            // Store active hazard
+            activeHazard = hazardType;
+        }
+    }
+
+    // Show error message
+    function showError(layerType, message) {
+        const toggle = document.getElementById(`${layerType}-toggle`);
         toggle.classList.remove('active');
+        setLoadingState(layerType, false);
+        
+        // Show error in map
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.innerHTML = `⚠️ ${message}`;
+        errorDiv.style.position = 'absolute';
+        errorDiv.style.top = '80px';
+        errorDiv.style.left = '20px';
+        errorDiv.style.right = '20px';
+        errorDiv.style.zIndex = '1000';
+        
+        document.querySelector('.map-container').appendChild(errorDiv);
+        
+        // Remove error after 5 seconds
+        setTimeout(() => {
+            if (errorDiv.parentNode) {
+                errorDiv.parentNode.removeChild(errorDiv);
+            }
+        }, 5000);
+        
         updateActiveLayers();
-        updateLegend();
-    } else {
-        // Add layer
-        toggle.classList.add('active');
-        loadLayer(layerType);
-        updateActiveLayers();
     }
-}
 
-// Load specific layer data
-function loadLayer(layerType) {
-    const loadingSpinner = showLoading(layerType);
-    
-    switch(layerType) {
-        case 'wildfire':
-            loadWildfireZones();
-            break;
-        case 'flood':
-            loadFloodZones();
-            break;
-        case 'earthquake':
-            loadFaultLines();
-            break;
-        case 'live':
-            loadLiveEarthquakes();
-            break;
+    // Chatbot functionality
+    function sendMessage() {
+        const input = document.getElementById('chatbot-input');
+        const message = input.value.trim();
+        
+        if (!message) return;
+        
+        // Add user message
+        addMessage('user', message);
+        
+        // Clear input
+        input.value = '';
+        input.style.height = 'auto';
+        
+        // Disable submit button
+        const submitBtn = document.getElementById('chatbot-submit');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        
+        // Add typing indicator
+        addTypingIndicator();
+        
+        // Send request to Flask backend
+        fetch('/unified_hazard_map', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `message=${encodeURIComponent(message)}`
+        })
+        .then(response => response.text())
+        .then(html => {
+            // Extract AI response from returned HTML (you'd need to modify the backend to return JSON)
+            // For now, use the local AI response function
+            removeTypingIndicator();
+            const response = generateAIResponse(message);
+            addMessage('bot', response);
+            
+            // Re-enable submit button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            removeTypingIndicator();
+            const response = generateAIResponse(message);
+            addMessage('bot', response);
+            
+            // Re-enable submit button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+        });
     }
-}
 
-// Load wildfire hazard zones
-function loadWildfireZones() {
-    fetch('/api/wildfire-zones')
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                showError('wildfire', data.error);
-                return;
-            }
-            
-            layers.wildfire = L.geoJSON(data, {
-                style: function(feature) {
-                    const hazClass = feature.properties.HAZ_CLASS || "Unknown";
-                    return {
-                        color: getWildfireColor(hazClass),
-                        weight: 2,
-                        fillColor: getWildfireColor(hazClass),
-                        fillOpacity: 0.6
-                    };
-                },
-                onEachFeature: (feature, layer) => {
-                    let popup = '<strong>Wildfire Hazard Zone</strong><br>';
-                    for (const key in feature.properties) {
-                        const val = feature.properties[key];
-                        if (val) popup += `<strong>${key}:</strong> ${val}<br>`;
-                    }
-                    layer.bindPopup(popup);
-                }
-            }).addTo(map);
-            
-            updateLegend();
-        })
-        .catch(error => showError('wildfire', 'Failed to load wildfire zones'));
-}
-
-// Load flood control zones
-function loadFloodZones() {
-    fetch('/api/flood-zones')
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                showError('flood', data.error);
-                return;
-            }
-
-            layers.flood = L.geoJSON(data, {
-                style: function(feature) {
-                    const risk = getFloodRiskLevel(feature);
-                    return {
-                        color: getFloodColor(risk),
-                        fillColor: getFloodColor(risk),
-                        weight: 1,
-                        fillOpacity: 0.6
-                    };
-                },
-                onEachFeature: (feature, layer) => {
-                    const risk = getFloodRiskLevel(feature);
-                    let popup = '<strong>Flood Control Zone</strong><br>';
-                    for (const key in feature.properties) {
-                        const val = feature.properties[key];
-                        if (val) popup += `<strong>${key}:</strong> ${val}<br>`;
-                    }
-                    popup += `<strong>Risk Level:</strong> ${risk}`;
-                    layer.bindPopup(popup);
-                }
-            }).addTo(map);
-
-            updateLegend();
-        })
-        .catch(error => showError('flood', 'Failed to load flood zones'));
-}
-// Load fault lines
-function loadFaultLines() {
-    fetch('/api/fault-lines')
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                showError('earthquake', data.error);
-                return;
-            }
-            
-            layers.earthquake = L.geoJSON(data, {
-                style: {
-                    color: '#795548',
-                    weight: 3,
-                    opacity: 0.8
-                },
-                onEachFeature: (feature, layer) => {
-                    let popup = '<strong>Fault Line</strong><br>';
-                    for (const key in feature.properties) {
-                        const val = feature.properties[key];
-                        if (val) popup += `<strong>${key}:</strong> ${val}<br>`;
-                    }
-                    layer.bindPopup(popup);
-                }
-            }).addTo(map);
-            
-            updateLegend();
-        })
-        .catch(error => showError('earthquake', 'Failed to load fault lines'));
-}
-
-// Load live earthquakes
-function loadLiveEarthquakes() {
-    fetch('/api/live-earthquakes')
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                showError('live', data.error);
-                return;
-            }
-            
-            layers.live = L.geoJSON(data, {
-                pointToLayer: (feature, latlng) => {
-                    const magnitude = feature.properties.mag || 0;
-                    const radius = Math.max(magnitude * 3, 3);
-                    
-                    return L.circleMarker(latlng, {
-                        radius: radius,
-                        fillColor: getEarthquakeColor(magnitude),
-                        color: '#fff',
-                        weight: 2,
-                        opacity: 1,
-                        fillOpacity: 0.8
-                    });
-                },
-                onEachFeature: (feature, layer) => {
-                    const props = feature.properties;
-                    const popup = `
-                        <strong>Recent Earthquake</strong><br>
-                        <strong>Magnitude:</strong> ${props.mag || 'Unknown'}<br>
-                        <strong>Location:</strong> ${props.place || 'Unknown'}<br>
-                        <strong>Time:</strong> ${new Date(props.time).toLocaleString()}<br>
-                        <strong>Depth:</strong> ${props.depth || 'Unknown'} km
-                    `;
-                    layer.bindPopup(popup);
-                }
-            }).addTo(map);
-            
-            updateLegend();
-        })
-        .catch(error => showError('live', 'Failed to load live earthquake data'));
-}
-
-// Color functions
-function getWildfireColor(hazardClass) {
-    switch(hazardClass) {
-        case 'Very High': return '#d73027';
-        case 'High': return '#fc8d59';
-        case 'Moderate': return '#fee08b';
-        case 'Low': return '#d9ef8b';
-        default: return '#cccccc';
+    function addMessage(role, content) {
+        const messagesContainer = document.getElementById('chatbot-messages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chat-message ${role}`;
+        
+        messageDiv.innerHTML = `
+            <div class="message-avatar">${role === 'user' ? 'YOU' : 'AI'}</div>
+            <div class="message-content">${content}</div>
+        `;
+        
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        // Store in chat history
+        chatHistory.push({ role, content });
     }
-}
 
-// Returns a string risk level for a flood zone feature
-function getFloodRiskLevel(feature) {
-  const zone = (feature.properties.FLD_ZONE || '').toUpperCase();
-
-  if (zone === 'VE') return 'Very High';
-  if (zone === 'AE' || zone === 'A') return 'High';
-  if (zone === 'AO' || zone === 'AH') return 'Moderate';
-  if (zone === 'X') return 'Low';
-
-  return 'Unknown';
-}
-function getFloodColor(risk) {
-  switch (risk) {
-    case 'Very High': return '#d32f2f';  // deep red
-    case 'High': return '#f57c00';       // orange
-    case 'Moderate': return '#fbc02d';   // yellow
-    case 'Low': return '#388e3c';        // green
-    default: return '#9e9e9e';           // gray (unknown)
-  }
-}
-
-function getEarthquakeColor(magnitude) {
-    if (magnitude >= 5) return '#d73027';
-    if (magnitude >= 3) return '#fc8d59';
-    if (magnitude >= 1) return '#fee08b';
-    return '#d9ef8b';
-}
-
-// Update active layers display
-function updateActiveLayers() {
-    const activeLayers = document.getElementById('active-layers');
-    const activeToggles = document.querySelectorAll('.layer-toggle.active');
-    
-    activeLayers.innerHTML = '';
-    
-    activeToggles.forEach(toggle => {
-        const layerName = toggle.querySelector('span').textContent;
-        const badge = document.createElement('div');
-        badge.className = 'active-layer-badge';
-        badge.textContent = layerName;
-        activeLayers.appendChild(badge);
-    });
-    
-    if (activeToggles.length === 0) {
-        const badge = document.createElement('div');
-        badge.className = 'active-layer-badge';
-        badge.textContent = 'No layers active';
-        activeLayers.appendChild(badge);
-    }
-}
-
-// Update map legend
-function updateLegend() {
-    const legend = document.getElementById('map-legend');
-    const legendContent = document.getElementById('legend-content');
-    const activeToggles = document.querySelectorAll('.layer-toggle.active');
-    
-    legendContent.innerHTML = '';
-    
-    // Always show ZIP code
-    if (layers.zip) {
-        legendContent.innerHTML += `
-            <div class="legend-item">
-                <div class="legend-color" style="background: #000000;"></div>
-                <span>Your ZIP Code ({{ zip_code }})</span>
+    function addTypingIndicator() {
+        const messagesContainer = document.getElementById('chatbot-messages');
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'chat-message bot typing-indicator';
+        typingDiv.id = 'typing-indicator';
+        
+        typingDiv.innerHTML = `
+            <div class="message-avatar">AI</div>
+            <div class="message-content">
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+                AI is thinking...
             </div>
         `;
+        
+        messagesContainer.appendChild(typingDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
-    
-    // Add other active layers
-    activeToggles.forEach(toggle => {
-        const layerType = toggle.id.replace('-toggle', '');
+
+    function removeTypingIndicator() {
+        const typingIndicator = document.getElementById('typing-indicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    }
+
+    function generateAIResponse(message) {
+        const lowerMessage = message.toLowerCase();
+        const zipCode = "{{ zip_code }}";
+        const wildfireScore = {{ risk_scores.wildfire.score }};
+        const earthquakeScore = {{ risk_scores.earthquake.score }};
+        const floodScore = {{ risk_scores.flood.score }};
         
-        if (layerType === 'wildfire' && layers.wildfire) {
-            legendContent.innerHTML += `
-                <div class="legend-item">
-                    <div class="legend-color" style="background: linear-gradient(90deg, #d73027, #d9ef8b);"></div>
-                    <span>Wildfire Risk (High → Low)</span>
-                </div>
-            `;
+        // Context-aware responses based on location and risk data
+        if (lowerMessage.includes('wildfire') || lowerMessage.includes('fire')) {
+            return `Given your {% if risk_scores.wildfire.score >= 7 %}high{% elif risk_scores.wildfire.score >= 4 %}moderate{% else %}low{% endif %} wildfire risk (${wildfireScore}/10) in ZIP ${zipCode}, here are key steps:
+
+• Create a 100-foot defensible space around your home
+• Prepare a go-bag with essentials (documents, medications, clothes)
+• Know multiple evacuation routes from your area
+• Sign up for AC Alert (Alameda County's emergency notification system)
+• Monitor air quality during fire season using PurpleAir or AirNow
+
+{% if risk_scores.wildfire.score >= 7 %}Your area has elevated risk - stay vigilant during red flag warnings!{% endif %}`;
         }
         
-        if (layerType === 'flood' && layers.flood) {
-            legendContent.innerHTML += `
-                <div class="legend-item">
-                    <div class="legend-color" style="background: #81d4fa;"></div>
-                    <span>Flood Control Zones</span>
-                </div>
-            `;
+        if (lowerMessage.includes('earthquake')) {
+            return `For your {% if risk_scores.earthquake.score >= 7 %}high{% elif risk_scores.earthquake.score >= 4 %}moderate{% else %}low{% endif %} earthquake risk (${earthquakeScore}/10) in ZIP ${zipCode}:
+
+• Secure heavy furniture and water heaters to walls
+• Practice Drop, Cover, and Hold On drills with your household
+• Store emergency supplies for 72+ hours (water, food, first aid)
+• Know your gas shutoff valve location and how to use it
+• Consider seismic retrofitting if you have an older home
+
+{% if risk_scores.earthquake.score >= 6 %}The Hayward Fault runs nearby - having a plan is crucial for your safety.{% endif %}`;
         }
         
-        if (layerType === 'earthquake' && layers.earthquake) {
-            legendContent.innerHTML += `
-                <div class="legend-item">
-                    <div class="legend-color" style="background: #795548;"></div>
-                    <span>Active Fault Lines</span>
-                </div>
-            `;
+        if (lowerMessage.includes('flood')) {
+            return `{% if risk_scores.flood.score >= 4 %}Your flood risk is significant{% else %}Good news - your flood risk is low{% endif %} (${floodScore}/10) in ZIP ${zipCode}. {% if risk_scores.flood.score < 4 %}However:{% else %}Here's what you need to know:{% endif %}
+
+• Stay informed about dam safety during heavy rains
+• {% if risk_scores.flood.score < 4 %}Know that flash flooding can occur in urban areas{% else %}Have evacuation routes planned for flood scenarios{% endif %}
+• Avoid driving through standing water
+• Consider flood insurance {% if risk_scores.flood.score < 4 %}even in low-risk areas{% else %}given your risk level{% endif %}
+
+{% if risk_scores.flood.score < 4 %}Your elevation keeps flood risk minimal.{% endif %}`;
         }
         
-        if (layerType === 'live' && layers.live) {
-            legendContent.innerHTML += `
-                <div class="legend-item">
-                    <div class="legend-color" style="background: linear-gradient(90deg, #d73027, #d9ef8b);"></div>
-                    <span>Recent Earthquakes (24h)</span>
-                </div>
-            `;
+        if (lowerMessage.includes('evacuation') || lowerMessage.includes('route')) {
+            return `Key evacuation routes from ZIP ${zipCode}:
+
+🛣️ PRIMARY ROUTES:
+• Highway 24 West → Berkeley/San Francisco
+• Highway 13 North → Berkeley  
+• Highway 580 West → San Francisco Bay Bridge
+
+🛣️ ALTERNATE ROUTES:
+• Park Boulevard → Downtown Oakland
+• MacArthur Boulevard → Various directions
+
+⚠️ IMPORTANT: Have multiple planned routes as primary roads may be congested during emergencies. Practice driving these routes during different times of day.`;
+        }
+        
+        if (lowerMessage.includes('kit') || lowerMessage.includes('supplies')) {
+            return `Essential emergency kit for your household in ZIP ${zipCode}:
+
+📦 BASIC SUPPLIES (72-hour minimum):
+• Water: 1 gallon per person per day
+• Non-perishable food
+• Battery/hand-crank radio
+• Flashlight and extra batteries
+• First aid kit
+• Medications (7-day supply)
+• Cash in small bills
+• Important documents (copies)
+
+{% if risk_scores.wildfire.score >= 6 %}🔥 WILDFIRE ADDITIONS (high risk area):
+• N95 masks for smoke protection
+• Go-bag with essentials ready to grab
+• Garden hose and sprinklers{% endif %}
+
+Would you like specific recommendations for any category?`;
+        }
+        
+        if (lowerMessage.includes('home') || lowerMessage.includes('house')) {
+            return `Making your home more disaster-resistant in ZIP ${zipCode}:
+
+{% if risk_scores.wildfire.score >= 6 %}🔥 WILDFIRE PROTECTION (Priority):
+• Use fire-resistant landscaping
+• Clean gutters and roof regularly
+• Install mesh screens on vents
+• Trim tree branches away from roof
+
+{% endif %}🏠 EARTHQUAKE SAFETY:
+• Bolt house to foundation (soft-story retrofit)
+• Secure water heater with straps
+• Install safety latches on cabinets
+• Consider seismic gas shutoff valve
+
+💰 Many improvements qualify for rebates through Alameda County programs!`;
+        }
+        
+        // Default response
+        return `I'm here to help with disaster preparedness for ZIP ${zipCode}! Based on your location, you have:
+
+• {% if risk_scores.wildfire.score >= 7 %}High{% elif risk_scores.wildfire.score >= 4 %}Moderate{% else %}Low{% endif %} wildfire risk (${wildfireScore}/10){% if risk_scores.wildfire.score >= 6 %} - Priority concern{% endif %}
+• {% if risk_scores.earthquake.score >= 7 %}High{% elif risk_scores.earthquake.score >= 4 %}Moderate{% else %}Low{% endif %} earthquake risk (${earthquakeScore}/10){% if risk_scores.earthquake.score >= 6 %} - Important to prepare{% endif %}
+• {% if risk_scores.flood.score >= 7 %}High{% elif risk_scores.flood.score >= 4 %}Moderate{% else %}Low{% endif %} flood risk (${floodScore}/10){% if risk_scores.flood.score < 4 %} - Minimal concern{% endif %}
+
+I can provide specific guidance on:
+- Emergency kits and supplies
+- Evacuation planning and routes
+- Home protection measures
+- Local resources and alerts
+- Insurance and financial planning
+
+What specific aspect of emergency preparedness interests you most?`;
+    }
+
+    function askQuickQuestion(question) {
+        const input = document.getElementById('chatbot-input');
+        input.value = question;
+        sendMessage();
+    }
+
+    // Auto-expand textarea
+    document.getElementById('chatbot-input').addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+    });
+
+    // Handle Enter key
+    document.getElementById('chatbot-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
         }
     });
-    
-    // Show/hide legend based on active layers
-    if (activeToggles.length > 0) {
-        legend.classList.add('show');
-    } else {
-        legend.classList.remove('show');
-    }
-}
 
-// Toggle risk focus (highlight specific risk card)
-function toggleRiskFocus(hazardType) {
-    // Remove active class from all risk cards
-    document.querySelectorAll('.risk-card').forEach(card => {
-        card.classList.remove('active');
+    // Auto-focus on highest risk
+    function autoFocusHighestRisk() {
+        const risks = {
+            wildfire: {{ risk_scores.wildfire.score }},
+            flood: {{ risk_scores.flood.score }},
+            earthquake: {{ risk_scores.earthquake.score }}
+        };
+        
+        let highestRisk = 'wildfire';
+        let highestScore = risks.wildfire;
+        
+        Object.keys(risks).forEach(hazard => {
+            if (risks[hazard] > highestScore) {
+                highestScore = risks[hazard];
+                highestRisk = hazard;
+            }
+        });
+        
+        // Only auto-focus if the highest risk is significant (>= 4)
+        if (highestScore >= 4) {
+            setTimeout(() => {
+                toggleRiskFocus(highestRisk);
+            }, 2000);
+        }
+    }
+
+    // Initialize everything when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        initMap();
+        updateActiveLayers();
+        
+        // Auto-focus on highest risk after a short delay
+        setTimeout(autoFocusHighestRisk, 3000);
+        
+        // Auto-scroll chat to bottom
+        const chatMessages = document.getElementById('chatbot-messages');
+        chatMessages.scrollTop = chatMessages.scrollHeight;
     });
-    
-    // Add active class to clicked card
-    const clickedCard = document.querySelector(`.risk-card.${hazardType}`);
-    if (clickedCard) {
-        clickedCard.classList.add('active');
-        
-        // Auto-enable the corresponding layer if not already active
-        const layerToggle = document.getElementById(`${hazardType}-toggle`);
-        if (layerToggle && !layerToggle.classList.contains('active')) {
-            toggleLayer(hazardType);
-        }
-        
-        // Store active hazard
-        activeHazard = hazardType;
-    }
-}
 
-// Show loading state
-function showLoading(layerType) {
-    const toggle = document.getElementById(`${layerType}-toggle`);
-    const originalContent = toggle.innerHTML;
-    
-    toggle.innerHTML = `
-        <div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>
-        <span>Loading...</span>
-    `;
-    
-    return originalContent;
-}
-
-// Show error message
-function showError(layerType, message) {
-    const toggle = document.getElementById(`${layerType}-toggle`);
-    toggle.classList.remove('active');
-    
-    // Reset toggle content
-    const icons = {
-        wildfire: 'fas fa-fire',
-        flood: 'fas fa-water',
-        earthquake: 'fas fa-mountain',
-        live: 'fas fa-broadcast-tower'
-    };
-    
-    const labels = {
-        wildfire: 'Wildfire Zones',
-        flood: 'Flood Zones', 
-        earthquake: 'Fault Lines',
-        live: 'Live Earthquakes'
-    };
-    
-    toggle.innerHTML = `
-        <i class="${icons[layerType]} layer-icon"></i>
-        <span>${labels[layerType]}</span>
-    `;
-    
-    // Show error in map
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'error-message';
-    errorDiv.innerHTML = `⚠️ ${message}`;
-    errorDiv.style.position = 'absolute';
-    errorDiv.style.top = '80px';
-    errorDiv.style.left = '20px';
-    errorDiv.style.right = '20px';
-    errorDiv.style.zIndex = '1000';
-    
-    document.querySelector('.map-container').appendChild(errorDiv);
-    
-    // Remove error after 5 seconds
-    setTimeout(() => {
-        if (errorDiv.parentNode) {
-            errorDiv.parentNode.removeChild(errorDiv);
-        }
-    }, 5000);
-}
-
-// Auto-focus on highest risk
-function autoFocusHighestRisk() {
-    const risks = {
-        wildfire: {{ risk_scores.wildfire.score }},
-        flood: {{ risk_scores.flood.score }},
-        earthquake: {{ risk_scores.earthquake.score }}
-    };
-    
-    let highestRisk = 'wildfire';
-    let highestScore = risks.wildfire;
-    
-    Object.keys(risks).forEach(hazard => {
-        if (risks[hazard] > highestScore) {
-            highestScore = risks[hazard];
-            highestRisk = hazard;
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        if (map) {
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 100);
         }
     });
-    
-    // Only auto-focus if the highest risk is significant (>= 4)
-    if (highestScore >= 4) {
-        setTimeout(() => {
-            toggleRiskFocus(highestRisk);
-        }, 1000);
-    }
-}
-
-// Keyboard shortcuts
-document.addEventListener('keydown', function(e) {
-    if (e.altKey) {
-        switch(e.key) {
-            case '1':
-                e.preventDefault();
-                toggleLayer('wildfire');
-                break;
-            case '2':
-                e.preventDefault();
-                toggleLayer('flood');
-                break;
-            case '3':
-                e.preventDefault();
-                toggleLayer('earthquake');
-                break;
-            case '4':
-                e.preventDefault();
-                toggleLayer('live');
-                break;
-            case 'z':
-                e.preventDefault();
-                toggleLayer('zip');
-                break;
-        }
-    }
-});
-
-// Initialize everything when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    initMap();
-    updateActiveLayers();
-    updateLegend();
-    
-    // Auto-focus on highest risk after a short delay
-    setTimeout(autoFocusHighestRisk, 2000);
-    
-    // Add keyboard shortcut hints
-    const controlPanel = document.querySelector('.control-panel');
-    const shortcutHint = document.createElement('div');
-    shortcutHint.style.textAlign = 'center';
-    shortcutHint.style.marginTop = '1rem';
-    shortcutHint.style.fontSize = '0.8rem';
-    shortcutHint.style.color = '#6c757d';
-    shortcutHint.innerHTML = `
-        <i class="fas fa-keyboard me-2"></i>
-        <strong>Keyboard Shortcuts:</strong> Alt+1 (Wildfire), Alt+2 (Flood), Alt+3 (Earthquake), Alt+4 (Live), Alt+Z (ZIP)
-    `;
-    controlPanel.appendChild(shortcutHint);
-});
-
-// Handle window resize
-window.addEventListener('resize', function() {
-    if (map) {
-        setTimeout(() => {
-            map.invalidateSize();
-        }, 100);
-    }
-});
 </script>
 {% endblock %}

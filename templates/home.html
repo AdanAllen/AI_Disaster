@@ -358,7 +358,7 @@
                         <div class="btn-group w-100" role="group">
                             <input type="radio" class="btn-check" name="search_type" id="zip_search" autocomplete="off" checked>
                             <label class="btn btn-outline-primary" for="zip_search">
-                                <i class="fas fa-map-marker-alt me-2"></i>ZIP Code
+                                <i class="fas fa-map-marker-alt me-2" style="color: black;"></i>ZIP Code
                             </label>
 
                             <input type="radio" class="btn-check" name="search_type" id="address_search" autocomplete="off">
@@ -372,7 +372,7 @@
                         <!-- ZIP Code Search -->
                         <div class="search-container" id="zip-search-container">
                             <div class="mb-3">
-                                <label for="zip_code" class="form-label">ZIP Code</label>
+                                <label for="zip_code" class="form-label" style="color: black;">ZIP Code</label>
                                 <input type="text" class="form-control" id="zip_code" name="zip_code" 
                                     placeholder="e.g. 94601" pattern="[0-9]{5}" maxlength="5">
                                 <div class="form-text">
@@ -385,7 +385,7 @@
                         <!-- Address Search -->
                         <div class="search-container" id="address-search-container" style="display: none;">
                             <div class="mb-3">
-                                <label for="address" class="form-label">Street Address</label>
+                                <label for="address" class="form-label" style="color: black;">Street Address</label>
                                 <div class="input-group">
                                     <input type="text" class="form-control" id="address" name="address" 
                                         placeholder="e.g. 1234 Main Street, Oakland, CA"
@@ -406,7 +406,7 @@
                         <!-- Household Info (same as before) -->
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="household" class="form-label">Household Size</label>
+                                <label for="household" class="form-label" style="color: black;">Household Size</label>
                                 <select class="form-control" id="household" name="household" required>
                                     <option value="">Select...</option>
                                     <option value="1">1 person</option>
@@ -417,7 +417,7 @@
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="preparedness" class="form-label">Current Preparedness</label>
+                                <label for="preparedness" class="form-label" style="color: black;">Current Preparedness</label>
                                 <select class="form-control" id="preparedness" name="preparedness" required>
                                     <option value="">Select...</option>
                                     <option value="none">Not prepared</option>
@@ -429,7 +429,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="special_needs" class="form-label">Special Medical Needs (Optional)</label>
+                            <label for="special_needs" class="form-label" style="color: black;">Special Medical Needs (Optional)</label>
                             <input type="text" class="form-control" id="special_needs" name="special_needs" 
                                 placeholder="e.g. Asthma, wheelchair access, medications">
                         </div>
