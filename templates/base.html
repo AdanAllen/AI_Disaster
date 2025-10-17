@@ -7,7 +7,9 @@
 
     <!-- Bootstrap CSS CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
 
     <!-- Custom Styles -->
     <style>
@@ -23,6 +25,34 @@
 
         .container {
             margin-top: 2rem;
+        }
+
+        /* Flash message styles */
+        .alert {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            color: #1976d2;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+            color: #388e3c;
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, #fff3e0, #ffcc02);
+            color: #f57c00;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #ffebee, #ffcdd2);
+            color: #d32f2f;
         }
 
         /* Chat bubble styles */
@@ -82,7 +112,31 @@
             position: relative;
             z-index: 10;
         }
-        
+
+        /* Updated navigation highlighting */
+        .navbar-nav .nav-link {
+            transition: all 0.3s ease;
+            border-radius: 20px;
+            margin: 0 0.2rem;
+            padding: 0.5rem 1rem;
+        }
+
+        .navbar-nav .nav-link:hover {
+            background: rgba(255, 112, 67, 0.1);
+            color: #ff7043 !important;
+        }
+
+        .navbar-nav .nav-link.active {
+            background: #ff7043;
+            color: white !important;
+        }
+
+        /* Responsive navigation */
+        @media (max-width: 991px) {
+            .navbar-nav .nav-link {
+                margin: 0.2rem 0;
+            }
+        }
     </style>
 
     {% block head %}{% endblock %}
@@ -92,21 +146,67 @@
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
     <div class="container">
-        <a class="navbar-brand" href="{{ url_for('home') }}">Disaster Prep Assistant</a>
+        <a class="navbar-brand" href="{{ url_for('home') }}">
+            <i class="fas fa-shield-alt me-2"></i>Disaster Prep Assistant
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('risk_summary') }}">Risk Summary</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('unified_hazard_map') }}">Map</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('resources') }}">Resources</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('about') }}">About</a></li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('home') }}">
+                        <i class="fas fa-home me-1"></i>Home
+                    </a>
+                </li>
+                {% if session.get('zip_code') %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('risk_summary') }}">
+                        <i class="fas fa-chart-bar me-1"></i>Risk Summary
+                    </a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('unified_hazard_map') }}">
+                        <i class="fas fa-layer-group me-1"></i>Risk Map
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('live_earthquake_map') }}">
+                        <i class="fas fa-broadcast-tower me-1"></i>Live Data
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('resources') }}">
+                        <i class="fas fa-book me-1"></i>Resources
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('about') }}">
+                        <i class="fas fa-info-circle me-1"></i>About
+                    </a>
+                </li>
             </ul>
         </div>
     </div>
 </nav>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="container mt-3">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-{% if category == 'info' %}info-circle{% elif category == 'success' %}check-circle{% elif category == 'warning' %}exclamation-triangle{% else %}exclamation-circle{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
 
 <!-- Main page content -->
 <div class="container">
@@ -115,6 +215,37 @@
 
 <!-- Bootstrap JS CDN -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Auto-dismiss flash messages -->
+<script>
+    // Auto-dismiss flash messages after 8 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            if (!alert.querySelector('.btn-close')) return;
+            
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 8000);
+        });
+    });
+
+    // Highlight active navigation item
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+        
+        navLinks.forEach(link => {
+            if (link.getAttribute('href') === currentPath) {
+                link.classList.add('active');
+            }
+        });
+    });
+</script>
+
 {% block scripts %}{% endblock %}
 </body>
 </html>
