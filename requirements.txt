@@ -11,6 +11,6 @@ Werkzeug==3.1.3
 geopy==2.4.1
 openai
 pandas
-dotenv
+python-dotenv
 shapely
 requests
