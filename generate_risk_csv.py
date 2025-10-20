@@ -5,11 +5,19 @@ from shapely.geometry import Point
 
 # Paths to your data files (adjust if needed)
 ZIP_GEOJSON = "static/zipbound.geojson"
+<<<<<<< HEAD
 FLOOD_GEOJSON = "static/FldHaz.geojson"
 WILDFIRE_GEOJSON = "static/FireHaz.geojson"
 FAULT_GEOJSON = "static/Fault_lines.Geojson"  # Fault shapefile
 
 OUTPUT_CSV = "static/zip_risk_scores.csv"
+=======
+FLOOD_GEOJSON = "static/Flood_Control_District_Zones.geojson"
+WILDFIRE_GEOJSON = "static/AlamedaCounty_HazardZones.geojson"
+FAULT_SHP = "data/hazfaults2014_proj.shp"  # Fault shapefile
+
+OUTPUT_CSV = "output/zip_risk_scores.csv"
+>>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
 
 # Alameda County ZIP codes
 alameda_zips = [
@@ -33,6 +41,7 @@ def main():
     zip_gdf = load_geodata(ZIP_GEOJSON)
     flood_gdf = load_geodata(FLOOD_GEOJSON)
     wildfire_gdf = load_geodata(WILDFIRE_GEOJSON)
+<<<<<<< HEAD
     fault_gdf = load_geodata(FAULT_GEOJSON)
 
     # Standardize ZIP code column
@@ -86,6 +95,29 @@ def main():
     dominant_flood['Flood_Risk_Score'] = flood_info.apply(lambda x: x['score'])
     dominant_flood['Flood_Risk_Explanation'] = flood_info.apply(lambda x: x['explanation'])
 
+=======
+    fault_gdf = load_geodata(FAULT_SHP)
+
+    # Standardize ZIP code column
+    if 'ZCTA5CE10' in zip_gdf.columns:
+        zip_gdf = zip_gdf.rename(columns={'ZCTA5CE10': 'ZIP'})
+    elif 'ZIP' not in zip_gdf.columns:
+        raise ValueError("ZIP code column not found in ZIP GeoJSON")
+    zip_gdf = zip_gdf[['ZIP', 'geometry']]
+    zip_gdf = zip_gdf[zip_gdf['ZIP'].isin(alameda_zips)].reset_index(drop=True)
+
+    # --- FLOOD CONTROL DISTRICT ---
+    print("Calculating flood district intersections...")
+    flood_intersections = gpd.overlay(zip_gdf, flood_gdf, how='intersection')
+    flood_intersections['intersect_area'] = flood_intersections.geometry.area
+    idx = flood_intersections.groupby('ZIP')['intersect_area'].idxmax()
+    dominant_flood = flood_intersections.loc[idx, ['ZIP', 'DIST_NAME', 'DISTRICT_ID']].copy()
+    dominant_flood = dominant_flood.rename(columns={
+        'DIST_NAME': 'Flood_Control_District',
+        'DISTRICT_ID': 'Flood_Control_District_ID'
+    })
+
+>>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
     # --- WILDFIRE HAZARD ---
     hazard_rank_map = {
         "Non-Wildland/Non-Urban": 0,
@@ -148,6 +180,7 @@ def main():
     # Fill missing flood or wildfire data with default
     master_df['Flood_Control_District'] = master_df['Flood_Control_District'].fillna('UNKNOWN')
     master_df['Wildfire_Hazard_Level'] = master_df['Wildfire_Hazard_Level'].fillna('Unknown')
+<<<<<<< HEAD
 
     # --- FLOOD RISK MAP keyed by FLD_ZONE ---
     fld_zone_risk_map = {
@@ -178,6 +211,77 @@ def main():
     master_df['FLD_ZONE'] = master_df['Flood_Control_District']  # or whatever column holds zone info
     flood_info = master_df['FLD_ZONE'].apply(lambda z: fld_zone_risk_map.get(z, fld_zone_risk_map['UNKNOWN']))
 
+=======
+    master_df['Flood_Control_District_ID'] = master_df['Flood_Control_District_ID'].fillna('UNKNOWN')
+
+    # --- FLOOD RISK MAP keyed by DISTRICT_ID with empty scores ---
+    flood_risk_map_by_id = {
+        142: {
+            "score": 4,
+            "explanation": "High flood risk due to steep hills causing rapid runoff, dense urban areas, and historic flooding along San Lorenzo Creek.",
+            "chatbot_prompt": "Prepare for flooding risks including flash floods and urban runoff. Follow local evacuation routes and secure important belongings."
+        },
+        152: {
+            "score": 3,
+            "explanation": "Moderate to high risk from tidal influence combined with creek overflow in a heavily urbanized area.",
+            "chatbot_prompt": "Expect tidal flooding and creek overflow. Stay informed of tide schedules and emergency alerts."
+        },
+        144: {
+            "score": 7,
+            "explanation": "Moderate risk from steep hillsides and flash flooding potential in parts of Oakland and Piedmont.",
+            "chatbot_prompt": "Watch for flash floods in steep areas. Avoid low-lying regions during storms."
+        },
+        145: {
+            "score": 3,
+            "explanation": "Medium risk influenced by Alameda Creek’s flow and levee system; flooding possible in heavy storms.",
+            "chatbot_prompt": "Flooding possible from Alameda Creek; have a plan for heavy storms and levee breaches."
+        },
+        146: {
+            "score": 6,
+            "explanation": "Moderate risk from bay-adjacent floodplains and increasing sea level rise impacts.",
+            "chatbot_prompt": "Prepare for coastal flooding and sea level rise; monitor weather and tides."
+        },
+        147: {
+            "score": 5,
+            "explanation": "Lower risk suburban areas with flash flood potential from smaller creeks.",
+            "chatbot_prompt": "Flash floods possible near smaller creeks; clear drainage and avoid flood-prone spots."
+        },
+        148: {
+            "score": 8,
+            "explanation": "Generally low risk due to more rural terrain and less urban development, but some large drainage areas carry water downstream rapidly.",
+            "chatbot_prompt": "While overall flood risk is lower, large drainages may overflow. Prepare in advance during major storms."
+        },
+        149: {
+            "score": 2,
+            "explanation": "Generally low risk due to more rural terrain and less urban development.",
+            "chatbot_prompt": "Low flood risk; standard precautions recommended."
+        },
+        153: {
+            "score": 6,
+            "explanation": "Moderate to high risk from urban flash flooding in narrow canyons and overwhelmed drainage.",
+            "chatbot_prompt": "Urban flash flooding possible; avoid narrow canyons and keep drainage clear."
+        },
+        151: {
+            "score": 5,
+            "explanation": "Moderate risk from steep slopes, creek overflows, and occasional landslides.",
+            "chatbot_prompt": "Be cautious of flooding, landslides, and creek overflow during storms."
+        },
+        "UNKNOWN": {
+            "score": 0,
+            "explanation": "Flood risk unknown.",
+            "chatbot_prompt": "Flood risk data unavailable for your area; please stay alert to local weather reports."
+        }
+    }
+
+    def get_flood_risk_info_by_id(district_id):
+        try:
+            key = int(district_id)
+        except:
+            key = "UNKNOWN"
+        return flood_risk_map_by_id.get(key, flood_risk_map_by_id["UNKNOWN"])
+
+    flood_info = master_df['Flood_Control_District_ID'].apply(get_flood_risk_info_by_id)
+>>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
     master_df['Flood_Risk_Score'] = flood_info.apply(lambda x: x['score'])
     master_df['Flood_Risk_Explanation'] = flood_info.apply(lambda x: x['explanation'])
     master_df['Flood_Chatbot_Prompt'] = flood_info.apply(lambda x: x['chatbot_prompt'])
@@ -186,47 +290,74 @@ def main():
     wildfire_risk_map = {
         "Non-Wildland/Non-Urban": {
             "score": 1,
+<<<<<<< HEAD
             "explanation": "Very low wildfire risk; this area is mostly urban with little vegetation.",
+=======
+>>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
             "chatbot_prompt": "Low wildfire risk; maintain defensible space and follow local fire safety guidelines."
         },
         "Urban Unzoned": {
             "score": 1,
+<<<<<<< HEAD
             "explanation": "Very low wildfire risk; mostly urban unzoned areas with minimal wildfire threat.",
+=======
+>>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
             "chatbot_prompt": "Low wildfire risk; maintain defensible space and follow local fire safety guidelines."
         },
         "Low": {
             "score": 3,
+<<<<<<< HEAD
             "explanation": "Low wildfire risk; some vegetation is present but fire spread is unlikely under normal conditions.",
+=======
+>>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
             "chatbot_prompt": "Low to moderate wildfire risk; keep vegetation trimmed and prepare for fire season."
         },
         "Moderate": {
             "score": 5,
+<<<<<<< HEAD
             "explanation": "Moderate wildfire risk; sufficient vegetation to allow fire spread under dry conditions.",
+=======
+>>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
             "chatbot_prompt": "Moderate wildfire risk; prepare evacuation plans and emergency kits."
         },
         "High": {
             "score": 8,
+<<<<<<< HEAD
             "explanation": "High wildfire risk; significant vegetation and exposure that could allow rapid fire spread.",
+=======
+>>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
             "chatbot_prompt": "High wildfire risk; stay alert during fire season and follow local advisories."
         },
         "Very High": {
             "score": 10,
+<<<<<<< HEAD
             "explanation": "Very high wildfire risk; areas with dense vegetation and extreme fire behavior potential.",
+=======
+>>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
             "chatbot_prompt": "Very high wildfire risk; implement all safety measures and evacuate promptly if advised."
         },
         "Unknown": {
             "score": 0,
+<<<<<<< HEAD
             "explanation": "Wildfire risk data unavailable for this area.",
+=======
+>>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
             "chatbot_prompt": "Wildfire risk data unavailable; stay informed via local sources."
         }
     }
 
+<<<<<<< HEAD
 
     wildfire_info = master_df['Wildfire_Hazard_Level'].apply(lambda lvl: wildfire_risk_map.get(lvl, wildfire_risk_map['Unknown']))
     master_df['Wildfire_Risk_Score'] = wildfire_info.apply(lambda x: x['score'])
     master_df['Wildfire_Chatbot_Prompt'] = wildfire_info.apply(lambda x: x['chatbot_prompt'])
     master_df['Wildfire_Risk_Explanation'] = wildfire_info.apply(lambda x: x['explanation'])
 
+=======
+    wildfire_info = master_df['Wildfire_Hazard_Level'].apply(lambda lvl: wildfire_risk_map.get(lvl, wildfire_risk_map['Unknown']))
+    master_df['Wildfire_Risk_Score'] = wildfire_info.apply(lambda x: x['score'])
+    master_df['Wildfire_Chatbot_Prompt'] = wildfire_info.apply(lambda x: x['chatbot_prompt'])
+>>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
 
     # --- Save CSV ---
     output_columns = [
@@ -239,8 +370,12 @@ def main():
         "Flood_Risk_Explanation",
         "Flood_Chatbot_Prompt",
         "Wildfire_Risk_Score",
+<<<<<<< HEAD
         "Wildfire_Chatbot_Prompt",
         "Wildfire_Risk_Explanation"
+=======
+        "Wildfire_Chatbot_Prompt"
+>>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
     ]
 
     master_df[output_columns].to_csv(OUTPUT_CSV, index=False)
