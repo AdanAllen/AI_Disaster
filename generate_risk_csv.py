@@ -182,7 +182,6 @@ def main():
     master_df['Flood_Risk_Explanation'] = flood_info.apply(lambda x: x['explanation'])
     master_df['Flood_Chatbot_Prompt'] = flood_info.apply(lambda x: x['chatbot_prompt'])
 
-
     # --- WILDFIRE RISK SCORE & CHATBOT PROMPT ---
     wildfire_risk_map = {
         "Non-Wildland/Non-Urban": {

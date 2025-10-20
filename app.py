@@ -377,6 +377,28 @@ def redirect_form():
     """Redirect old form page requests to home"""
     return redirect(url_for("home"))
 
+# --- Process Form (Updated) ---
+@app.route("/form", methods=["POST"], endpoint='form')
+def process_form():
+    """Process form submission from home page"""
+    session["zip_code"] = request.form.get("zip_code")
+    session["household"] = request.form.get("household")
+    session["special_needs"] = request.form.get("special_needs")
+    session["preparedness"] = request.form.get("preparedness")
+
+    # Clear previous chat sessions
+    for hazard in ["wildfire", "flood", "earthquake"]:
+        session.pop(f"chat_{hazard}", None)
+        session.pop(f"meta_{hazard}", None)
+
+    return redirect(url_for("risk_summary"))
+
+# --- Optional: Redirect old form GET requests ---
+@app.route("/form", methods=["GET"])
+def redirect_form():
+    """Redirect old form page requests to home"""
+    return redirect(url_for("home"))
+
 # --- Risk Summary Page ---
 @app.route("/risk_summary")
 def risk_summary():
