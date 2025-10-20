@@ -528,7 +528,6 @@
                     if (zipRadio.checked) {
                         zipContainer.style.display = 'block';
                         addressContainer.style.display = 'none';
-<<<<<<< HEAD
                         document.getElementById('zip_code').disabled = false;
                         document.getElementById('address').disabled = true;
                     } else {
@@ -540,18 +539,6 @@
                 }
                 toggleSearchType();
         
-=======
-                        document.getElementById('zip_code').required = true;
-                        document.getElementById('address').required = false;
-                    } else {
-                        zipContainer.style.display = 'none';
-                        addressContainer.style.display = 'block';
-                        document.getElementById('zip_code').required = false;
-                        document.getElementById('address').required = true;
-                    }
-                }
-
->>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
                 zipRadio.addEventListener('change', toggleSearchType);
                 addressRadio.addEventListener('change', toggleSearchType);
 
@@ -730,7 +717,6 @@
                     }
                 }
 
-<<<<<<< HEAD
 
 
                 form.addEventListener('submit', function(e) {
@@ -747,27 +733,10 @@
                     if (zipRadioChecked) {
                         if (!/^\d{5}$/.test(zipCode)) {
                             e.preventDefault();
-=======
-                // FIXED: Enhanced form validation
-                form.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    const submitBtn = this.querySelector('button[type="submit"]');
-                    const originalText = submitBtn.innerHTML;
-                    
-                    // Clear previous messages
-                    hideMessage();
-                    
-                    // Validate based on search type
-                    if (zipRadio.checked) {
-                        const zipCode = document.getElementById('zip_code').value.trim();
-                        if (!/^\d{5}$/.test(zipCode)) {
->>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
                             showMessage('Please enter a valid 5-digit ZIP code.', 'error');
                             return;
                         }
                     } else {
-<<<<<<< HEAD
                         if (address.length < 5) {
                             e.preventDefault();
                             showMessage('Please enter a complete street address.', 'error');
@@ -776,21 +745,10 @@
 
                         if (/^-?\d+\.\d+,\s*-?\d+\.\d+$/.test(address)) {
                             e.preventDefault();
-=======
-                        const address = document.getElementById('address').value.trim();
-                        if (address.length < 5) {
-                            showMessage('Please enter a complete street address.', 'error');
-                            return;
-                        }
-                        
-                        // Additional check: Don't allow raw coordinates
-                        if (/^-?\d+\.\d+,\s*-?\d+\.\d+$/.test(address)) {
->>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
                             showMessage('Please enter a street address, not coordinates.', 'error');
                             return;
                         }
                     }
-<<<<<<< HEAD
 
                     if (!household || !preparedness) {
                         e.preventDefault();
@@ -808,32 +766,6 @@
                 });
 
 
-=======
-                    
-                    // Check required fields
-                    const household = document.getElementById('household').value;
-                    const preparedness = document.getElementById('preparedness').value;
-                    
-                    if (!household || !preparedness) {
-                        showMessage('Please fill in all required fields.', 'error');
-                        return;
-                    }
-                    
-                    // Show loading state
-                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
-                    submitBtn.disabled = true;
-                    
-                    // Submit the form
-                    this.submit();
-                    
-                    // Re-enable button after delay (in case of errors)
-                    setTimeout(() => {
-                        submitBtn.innerHTML = originalText;
-                        submitBtn.disabled = false;
-                    }, 10000);
-                });
-
->>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
                 // Message display functions
                 function showMessage(text, type) {
                     const messagesDiv = document.getElementById('form-messages');
@@ -1087,33 +1019,7 @@
         // Initialize animations
         document.addEventListener('DOMContentLoaded', animateStats);
 
-<<<<<<< HEAD
         
-=======
-        // Form validation and enhancement
-        document.querySelector('form').addEventListener('submit', function(e) {
-            const zipCode = document.getElementById('zip_code').value;
-            
-            // Basic ZIP code validation
-            if (!/^\d{5}$/.test(zipCode)) {
-                e.preventDefault();
-                alert('Please enter a valid 5-digit ZIP code.');
-                return false;
-            }
-            
-            // Show loading state
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
-            submitBtn.disabled = true;
-            
-            // Re-enable button after a delay if form submission fails
-            setTimeout(() => {
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }, 10000);
-        });
->>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
 
         // Auto-focus ZIP code field on page load
         document.addEventListener('DOMContentLoaded', function() {
