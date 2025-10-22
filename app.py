@@ -4,11 +4,7 @@ import requests
 from openai import OpenAI
 from dotenv import load_dotenv
 import os, json
-<<<<<<< HEAD
 from shapely.geometry import shape,Point
-=======
-from shapely.geometry import Point
->>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
 import pandas as pd
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 import re
@@ -19,7 +15,6 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY", "super-secret-key")
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # --- Load risk data from CSV ---
-<<<<<<< HEAD
 risk_df = pd.read_csv("static/zip_risk_scores.csv", dtype={"ZIP": str})
 zip_risk_data = risk_df.set_index("ZIP").to_dict(orient="index")
 
@@ -46,11 +41,6 @@ def get_zip_from_coordinates(lat, lon, zip_geojson_file="static/zipbound.geojson
                 if zip_code:
                     return str(zip_code)
     return None
-=======
-risk_df = pd.read_csv("output/zip_risk_scores.csv", dtype={"ZIP": str})
-zip_risk_data = risk_df.set_index("ZIP").to_dict(orient="index")
-
->>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
 # --- Geocoding fallback ---
 def geocode_zip(zip_code):
     geolocator = Nominatim(user_agent="disaster_app")
@@ -107,15 +97,10 @@ def geocode_address(address_query):
             location = geolocator.geocode(clean_address)
             
         if location:
-<<<<<<< HEAD
-=======
-            # Verify location is in Alameda County area
->>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
             lat, lon = location.latitude, location.longitude
             if not (37.0 <= lat <= 38.5 and -123.0 <= lon <= -121.0):
                 print(f"Address geocoded outside Bay Area: {lat}, {lon}")
                 return None
-<<<<<<< HEAD
 
             # Get correct ZIP from your GeoJSON boundaries
             zip_code = get_zip_from_coordinates(lat, lon)
@@ -131,19 +116,6 @@ def geocode_address(address_query):
                 location.address
             )
     
-=======
-            
-            # Extract ZIP code from address components
-            zip_code = extract_zip_from_address(location.address)
-            
-            return (
-                location.latitude,
-                location.longitude, 
-                zip_code,
-                location.address
-            )
-            
->>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
     except (GeocoderTimedOut, GeocoderServiceError) as e:
         print(f"Geocoding error: {e}")
     except ValueError as e:
@@ -175,7 +147,6 @@ def extract_zip_from_address(full_address):
         return zip_match.group(1)
     return None
 
-<<<<<<< HEAD
 @app.route("/form", methods=["POST"])
 def process_form():
     zip_code = request.form.get("zip_code", "").strip()
@@ -257,83 +228,6 @@ def process_form():
     return redirect(url_for("risk_summary"))
 
 
-=======
-# Enhanced form processing route (REMOVE THE DUPLICATE ROUTES)
-@app.route("/form", methods=["POST"])
-def process_form():
-    """Process form with both ZIP and address search capabilities"""
-    zip_code = request.form.get("zip_code", "").strip()
-    address = request.form.get("address", "").strip()
-    
-    # Determine which search method to use
-    if zip_code:
-        # Direct ZIP code entry
-        if not re.match(r'^\d{5}$', zip_code):
-            # Return to form with error message
-            return render_template("home.html", 
-                                 error="Please enter a valid 5-digit ZIP code",
-                                 form_data=request.form)
-        
-        # Verify ZIP is in our coverage area
-        if zip_code not in zip_risk_data:
-            return render_template("home.html",
-                                 error=f"ZIP code {zip_code} is not in our coverage area (Alameda County)",
-                                 form_data=request.form)
-        
-        final_zip = zip_code
-        
-    elif address:
-        # Address search
-        result = geocode_address(address)
-        if not result:
-            return render_template("home.html",
-                                 error="Could not find address or address is outside our coverage area",
-                                 suggestion="Please try a ZIP code instead or check that your address is in Alameda County, CA",
-                                 form_data=request.form)
-        
-        lat, lon, final_zip, formatted_address = result
-        
-        if not final_zip:
-            return render_template("home.html",
-                                 error="Could not determine ZIP code from address",
-                                 suggestion="Please try entering your ZIP code directly",
-                                 form_data=request.form)
-        
-        # Verify ZIP is in our coverage area
-        if final_zip not in zip_risk_data:
-            return render_template("home.html",
-                                 error=f"Address found but ZIP code {final_zip} is not in our coverage area",
-                                 suggestion="This tool covers Alameda County, California",
-                                 form_data=request.form)
-            
-    else:
-        return render_template("home.html",
-                             error="Please provide either a ZIP code or address",
-                             form_data=request.form)
-    
-    # Validate other required fields
-    household = request.form.get("household")
-    preparedness = request.form.get("preparedness")
-    
-    if not household or not preparedness:
-        return render_template("home.html",
-                             error="Please fill in all required fields",
-                             form_data=request.form)
-    
-    # Store form data in session
-    session["zip_code"] = final_zip
-    session["household"] = household
-    session["special_needs"] = request.form.get("special_needs", "")
-    session["preparedness"] = preparedness
-    
-    # Clear previous chat sessions
-    for hazard in ["wildfire", "flood", "earthquake"]:
-        session.pop(f"chat_{hazard}", None)
-        session.pop(f"meta_{hazard}", None)
-    
-    return redirect(url_for("risk_summary"))
-
->>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
 # Remove the enhanced_form route since we're consolidating into one route
 
 # AP
@@ -382,62 +276,6 @@ def search_address():
         "message": f"Found address in ZIP {zip_code}"
     })
 
-<<<<<<< HEAD
-=======
-# Enhanced form processing to handle both ZIP and address
-@app.route("/form", methods=["POST"], endpoint='enhanced_form')
-def process_enhanced_form():
-    """Process form with both ZIP and address search capabilities"""
-    zip_code = request.form.get("zip_code", "").strip()
-    address = request.form.get("address", "").strip()
-    
-    # Determine which search method to use
-    if zip_code:
-        # Direct ZIP code entry
-        if not re.match(r'^\d{5}$', zip_code):
-            return jsonify({"error": "Please enter a valid 5-digit ZIP code"}), 400
-        
-        final_zip = zip_code
-        
-    elif address:
-        # Address search
-        result = geocode_address(address)
-        if not result:
-            return jsonify({
-                "error": "Could not find address",
-                "suggestion": "Please try a ZIP code instead"
-            }), 404
-        
-        lat, lon, final_zip, formatted_address = result
-        
-        if not final_zip:
-            return jsonify({
-                "error": "Could not determine ZIP code from address"
-            }), 404
-            
-    else:
-        return jsonify({"error": "Please provide either a ZIP code or address"}), 400
-    
-    # Check if ZIP is in our data
-    if final_zip not in zip_risk_data:
-        return jsonify({
-            "error": f"ZIP code {final_zip} is not in our coverage area",
-            "coverage": "This tool covers Alameda County, California"
-        }), 404
-    
-    # Store form data in session
-    session["zip_code"] = final_zip
-    session["household"] = request.form.get("household")
-    session["special_needs"] = request.form.get("special_needs")
-    session["preparedness"] = request.form.get("preparedness")
-    
-    # Clear previous chat sessions
-    for hazard in ["wildfire", "flood", "earthquake"]:
-        session.pop(f"chat_{hazard}", None)
-        session.pop(f"meta_{hazard}", None)
-    
-    return redirect(url_for("risk_summary"))
->>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
 
 # API endpoint for address suggestions (optional autocomplete)
 @app.route("/api/address-suggestions")
@@ -527,7 +365,6 @@ def get_zip_boundary(zip_code):
 # --- Home Page ---
 @app.route("/")
 def home():
-<<<<<<< HEAD
     error = session.pop("form_error", None)
     form_data = session.pop("form_data", None)
     return render_template("home.html", error=error, form_data=form_data)
@@ -539,9 +376,6 @@ def home():
 def redirect_form():
     """Redirect old form page requests to home"""
     return redirect(url_for("home"))
-=======
-    return render_template("home.html")
->>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
 
 # --- Process Form (Updated) ---
 @app.route("/form", methods=["POST"], endpoint='form')
@@ -586,7 +420,6 @@ def risk_summary():
     return render_template("risk_summary.html", zip_code=zip_code, hazards=hazards_sorted)
 
 # --- Unified Hazard Map ---
-<<<<<<< HEAD
 @app.route("/map")
 def map():
     """Unified hazard map showing all risks with toggleable layers"""
@@ -601,17 +434,6 @@ def map():
     data = zip_risk_data.get(zip_code, {})
 
     # --- Prepare risk scores ---
-=======
-@app.route("/unified_hazard_map")
-def unified_hazard_map():
-    """Unified hazard map showing all risks with toggleable layers"""
-    zip_code = session.get("zip_code", "94601")
-    
-    # Get risk data for the ZIP code
-    data = zip_risk_data.get(zip_code, {})
-    
-    # Prepare risk scores
->>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
     risk_scores = {
         'wildfire': {
             'score': data.get("Wildfire_Risk_Score", 0),
@@ -626,7 +448,6 @@ def unified_hazard_map():
             'explanation': data.get("Flood_Risk_Explanation", "No data available")
         }
     }
-<<<<<<< HEAD
     print("DEBUG → Address:", address)
     print("DEBUG → Lat:", lat)
     print("DEBUG → Lon:", lon)
@@ -638,13 +459,6 @@ def unified_hazard_map():
         user_lon=lon,
         user_address=address
     )
-=======
-    
-    return render_template("unified_hazard_map.html", 
-                         zip_code=zip_code,
-                         risk_scores=risk_scores)
-
->>>>>>> a592a63c9934406ffbe4469e4cba3a1ef61a5e7b
 # --- About Page ---
 @app.route("/about")
 def about():
