@@ -1,0 +1,28 @@
+<section id="data-sources" class="data-sources-card" aria-labelledby="data-sources-title">
+    <div class="data-sources-header">
+        <div>
+            <h2 id="data-sources-title" class="data-sources-title">Data Sources &amp; Disclaimer</h2>
+            <p class="data-sources-meta mb-0">
+                <strong>Last Updated:</strong> {{ last_updated }}
+            </p>
+        </div>
+    </div>
+
+    <div class="data-sources-list" role="list">
+        {% for source in data_sources %}
+        <div class="data-source-item" role="listitem">
+            <span class="data-source-icon" aria-hidden="true">
+                <i class="fas {{ source.icon }}"></i>
+            </span>
+            <div>
+                <div class="data-source-label">{{ source.label }}</div>
+                <div class="data-source-name">{{ source.name }} ({{ source.full_name }})</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <p class="data-sources-disclaimer mb-0">
+        This application uses public data from FEMA, USGS, and CAL FIRE. It is not officially endorsed by these agencies. Data is approximate and may not reflect exact property-level risk.
+    </p>
+</section>

@@ -137,6 +137,99 @@
                 margin: 0.2rem 0;
             }
         }
+
+        .data-info-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #546e7a;
+            text-decoration: none;
+        }
+
+        .data-info-link:hover {
+            color: #ff7043;
+        }
+
+        .data-sources-card {
+            margin-top: 2rem;
+            padding: 1.25rem 1.5rem;
+            border: 1px solid #dfe6eb;
+            border-radius: 16px;
+            background: #f7f9fb;
+            color: #425466;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+        }
+
+        .data-sources-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .data-sources-title {
+            margin: 0 0 0.35rem;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #243b53;
+        }
+
+        .data-sources-meta,
+        .data-source-label,
+        .data-source-name,
+        .data-sources-disclaimer {
+            font-size: 0.92rem;
+            line-height: 1.55;
+        }
+
+        .data-sources-list {
+            display: grid;
+            gap: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .data-source-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+        }
+
+        .data-source-icon {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            color: #ff7043;
+            box-shadow: inset 0 0 0 1px #e4ebf0;
+            flex-shrink: 0;
+        }
+
+        .data-source-label {
+            font-weight: 700;
+            color: #243b53;
+        }
+
+        .data-source-name {
+            color: #52606d;
+        }
+
+        .data-sources-disclaimer {
+            margin-top: 0.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #dfe6eb;
+        }
+
+        @media (max-width: 768px) {
+            .data-sources-card {
+                padding: 1rem;
+            }
+        }
     </style>
 
     {% block head %}{% endblock %}

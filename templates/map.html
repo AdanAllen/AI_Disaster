@@ -71,13 +71,13 @@
         display: grid;
         grid-template-columns: 1fr 400px;
         gap: 2rem;
-        height: calc(100vh - 200px);
         min-height: 600px;
     }
 
     .map-section {
         display: flex;
         flex-direction: column;
+        min-width: 0;
     }
 
     .control-panel {
@@ -151,11 +151,10 @@
     .level-low { background: #4caf50; }
 
     .layer-controls {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: 0.8rem;
-        align-items: center;
-        justify-content: center;
+        align-items: stretch;
     }
 
     .layer-toggle {
@@ -171,6 +170,9 @@
         user-select: none;
         font-weight: 600;
         font-size: 0.9rem;
+        justify-content: center;
+        min-width: 0;
+        text-align: center;
     }
 
     .layer-toggle:hover {
@@ -478,6 +480,10 @@
         .chatbot-messages {
             max-height: 250px;
         }
+
+        .layer-controls {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
     }
 
     @media (max-width: 768px) {
@@ -500,8 +506,7 @@
         }
 
         .layer-controls {
-            flex-direction: column;
-            align-items: stretch;
+            grid-template-columns: 1fr;
         }
 
         .layer-toggle {
@@ -555,6 +560,11 @@
 </div>
 
 <div class="container">
+    {% if map_notice %}
+    <div class="alert alert-warning" role="alert">
+        {{ map_notice }}
+    </div>
+    {% endif %}
     <div class="main-container">
         <!-- Map Section -->
         <div class="map-section">
@@ -584,6 +594,12 @@
                             {% if risk_scores.earthquake.score >= 7 %}High{% elif risk_scores.earthquake.score >= 4 %}Moderate{% else %}Low{% endif %}
                         </span>
                     </div>
+                </div>
+
+                <div class="text-center mb-3">
+                    <a href="#data-sources" class="data-info-link">
+                        <i class="fas fa-circle-info"></i> Data Info
+                    </a>
                 </div>
 
                 <!-- Layer Toggle Controls -->
@@ -686,6 +702,8 @@ What would you like to know about staying safe in your neighborhood?</div>
             </div>
         </div>
     </div>
+
+    {% include "_data_sources.html" %}
 </div>
 
 <!-- Leaflet CSS & JS -->
@@ -875,8 +893,8 @@ What would you like to know about staying safe in your neighborhood?</div>
         fetch('/api/wildfire-zones')
             .then(response => response.json())
             .then(data => {
-                if (data.error) {
-                    showError('wildfire', data.error);
+                if (data.error || !data.features || data.features.length === 0) {
+                    showError('wildfire');
                     return;
                 }
                 
@@ -904,7 +922,7 @@ What would you like to know about staying safe in your neighborhood?</div>
                 console.log('Wildfire zones loaded successfully');
                 
             })
-            .catch(error => showError('wildfire', 'Failed to load wildfire zones'));
+            .catch(error => showError('wildfire'));
     }
 
     // Load flood zones
@@ -912,8 +930,8 @@ What would you like to know about staying safe in your neighborhood?</div>
         fetch('/api/flood-zones')
             .then(response => response.json())
             .then(data => {
-                if (data.error) {
-                    showError('flood', data.error);
+                if (data.error || !data.features || data.features.length === 0) {
+                    showError('flood');
                     return;
                 }
 
@@ -943,7 +961,7 @@ What would you like to know about staying safe in your neighborhood?</div>
                 console.log('Flood zones loaded successfully');
                 
             })
-            .catch(error => showError('flood', 'Failed to load flood zones'));
+            .catch(error => showError('flood'));
     }
 
     // Load fault lines
@@ -951,8 +969,8 @@ What would you like to know about staying safe in your neighborhood?</div>
         fetch('/api/fault-lines')
             .then(response => response.json())
             .then(data => {
-                if (data.error) {
-                    showError('earthquake', data.error);
+                if (data.error || !data.features || data.features.length === 0) {
+                    showError('earthquake');
                     return;
                 }
                 
@@ -976,7 +994,7 @@ What would you like to know about staying safe in your neighborhood?</div>
                 console.log('Fault lines loaded successfully');
                 
             })
-            .catch(error => showError('earthquake', 'Failed to load fault lines'));
+            .catch(error => showError('earthquake'));
     }
 
     // Load live earthquakes
@@ -984,8 +1002,8 @@ What would you like to know about staying safe in your neighborhood?</div>
         fetch('/api/live-earthquakes')
             .then(response => response.json())
             .then(data => {
-                if (data.error) {
-                    showError('live', data.error);
+                if (data.error || !data.features || data.features.length === 0) {
+                    showError('live');
                     return;
                 }
                 
@@ -1020,7 +1038,7 @@ What would you like to know about staying safe in your neighborhood?</div>
                 console.log('Live earthquake data loaded successfully');
                 
             })
-            .catch(error => showError('live', 'Failed to load live earthquake data'));
+            .catch(error => showError('live'));
     }
 
     // Color functions
@@ -1109,15 +1127,17 @@ What would you like to know about staying safe in your neighborhood?</div>
     }
 
     // Show error message
-    function showError(layerType, message) {
+    function showError(layerType) {
         const toggle = document.getElementById(`${layerType}-toggle`);
-        toggle.classList.remove('active');
+        if (toggle) {
+            toggle.classList.remove('active');
+        }
         setLoadingState(layerType, false);
         
         // Show error in map
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error-message';
-        errorDiv.innerHTML = `⚠️ ${message}`;
+        errorDiv.textContent = 'Map data temporarily unavailable. You can still view your risk and preparedness steps below.';
         errorDiv.style.position = 'absolute';
         errorDiv.style.top = '80px';
         errorDiv.style.left = '20px';
@@ -1427,8 +1447,4 @@ What specific aspect of emergency preparedness interests you most?`;
         }
     });
 </script>
-
-<div id="map" style="height: 600px;"></div>
-
-
 {% endblock %}

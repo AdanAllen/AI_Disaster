@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Earthquake Guidance - Disaster Prep Assistant{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4 p-md-5">
+                    <h1 class="h3 fw-bold mb-3">Earthquake Guidance</h1>
+                    <p class="lead mb-2">This page is under development, but your data is still valid.</p>
+                    <p class="text-muted">Your earthquake risk score is {{ risk_score or 0 }}/10. {{ risk_explanation or "General preparedness guidance is shown while this page is being finalized." }}</p>
+                    <pre class="bg-light border rounded p-3 mb-0" style="white-space: pre-wrap;">{{ initial_response or "General preparedness guidance is temporarily shown here." }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
