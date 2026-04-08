@@ -645,15 +645,21 @@ def risk_summary():
         recommended_actions = get_default_recommended_actions()
         warning_message = RISK_DATA_WARNING
 
+    start_here_steps = recommended_actions["steps"][:4]
+    all_checklist_items = get_action_items(
+        list(dict.fromkeys(GENERAL_CHECKLIST_IDS + [item["id"] for item in recommended_actions["steps"]]))
+    )
+    start_here_ids = {item["id"] for item in start_here_steps}
+    checklist_items = [item for item in all_checklist_items if item["id"] not in start_here_ids]
+
     return safe_render(
         "risk_summary.html",
         zip_code=zip_code,
         hazards=hazards_sorted,
         recommended_actions=recommended_actions,
-        start_here_steps=recommended_actions["steps"][:4],
-        checklist_items=get_action_items(
-            list(dict.fromkeys(GENERAL_CHECKLIST_IDS + [item["id"] for item in recommended_actions["steps"]]))
-        ),
+        start_here_steps=start_here_steps,
+        checklist_items=checklist_items,
+        checklist_total_count=len(all_checklist_items),
         warning_message=warning_message
     )
 

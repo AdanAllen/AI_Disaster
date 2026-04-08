@@ -2,12 +2,12 @@
     <div class="preparedness-card">
         <div class="preparedness-header">
             <div>
-                <div class="preparedness-eyebrow">Preparedness</div>
-                <h2 id="preparedness-title" class="preparedness-title">Basic Preparedness Checklist</h2>
-                <p class="preparedness-note mb-0">Completing these steps improves your preparedness.</p>
+                <div class="preparedness-eyebrow">Full Checklist</div>
+                <h2 id="preparedness-title" class="preparedness-title">Finish the rest of your preparedness plan</h2>
+                <p class="preparedness-note mb-0">Track every action in your plan. Priority items from Start Here count toward this total.</p>
             </div>
             <div class="preparedness-progress-text">
-                <span id="preparedness-complete-count">0</span> / <span id="preparedness-total-count">{{ checklist_items|length }}</span> completed
+                <span id="preparedness-complete-count">0</span> / <span id="preparedness-total-count">{{ checklist_total_count }}</span> completed
             </div>
         </div>
 
@@ -16,15 +16,21 @@
         </div>
 
         <div class="preparedness-list" data-checklist-storage-key="preparednessChecklist">
+            {% if checklist_items %}
             {% for item in checklist_items %}
-            <label class="preparedness-item" data-item-id="{{ item.id }}">
-                <input type="checkbox" class="preparedness-checkbox" data-item-id="{{ item.id }}">
-                <span class="preparedness-checkmark">
+            <label class="task-item preparedness-item" data-item-id="{{ item.id }}">
+                <input type="checkbox" class="task-checkbox preparedness-checkbox" data-item-id="{{ item.id }}">
+                <span class="task-checkmark preparedness-checkmark" aria-hidden="true">
                     <i class="fas fa-check"></i>
                 </span>
-                <span class="preparedness-label">{{ item.label }}</span>
+                <span class="task-label preparedness-label">{{ item.label }}</span>
             </label>
             {% endfor %}
+            {% else %}
+            <div class="preparedness-empty-state">
+                Your highest-priority actions already cover the full checklist for this risk summary.
+            </div>
+            {% endif %}
         </div>
     </div>
 </section>
