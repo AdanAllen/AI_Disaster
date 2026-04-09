@@ -8,6 +8,7 @@ import pandas as pd
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 from jinja2 import TemplateNotFound
 import logging
+from flask import send_from_directory
 import re
 
 try:
@@ -756,11 +757,13 @@ def map():
         user_address=address,
         **get_data_sources_context()
     )
-# --- About Page ---
+# ---  Page ---
 @app.route("/about")
 def about():
     return safe_render("about.html")
-
+@app.route('/sitemap.xml')
+def sitemap():
+    return send_from_directory('.', 'sitemap.xml')
 # --- Resources Page ---
 @app.route("/resources")
 def resources():
