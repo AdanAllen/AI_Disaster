@@ -1,0 +1,477 @@
+{
+  "hazards": [
+    {
+      "name": "Dam Failure",
+      "risk_level": "Low",
+      "priority_score": 4,
+      "priority_reason": "The LHMP ranks dam failure low because it is unlikely, but the consequences could still be severe in mapped inundation areas. It stays on the app priority list because more than 63,000 people and major lifelines are in the exposure area.",
+      "summary": "Dam failure is a low-probability but high-consequence flood hazard. If a major dam failed, water could move fast and cause major damage downstream.",
+      "key_stats": [
+        "Official Priority Risk Index (PRI): 1.6, ranked Low.",
+        "Population exposed: 63,194 people (14.3% of the city population).",
+        "Buildings exposed: 13,780 (13.1% of city buildings).",
+        "Community lifelines exposed: 485.",
+        "Total exposed building value: $17,213,821,280; modeled damages in the full-failure scenario: $5,935,343,575.",
+        "The plan says nearly 13% of Oakland's building stock is vulnerable to dam failure inundation."
+      ],
+      "top_risks": [
+        "Fast inundation with little or no warning in some failure scenarios.",
+        "Major damage to homes, buildings, and infrastructure in inundation areas.",
+        "Hazardous materials sites in the flood path could create secondary contamination problems.",
+        "Transportation, communications, and safety facilities could be disrupted.",
+        "Stream changes, sediment, water pollution, and habitat damage could last after the flood."
+      ],
+      "real_world_impact": "For people in the mapped inundation areas, this would look like a sudden, dangerous flood that can damage buildings, cut off roads, and disrupt utilities.",
+      "what_this_means_for_you": "If you live or work in a dam failure inundation area, your risk is not everyday flooding. It is a rare but serious event that could force you to get out quickly and deal with road closures, utility outages, and flood damage.",
+      "why_this_is_a_real_threat_in_oakland": "Oakland has mapped inundation areas tied to Central, Chabot, Dunsmuir, Lake Temescal, and New Upper San Leandro dams. The plan identifies large exposure in Central East Oakland, Coliseum/Airport, and North Oakland/Adams Point.",
+      "what_could_realistically_happen": "A failure upstream could send floodwater into low-lying areas, damage homes and businesses, close roads, and affect hazardous materials sites. In an earthquake-triggered failure, warning time could be very short or absent.",
+      "action_steps": [
+        "Check whether your home, school, or job is in a mapped dam-failure inundation area.",
+        "If you are in that zone, plan the fastest way out of low-lying flood areas.",
+        "Move important utilities or belongings higher when possible.",
+        "Flood-proof parts of the building that are most exposed if you are in the inundation area.",
+        "Learn the local warning and evacuation process because some failures may give little warning."
+      ],
+      "at_risk_groups": [
+        "People living or working in mapped dam-failure inundation areas.",
+        "Equity Priority Community members in the exposed area.",
+        "Residents in Central East Oakland, Coliseum/Airport, and North Oakland/Adams Point.",
+        "People near hazardous materials facilities inside the inundation area."
+      ],
+      "locations": [
+        "Combined inundation areas for Central Dam, Chabot Dam, Dunsmuir Dam, Lake Temescal Dam, and New Upper San Leandro Dam.",
+        "Central East Oakland.",
+        "Coliseum/Airport.",
+        "North Oakland/Adams Point."
+      ],
+      "historical_examples": [
+        "Federal disaster: Flood Due to Broken Dam, December 21, 1963 (DR-161-CA).",
+        "State proclamation: Bradford Levee Failure, December 9, 1983 (83-05).",
+        "No recent dam failure impacting the planning area was identified since the 2021 LHMP."
+      ]
+    },
+    {
+      "name": "Drought",
+      "risk_level": "Medium",
+      "priority_score": 6,
+      "priority_reason": "The LHMP ranks drought medium, but it is frequent and affects the entire city. It scores higher for the app because it raises water, cost, health, and wildfire stress at the same time.",
+      "summary": "Drought means long periods with too little water. In Oakland, that can lead to water stress, higher costs, health impacts, and more wildfire risk.",
+      "key_stats": [
+        "Official Priority Risk Index (PRI): 2.8, ranked Medium.",
+        "Population exposed: 440,637 people (the entire city).",
+        "Alameda County was at U.S. Drought Monitor D0 or higher in 798 of 1,349 weeks from January 2000 to September 2025.",
+        "The planning area was included in USDA drought disaster declarations in 9 of the last 14 years.",
+        "The plan identifies four significant multi-year droughts in the last 35 years, or about one severe drought every 9 years.",
+        "During the 2020-2023 drought, average temperature was 3.5 degrees above the 20th-century average."
+      ],
+      "top_risks": [
+        "Water shortages and restrictions that affect daily life.",
+        "Higher water and food costs.",
+        "More wildfire danger during dry periods.",
+        "Worse health outcomes for people with limited access to drinking water or existing health issues.",
+        "Damage to habitat, water quality, groundwater, and ecosystems."
+      ],
+      "real_world_impact": "Drought does not usually destroy buildings directly, but it can make daily life harder and more expensive while also making fire and heat risk worse.",
+      "what_this_means_for_you": "You may face water restrictions, higher bills, hotter and drier conditions, and added wildfire stress. If your household already struggles with health, water access, or money, drought hits harder.",
+      "why_this_is_a_real_threat_in_oakland": "The LHMP treats drought as a recurring citywide problem. The area has been in drought often since 2000, and the plan says climate change will likely shrink snowpack and strain water supply over time.",
+      "what_could_realistically_happen": "Oakland residents could see longer dry periods, tighter outdoor water use rules, higher food costs, and more pressure on water systems. Drought can also set up worse wildfire and heat conditions.",
+      "action_steps": [
+        "Practice active water conservation at home.",
+        "Use drought-resistant landscaping where possible.",
+        "Install or use water-saving kits and water-efficient plumbing fixtures.",
+        "Pay attention to local water rules and reuse or reclaimed-water programs when available.",
+        "Treat drought as a fire and heat warning, not just a water issue."
+      ],
+      "at_risk_groups": [
+        "Equity Priority Communities.",
+        "People with greater health problems.",
+        "People with limited access to drinking water.",
+        "People facing financial difficulties during rising water and food costs."
+      ],
+      "locations": [
+        "Citywide."
+      ],
+      "historical_examples": [
+        "2020-2023 drought with state proclamations S4697, S5146, and S5371.",
+        "The plan says the area was included in USDA drought disaster declarations in 9 of the last 14 years."
+      ]
+    },
+    {
+      "name": "Earthquake",
+      "risk_level": "High",
+      "priority_score": 10,
+      "priority_reason": "Earthquake is the LHMP's highest-ranked hazard. It affects the whole city, has a high regional probability, and produces the largest modeled damage, debris, and displacement totals in the plan.",
+      "summary": "Earthquake is Oakland's most serious natural hazard in the LHMP. Strong shaking, liquefaction, and building failure can harm people across the whole city.",
+      "key_stats": [
+        "Official Priority Risk Index (PRI): 5.0, ranked High.",
+        "USGS probabilities for the Bay Area in the next 30 years: 72% for M6.7+, 51% for M7.0+, and 23% for M7.5.",
+        "Population exposed: 440,637 people (the entire city).",
+        "Hayward fault scenario estimated damage: $17,171,966,379 (13.3% of total replacement cost value).",
+        "Hayward fault scenario: 4,324 displaced households and 2,115 people needing short-term shelter.",
+        "Community lifelines in very high/high liquefaction areas: 505."
+      ],
+      "top_risks": [
+        "Strong shaking that damages or collapses vulnerable buildings.",
+        "Liquefaction and ground failure that damage roads, utilities, and foundations.",
+        "Hazardous materials releases and utility breaks.",
+        "Mass displacement and shelter needs after a major event.",
+        "Large debris volumes that slow response and recovery."
+      ],
+      "real_world_impact": "A major earthquake could damage homes, apartments, schools, roads, and utilities at the same time. Recovery could take a long time, especially in older buildings and liquefaction-prone areas.",
+      "what_this_means_for_you": "Earthquake risk is not limited to one neighborhood. Everyone in Oakland is exposed, but older buildings, soft-story buildings, unreinforced masonry, and liquefaction areas face bigger danger.",
+      "why_this_is_a_real_threat_in_oakland": "Oakland sits in a high-risk Bay Area earthquake setting. The plan models major losses from Hayward, Calaveras, and San Andreas scenarios and notes that the whole city is vulnerable.",
+      "what_could_realistically_happen": "You could lose power, water, and phone service. Roads may be blocked, older buildings may be unsafe to enter, and many households could need shelter after a larger Hayward-fault event.",
+      "action_steps": [
+        "Practice 'drop, cover, and hold on.'",
+        "Anchor your house to its foundation if needed and secure items like water heaters, bookcases, and appliances.",
+        "Build a household plan that includes outside communication and 72-hour self-sufficiency.",
+        "Know whether your home is in a soft-soil or liquefaction-prone area.",
+        "If you live in a vulnerable building type, look into retrofit assistance or retrofit planning."
+      ],
+      "at_risk_groups": [
+        "People in unreinforced masonry and soft-story buildings.",
+        "People with disabilities or mobility limitations.",
+        "People who may not receive or use ShakeAlert because of technology or communication barriers.",
+        "Equity Priority Communities."
+      ],
+      "locations": [
+        "Citywide.",
+        "High and very high liquefaction susceptibility areas.",
+        "Hayward fault scenario area.",
+        "Calaveras fault scenario area.",
+        "San Andreas Peninsula scenario area."
+      ],
+      "historical_examples": [
+        "1989 Loma Prieta earthquake (M6.9), FEMA DR-845, included Alameda County.",
+        "2014 South Napa earthquake (M6.02).",
+        "2025 Berkeley earthquake (M4.29)."
+      ]
+    },
+    {
+      "name": "Flood",
+      "risk_level": "Medium",
+      "priority_score": 7,
+      "priority_reason": "Flood ranks just below the high-risk tier in the LHMP and has meaningful population, infrastructure, and displacement impacts. It gets a strong app score because it is recurring, geographically concentrated, and practical for household action.",
+      "summary": "Flooding in Oakland can come from heavy rain, stormwater problems, and mapped floodplains. It can damage property, contaminate buildings, and force people out of their homes.",
+      "key_stats": [
+        "Official Priority Risk Index (PRI): 2.9, ranked Medium.",
+        "Population exposed: 2,114 people in the 1% annual chance flood area and 29,738 people in the 0.2% annual chance flood area.",
+        "Buildings exposed: 532 in the 1% area and 6,041 in the 0.2% area.",
+        "0.2% annual chance flood scenario: 14,832 displaced households and 1,889 people needing short-term shelter.",
+        "Total exposed value: $1,671,521,003 for the 1% event and $12,865,058,545 for the 0.2% event.",
+        "NFIP statistics as of January 14, 2026: 511 policies, 240 claims, $594,471 total claims paid, and 8 repetitive loss properties."
+      ],
+      "top_risks": [
+        "Water entering homes, buildings, streets, and underpasses.",
+        "Contaminated water, sewage backup, mold, and cleanup hazards.",
+        "Household displacement after major flood events.",
+        "Road, drainage, communications, and hazardous materials disruptions.",
+        "Higher flood risk from more intense rainfall and post-fire runoff."
+      ],
+      "real_world_impact": "Flooding can shut down roads, damage homes and cars, and leave behind mold, contaminated water, and costly repairs. Even when water goes down quickly, the health and housing impacts can last.",
+      "what_this_means_for_you": "If you live in or near a flood-prone area, a strong storm can turn into a housing, health, and transportation problem fast. The biggest problems are usually water damage, unsafe cleanup, and getting back home safely.",
+      "why_this_is_a_real_threat_in_oakland": "The LHMP identifies clear flood exposure in Central East Oakland, Eastlake/Fruitvale, West Oakland, and Coliseum/Airport. The plan also notes more intense rainfall and ongoing remapping work.",
+      "what_could_realistically_happen": "A major storm could flood streets, garages, and ground floors, strand commuters, trigger sewage or mold problems, and push some households into temporary shelter or longer displacement.",
+      "action_steps": [
+        "Know whether your home is in the 1% or 0.2% flood hazard area.",
+        "Clear storm drains and culverts on or near your property when you can do it safely.",
+        "Move utilities and important items above likely flood levels.",
+        "Buy flood insurance if you are in or near a flood-prone area.",
+        "Build a household plan with outside communication and at least 72-hour self-sufficiency."
+      ],
+      "at_risk_groups": [
+        "Low-income residents in flood-prone areas.",
+        "Renters who may have fewer resources to prepare or recover.",
+        "People with limited English proficiency and other language or cultural barriers.",
+        "People with disabilities, mobile home residents, and infants, children, older adults, and pregnant people who are more vulnerable to mold and cleanup-related health effects."
+      ],
+      "locations": [
+        "Central East Oakland.",
+        "Eastlake/Fruitvale.",
+        "West Oakland.",
+        "Coliseum/Airport."
+      ],
+      "historical_examples": [
+        "1997 flash flood disaster declaration (DR-1155-CA).",
+        "January 16, 2020 roadway flooding at I-580 westbound and the Coolidge Avenue off-ramp.",
+        "Late 2022 to early 2023 storms, including more than 18 inches of rain in Oakland between December 26, 2022 and January 17, 2023."
+      ]
+    },
+    {
+      "name": "Landslide",
+      "risk_level": "Medium",
+      "priority_score": 6,
+      "priority_reason": "Landslide is ranked medium and the LHMP expects at least one landslide somewhere in the city each year. It scores in the middle because exposure is significant but impacts are more localized than earthquake, wildfire, or severe weather.",
+      "summary": "Landslides happen when soil, rock, or debris moves downhill. In Oakland, heavy rain, unstable slopes, wildfire, and earthquakes can all raise this risk.",
+      "key_stats": [
+        "Official Priority Risk Index (PRI): 2.6, ranked Medium.",
+        "The LHMP says at least one landslide, whether small or large, is expected annually in the city.",
+        "Population exposed: 105,649 people in high susceptibility areas and 12,314 people in very high susceptibility areas.",
+        "Buildings exposed: 27,998 in high susceptibility areas and 4,083 in very high susceptibility areas.",
+        "Community lifelines exposed: 233.",
+        "Exposed value: $25,180,414,966 in high susceptibility areas and $3,114,145,788 in very high susceptibility areas."
+      ],
+      "top_risks": [
+        "Slope failure that damages or threatens homes and buildings.",
+        "Road blockages that slow evacuation, response, and daily travel.",
+        "Damage to utilities and other lifelines on unstable slopes.",
+        "Sediment runoff and habitat damage after slope failure.",
+        "More landslides after heavy rain, earthquakes, or wildfire."
+      ],
+      "real_world_impact": "For residents near steep slopes, landslides can mean sudden road closures, unstable ground, utility problems, and in some cases evacuation.",
+      "what_this_means_for_you": "If your home, street, or route to safety is near a steep or unstable slope, strong storms can become a direct property and access problem. This is especially important in hillside areas.",
+      "why_this_is_a_real_threat_in_oakland": "The LHMP identifies large high-susceptibility areas and repeated local events. It also notes that landslides often show up as secondary hazards after flooding, earthquakes, or wildfire.",
+      "what_could_realistically_happen": "A wet winter storm could trigger slope movement that cracks pavement, damages retaining areas, closes roads, and forces a small number of homes to evacuate or shelter elsewhere.",
+      "action_steps": [
+        "Find out whether your home or route is in a high or very high landslide susceptibility area.",
+        "Avoid adding weight, excess runoff, or unnecessary hard surfaces on unstable slopes.",
+        "Stabilize slopes where needed and keep vegetation that helps hold soil in place.",
+        "Subscribe to warning systems and make an evacuation plan if you live near a slope.",
+        "Retrofit or protect at-risk structures when slope instability is identified."
+      ],
+      "at_risk_groups": [
+        "People living on or below unstable slopes.",
+        "Residents in Eastlake/Fruitvale high-susceptibility areas.",
+        "Residents in East Oakland Hills and North Oakland Hills very high susceptibility areas.",
+        "Not specified beyond people and facilities in mapped high and very high landslide susceptibility areas."
+      ],
+      "locations": [
+        "Eastlake/Fruitvale.",
+        "North Oakland/Adams Point.",
+        "Glenview/Redwood Heights.",
+        "East Oakland Hills.",
+        "North Oakland Hills."
+      ],
+      "historical_examples": [
+        "April 6, 2017 Aitken Drive collapse, with six homes evacuated and water and power impacts.",
+        "2022-2023 atmospheric river landslides and mudslides.",
+        "2024 heavy rainfall that triggered road erosion and blockages."
+      ]
+    },
+    {
+      "name": "Sea-Level Rise",
+      "risk_level": "Medium",
+      "priority_score": 7,
+      "priority_reason": "The LHMP ranks sea-level rise medium, but the long-term exposure to people, shoreline infrastructure, wastewater systems, and transportation is large and growing. It scores high for product use because it is a slow-moving hazard that can still affect daily life and future housing decisions.",
+      "summary": "Sea-level rise is a slow but growing hazard for Oakland's shoreline. Over time it can flood low-lying areas, strain drainage systems, raise groundwater, and damage transportation and wastewater infrastructure.",
+      "key_stats": [
+        "Official Priority Risk Index (PRI): 2.5, ranked Medium.",
+        "San Francisco Bay water levels have risen 8 inches in the last century.",
+        "2050 scenario exposure: 9,112 people, 2,712 buildings, 508 lifelines, and $11,802,105,142 in exposed value.",
+        "2100 scenario exposure: 30,687 people, 7,028 buildings, 765 lifelines, and $23,054,285,189 in exposed value.",
+        "The 2050 scenario uses 0.8 feet of sea-level rise plus a 100-year storm surge and groundwater rise; the 2100 scenario uses 4.9 feet plus a 100-year storm surge and groundwater rise.",
+        "Key vulnerable infrastructure includes the Oakland airport, rail lines to the Port, and three wastewater treatment plants."
+      ],
+      "top_risks": [
+        "Shoreline flooding that reaches homes, roads, and businesses.",
+        "Groundwater rise, salinity intrusion, and slower drainage during storms and high tides.",
+        "Damage or disruption to airport, rail, port, and wastewater systems.",
+        "Greater liquefaction risk where water levels rise.",
+        "Possible mobilization of buried contamination or toxic sites."
+      ],
+      "real_world_impact": "Sea-level rise is less about one sudden event and more about a growing problem that makes flooding, drainage, infrastructure, and contamination risks worse over time.",
+      "what_this_means_for_you": "If you live, work, commute, or rely on services near the shoreline, your risk can grow over time even if your block does not flood today. This also matters for future housing and transportation decisions.",
+      "why_this_is_a_real_threat_in_oakland": "Oakland has shoreline neighborhoods, major transportation links, wastewater systems, and historic areas like Jack London District that the plan says are vulnerable to sea-level rise and rising groundwater.",
+      "what_could_realistically_happen": "Over time, high tides and storms can flood low areas more often, slow drainage, damage shoreline infrastructure, and force expensive upgrades, relocations, or protective projects.",
+      "action_steps": [
+        "Check whether your home, job, or regular route sits in a projected sea-level-rise exposure area.",
+        "Keep drainage on your property working so water can move away more easily.",
+        "Elevate utilities and critical equipment above expected water levels where possible.",
+        "If you own or manage shoreline property, use floodproofing or elevation measures where feasible.",
+        "Pay attention to future relocation, open-space, and shoreline adaptation planning in low-lying areas."
+      ],
+      "at_risk_groups": [
+        "People in low-lying shoreline areas.",
+        "Equity Priority Communities in exposed areas.",
+        "People who rely on shoreline transportation, airport access, or wastewater services.",
+        "Communities in areas vulnerable to contaminated groundwater rise."
+      ],
+      "locations": [
+        "Shoreline areas.",
+        "Jack London District.",
+        "Oakland San Francisco Bay Airport.",
+        "Rail lines connecting to the Port of Oakland.",
+        "Three wastewater treatment plants."
+      ],
+      "historical_examples": [
+        "San Francisco Bay water levels have risen 8 inches in the last century."
+      ]
+    },
+    {
+      "name": "Severe Weather (High Wind and Extreme Heat)",
+      "risk_level": "High",
+      "priority_score": 8,
+      "priority_reason": "The LHMP ranks severe weather high and says both high wind and extreme heat are likely at least once each year. It scores high for the app because the whole city is exposed and these events already cause deaths, power outages, blocked roads, and health emergencies.",
+      "summary": "Oakland's severe weather risk is mainly about high wind and extreme heat. These events can cause dangerous heat exposure, blackouts, tree failures, blocked roads, and service disruptions.",
+      "key_stats": [
+        "Official Priority Risk Index (PRI): 3.5, ranked High.",
+        "The LHMP says there is a high probability of at least one high-wind event each year and at least one extreme heat event each year.",
+        "Population exposed: 440,637 people (the entire city).",
+        "When temperatures rise above 80 deg F in Alameda County, industrial flatlands can be 5 deg F hotter than the Oakland Hills.",
+        "June 10-11, 2019 excessive heat: more than 50,000 people lost power; one direct heat-related death and two drowning deaths while trying to cool down were reported.",
+        "FEMA National Risk Index expected annual losses: Heat Wave $1.3 million; Strong Wind $20,036."
+      ],
+      "top_risks": [
+        "Heat illness and death during extreme heat events.",
+        "Power outages and PSPS events that cut off cooling and communications.",
+        "Downed trees and power lines that block roads and damage property.",
+        "Hospitals and cooling centers struggling when backup power is limited.",
+        "Whole-city impacts because all residents and all lifelines are exposed."
+      ],
+      "real_world_impact": "This is the hazard most people are likely to feel often. It can mean dangerous heat at home, power loss, blocked streets, and outages that make other health and safety problems worse.",
+      "what_this_means_for_you": "You do not have to live in the hills or on the shoreline to be affected. A hot spell or wind event can affect your power, your health, your commute, and your ability to get reliable information.",
+      "why_this_is_a_real_threat_in_oakland": "The LHMP says the whole city is exposed. It also points out that flatland heat is worse in some areas and that facilities without backup power are especially vulnerable during PSPS events.",
+      "what_could_realistically_happen": "A heat wave could push indoor temperatures too high, while a wind event or PSPS could shut off power, limit cooling, block roads with fallen trees, and force people to seek clean-air or cooling spaces.",
+      "action_steps": [
+        "Trim or remove trees that could affect power lines when it is safe and allowed.",
+        "Plan for 72-hour self-sufficiency during outages.",
+        "Get a NOAA weather radio or another non-cell backup warning source.",
+        "Know where cooling or respite options are, especially if your home gets hot or loses power easily.",
+        "If you run or manage a facility, plan for backup power and communication redundancy."
+      ],
+      "at_risk_groups": [
+        "Older adults, infants, children, and pregnant people.",
+        "People with asthma, heart disease, or other pre-existing health conditions.",
+        "People who work or exercise outside, people without air conditioning, and households that cannot afford to run it.",
+        "Unhoused residents, Equity Priority Communities, and people with disabilities or access and functional needs."
+      ],
+      "locations": [
+        "Citywide.",
+        "Industrial flatlands affected by urban heat island conditions.",
+        "Areas near trees or power lines that can fail during wind events."
+      ],
+      "historical_examples": [
+        "June 10-11, 2019 excessive heat event with more than 50,000 power losses and reported fatalities.",
+        "March 21, 2023 cyclone with more than 110,000 customers losing power in the Bay Area and Santa Cruz County, and one unhoused man near Lake Merritt killed by a tree.",
+        "April 3, 2023 straight-line wind event linked to broader severe weather impacts."
+      ]
+    },
+    {
+      "name": "Tsunami/Seiche",
+      "risk_level": "Low",
+      "priority_score": 5,
+      "priority_reason": "The LHMP ranks tsunami/seiche low because most recorded impacts are minor, but the shoreline exposure is still meaningful. It remains a moderate app priority because a larger event could affect thousands of people, critical facilities, and evacuation routes.",
+      "summary": "Tsunami and seiche hazards mainly affect Oakland's shoreline and other low-lying water-adjacent areas. Most events have been minor, but a stronger event could create fast-moving flood and evacuation problems.",
+      "key_stats": [
+        "Official Priority Risk Index (PRI): 1.7, ranked Low.",
+        "The LHMP identifies 22 tsunami events known to have impacted Alameda County/Oakland over 170 years, averaging one every 7.8 years; most were minor with 3 feet or less of runup.",
+        "Population exposed: 19,450 people (4.4% of the city population).",
+        "Estimated impact: 15,900 displaced households and 573 people needing short-term shelter.",
+        "Buildings exposed: 5,071; lifelines exposed: 608.",
+        "Total exposed building value: $16,965,465,804; estimated damages: $3,563,926,147."
+      ],
+      "top_risks": [
+        "Fast shoreline inundation and property damage in low-lying areas.",
+        "Difficult evacuation for people with mobility, health, or transportation barriers.",
+        "Disruption to airport, rail, wastewater, and port-linked infrastructure.",
+        "Large displacement from a bigger coastal event.",
+        "Low warning confidence for local events compared with more distant tsunamis."
+      ],
+      "real_world_impact": "For most Oakland residents this is a lower-probability hazard, but for shoreline users and workers it can become an urgent evacuation and infrastructure problem.",
+      "what_this_means_for_you": "If you spend time near the shoreline, the airport, port-connected areas, tidal flats, or other low-lying water edges, you should know your evacuation route and warning signals.",
+      "why_this_is_a_real_threat_in_oakland": "Oakland has exposed shoreline infrastructure, low-lying areas, and people who may have trouble evacuating quickly. The LHMP also notes that sea-level rise can make future tsunami impacts worse.",
+      "what_could_realistically_happen": "A distant or regional tsunami could push water into low shoreline areas, close transportation routes, and force fast evacuations. Larger events could disrupt wastewater plants, rail, and airport operations.",
+      "action_steps": [
+        "Find out whether your home, workplace, or regular route is in the tsunami hazard area.",
+        "Develop and practice a household evacuation plan.",
+        "Learn tsunami warning signs, signals, and what local sirens mean.",
+        "If you manage a coastal property or facility, use elevation and flow-through design measures where appropriate.",
+        "Do not wait for perfect confirmation if a strong warning or clear natural sign tells you to leave low coastal areas."
+      ],
+      "at_risk_groups": [
+        "People with barriers to evacuation.",
+        "Adults over age 65.",
+        "Lower- and middle-income residents who may have fewer resources for relocation or protection.",
+        "People near beaches, low-lying coastal areas, tidal flats, and river deltas."
+      ],
+      "locations": [
+        "Beaches and low-lying coastal areas.",
+        "Tidal flats and river deltas.",
+        "Oakland San Francisco Bay Airport.",
+        "Rail lines connecting to the Port of Oakland.",
+        "Three wastewater treatment plants."
+      ],
+      "historical_examples": [
+        "1964 Alaska tsunami that produced 10 to 23 foot wave heights off the North Coast and about 4 feet in the San Francisco Bay area.",
+        "2011 Japan tsunami that caused over $100 million in damage in Santa Cruz and two fatalities.",
+        "December 5, 2024 offshore Cape Mendocino event; Oakland activated its tsunami siren system, but no local damage was reported."
+      ]
+    },
+    {
+      "name": "Wildfire",
+      "risk_level": "High",
+      "priority_score": 9,
+      "priority_reason": "Wildfire is one of the LHMP's highest-ranked hazards because of its history, concentrated exposure in the hills, and severe smoke and evacuation impacts. It scores just below earthquake because events are less frequent, but when they happen the consequences can be catastrophic.",
+      "summary": "Wildfire is a major Oakland threat, especially in the hills and nearby buffer areas. Fire, smoke, ember spread, and evacuation problems can all threaten lives, homes, and infrastructure.",
+      "key_stats": [
+        "Official Priority Risk Index (PRI): 4.8, ranked High.",
+        "Population exposed in the Very High Fire Hazard Severity Zone: 61,417 people (13.9% of the city population).",
+        "Buildings exposed in the Very High Fire Hazard Severity Zone: 23,336 (22.11% of city buildings).",
+        "Community lifelines in the Fire Hazard Severity Zone: 205.",
+        "Total exposed value in the Fire Hazard Severity Zone: $19,255,494,290.",
+        "Residential buildings built before 1978: 80,015; the plan says these may carry greater ember-related vulnerability."
+      ],
+      "top_risks": [
+        "Fast-moving fire in the hills that can destroy homes and threaten lives.",
+        "Smoke exposure that harms respiratory and cardiovascular health across a wider area.",
+        "Evacuation route problems during red flag or active fire conditions.",
+        "Damage to utilities, water-related systems, and transportation routes.",
+        "Ember-driven spread that threatens structures beyond the main flame front."
+      ],
+      "real_world_impact": "Wildfire in Oakland is not only a hillside fire problem. Smoke, ember exposure, evacuations, and route closures can affect people far beyond the burn area.",
+      "what_this_means_for_you": "If you live in or near the hills, the risk is direct. If you live elsewhere, smoke, evacuations, traffic, and utility disruption can still affect you. Older homes may also be more vulnerable to ember-related ignition.",
+      "why_this_is_a_real_threat_in_oakland": "The 1991 Tunnel Fire remains one of the clearest examples of what can happen in Oakland. The LHMP also identifies large exposure in East Oakland Hills, North Oakland Hills, and Glenview/Redwood Heights.",
+      "what_could_realistically_happen": "A red-flag day fire could spread quickly in the hills, force evacuations, stress road access, send smoke across the city, and damage homes, power, and communications.",
+      "action_steps": [
+        "Clear dry underbrush and dead, dying, or diseased vegetation from your property.",
+        "Create and maintain defensible space around structures.",
+        "Use fire-resistant roofing, building materials, and plantings where possible.",
+        "Learn alternative evacuation routes before fire season.",
+        "Join or support Firewise-style neighborhood efforts if you live in a higher-risk area."
+      ],
+      "at_risk_groups": [
+        "People living in East Oakland Hills, North Oakland Hills, Glenview/Redwood Heights, and nearby exposed areas.",
+        "Low-income households, renters, and unhoused residents who may have less capacity to prepare or relocate.",
+        "Children, pregnant people, older adults, and people with respiratory or cardiovascular vulnerability because of smoke.",
+        "Emergency responders and people in Equity Priority Communities within the 3-mile wildfire buffer."
+      ],
+      "locations": [
+        "East Oakland Hills.",
+        "North Oakland Hills.",
+        "Glenview/Redwood Heights.",
+        "North Oakland/Adams Point.",
+        "Very High Fire Hazard Severity Zone and the 3-mile wildfire buffer area."
+      ],
+      "historical_examples": [
+        "1991 Tunnel Fire / Oakland Hills Fire: 1,520 acres burned, more than 3,200 structures destroyed, and 25 confirmed deaths.",
+        "October 22, 2024 Keller Fire near Edwards Avenue and Mountain Boulevard: 15 acres burned."
+      ]
+    }
+  ],
+  "system_insights": {
+    "how_oakland_prepares": [
+      "Oakland has a 2023 Emergency Operations Plan and is updating departmental continuity of operations plans by CY2026.",
+      "The City uses AC Alert, GovDelivery, and emergency sirens tested on the first Wednesday of every month as established warning systems.",
+      "Oakland is in good standing with the National Flood Insurance Program, requires new construction to be elevated 1 foot above base flood elevation, and is reviewing floodplain regulations for updates in 2026.",
+      "The City adopted a 10-year Vegetation Management Plan and the LHMP says Oakland runs one of California's most comprehensive fire prevention programs, including inspections of 20,000 parcels and year-round fuel mitigation.",
+      "Oakland is developing the Storm Drainage Master Plan to assess storm system condition and capacity and guide future capital improvements.",
+      "The Lincoln Community Center Municipal Resilience Hub is being built with cooling, cleaner air, backup solar power, showers, broadband, and community-based resilience partnerships."
+    ],
+    "major_weaknesses": [
+      "Public survey results showed awareness gaps around AC Alert, and more than half of respondents lacked a specific evacuation route.",
+      "Community feedback raised accessibility and ADA concerns across communications, evacuations, and facilities.",
+      "The City reported no written plan for permit and inspection activities following a natural or man-made disaster.",
+      "The post-disaster recovery plan is outdated: the City has a 2010 plan and a 2017 draft update, and a formal update is prioritized for CY27.",
+      "The capability assessment says Oakland has no in-house planner or engineer with natural hazard expertise, no in-house scientist familiar with local natural hazards, no grant writers, and no certified floodplain managers.",
+      "Facilities used as cooling centers that do not have redundant power may not be able to serve the community during a PSPS event."
+    ],
+    "key_recommendations": [
+      "Prioritize hazard preparedness and mitigation funding and services for Equity Priority Communities and for people with access and functional needs.",
+      "Develop multilingual, culturally competent hazard awareness campaigns and embed preparedness messaging in trusted programs such as clinics, food banks, and youth programs.",
+      "Develop an online 'Know Your Risk' plus Equity Map so residents can view hazards alongside social vulnerability and find tailored mitigation resources.",
+      "Expand participation in AC Alert and improve evacuation communication and route planning.",
+      "Invest in resilience hubs and City facilities that can reliably serve as respite centers or emergency support sites during hazard events.",
+      "Continue high-impact mitigation work already identified in the LHMP, including soft-story retrofit funding, wildfire vegetation management, NFIP compliance improvements, and flood, shoreline, and drainage capital projects."
+    ]
+  }
+}

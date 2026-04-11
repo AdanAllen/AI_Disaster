@@ -1,0 +1,514 @@
+{% extends "base.html" %}
+
+{% block title %}{{ hazard.name }} - Stay Ready Now{% endblock %}
+
+{% block head %}
+<style>
+    .hazard-hero {
+        margin-top: -2rem;
+        padding: 4.5rem 0 3rem;
+        background: linear-gradient(135deg, #173552, #2c6b97);
+        color: white;
+    }
+
+    .hazard-hero h1 {
+        font-size: 2.8rem;
+        font-weight: 800;
+        margin-bottom: 0.75rem;
+    }
+
+    .hazard-hero p {
+        color: rgba(255, 255, 255, 0.88);
+        max-width: 52rem;
+    }
+
+    .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .meta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        border-radius: 999px;
+        padding: 0.55rem 0.9rem;
+        background: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        font-weight: 700;
+    }
+
+    .detail-card,
+    .profile-card,
+    .sidebar-card,
+    .checklist-card {
+        border: 1px solid #dce5ec;
+        border-radius: 20px;
+        background: white;
+        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+    }
+
+    .profile-card,
+    .detail-card,
+    .checklist-card,
+    .sidebar-card {
+        padding: 1.5rem;
+    }
+
+    .profile-card {
+        margin-top: -2rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .section-eyebrow {
+        display: inline-block;
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #2c6b97;
+        margin-bottom: 0.55rem;
+    }
+
+    .detail-card h2,
+    .checklist-card h2,
+    .sidebar-card h3,
+    .profile-card h2 {
+        font-weight: 800;
+        color: #1f3347;
+    }
+
+    .detail-copy {
+        color: #4f6274;
+        line-height: 1.65;
+    }
+
+    .risk-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.88rem;
+        font-weight: 700;
+    }
+
+    .risk-pill.high {
+        background: #fdecea;
+        color: #b3261e;
+    }
+
+    .risk-pill.medium {
+        background: #fff4db;
+        color: #9c5f00;
+    }
+
+    .risk-pill.low {
+        background: #eaf7ef;
+        color: #1e7a38;
+    }
+
+    .detail-list {
+        display: grid;
+        gap: 0.65rem;
+        padding-left: 1.1rem;
+        color: #4f6274;
+        margin-bottom: 0;
+    }
+
+    .note-banner {
+        border-radius: 16px;
+        border: 1px solid #cfe2f1;
+        background: #f4f9fc;
+        color: #36536b;
+        padding: 1rem 1.1rem;
+    }
+
+    .progress-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .progress-text {
+        color: #4f6274;
+        font-weight: 700;
+    }
+
+    .progress-track {
+        width: 100%;
+        height: 10px;
+        border-radius: 999px;
+        background: #e9f0f5;
+        overflow: hidden;
+        margin-bottom: 1.25rem;
+    }
+
+    .progress-fill {
+        width: 0;
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #2c6b97, #5aa0d0);
+        transition: width 0.25s ease;
+    }
+
+    .task-list {
+        display: grid;
+        gap: 0.85rem;
+    }
+
+    .task-item {
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.85rem;
+        border-radius: 14px;
+        padding: 0.95rem 1rem;
+        transition: all 0.2s ease;
+        border: 1px solid #dce5ec;
+        background: #fbfdff;
+    }
+
+    .task-item.is-complete {
+        background: #edf8f1;
+        border-color: #9ed2ab;
+    }
+
+    .task-checkbox {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        margin: 0;
+    }
+
+    .task-checkmark {
+        width: 1.35rem;
+        height: 1.35rem;
+        border-radius: 6px;
+        border: 2px solid #b2c1cc;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        background: white;
+        flex-shrink: 0;
+        pointer-events: none;
+        transition: all 0.2s ease;
+    }
+
+    .task-checkmark i {
+        font-size: 0.75rem;
+        opacity: 0;
+    }
+
+    .task-item.is-complete .task-checkmark {
+        background: #2f8f5b;
+        border-color: #2f8f5b;
+    }
+
+    .task-item.is-complete .task-checkmark i {
+        opacity: 1;
+    }
+
+    .task-label {
+        color: #1f3347;
+        font-weight: 600;
+        line-height: 1.5;
+    }
+
+    .sidebar-links {
+        display: grid;
+        gap: 0.7rem;
+    }
+
+    .sidebar-link {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.9rem 1rem;
+        border-radius: 14px;
+        border: 1px solid #dce5ec;
+        background: #fbfdff;
+        text-decoration: none;
+        color: #1f3347;
+        font-weight: 700;
+    }
+
+    .sidebar-link:hover {
+        border-color: #2c6b97;
+        color: #2c6b97;
+    }
+
+    .profile-helper {
+        color: #546779;
+        max-width: 44rem;
+    }
+
+    @media (max-width: 768px) {
+        .hazard-hero h1 {
+            font-size: 2.2rem;
+        }
+
+        .profile-card,
+        .detail-card,
+        .checklist-card,
+        .sidebar-card {
+            padding: 1.2rem;
+        }
+
+        .progress-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="hazard-hero">
+    <div class="container">
+        <span class="section-eyebrow text-white-50">Hazard Detail</span>
+        <h1>{{ hazard.name }}</h1>
+        <p class="mb-0">{{ hazard.summary }}</p>
+        {% set risk_class = 'high' if hazard.risk_level == 'High' else 'medium' if hazard.risk_level == 'Medium' else 'low' %}
+        <div class="hero-meta">
+            <span class="meta-pill">{{ hazard.risk_level }} risk</span>
+            <span class="meta-pill">{{ hazard.priority_score }}/10 priority</span>
+            <span class="meta-pill">{{ hazard.slug }}</span>
+        </div>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="profile-card">
+            <span class="section-eyebrow">Personalization</span>
+            <h2 class="h3 mb-2">Adjust this page for your situation</h2>
+            {% include "_hazard_profile_form.html" %}
+        </div>
+    </div>
+</section>
+
+<section class="pb-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="d-grid gap-4">
+                    {% if hazard.personalization_notes %}
+                    <div class="note-banner">
+                        <strong>Profile-aware updates:</strong>
+                        {{ hazard.personalization_notes | join(' ') }}
+                    </div>
+                    {% endif %}
+
+                    <article class="detail-card">
+                        <span class="section-eyebrow">What This Means</span>
+                        <h2 class="h4 mb-3">Why it matters</h2>
+                        <p class="detail-copy mb-0">{{ hazard.personalized_what_this_means_for_you or hazard.what_this_means_for_you }}</p>
+                    </article>
+
+                    <article class="detail-card">
+                        <span class="section-eyebrow">Realistic Impact</span>
+                        <h2 class="h4 mb-3">What could happen</h2>
+                        <p class="detail-copy mb-3">{{ hazard.what_could_realistically_happen }}</p>
+                        <p class="detail-copy mb-0">{{ hazard.real_world_impact }}</p>
+                    </article>
+
+                    <article class="checklist-card">
+                        <span class="section-eyebrow">Action Steps</span>
+                        <h2 class="h4 mb-2">Interactive checklist</h2>
+                        <div class="progress-row">
+                            <p class="progress-text mb-0">
+                                {{ hazard.name }} Preparedness:
+                                <span id="checklist-complete-count">0</span>/{{ hazard.action_steps | length }} complete
+                            </p>
+                            <span class="risk-pill {{ risk_class }}">{{ hazard.risk_level }} risk</span>
+                        </div>
+                        <div class="progress-track" aria-hidden="true">
+                            <div id="checklist-progress-fill" class="progress-fill"></div>
+                        </div>
+                        <div class="task-list" data-checklist-storage-key="hazardChecklist-{{ hazard.slug }}">
+                            {% for step in hazard.action_steps %}
+                            <label class="task-item" data-item-id="{{ hazard.slug }}-{{ loop.index0 }}">
+                                <input type="checkbox" class="task-checkbox" data-item-id="{{ hazard.slug }}-{{ loop.index0 }}">
+                                <span class="task-checkmark" aria-hidden="true">
+                                    <i class="fas fa-check"></i>
+                                </span>
+                                <span class="task-label">{{ step }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </article>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <article class="detail-card h-100">
+                                <span class="section-eyebrow">Top Risks</span>
+                                <h2 class="h4 mb-3">Main dangers</h2>
+                                <ul class="detail-list">
+                                    {% for item in hazard.top_risks %}
+                                    <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </article>
+                        </div>
+                        <div class="col-md-6">
+                            <article class="detail-card h-100">
+                                <span class="section-eyebrow">Priority Reason</span>
+                                <h2 class="h4 mb-3">Why this is ranked here</h2>
+                                <p class="detail-copy mb-0">{{ hazard.priority_reason }}</p>
+                            </article>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <article class="detail-card h-100">
+                                <span class="section-eyebrow">Locations</span>
+                                <h2 class="h4 mb-3">Areas mentioned in the dataset</h2>
+                                <ul class="detail-list">
+                                    {% for item in hazard.locations %}
+                                    <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </article>
+                        </div>
+                        <div class="col-md-6">
+                            <article class="detail-card h-100">
+                                <span class="section-eyebrow">At-Risk Groups</span>
+                                <h2 class="h4 mb-3">Who may need extra planning</h2>
+                                <ul class="detail-list">
+                                    {% for item in hazard.at_risk_groups %}
+                                    <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </article>
+                        </div>
+                    </div>
+
+                    <article class="detail-card">
+                        <span class="section-eyebrow">History</span>
+                        <h2 class="h4 mb-3">Historical examples</h2>
+                        <ul class="detail-list">
+                            {% for item in hazard.historical_examples %}
+                            <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </article>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="d-grid gap-4">
+                    <aside class="sidebar-card">
+                        <span class="section-eyebrow">Also Review</span>
+                        <h3 class="h5 mb-3">Top hazards for this profile</h3>
+                        <div class="sidebar-links">
+                            {% for item in top_hazards %}
+                            <a class="sidebar-link" href="{{ url_for('hazard_detail', name=item.slug) }}">
+                                <span>{{ item.name }}</span>
+                                <span>{{ item.priority_score }}/10</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </aside>
+
+                    <aside class="sidebar-card">
+                        <span class="section-eyebrow">Quick Stats</span>
+                        <h3 class="h5 mb-3">Key stats</h3>
+                        <ul class="detail-list">
+                            {% for item in hazard.key_stats %}
+                            <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </aside>
+
+                    <aside class="sidebar-card">
+                        <span class="section-eyebrow">Navigation</span>
+                        <h3 class="h5 mb-3">Keep exploring</h3>
+                        <div class="d-grid gap-2">
+                            <a class="btn btn-primary" href="{{ url_for('hazards_dashboard') }}">
+                                <i class="fas fa-arrow-left me-2"></i>Back to dashboard
+                            </a>
+                            <a class="btn btn-outline-secondary" href="{{ url_for('api_hazard', name=hazard.slug) }}" target="_blank" rel="noopener noreferrer">
+                                <i class="fas fa-code me-2"></i>View JSON
+                            </a>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const checklist = document.querySelector('[data-checklist-storage-key]');
+    const progressFill = document.getElementById('checklist-progress-fill');
+    const completeCount = document.getElementById('checklist-complete-count');
+
+    if (!checklist) {
+        return;
+    }
+
+    const storageKey = checklist.dataset.checklistStorageKey;
+    const checkboxes = Array.from(checklist.querySelectorAll('.task-checkbox'));
+
+    const loadState = () => {
+        try {
+            return JSON.parse(localStorage.getItem(storageKey)) || {};
+        } catch (error) {
+            return {};
+        }
+    };
+
+    const saveState = (state) => {
+        localStorage.setItem(storageKey, JSON.stringify(state));
+    };
+
+    const updateUI = () => {
+        const state = loadState();
+        let completed = 0;
+
+        checkboxes.forEach((checkbox) => {
+            const isChecked = Boolean(state[checkbox.dataset.itemId]);
+            checkbox.checked = isChecked;
+            checkbox.closest('.task-item')?.classList.toggle('is-complete', isChecked);
+            if (isChecked) {
+                completed += 1;
+            }
+        });
+
+        const total = checkboxes.length;
+        const percent = total ? (completed / total) * 100 : 0;
+        if (completeCount) {
+            completeCount.textContent = completed;
+        }
+        if (progressFill) {
+            progressFill.style.width = `${percent}%`;
+        }
+    };
+
+    checkboxes.forEach((checkbox) => {
+        checkbox.addEventListener('change', function () {
+            // Keep each hazard checklist separate so progress follows the current hazard page only.
+            const state = loadState();
+            state[this.dataset.itemId] = this.checked;
+            saveState(state);
+            updateUI();
+        });
+    });
+
+    updateUI();
+});
+</script>
+{% endblock %}

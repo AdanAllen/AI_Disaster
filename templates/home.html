@@ -322,6 +322,13 @@
         display: block;
     }
 
+    .coverage-map-caption {
+        margin-top: 0.9rem;
+        font-size: 0.95rem;
+        color: #536579;
+        text-align: center;
+    }
+
     .about {
         padding: 100px 0;
         background: white;
@@ -709,7 +716,7 @@
                 </div>
                 <div class="col-lg-7">
                     <div class="coverage-map-visual" aria-label="Alameda County coverage map graphic">
-                        <svg class="coverage-map-svg" viewBox="0 0 760 500" role="img" aria-labelledby="coverage-map-title">
+                        <svg class="coverage-map-svg" viewBox="0 0 760 460" role="img" aria-labelledby="coverage-map-title">
                             <title id="coverage-map-title">Alameda County coverage map with hazard indicators</title>
                             <defs>
                                 <linearGradient id="countyBg" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -721,38 +728,49 @@
                                     <stop offset="100%" stop-color="#154c79"/>
                                 </linearGradient>
                             </defs>
-                            <rect x="0" y="0" width="760" height="500" rx="22" fill="url(#countyBg)"/>
+                            <rect x="0" y="0" width="760" height="460" rx="22" fill="url(#countyBg)"/>
                             <g opacity="0.35" stroke="#b9cad8" stroke-width="2">
-                                <path d="M70 90H690"/>
-                                <path d="M70 170H690"/>
-                                <path d="M70 250H690"/>
-                                <path d="M70 330H690"/>
-                                <path d="M70 410H690"/>
-                                <path d="M130 50V450"/>
-                                <path d="M250 50V450"/>
-                                <path d="M370 50V450"/>
-                                <path d="M490 50V450"/>
-                                <path d="M610 50V450"/>
+                                <path d="M70 80H690"/>
+                                <path d="M70 150H690"/>
+                                <path d="M70 220H690"/>
+                                <path d="M70 290H690"/>
+                                <path d="M70 360H690"/>
+                                <path d="M130 45V415"/>
+                                <path d="M250 45V415"/>
+                                <path d="M370 45V415"/>
+                                <path d="M490 45V415"/>
+                                <path d="M610 45V415"/>
                             </g>
-                            <g transform="translate(120 30)">
-                                <path d="M209 24L257 47L286 87L304 144L297 194L315 248L345 286L352 322L338 348L304 364L270 408L232 429L197 425L175 392L155 349L116 318L95 282L67 240L61 200L78 162L112 132L140 100L164 69L209 24Z" fill="url(#countyShape)" stroke="#0f3859" stroke-width="6"/>
-                                <path d="M213 57L243 84L255 120L244 158L261 201L284 236L276 279L244 300L222 341L191 389" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="10" stroke-linecap="round"/>
-                                <circle cx="185" cy="120" r="14" fill="#d96c3f"/>
-                                <circle cx="236" cy="233" r="14" fill="#2e88c7"/>
-                                <circle cx="214" cy="339" r="14" fill="#ffd166"/>
-                                <g fill="#fff" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700">
-                                    <text x="211" y="125">Fire</text>
-                                    <text x="262" y="238">Flood</text>
-                                    <text x="241" y="344">Quake</text>
+                            <g transform="translate(88 36)">
+                                <path d="M174 8L226 28L257 67L278 114L285 151L305 188L320 233L317 279L297 319L268 341L244 389L214 412L188 402L173 366L156 335L131 315L112 279L91 236L89 194L100 150L125 116L142 78L160 42L174 8Z" fill="url(#countyShape)" stroke="#0f3859" stroke-width="6"/>
+                                <path d="M181 40L207 63L223 101L232 140L247 184L256 225L248 269L231 313L212 360" fill="none" stroke="rgba(255,255,255,0.34)" stroke-width="9" stroke-linecap="round"/>
+                                <path d="M145 300L109 315L82 338L62 366" fill="none" stroke="#7da5c5" stroke-width="6" stroke-linecap="round"/>
+                                <text x="20" y="390" fill="#536579" font-size="16" font-family="Segoe UI, Arial, sans-serif">Bay shoreline</text>
+
+                                <g>
+                                    <circle cx="180" cy="112" r="14" fill="#d96c3f"/>
+                                    <circle cx="221" cy="215" r="14" fill="#2e88c7"/>
+                                    <circle cx="197" cy="328" r="14" fill="#ffd166"/>
+                                    <g fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700">
+                                        <text x="204" y="117">Fire</text>
+                                        <text x="245" y="220">Flood</text>
+                                        <text x="221" y="333">Quake</text>
+                                    </g>
                                 </g>
-                                <g fill="#173552" font-family="Segoe UI, Arial, sans-serif">
-                                    <text x="386" y="120" font-size="34" font-weight="800">Alameda County</text>
-                                    <text x="386" y="157" font-size="20">Countywide disaster awareness</text>
-                                    <text x="386" y="204" font-size="18">Preparedness guidance for residents,</text>
-                                    <text x="386" y="232" font-size="18">families, and neighborhoods.</text>
+
+                                <g transform="translate(372 58)">
+                                    <rect x="0" y="0" width="220" height="196" rx="18" fill="#ffffff" stroke="#d7e2ed" stroke-width="2"/>
+                                    <text x="28" y="46" fill="#173552" font-size="31" font-weight="800" font-family="Segoe UI, Arial, sans-serif">Alameda County</text>
+                                    <text x="28" y="82" fill="#4d6276" font-size="18" font-family="Segoe UI, Arial, sans-serif">Countywide hazard coverage</text>
+                                    <g fill="#173552" font-size="17" font-family="Segoe UI, Arial, sans-serif">
+                                        <text x="28" y="122">• Fire risk awareness</text>
+                                        <text x="28" y="151">• Flood zone context</text>
+                                        <text x="28" y="180">• Earthquake preparedness</text>
+                                    </g>
                                 </g>
                             </g>
                         </svg>
+                        <div class="coverage-map-caption">County-focused visual summary for fire, flood, and earthquake preparedness.</div>
                     </div>
                 </div>
             </div>

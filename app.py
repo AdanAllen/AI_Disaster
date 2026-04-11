@@ -10,6 +10,7 @@ from jinja2 import TemplateNotFound
 import logging
 from flask import send_from_directory
 import re
+from copy import deepcopy
 
 try:
     from openai import OpenAI
@@ -60,6 +61,194 @@ DATA_SOURCES = [
         "icon": "fa-fire",
     },
 ]
+
+HAZARD_DATA_PATH = os.path.join(BASE_DIR, "oakland.json")
+HAZARD_PROFILE_SESSION_KEY = "hazard_user_profile"
+HAZARD_LOCATION_OPTIONS = [
+    {"value": "flatlands", "label": "Flatlands"},
+    {"value": "hills", "label": "Hills"},
+    {"value": "shoreline", "label": "Shoreline"},
+    {"value": "other", "label": "Other"},
+]
+
+
+def slugify_hazard_name(name):
+    cleaned = re.sub(r"[^a-z0-9]+", "-", (name or "").strip().lower())
+    return cleaned.strip("-")
+
+
+def coerce_priority_score(value):
+    try:
+        return int(float(value))
+    except (TypeError, ValueError):
+        return 0
+
+
+def dedupe_steps(steps):
+    ordered = []
+    seen = set()
+    for step in steps or []:
+        normalized = (step or "").strip()
+        if not normalized:
+            continue
+        step_key = normalized.lower()
+        if step_key in seen:
+            continue
+        seen.add(step_key)
+        ordered.append(normalized)
+    return ordered
+
+
+def load_hazard_dataset():
+    # Normalize the dataset once at startup so routes and templates share the same structure.
+    empty_dataset = {
+        "hazards": [],
+        "system_insights": {
+            "how_oakland_prepares": [],
+            "major_weaknesses": [],
+            "key_recommendations": [],
+        },
+    }
+
+    if not os.path.exists(HAZARD_DATA_PATH):
+        logger.warning("Hazard dataset not found at %s", HAZARD_DATA_PATH)
+        return empty_dataset
+
+    try:
+        with open(HAZARD_DATA_PATH, "r", encoding="utf-8") as source:
+            raw_dataset = json.load(source)
+    except Exception:
+        logger.exception("Hazard dataset failed to load from %s", HAZARD_DATA_PATH)
+        return empty_dataset
+
+    normalized_hazards = []
+    for hazard in raw_dataset.get("hazards", []):
+        normalized = dict(hazard)
+        normalized["priority_score"] = coerce_priority_score(hazard.get("priority_score"))
+        normalized["slug"] = slugify_hazard_name(hazard.get("name"))
+        normalized["action_steps"] = dedupe_steps(hazard.get("action_steps"))
+        normalized["top_risks"] = dedupe_steps(hazard.get("top_risks"))
+        normalized["locations"] = dedupe_steps(hazard.get("locations"))
+        normalized["at_risk_groups"] = dedupe_steps(hazard.get("at_risk_groups"))
+        normalized_hazards.append(normalized)
+
+    system_insights = raw_dataset.get("system_insights") or empty_dataset["system_insights"]
+    return {
+        "hazards": normalized_hazards,
+        "system_insights": {
+            "how_oakland_prepares": dedupe_steps(system_insights.get("how_oakland_prepares")),
+            "major_weaknesses": dedupe_steps(system_insights.get("major_weaknesses")),
+            "key_recommendations": dedupe_steps(system_insights.get("key_recommendations")),
+        },
+    }
+
+
+def get_system_insights():
+    return deepcopy(hazard_dataset.get("system_insights", {}))
+
+
+def normalize_user_profile(payload=None):
+    payload = payload or {}
+    housing = (payload.get("housing") or "").strip().lower()
+    if housing not in {"renter", "homeowner"}:
+        housing = ""
+
+    location = (payload.get("location") or "").strip().lower()
+    valid_locations = {item["value"] for item in HAZARD_LOCATION_OPTIONS}
+    if location not in valid_locations:
+        location = "other" if location else ""
+
+    try:
+        age = int(str(payload.get("age", "")).strip())
+        if age < 0:
+            age = None
+    except (TypeError, ValueError):
+        age = None
+
+    return {
+        "housing": housing,
+        "age": age,
+        "location": location,
+    }
+
+
+def get_saved_hazard_profile():
+    return normalize_user_profile(session.get(HAZARD_PROFILE_SESSION_KEY, {}))
+
+
+def step_priority(step, keywords):
+    text = (step or "").lower()
+    return 0 if any(keyword in text for keyword in keywords) else 1
+
+
+def personalize_hazard(hazard, user):
+    # Apply lightweight profile rules without mutating the canonical JSON dataset in memory.
+    personalized = deepcopy(hazard)
+    personalized["base_priority_score"] = coerce_priority_score(hazard.get("priority_score"))
+    personalized["priority_score"] = personalized["base_priority_score"]
+    personalized["personalization_notes"] = []
+    personalized["action_steps"] = dedupe_steps(personalized.get("action_steps"))
+
+    user = normalize_user_profile(user)
+    if not any(user.values()):
+        personalized["personalized_what_this_means_for_you"] = personalized.get("what_this_means_for_you", "")
+        return personalized
+
+    if user.get("housing") == "renter":
+        personalized["action_steps"] = sorted(
+            personalized["action_steps"],
+            key=lambda step: step_priority(step, ("evacuation", "route", "leave", "bag", "shelter"))
+        )
+        personalized["action_steps"] = dedupe_steps([
+            "Know your building exits, meeting point, and what you can take with you quickly.",
+            *personalized["action_steps"],
+        ])
+        personalized["personalization_notes"].append(
+            "Because you selected renter, evacuation and fast-leave steps are moved to the top."
+        )
+
+    if user.get("age") is not None and user["age"] >= 65:
+        personalized["action_steps"] = dedupe_steps([
+            *personalized["action_steps"],
+            "Pack extra medications, a written medication list, and backup medical supplies.",
+            "Plan transportation and mobility support in case you need help leaving or reaching a safe site."
+        ])
+        personalized["personalization_notes"].append(
+            "Because you selected age 65+, medical and mobility planning steps were added."
+        )
+
+    if user.get("location") == "hills" and personalized.get("slug") == "wildfire":
+        personalized["priority_score"] = min(personalized["priority_score"] + 2, 10)
+        personalized["personalization_notes"].append(
+            "Wildfire priority was raised because you selected a hills location."
+        )
+
+    personalized["personalized_what_this_means_for_you"] = personalized.get("what_this_means_for_you", "")
+    if personalized["personalization_notes"]:
+        personalized["personalized_what_this_means_for_you"] = (
+            f"{personalized['personalized_what_this_means_for_you']} "
+            f"{' '.join(personalized['personalization_notes'])}"
+        ).strip()
+
+    return personalized
+
+
+def get_all_hazards(user=None):
+    user = normalize_user_profile(user)
+    hazards = [personalize_hazard(hazard, user) for hazard in hazard_dataset.get("hazards", [])]
+    return sorted(hazards, key=lambda hazard: hazard.get("priority_score", 0), reverse=True)
+
+
+def get_hazard_by_name(name, user=None):
+    lookup_value = slugify_hazard_name(name)
+    for hazard in get_all_hazards(user):
+        if hazard.get("slug") == lookup_value or (hazard.get("name", "").strip().lower() == (name or "").strip().lower()):
+            return hazard
+    return None
+
+
+def get_top_hazards_sorted_by_priority(user=None):
+    return get_all_hazards(user)[:3]
 
 
 def get_data_sources_context():
@@ -128,6 +317,7 @@ def get_default_recommended_actions():
 
 
 zip_risk_data = load_risk_data()
+hazard_dataset = load_hazard_dataset()
 
 def get_zip_from_coordinates(lat, lon, zip_geojson_file="static/zipbound.geojson"):
     """
@@ -600,6 +790,55 @@ def home():
     return safe_render("home.html", error=error, form_data=form_data)
 
 
+@app.route("/hazards/profile", methods=["POST"])
+def save_hazard_profile():
+    profile = normalize_user_profile(request.form)
+    session[HAZARD_PROFILE_SESSION_KEY] = profile
+
+    next_url = request.form.get("next_url", "").strip()
+    if next_url:
+        return redirect(next_url)
+    return redirect(url_for("hazards_dashboard"))
+
+
+@app.route("/hazards")
+def hazards_dashboard():
+    user_profile = get_saved_hazard_profile()
+    hazards = get_all_hazards(user_profile)
+    top_hazards = get_top_hazards_sorted_by_priority(user_profile)
+
+    return safe_render(
+        "hazards_dashboard.html",
+        hazards=hazards,
+        top_hazards=top_hazards,
+        system_insights=get_system_insights(),
+        user_profile=user_profile,
+        location_options=HAZARD_LOCATION_OPTIONS,
+    )
+
+
+@app.route("/hazards/<name>")
+def hazard_detail(name):
+    user_profile = get_saved_hazard_profile()
+    hazard = get_hazard_by_name(name, user_profile)
+    if not hazard:
+        return safe_render(
+            "error.html",
+            title="Hazard Not Found",
+            error_heading="Hazard not found",
+            error_message="We could not find that hazard profile, but the rest of the app is still available.",
+            helper_message="Return to the hazard dashboard to browse the ranked hazard list."
+        ), 404
+
+    return safe_render(
+        "hazard_detail.html",
+        hazard=hazard,
+        top_hazards=get_top_hazards_sorted_by_priority(user_profile),
+        user_profile=user_profile,
+        location_options=HAZARD_LOCATION_OPTIONS,
+    )
+
+
 
 # --- Optional: Redirect old form GET requests ---
 @app.route("/form", methods=["GET"])
@@ -779,6 +1018,24 @@ def resources():
     return safe_render("resources.html")
 
 # --- API Endpoints ---
+
+
+@app.route("/api/hazards")
+def api_hazards():
+    return jsonify({"hazards": get_all_hazards(get_saved_hazard_profile())})
+
+
+@app.route("/api/hazards/<name>")
+def api_hazard(name):
+    hazard = get_hazard_by_name(name, get_saved_hazard_profile())
+    if not hazard:
+        return jsonify({"error": "Hazard not found"}), 404
+    return jsonify(hazard)
+
+
+@app.route("/api/top-risks")
+def api_top_risks():
+    return jsonify({"hazards": get_top_hazards_sorted_by_priority(get_saved_hazard_profile())})
 
 # Live Earthquake API
 @app.route("/api/live-earthquakes")
@@ -1162,15 +1419,15 @@ Always reference their specific situation and risk level when answering question
 # --- Hazard Routes ---
 @app.route("/wildfire", methods=["GET", "POST"])
 def wildfire():
-    return hazard_page("wildfire", "Wildfire Risk", "#ff7043")
+    return redirect(url_for("hazard_detail", name="wildfire"))
 
 @app.route("/flood", methods=["GET", "POST"])
 def flood():
-    return hazard_page("flood", "Flood Risk", "#0288d1")
+    return redirect(url_for("hazard_detail", name="flood"))
 
 @app.route("/earthquake", methods=["GET", "POST"])
 def earthquake():
-    return hazard_page("earthquake", "Earthquake Risk", "#2196f3")
+    return redirect(url_for("hazard_detail", name="earthquake"))
 
 # --- Live Earthquake Map ---
 @app.route("/live-earthquake-map")
