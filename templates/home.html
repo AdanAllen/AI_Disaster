@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}Stay Ready Now – Oakland Fire, Flood & Earthquake Risk Map{% endblock %}
+{% block title %}Stay Ready Now – Alameda County Fire, Flood & Earthquake Risk Map{% endblock %}
 
-{% block meta_description %}Interactive disaster risk map for Oakland. Check fire zones, flood zones, and earthquake risk instantly. Built by a 2025 Congressional App Challenge winner.{% endblock %}
+{% block meta_description %}Interactive disaster risk map for Alameda County. Check fire zones, flood zones, and earthquake risk instantly. Built by a 2025 Congressional App Challenge winner.{% endblock %}
 
 {% block canonical %}
 <link rel="canonical" href="https://stayreadynow.org/" />
@@ -16,20 +16,22 @@
   "name": "Stay Ready Now",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Web",
-  "description": "Interactive disaster risk map for Oakland including fire, flood, and earthquake data.",
+  "description": "Interactive disaster risk map for Alameda County including fire, flood, and earthquake data.",
   "areaServed": {
     "@type": "Place",
-    "name": "Oakland, California"
+    "name": "Alameda County, California"
   }
 }
 </script>
 <style>
     :root {
-        --primary-orange: #ff7043;
-        --secondary-blue: #0288d1;
-        --accent-red: #f44336;
-        --text-dark: #2c3e50;
-        --bg-light: #f8f9fa;
+        --primary-orange: #154c79;
+        --secondary-blue: #2f6f98;
+        --accent-red: #d96c3f;
+        --text-dark: #1f2f3f;
+        --bg-light: #f4f7fb;
+        --surface-muted: #e9f0f6;
+        --border-soft: #d7e2ed;
     }
 
     * {
@@ -47,9 +49,9 @@
 
     .hero {
         background: linear-gradient(135deg,
-            rgba(255, 112, 67, 0.9) 0%,
-            rgba(244, 67, 54, 0.9) 50%,
-            rgba(2, 136, 209, 0.9) 100%);
+            rgba(21, 76, 121, 0.96) 0%,
+            rgba(33, 104, 138, 0.94) 55%,
+            rgba(74, 137, 168, 0.92) 100%);
         min-height: 100vh;
         display: flex;
         align-items: center;
@@ -105,6 +107,7 @@
         font-weight: 700;
         margin-bottom: 1.25rem;
         animation: slideInUp 1s ease-out 0.15s both;
+        letter-spacing: 0.01em;
     }
 
     .cta-button {
@@ -140,11 +143,12 @@
     }
 
     .quick-start-form {
-        background: rgba(255, 255, 255, 0.95);
+        background: rgba(255, 255, 255, 0.97);
         backdrop-filter: blur(10px);
         border-radius: 20px;
         padding: 2rem;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        box-shadow: 0 22px 48px rgba(18, 44, 67, 0.16);
+        border: 1px solid rgba(21, 76, 121, 0.12);
         margin-top: 3rem;
         animation: slideInUp 1s ease-out 0.9s both;
     }
@@ -157,9 +161,10 @@
 
     .form-control {
         border-radius: 10px;
-        border: 2px solid #e9ecef;
+        border: 2px solid var(--border-soft);
         padding: 12px 15px;
         transition: all 0.3s ease;
+        background: #fbfdff;
     }
 
     .form-control:focus {
@@ -192,10 +197,10 @@
         background: white;
         border-radius: 20px;
         padding: 2rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        box-shadow: 0 14px 32px rgba(17, 34, 51, 0.08);
         transition: all 0.3s ease;
         height: 100%;
-        border: 0;
+        border: 1px solid var(--border-soft);
         position: relative;
         overflow: hidden;
     }
@@ -212,7 +217,7 @@
 
     .feature-card:hover {
         transform: translateY(-10px);
-        box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+        box-shadow: 0 24px 48px rgba(17, 34, 51, 0.12);
     }
 
     .feature-icon {
@@ -232,7 +237,7 @@
     }
 
     .stats {
-        background: linear-gradient(135deg, var(--text-dark), #34495e);
+        background: linear-gradient(135deg, #173552, #214e70);
         color: white;
         padding: 80px 0;
     }
@@ -252,6 +257,69 @@
     .stat-label {
         font-size: 1.1rem;
         opacity: 0.9;
+    }
+
+    .coverage-map-section {
+        padding: 80px 0;
+        background: linear-gradient(180deg, #ffffff 0%, #f5f8fc 100%);
+    }
+
+    .coverage-map-card {
+        background: #fff;
+        border: 1px solid var(--border-soft);
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: 0 18px 40px rgba(17, 34, 51, 0.08);
+    }
+
+    .coverage-map-copy .eyebrow {
+        display: inline-block;
+        font-size: 0.82rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: var(--secondary-blue);
+        text-transform: uppercase;
+        margin-bottom: 0.9rem;
+    }
+
+    .coverage-map-copy h2 {
+        font-weight: 800;
+        margin-bottom: 1rem;
+    }
+
+    .coverage-points {
+        display: grid;
+        gap: 0.85rem;
+        margin-top: 1.25rem;
+    }
+
+    .coverage-point {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.9rem 1rem;
+        background: var(--bg-light);
+        border: 1px solid var(--border-soft);
+        border-radius: 14px;
+    }
+
+    .coverage-point i {
+        margin-top: 0.15rem;
+        color: var(--primary-orange);
+    }
+
+    .coverage-map-visual {
+        background: linear-gradient(160deg, #f7fbff 0%, #ebf3f9 100%);
+        border: 1px solid var(--border-soft);
+        border-radius: 20px;
+        min-height: 100%;
+        padding: 1rem;
+    }
+
+    .coverage-map-svg {
+        width: 100%;
+        height: auto;
+        display: block;
     }
 
     .about {
@@ -299,7 +367,7 @@
 
     .seo-card {
         background: #fff;
-        border: 1px solid #e9ecef;
+        border: 1px solid var(--border-soft);
         border-radius: 18px;
         padding: 1.5rem;
         height: 100%;
@@ -442,8 +510,8 @@
                 <span aria-hidden="true">🏆</span>
                 <span>2025 Congressional App Challenge Winner (CA-12)</span>
             </div>
-            <h1>Check Your Disaster Risk in Oakland (Fire, Flood, Earthquake)</h1>
-            <p class="lead">Interactive risk map and personalized preparedness guidance for Oakland and Alameda County.</p>
+            <h1>Check Your Disaster Risk in Alameda County (Fire, Flood, Earthquake)</h1>
+            <p class="lead">Interactive risk map and personalized preparedness guidance for households across Alameda County.</p>
 
             <div class="quick-start-form mx-auto" style="max-width: 500px;">
                 <h3 class="text-center">Get Your Personalized Emergency Plan</h3>
@@ -497,7 +565,7 @@
                                     class="form-control"
                                     id="address"
                                     name="address"
-                                    placeholder="e.g. 1234 Main Street, Oakland, CA"
+                                    placeholder="e.g. 1234 Main Street, Alameda County, CA"
                                     autocomplete="street-address"
                                     value="{{ form_data.address if form_data else '' }}"
                                 >
@@ -613,6 +681,85 @@
     </div>
 </section>
 
+<section class="coverage-map-section">
+    <div class="container">
+        <div class="coverage-map-card">
+            <div class="row g-4 align-items-center">
+                <div class="col-lg-5">
+                    <div class="coverage-map-copy">
+                        <span class="eyebrow">County Coverage</span>
+                        <h2>Alameda County Hazard Coverage at a Glance</h2>
+                        <p class="lead mb-3">Stay Ready Now is built for Alameda County residents who need a clear, fast way to review wildfire, flood, and earthquake exposure before an emergency happens.</p>
+                        <p class="mb-0">This overview reinforces the site’s county-wide focus while keeping the experience lightweight and fast to load.</p>
+                        <div class="coverage-points">
+                            <div class="coverage-point">
+                                <i class="fas fa-fire"></i>
+                                <div><strong>Fire:</strong> wildfire context and preparedness guidance for higher-risk areas.</div>
+                            </div>
+                            <div class="coverage-point">
+                                <i class="fas fa-water"></i>
+                                <div><strong>Flood:</strong> county flood-zone awareness for addresses and ZIP codes.</div>
+                            </div>
+                            <div class="coverage-point">
+                                <i class="fas fa-mountain"></i>
+                                <div><strong>Earthquake:</strong> seismic risk information for communities across Alameda County.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="coverage-map-visual" aria-label="Alameda County coverage map graphic">
+                        <svg class="coverage-map-svg" viewBox="0 0 760 500" role="img" aria-labelledby="coverage-map-title">
+                            <title id="coverage-map-title">Alameda County coverage map with hazard indicators</title>
+                            <defs>
+                                <linearGradient id="countyBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#f7fbff"/>
+                                    <stop offset="100%" stop-color="#e5eff7"/>
+                                </linearGradient>
+                                <linearGradient id="countyShape" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#2f6f98"/>
+                                    <stop offset="100%" stop-color="#154c79"/>
+                                </linearGradient>
+                            </defs>
+                            <rect x="0" y="0" width="760" height="500" rx="22" fill="url(#countyBg)"/>
+                            <g opacity="0.35" stroke="#b9cad8" stroke-width="2">
+                                <path d="M70 90H690"/>
+                                <path d="M70 170H690"/>
+                                <path d="M70 250H690"/>
+                                <path d="M70 330H690"/>
+                                <path d="M70 410H690"/>
+                                <path d="M130 50V450"/>
+                                <path d="M250 50V450"/>
+                                <path d="M370 50V450"/>
+                                <path d="M490 50V450"/>
+                                <path d="M610 50V450"/>
+                            </g>
+                            <g transform="translate(120 30)">
+                                <path d="M209 24L257 47L286 87L304 144L297 194L315 248L345 286L352 322L338 348L304 364L270 408L232 429L197 425L175 392L155 349L116 318L95 282L67 240L61 200L78 162L112 132L140 100L164 69L209 24Z" fill="url(#countyShape)" stroke="#0f3859" stroke-width="6"/>
+                                <path d="M213 57L243 84L255 120L244 158L261 201L284 236L276 279L244 300L222 341L191 389" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="10" stroke-linecap="round"/>
+                                <circle cx="185" cy="120" r="14" fill="#d96c3f"/>
+                                <circle cx="236" cy="233" r="14" fill="#2e88c7"/>
+                                <circle cx="214" cy="339" r="14" fill="#ffd166"/>
+                                <g fill="#fff" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700">
+                                    <text x="211" y="125">Fire</text>
+                                    <text x="262" y="238">Flood</text>
+                                    <text x="241" y="344">Quake</text>
+                                </g>
+                                <g fill="#173552" font-family="Segoe UI, Arial, sans-serif">
+                                    <text x="386" y="120" font-size="34" font-weight="800">Alameda County</text>
+                                    <text x="386" y="157" font-size="20">Countywide disaster awareness</text>
+                                    <text x="386" y="204" font-size="18">Preparedness guidance for residents,</text>
+                                    <text x="386" y="232" font-size="18">families, and neighborhoods.</text>
+                                </g>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <section id="stats" class="stats">
     <div class="container">
         <div class="text-center mb-5">
@@ -655,7 +802,7 @@
             <div class="about-text">
                 <h2 class="display-4 fw-bold mb-4">Built by the Community, For the Community</h2>
                 <p class="lead mb-4">Created by <strong>Adan J Allen</strong> through the Hidden Genius Project, this platform bridges the gap between technology and emergency preparedness.</p>
-                <p class="mb-4">Growing up in Oakland, this project was built to make fire, flood, and earthquake information easier to understand and act on.</p>
+                <p class="mb-4">Grounded in Alameda County, this project was built to make fire, flood, and earthquake information easier to understand and act on.</p>
                 <div class="row g-3">
                     <div class="col-md-6">
                         <div class="d-flex align-items-center">
@@ -701,7 +848,7 @@
 <section class="bg-primary text-white text-center py-5">
     <div class="container">
         <h2 class="display-5 fw-bold mb-3">Ready to Protect Your Family?</h2>
-        <p class="lead mb-4">Use the Oakland disaster risk map to check fire, flood, and earthquake risk in one place.</p>
+        <p class="lead mb-4">Use the Alameda County disaster risk map to check fire, flood, and earthquake risk in one place.</p>
         <a href="#" onclick="document.getElementById('zip_code').scrollIntoView({behavior: 'smooth'}); document.getElementById('zip_code').focus();" class="btn btn-light btn-lg px-5 py-3 fw-bold">
             <i class="fas fa-shield-alt me-2"></i>Start Your Emergency Plan Now
         </a>
@@ -711,14 +858,14 @@
 <section class="seo-content">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="display-6 fw-bold mb-3">Oakland Disaster Risk Information</h2>
+            <h2 class="display-6 fw-bold mb-3">Alameda County Disaster Risk Information</h2>
             <p class="lead mb-0">Clear, crawlable content to help visitors and search engines understand what Stay Ready Now covers.</p>
         </div>
         <div class="row g-4">
             <div class="col-lg-4">
                 <div class="seo-card">
-                    <h2>OAKLAND FIRE HAZARD MAP</h2>
-                    <p class="mb-0">Stay Ready Now helps Oakland residents understand local fire hazard conditions by combining mapped wildfire context with easy-to-follow preparedness guidance for neighborhoods and households.</p>
+                    <h2>ALAMEDA COUNTY FIRE HAZARD MAP</h2>
+                    <p class="mb-0">Stay Ready Now helps Alameda County residents understand local fire hazard conditions by combining mapped wildfire context with easy-to-follow preparedness guidance for neighborhoods and households.</p>
                 </div>
             </div>
             <div class="col-lg-4">
@@ -729,8 +876,8 @@
             </div>
             <div class="col-lg-4">
                 <div class="seo-card">
-                    <h2>EARTHQUAKE RISK IN OAKLAND</h2>
-                    <p class="mb-0">The earthquake experience explains seismic risk in Oakland using practical language, helping residents review likely hazards and prepare before, during, and after major shaking events.</p>
+                    <h2>EARTHQUAKE RISK IN ALAMEDA COUNTY</h2>
+                    <p class="mb-0">The earthquake experience explains seismic risk in Alameda County using practical language, helping residents review likely hazards and prepare before, during, and after major shaking events.</p>
                 </div>
             </div>
         </div>
@@ -873,7 +1020,7 @@
 
             suggestTimeout = setTimeout(() => {
                 const commonAddresses = [
-                    'Oakland, CA',
+                    'Alameda County, CA',
                     'Berkeley, CA',
                     'Fremont, CA',
                     'Hayward, CA',
@@ -942,7 +1089,7 @@
                             showMessage('Location detected and converted to address!', 'success');
                         })
                         .catch(() => {
-                            addressInput.value = `${lat.toFixed(4)}, ${lon.toFixed(4)}, Oakland, CA`;
+                            addressInput.value = `${lat.toFixed(4)}, ${lon.toFixed(4)}, Alameda County, CA`;
                             showMessage('Location detected! Address approximated. Please refine if needed.', 'info');
                         })
                         .finally(() => {

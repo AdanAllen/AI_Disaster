@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}Disaster Prep Assistant{% endblock %}</title>
-    <meta name="description" content="{% block meta_description %}Oakland disaster preparedness tools, risk maps, and emergency planning resources.{% endblock %}" />
+    <title>{% block title %}Stay Ready Now{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Alameda County disaster preparedness tools, risk maps, and emergency planning resources.{% endblock %}" />
     <meta name="robots" content="index, follow" />
     {% block canonical %}{% endblock %}
 
@@ -18,12 +18,13 @@
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
-            background-color: #f9f9f9;
+            background-color: #f4f7fb;
+            color: #223246;
         }
 
         .navbar-brand {
             font-weight: 700;
-            color: #ff7043 !important;
+            color: #154c79 !important;
         }
 
         .container {
@@ -125,12 +126,12 @@
         }
 
         .navbar-nav .nav-link:hover {
-            background: rgba(255, 112, 67, 0.1);
-            color: #ff7043 !important;
+            background: rgba(21, 76, 121, 0.08);
+            color: #154c79 !important;
         }
 
         .navbar-nav .nav-link.active {
-            background: #ff7043;
+            background: #154c79;
             color: white !important;
         }
 
@@ -152,7 +153,7 @@
         }
 
         .data-info-link:hover {
-            color: #ff7043;
+            color: #154c79;
         }
 
         .data-sources-card {
@@ -208,7 +209,7 @@
             align-items: center;
             justify-content: center;
             background: #ffffff;
-            color: #ff7043;
+            color: #154c79;
             box-shadow: inset 0 0 0 1px #e4ebf0;
             flex-shrink: 0;
         }
@@ -243,7 +244,7 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
     <div class="container">
         <a class="navbar-brand" href="{{ url_for('home') }}">
-            <i class="fas fa-shield-alt me-2"></i>Disaster Prep Assistant
+            <i class="fas fa-shield-alt me-2"></i>Stay Ready Now
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
