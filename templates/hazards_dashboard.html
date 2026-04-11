@@ -227,7 +227,7 @@
         <span class="section-eyebrow text-white-50">Dynamic Hazard Intelligence</span>
         <h1>Hazard Dashboard</h1>
         <p class="mb-0">
-            This view turns the Oakland hazard dataset into a ranked, interactive guide. Your top hazards update from the same backend data layer that powers the API and detail pages.
+            This view combines the Oakland hazard dataset with your saved location so the ranking, summary language, and hazard pages stay connected to the rest of the app.
         </p>
     </div>
 </section>
@@ -237,6 +237,7 @@
         <div class="profile-panel">
             <span class="section-eyebrow">Personalization</span>
             <h2 class="h3 mb-2">Make the hazard ranking fit your situation</h2>
+            <p class="text-muted mb-3">Current Oakland location: <strong>{{ location_context.display_name }}</strong></p>
             {% include "_hazard_profile_form.html" %}
         </div>
     </div>
@@ -248,7 +249,7 @@
             <div>
                 <span class="section-eyebrow">Top 3 Hazards</span>
                 <h2 class="h3 mb-1">Highest-priority risks</h2>
-                <p class="text-muted mb-0">Sorted by `priority_score`, highest first.</p>
+                <p class="text-muted mb-0">Sorted by dataset priority, then adjusted by your current Oakland ZIP risk where local scores are available.</p>
             </div>
             <a class="btn btn-outline-primary" href="{{ url_for('api_top_risks') }}" target="_blank" rel="noopener noreferrer">
                 <i class="fas fa-code me-2"></i>View API
@@ -264,6 +265,9 @@
                     <div class="risk-pill {{ risk_class }}">{{ hazard.risk_level }} risk</div>
                     <h3>{{ hazard.name }}</h3>
                     <p class="hazard-summary">{{ hazard.summary }}</p>
+                    {% if hazard.local_risk_score is defined %}
+                    <p class="mb-2 text-muted">Local ZIP risk: <strong>{{ '%.1f'|format(hazard.local_risk_score) }}/10</strong> ({{ hazard.local_risk_level }})</p>
+                    {% endif %}
                     <p class="mb-2 text-muted"><span class="priority-score">{{ hazard.priority_score }}/10</span> priority</p>
                     <a class="btn btn-primary" href="{{ url_for('hazard_detail', name=hazard.slug) }}">
                         View hazard page
@@ -282,7 +286,7 @@
                 <div>
                     <span class="section-eyebrow">All Hazards</span>
                     <h2 class="h3 mb-1">Full ranked list</h2>
-                    <p class="text-muted mb-0">Every hazard page is driven by the same JSON dataset and personalization rules.</p>
+                    <p class="text-muted mb-0">Every hazard page uses the same JSON dataset, plus your saved Oakland location and profile rules.</p>
                 </div>
                 <a class="btn btn-outline-secondary" href="{{ url_for('api_hazards') }}" target="_blank" rel="noopener noreferrer">
                     <i class="fas fa-database me-2"></i>All hazards JSON
@@ -295,6 +299,9 @@
                 <div>
                     <div class="hazard-row-name">{{ hazard.name }}</div>
                     <p>{{ hazard.summary }}</p>
+                    {% if hazard.local_risk_score is defined %}
+                    <small>Local ZIP risk: {{ '%.1f'|format(hazard.local_risk_score) }}/10 ({{ hazard.local_risk_level }})</small>
+                    {% endif %}
                 </div>
                 <div>
                     <small class="text-uppercase fw-semibold">Risk level</small>

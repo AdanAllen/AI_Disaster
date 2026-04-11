@@ -1,5 +1,14 @@
 <form method="post" action="{{ url_for('save_hazard_profile') }}" class="hazard-profile-form">
     <input type="hidden" name="next_url" value="{{ request.path }}">
+    {% if location_context %}
+    <div class="location-summary mb-3">
+        <div class="small text-uppercase fw-semibold text-muted mb-1">Current location</div>
+        <div class="fw-semibold">{{ location_context.display_name }}</div>
+        {% if location_context.zip_code %}
+        <div class="text-muted">ZIP {{ location_context.zip_code }}</div>
+        {% endif %}
+    </div>
+    {% endif %}
     <div class="row g-3 align-items-end">
         <div class="col-md-4">
             <label for="housing" class="form-label fw-semibold">Housing</label>
@@ -23,7 +32,7 @@
             >
         </div>
         <div class="col-md-4">
-            <label for="location" class="form-label fw-semibold">Location</label>
+            <label for="location" class="form-label fw-semibold">Area Setting Override</label>
             <select class="form-select" id="location" name="location">
                 <option value="">Select</option>
                 {% for option in location_options %}
@@ -34,7 +43,7 @@
     </div>
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-3">
         <p class="profile-helper mb-0">
-            Personalization rules: renters get evacuation-first steps, age 65+ adds medical and mobility steps, and hills raises wildfire priority.
+            Hazard pages use your saved address and ZIP first. This override only helps fine-tune guidance for neighborhood context like hills or shoreline.
         </p>
         <button type="submit" class="btn btn-primary px-4">
             <i class="fas fa-sliders me-2"></i>Update Profile

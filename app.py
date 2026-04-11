@@ -70,6 +70,11 @@ HAZARD_LOCATION_OPTIONS = [
     {"value": "shoreline", "label": "Shoreline"},
     {"value": "other", "label": "Other"},
 ]
+OAKLAND_HAZARD_GUIDANCE_ZIPS = {
+    "94601", "94602", "94603", "94605", "94606", "94607",
+    "94609", "94610", "94611", "94612", "94613", "94618",
+    "94619", "94621",
+}
 
 
 def slugify_hazard_name(name):
@@ -172,8 +177,76 @@ def normalize_user_profile(payload=None):
     }
 
 
+def is_oakland_hazard_context(zip_code=None, address=None):
+    normalized_zip = str(zip_code or "").strip()
+    normalized_address = (address or "").strip().lower()
+
+    if normalized_address:
+        if "oakland" in normalized_address:
+            return True
+
+        other_city_markers = (
+            "berkeley", "alameda", "fremont", "hayward", "san leandro",
+            "union city", "newark", "dublin", "pleasanton", "livermore",
+            "castro valley", "san lorenzo", "emeryville", "piedmont",
+        )
+        if any(marker in normalized_address for marker in other_city_markers):
+            return False
+
+    return normalized_zip in OAKLAND_HAZARD_GUIDANCE_ZIPS
+
+
+def get_oakland_guidance_error_context():
+    return {
+        "title": "Oakland Guidance Only",
+        "error_heading": "Oakland-specific hazard guidance is limited to Oakland addresses",
+        "error_message": "This hazard intelligence layer was built from Oakland planning data, so it only appears for Oakland locations.",
+        "helper_message": "You can still use the countywide map, ZIP risk scoring, and resources for other Alameda County cities.",
+    }
+
+
 def get_saved_hazard_profile():
     return normalize_user_profile(session.get(HAZARD_PROFILE_SESSION_KEY, {}))
+
+
+def get_session_location_context():
+    zip_code = session.get("zip_code")
+    address = session.get("address")
+    return {
+        "zip_code": zip_code,
+        "address": address,
+        "display_name": address or (f"ZIP {zip_code}" if zip_code else "No location selected"),
+        "is_oakland": is_oakland_hazard_context(zip_code, address),
+    }
+
+
+def get_zip_risk_snapshot(zip_code):
+    if not zip_code:
+        return {}
+
+    data = zip_risk_data.get(str(zip_code), {})
+    if not data:
+        return {}
+
+    snapshot = {}
+    csv_mappings = {
+        "earthquake": ("Earthquake_Risk_Score", "Earthquake_Risk_Explanation"),
+        "flood": ("Flood_Risk_Score", "Flood_Risk_Explanation"),
+        "wildfire": ("Wildfire_Risk_Score", "Wildfire_Risk_Explanation"),
+    }
+
+    for slug, (score_key, explanation_key) in csv_mappings.items():
+        try:
+            score = float(data.get(score_key, 0) or 0)
+        except (TypeError, ValueError):
+            score = 0.0
+        snapshot[slug] = {
+            "score": score,
+            "level": get_risk_level(score),
+            "explanation": data.get(explanation_key, RISK_DATA_WARNING),
+        }
+
+    return snapshot
 
 
 def step_priority(step, keywords):
@@ -181,7 +254,7 @@ def step_priority(step, keywords):
     return 0 if any(keyword in text for keyword in keywords) else 1
 
 
-def personalize_hazard(hazard, user):
+def personalize_hazard(hazard, user, location_context=None):
     # Apply lightweight profile rules without mutating the canonical JSON dataset in memory.
     personalized = deepcopy(hazard)
     personalized["base_priority_score"] = coerce_priority_score(hazard.get("priority_score"))
@@ -190,6 +263,26 @@ def personalize_hazard(hazard, user):
     personalized["action_steps"] = dedupe_steps(personalized.get("action_steps"))
 
     user = normalize_user_profile(user)
+    location_context = location_context or {}
+    zip_risk_snapshot = location_context.get("zip_risk_snapshot") or {}
+    local_risk = zip_risk_snapshot.get(personalized.get("slug"))
+
+    if local_risk:
+        personalized["local_risk_score"] = local_risk["score"]
+        personalized["local_risk_level"] = local_risk["level"]
+        personalized["local_risk_explanation"] = local_risk["explanation"]
+
+        if local_risk["score"] >= 7:
+            personalized["priority_score"] = min(personalized["priority_score"] + 2, 10)
+            personalized["personalization_notes"].append(
+                f"Your current Oakland location has a high local {personalized['name'].lower()} score ({local_risk['score']:.1f}/10), so this hazard is ranked higher for you."
+            )
+        elif local_risk["score"] >= 4:
+            personalized["priority_score"] = min(personalized["priority_score"] + 1, 10)
+            personalized["personalization_notes"].append(
+                f"Your current Oakland location has a moderate local {personalized['name'].lower()} score ({local_risk['score']:.1f}/10), which raises its priority."
+            )
+
     if not any(user.values()):
         personalized["personalized_what_this_means_for_you"] = personalized.get("what_this_means_for_you", "")
         return personalized
@@ -233,22 +326,22 @@ def personalize_hazard(hazard, user):
     return personalized
 
 
-def get_all_hazards(user=None):
+def get_all_hazards(user=None, location_context=None):
     user = normalize_user_profile(user)
-    hazards = [personalize_hazard(hazard, user) for hazard in hazard_dataset.get("hazards", [])]
+    hazards = [personalize_hazard(hazard, user, location_context) for hazard in hazard_dataset.get("hazards", [])]
     return sorted(hazards, key=lambda hazard: hazard.get("priority_score", 0), reverse=True)
 
 
-def get_hazard_by_name(name, user=None):
+def get_hazard_by_name(name, user=None, location_context=None):
     lookup_value = slugify_hazard_name(name)
-    for hazard in get_all_hazards(user):
+    for hazard in get_all_hazards(user, location_context):
         if hazard.get("slug") == lookup_value or (hazard.get("name", "").strip().lower() == (name or "").strip().lower()):
             return hazard
     return None
 
 
-def get_top_hazards_sorted_by_priority(user=None):
-    return get_all_hazards(user)[:3]
+def get_top_hazards_sorted_by_priority(user=None, location_context=None):
+    return get_all_hazards(user, location_context)[:3]
 
 
 def get_data_sources_context():
@@ -803,9 +896,16 @@ def save_hazard_profile():
 
 @app.route("/hazards")
 def hazards_dashboard():
+    zip_code = session.get("zip_code")
+    address = session.get("address")
+    if (zip_code or address) and not is_oakland_hazard_context(zip_code, address):
+        return safe_render("error.html", **get_oakland_guidance_error_context()), 403
+
     user_profile = get_saved_hazard_profile()
-    hazards = get_all_hazards(user_profile)
-    top_hazards = get_top_hazards_sorted_by_priority(user_profile)
+    location_context = get_session_location_context()
+    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
+    hazards = get_all_hazards(user_profile, location_context)
+    top_hazards = get_top_hazards_sorted_by_priority(user_profile, location_context)
 
     return safe_render(
         "hazards_dashboard.html",
@@ -814,13 +914,21 @@ def hazards_dashboard():
         system_insights=get_system_insights(),
         user_profile=user_profile,
         location_options=HAZARD_LOCATION_OPTIONS,
+        location_context=location_context,
     )
 
 
 @app.route("/hazards/<name>")
 def hazard_detail(name):
+    zip_code = session.get("zip_code")
+    address = session.get("address")
+    if (zip_code or address) and not is_oakland_hazard_context(zip_code, address):
+        return safe_render("error.html", **get_oakland_guidance_error_context()), 403
+
     user_profile = get_saved_hazard_profile()
-    hazard = get_hazard_by_name(name, user_profile)
+    location_context = get_session_location_context()
+    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
+    hazard = get_hazard_by_name(name, user_profile, location_context)
     if not hazard:
         return safe_render(
             "error.html",
@@ -833,9 +941,10 @@ def hazard_detail(name):
     return safe_render(
         "hazard_detail.html",
         hazard=hazard,
-        top_hazards=get_top_hazards_sorted_by_priority(user_profile),
+        top_hazards=get_top_hazards_sorted_by_priority(user_profile, location_context),
         user_profile=user_profile,
         location_options=HAZARD_LOCATION_OPTIONS,
+        location_context=location_context,
     )
 
 
@@ -1022,12 +1131,30 @@ def resources():
 
 @app.route("/api/hazards")
 def api_hazards():
-    return jsonify({"hazards": get_all_hazards(get_saved_hazard_profile())})
+    zip_code = session.get("zip_code")
+    address = session.get("address")
+    if (zip_code or address) and not is_oakland_hazard_context(zip_code, address):
+        return jsonify({
+            "error": "Oakland-specific hazard guidance is only available for Oakland addresses and Oakland ZIP codes.",
+            "city_scope": "Oakland",
+        }), 403
+    location_context = get_session_location_context()
+    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
+    return jsonify({"hazards": get_all_hazards(get_saved_hazard_profile(), location_context)})
 
 
 @app.route("/api/hazards/<name>")
 def api_hazard(name):
-    hazard = get_hazard_by_name(name, get_saved_hazard_profile())
+    zip_code = session.get("zip_code")
+    address = session.get("address")
+    if (zip_code or address) and not is_oakland_hazard_context(zip_code, address):
+        return jsonify({
+            "error": "Oakland-specific hazard guidance is only available for Oakland addresses and Oakland ZIP codes.",
+            "city_scope": "Oakland",
+        }), 403
+    location_context = get_session_location_context()
+    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
+    hazard = get_hazard_by_name(name, get_saved_hazard_profile(), location_context)
     if not hazard:
         return jsonify({"error": "Hazard not found"}), 404
     return jsonify(hazard)
@@ -1035,7 +1162,16 @@ def api_hazard(name):
 
 @app.route("/api/top-risks")
 def api_top_risks():
-    return jsonify({"hazards": get_top_hazards_sorted_by_priority(get_saved_hazard_profile())})
+    zip_code = session.get("zip_code")
+    address = session.get("address")
+    if (zip_code or address) and not is_oakland_hazard_context(zip_code, address):
+        return jsonify({
+            "error": "Oakland-specific hazard guidance is only available for Oakland addresses and Oakland ZIP codes.",
+            "city_scope": "Oakland",
+        }), 403
+    location_context = get_session_location_context()
+    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
+    return jsonify({"hazards": get_top_hazards_sorted_by_priority(get_saved_hazard_profile(), location_context)})
 
 # Live Earthquake API
 @app.route("/api/live-earthquakes")

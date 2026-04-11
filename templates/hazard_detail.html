@@ -281,6 +281,9 @@
         <div class="hero-meta">
             <span class="meta-pill">{{ hazard.risk_level }} risk</span>
             <span class="meta-pill">{{ hazard.priority_score }}/10 priority</span>
+            {% if hazard.local_risk_score is defined %}
+            <span class="meta-pill">Local ZIP risk {{ '%.1f'|format(hazard.local_risk_score) }}/10</span>
+            {% endif %}
             <span class="meta-pill">{{ hazard.slug }}</span>
         </div>
     </div>
@@ -291,6 +294,7 @@
         <div class="profile-card">
             <span class="section-eyebrow">Personalization</span>
             <h2 class="h3 mb-2">Adjust this page for your situation</h2>
+            <p class="text-muted mb-3">Current Oakland location: <strong>{{ location_context.display_name }}</strong></p>
             {% include "_hazard_profile_form.html" %}
         </div>
     </div>
@@ -307,6 +311,25 @@
                         {{ hazard.personalization_notes | join(' ') }}
                     </div>
                     {% endif %}
+
+                    <article class="detail-card">
+                        <span class="section-eyebrow">Location Context</span>
+                        <h2 class="h4 mb-3">What this page is using</h2>
+                        <p class="detail-copy mb-2">
+                            This hazard page is using your saved Oakland location:
+                            <strong>{{ location_context.display_name }}</strong>.
+                        </p>
+                        {% if hazard.local_risk_score is defined %}
+                        <p class="detail-copy mb-2">
+                            Local {{ hazard.name }} score for your ZIP: <strong>{{ '%.1f'|format(hazard.local_risk_score) }}/10</strong> ({{ hazard.local_risk_level }}).
+                        </p>
+                        <p class="detail-copy mb-0">{{ hazard.local_risk_explanation }}</p>
+                        {% else %}
+                        <p class="detail-copy mb-0">
+                            This page is still grounded in the JSON dataset, but this hazard does not yet have ZIP-specific scoring in the current risk CSV.
+                        </p>
+                        {% endif %}
+                    </article>
 
                     <article class="detail-card">
                         <span class="section-eyebrow">What This Means</span>
