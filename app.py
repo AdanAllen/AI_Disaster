@@ -761,9 +761,18 @@ def map():
 @app.route("/about")
 def about():
     return safe_render("about.html")
+
+
 @app.route('/sitemap.xml')
 def sitemap():
-    return send_from_directory('.', 'sitemap.xml')
+    return send_from_directory(BASE_DIR, 'sitemap.xml')
+
+
+@app.route("/robots.txt")
+def robots():
+    return send_from_directory(BASE_DIR, "robots.txt")
+
+
 # --- Resources Page ---
 @app.route("/resources")
 def resources():
