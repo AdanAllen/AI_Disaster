@@ -1,28 +1,28 @@
 {% extends "base.html" %}
 
-{% block title %}Interactive Risk Map - Disaster Prep Assistant{% endblock %}
+{% block title %}Interactive Risk Map - Stay Ready Now{% endblock %}
 
 {% block head %}
 <style>
     :root {
-        --wildfire-color: #ff7043;
-        --flood-color: #0288d1;
-        --earthquake-color: #795548;
-        --text-dark: #2c3e50;
-        --bg-light: #f8f9fa;
+        --wildfire-color: #d96c3f;
+        --flood-color: #2a6f97;
+        --earthquake-color: #7c6855;
+        --text-dark: #203244;
+        --bg-light: #f5f8fb;
         --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        --chat-primary: #6c63ff;
-        --chat-secondary: #4834d4;
+        --chat-primary: #163b5d;
+        --chat-secondary: #2a6f97;
     }
 
     body {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        background: linear-gradient(135deg, #f7fbfd 0%, #ebf2f7 100%);
         min-height: 100vh;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     .page-header {
-        background: linear-gradient(135deg, var(--text-dark), #34495e);
+        background: linear-gradient(135deg, #14324f, #215a80);
         color: white;
         padding: 2rem 0;
         margin: -2rem -15px 2rem -15px;
@@ -554,7 +554,7 @@
     <div class="container">
         <div class="page-header-content">
             <h1><i class="fas fa-layer-group me-3"></i>Interactive Risk Assessment</h1>
-            <p class="lead">Multi-hazard visualization with AI assistant for ZIP {{ zip_code }}</p>
+            <p class="lead">A countywide hazard map that keeps ZIP-level context clear and only shows a precise pin when you entered a real address.</p>
         </div>
     </div>
 </div>
@@ -565,6 +565,39 @@
         {{ map_notice }}
     </div>
     {% endif %}
+    <div class="surface-card p-3 p-lg-4 mb-4">
+        <div class="row g-3 align-items-center">
+            <div class="col-lg-8">
+                <span class="section-eyebrow">Location Context</span>
+                <h2 class="h4 fw-bold mb-2">
+                    {% if has_precise_location %}
+                    Precise address view
+                    {% else %}
+                    ZIP-based view
+                    {% endif %}
+                </h2>
+                <p class="mb-0 text-muted">
+                    {% if has_precise_location %}
+                    The map is centered on your saved address and also shows the surrounding ZIP boundary for context.
+                    {% else %}
+                    The map is centered on the ZIP boundary only. No address marker is shown because the selected location is ZIP-level rather than a verified street address.
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-lg-4">
+                <div class="d-grid gap-2">
+                    {% if oakland_hazard_ready %}
+                    <a class="btn btn-primary" href="{{ url_for('hazards_dashboard') }}">
+                        <i class="fas fa-triangle-exclamation me-2"></i>Open Hazard Dashboard
+                    </a>
+                    {% endif %}
+                    <a class="btn btn-outline-secondary" href="{{ url_for('risk_summary') }}">
+                        <i class="fas fa-chart-line me-2"></i>Back to Risk Summary
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="main-container">
         <!-- Map Section -->
         <div class="map-section">
@@ -606,7 +639,7 @@
                 <div class="layer-controls">
                     <div class="layer-toggle zip active" id="zip-toggle" onclick="toggleLayer('zip')">
                         <i class="fas fa-map-marker-alt layer-icon"></i>
-                        <span>Your ZIP ({{ zip_code }})</span>
+                        <span>ZIP Boundary ({{ zip_code }})</span>
                     </div>
 
                     <div class="layer-toggle wildfire" id="wildfire-toggle" onclick="toggleLayer('wildfire')">
@@ -640,6 +673,9 @@
                     </div>
                     <div class="active-layers" id="active-layers">
                         <div class="active-layer-badge">ZIP {{ zip_code }}</div>
+                        {% if has_precise_location %}
+                        <div class="active-layer-badge">Address Pin</div>
+                        {% endif %}
                     </div>
                 </div>
                 <div id="map"></div>
@@ -662,7 +698,7 @@
                 <div class="quick-question" onclick="askQuickQuestion('How do I prepare an earthquake emergency kit?')">
                     📦 Emergency kit checklist
                 </div>
-                <div class="quick-question" onclick="askQuickQuestion('What are the evacuation routes from my ZIP code?')">
+                <div class="quick-question" onclick="askQuickQuestion('What are the evacuation routes from my area?')">
                     🛣️ Evacuation routes
                 </div>
                 <div class="quick-question" onclick="askQuickQuestion('How can I make my home more disaster-resistant?')">
@@ -674,7 +710,7 @@
             <div class="chatbot-messages" id="chatbot-messages">
                 <div class="chat-message bot">
                     <div class="message-avatar">AI</div>
-                    <div class="message-content">Hello! I'm your personal disaster preparedness assistant. Based on your location in ZIP {{ zip_code }}, I can see you have:
+                    <div class="message-content">Hello! I'm your personal disaster preparedness assistant. Based on {% if has_precise_location %}your saved address in ZIP {{ zip_code }}{% else %}ZIP {{ zip_code }}{% endif %}, I can see you have:
 
 • {% if risk_scores.wildfire.score >= 7 %}High{% elif risk_scores.wildfire.score >= 4 %}Moderate{% else %}Low{% endif %} wildfire risk ({{ "%.1f"|format(risk_scores.wildfire.score) }}/10)
 • {% if risk_scores.earthquake.score >= 7 %}High{% elif risk_scores.earthquake.score >= 4 %}Moderate{% else %}Low{% endif %} earthquake risk ({{ "%.1f"|format(risk_scores.earthquake.score) }}/10) 
@@ -863,7 +899,7 @@ What would you like to know about staying safe in your neighborhood?</div>
             flood: 'Flood Zones', 
             earthquake: 'Fault Lines',
             live: 'Live Earthquakes',
-            zip: `Your ZIP ({{ zip_code }})`
+            zip: `ZIP Boundary ({{ zip_code }})`
         };
         
         iconElement.className = `${icons[layerType]} layer-icon`;
@@ -1258,10 +1294,10 @@ What would you like to know about staying safe in your neighborhood?</div>
 
     function generateAIResponse(message) {
         const lowerMessage = message.toLowerCase();
-        const zipCode = "{{ zip_code }}";
-        const wildfireScore = {{ risk_scores.wildfire.score }};
-        const earthquakeScore = {{ risk_scores.earthquake.score }};
-        const floodScore = {{ risk_scores.flood.score }};
+        const zipCode = {{ zip_code|tojson }};
+        const wildfireScore = {{ risk_scores.wildfire.score|tojson }};
+        const earthquakeScore = {{ risk_scores.earthquake.score|tojson }};
+        const floodScore = {{ risk_scores.flood.score|tojson }};
         
         // Context-aware responses based on location and risk data
         if (lowerMessage.includes('wildfire') || lowerMessage.includes('fire')) {
@@ -1421,15 +1457,19 @@ What specific aspect of emergency preparedness interests you most?`;
         initMap();
         updateActiveLayers();
         
-        var userLat = {{ user_lat }};
-        var userLon = {{ user_lon }};
+        const userLat = {{ user_lat|tojson }};
+        const userLon = {{ user_lon|tojson }};
+        const hasPreciseLocation = {{ has_precise_location|tojson }};
 
-        L.marker([userLat, userLon])
-            .addTo(map)
-            .bindPopup("Your location")
-            .openPopup();
+        if (hasPreciseLocation && typeof userLat === 'number' && typeof userLon === 'number') {
+            L.marker([userLat, userLon])
+                .addTo(map)
+                .bindPopup({{ user_address|tojson }})
+                .openPopup();
 
-        map.setView([userLat, userLon], 14);
+            map.setView([userLat, userLon], 14);
+        }
+
         // Auto-focus on highest risk after a short delay
         setTimeout(autoFocusHighestRisk, 3000);
         

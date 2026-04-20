@@ -274,7 +274,7 @@
 {% block content %}
 <section class="hazard-hero">
     <div class="container">
-        <span class="section-eyebrow text-white-50">Hazard Detail</span>
+        <span class="section-eyebrow text-white-50">Oakland LHMP Hazard Detail</span>
         <h1>{{ hazard.name }}</h1>
         <p class="mb-0">{{ hazard.summary }}</p>
         {% set risk_class = 'high' if hazard.risk_level == 'High' else 'medium' if hazard.risk_level == 'Medium' else 'low' %}
@@ -313,6 +313,12 @@
                     {% endif %}
 
                     <article class="detail-card">
+                        <span class="section-eyebrow">Why Oakland Flags This</span>
+                        <h2 class="h4 mb-3">Why this is a real threat in Oakland</h2>
+                        <p class="detail-copy mb-0">{{ hazard.why_this_is_a_real_threat_in_oakland or hazard.summary }}</p>
+                    </article>
+
+                    <article class="detail-card">
                         <span class="section-eyebrow">Location Context</span>
                         <h2 class="h4 mb-3">What this page is using</h2>
                         <p class="detail-copy mb-2">
@@ -333,7 +339,7 @@
 
                     <article class="detail-card">
                         <span class="section-eyebrow">What This Means</span>
-                        <h2 class="h4 mb-3">Why it matters</h2>
+                        <h2 class="h4 mb-3">Why it matters for your situation</h2>
                         <p class="detail-copy mb-0">{{ hazard.personalized_what_this_means_for_you or hazard.what_this_means_for_you }}</p>
                     </article>
 
@@ -367,6 +373,20 @@
                                 <span class="task-label">{{ step }}</span>
                             </label>
                             {% endfor %}
+                        </div>
+                    </article>
+
+                    <article class="detail-card">
+                        <span class="section-eyebrow">App Flow</span>
+                        <h2 class="h4 mb-3">Where to go next</h2>
+                        <p class="detail-copy mb-3">This page is the deep-dive layer of the app. Once you understand this hazard, use the map to see spatial context or return to the dashboard to compare it with the rest of Oakland’s hazard priorities.</p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a class="btn btn-primary" href="{{ url_for('map') }}">
+                                <i class="fas fa-layer-group me-2"></i>Open Unified Map
+                            </a>
+                            <a class="btn btn-outline-secondary" href="{{ url_for('hazards_dashboard') }}">
+                                <i class="fas fa-list-ol me-2"></i>Back to Ranked Hazards
+                            </a>
                         </div>
                     </article>
 
@@ -455,10 +475,16 @@
 
                     <aside class="sidebar-card">
                         <span class="section-eyebrow">Navigation</span>
-                        <h3 class="h5 mb-3">Keep exploring</h3>
+                        <h3 class="h5 mb-3">Keep exploring the product</h3>
                         <div class="d-grid gap-2">
                             <a class="btn btn-primary" href="{{ url_for('hazards_dashboard') }}">
                                 <i class="fas fa-arrow-left me-2"></i>Back to dashboard
+                            </a>
+                            <a class="btn btn-outline-secondary" href="{{ url_for('risk_summary') }}">
+                                <i class="fas fa-chart-line me-2"></i>Risk summary
+                            </a>
+                            <a class="btn btn-outline-secondary" href="{{ url_for('map') }}">
+                                <i class="fas fa-layer-group me-2"></i>Unified map
                             </a>
                             <a class="btn btn-outline-secondary" href="{{ url_for('api_hazard', name=hazard.slug) }}" target="_blank" rel="noopener noreferrer">
                                 <i class="fas fa-code me-2"></i>View JSON

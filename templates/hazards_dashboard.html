@@ -224,10 +224,10 @@
 {% block content %}
 <section class="dashboard-hero">
     <div class="container">
-        <span class="section-eyebrow text-white-50">Dynamic Hazard Intelligence</span>
+        <span class="section-eyebrow text-white-50">Oakland LHMP Intelligence Layer</span>
         <h1>Hazard Dashboard</h1>
         <p class="mb-0">
-            This view combines the Oakland hazard dataset with your saved location so the ranking, summary language, and hazard pages stay connected to the rest of the app.
+            This view turns the Oakland Local Hazard Mitigation Plan into a clearer public-facing experience by ranking hazards, connecting them to your saved location, and linking them to the rest of the app flow.
         </p>
     </div>
 </section>
@@ -249,7 +249,7 @@
             <div>
                 <span class="section-eyebrow">Top 3 Hazards</span>
                 <h2 class="h3 mb-1">Highest-priority risks</h2>
-                <p class="text-muted mb-0">Sorted by dataset priority, then adjusted by your current Oakland ZIP risk where local scores are available.</p>
+                <p class="text-muted mb-0">Ranked from the LHMP-style dataset, then adjusted by your current Oakland ZIP risk where local scores are available.</p>
             </div>
             <a class="btn btn-outline-primary" href="{{ url_for('api_top_risks') }}" target="_blank" rel="noopener noreferrer">
                 <i class="fas fa-code me-2"></i>View API
@@ -279,6 +279,49 @@
     </div>
 </section>
 
+<section class="pb-4">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="insight-card h-100">
+                    <span class="section-eyebrow">User Journey</span>
+                    <h3 class="h5 mb-3">How this page fits the app</h3>
+                    <ul>
+                        <li>Use the risk summary to understand what is most urgent.</li>
+                        <li>Use the map to see where your location sits inside hazard layers.</li>
+                        <li>Use these hazard pages to read deeper Oakland-specific impact and action guidance.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="insight-card h-100">
+                    <span class="section-eyebrow">Data Logic</span>
+                    <h3 class="h5 mb-3">What this ranking combines</h3>
+                    <ul>
+                        <li>Oakland hazard priority from the LHMP-derived dataset.</li>
+                        <li>Your saved ZIP risk snapshot when local scoring exists.</li>
+                        <li>Your profile choices for renter, age, and neighborhood setting.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="insight-card h-100">
+                    <span class="section-eyebrow">Next Moves</span>
+                    <h3 class="h5 mb-3">Keep moving through the product</h3>
+                    <div class="d-grid gap-2">
+                        <a class="btn btn-primary" href="{{ url_for('risk_summary') }}">
+                            <i class="fas fa-chart-line me-2"></i>Back to Risk Summary
+                        </a>
+                        <a class="btn btn-outline-secondary" href="{{ url_for('map') }}">
+                            <i class="fas fa-layer-group me-2"></i>Open Unified Map
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <section class="pb-5">
     <div class="container">
         <div class="ranked-list-card">
@@ -286,7 +329,7 @@
                 <div>
                     <span class="section-eyebrow">All Hazards</span>
                     <h2 class="h3 mb-1">Full ranked list</h2>
-                    <p class="text-muted mb-0">Every hazard page uses the same JSON dataset, plus your saved Oakland location and profile rules.</p>
+                    <p class="text-muted mb-0">Every hazard page uses the same LHMP-backed JSON dataset, then adds your saved Oakland location and profile rules.</p>
                 </div>
                 <a class="btn btn-outline-secondary" href="{{ url_for('api_hazards') }}" target="_blank" rel="noopener noreferrer">
                     <i class="fas fa-database me-2"></i>All hazards JSON
@@ -328,7 +371,7 @@
             <div>
                 <span class="section-eyebrow">System Insights</span>
                 <h2 class="h3 mb-1">How Prepared is Oakland?</h2>
-                <p class="text-muted mb-0">Strengths, weaknesses, and recommendations drawn from `system_insights`.</p>
+                <p class="text-muted mb-0">Strengths, weaknesses, and recommendations drawn from the Oakland planning dataset so the dashboard feels connected to real mitigation priorities.</p>
             </div>
         </div>
 

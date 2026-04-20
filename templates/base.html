@@ -8,162 +8,317 @@
     <meta name="robots" content="index, follow" />
     {% block canonical %}{% endblock %}
 
-    <!-- Bootstrap CSS CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    
-    <!-- Font Awesome for icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-    <!-- Custom Styles -->
     <style>
+        :root {
+            --brand-ink: #10253d;
+            --brand-navy: #163b5d;
+            --brand-blue: #2a6f97;
+            --brand-sky: #dcecf7;
+            --brand-warm: #d96c3f;
+            --brand-gold: #f1b555;
+            --surface: #ffffff;
+            --surface-soft: #f5f8fb;
+            --surface-tint: #edf4f8;
+            --border-soft: #d8e4ec;
+            --text-main: #203244;
+            --text-muted: #5a6b7c;
+            --success: #2f8f5b;
+            --warning: #b36a00;
+            --danger: #b13a2d;
+            --shadow-soft: 0 18px 42px rgba(16, 37, 61, 0.08);
+            --shadow-strong: 0 24px 56px rgba(16, 37, 61, 0.14);
+            --radius-xl: 24px;
+            --radius-lg: 18px;
+            --radius-md: 14px;
+            --content-max: 1240px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: #f4f7fb;
-            color: #223246;
+            margin: 0;
+            font-family: 'Manrope', sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(42, 111, 151, 0.08), transparent 28%),
+                linear-gradient(180deg, #f8fbfd 0%, #eef4f8 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        a {
+            color: var(--brand-blue);
+        }
+
+        a:hover {
+            color: var(--brand-navy);
+        }
+
+        .page-shell {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .site-main {
+            flex: 1;
+        }
+
+        .container,
+        .container-lg,
+        .container-xl {
+            max-width: var(--content-max);
+        }
+
+        .section-eyebrow {
+            display: inline-block;
+            font-size: 0.82rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--brand-blue);
+            margin-bottom: 0.65rem;
+        }
+
+        .surface-card {
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .surface-card-muted {
+            background: linear-gradient(180deg, #fbfdff 0%, #f2f7fa 100%);
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .site-navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+            backdrop-filter: blur(16px);
+            background: rgba(248, 251, 253, 0.88);
+            border-bottom: 1px solid rgba(216, 228, 236, 0.9);
         }
 
         .navbar-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 800;
+            color: var(--brand-ink) !important;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-mark {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(145deg, var(--brand-navy), var(--brand-blue));
+            color: white;
+            box-shadow: 0 10px 22px rgba(22, 59, 93, 0.24);
+        }
+
+        .brand-copy {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.05;
+        }
+
+        .brand-name {
+            font-size: 1.05rem;
+        }
+
+        .brand-subtitle {
+            font-size: 0.72rem;
             font-weight: 700;
-            color: #154c79 !important;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-muted);
         }
 
-        .container {
-            margin-top: 2rem;
-        }
-
-        /* Flash message styles */
-        .alert {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 1.5rem;
-        }
-
-        .alert-info {
-            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-            color: #1976d2;
-        }
-
-        .alert-success {
-            background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
-            color: #388e3c;
-        }
-
-        .alert-warning {
-            background: linear-gradient(135deg, #fff3e0, #ffcc02);
-            color: #f57c00;
-        }
-
-        .alert-danger {
-            background: linear-gradient(135deg, #ffebee, #ffcdd2);
-            color: #d32f2f;
-        }
-
-        /* Chat bubble styles */
-        .chat-message.user {
-            background-color: #ffe0b2;
-            padding: 10px;
-            border-radius: 12px;
-            margin-bottom: 0.5rem;
-            text-align: right;
-            color: #000;
-        }
-
-        .chat-message.bot {
-            background-color: #ffccbc;
-            padding: 10px;
-            border-radius: 12px;
-            margin-bottom: 0.5rem;
-            text-align: left;
-            color: #000;
-        }
-
-        /* Map container */
-        #map {
-            position: relative !important;
-            height: 500px !important;
-            margin-bottom: 2rem !important;
-            clear: both;
-            z-index: 0 !important;
-        }
-
-        .leaflet-container {
-            width: 100% !important;
-            height: 100% !important;
-            z-index: 0 !important;
-        }
-
-        /* Pre-generated AI response styling */
-        #pre_generated_plan {
-            position: relative;
-            z-index: 10;
-            background: #fff3e0;
-            padding: 1rem;
-            border-radius: 10px;
-            border: 1px solid #ffa726;
-            margin-bottom: 2rem;
-            white-space: pre-wrap;
-        }
-
-        /* Chat box */
-        #chat-box {
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            padding: 1rem;
-            border-radius: 10px;
-            background: #fff;
-            position: relative;
-            z-index: 10;
-        }
-
-        /* Updated navigation highlighting */
         .navbar-nav .nav-link {
-            transition: all 0.3s ease;
-            border-radius: 20px;
-            margin: 0 0.2rem;
-            padding: 0.5rem 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-main) !important;
+            font-weight: 700;
+            padding: 0.72rem 1rem !important;
+            border-radius: 999px;
+            transition: all 0.22s ease;
         }
 
         .navbar-nav .nav-link:hover {
-            background: rgba(21, 76, 121, 0.08);
-            color: #154c79 !important;
+            background: rgba(42, 111, 151, 0.09);
+            color: var(--brand-navy) !important;
         }
 
         .navbar-nav .nav-link.active {
-            background: #154c79;
+            background: linear-gradient(145deg, var(--brand-navy), var(--brand-blue));
             color: white !important;
+            box-shadow: 0 10px 20px rgba(22, 59, 93, 0.18);
         }
 
-        /* Responsive navigation */
-        @media (max-width: 991px) {
-            .navbar-nav .nav-link {
-                margin: 0.2rem 0;
-            }
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            border-radius: 999px;
+            padding: 0.55rem 0.85rem;
+            background: rgba(22, 59, 93, 0.06);
+            color: var(--text-muted);
+            font-size: 0.86rem;
+            font-weight: 700;
+        }
+
+        .status-chip strong {
+            color: var(--brand-ink);
+        }
+
+        .alert {
+            border-radius: 18px;
+            border: 1px solid transparent;
+            box-shadow: 0 12px 28px rgba(16, 37, 61, 0.08);
+            margin-bottom: 1.25rem;
+        }
+
+        .alert-info {
+            background: linear-gradient(180deg, #eef7ff 0%, #e4f1fb 100%);
+            border-color: #c9dff1;
+            color: #1e5678;
+        }
+
+        .alert-success {
+            background: linear-gradient(180deg, #eff9f3 0%, #e0f1e7 100%);
+            border-color: #c3e0ce;
+            color: #256544;
+        }
+
+        .alert-warning {
+            background: linear-gradient(180deg, #fff7e7 0%, #fff0cf 100%);
+            border-color: #f0d8a0;
+            color: #8f5a00;
+        }
+
+        .alert-danger {
+            background: linear-gradient(180deg, #fff1ef 0%, #ffe1dd 100%);
+            border-color: #f0c2b9;
+            color: #9e3024;
+        }
+
+        .btn {
+            border-radius: 999px;
+            font-weight: 700;
+            padding: 0.8rem 1.2rem;
+        }
+
+        .btn-primary {
+            border: none;
+            background: linear-gradient(145deg, var(--brand-navy), var(--brand-blue));
+            box-shadow: 0 12px 24px rgba(22, 59, 93, 0.18);
+        }
+
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background: linear-gradient(145deg, #112f4a, #245f83);
+        }
+
+        .btn-outline-primary {
+            border-color: #9fc2d9;
+            color: var(--brand-navy);
+        }
+
+        .btn-outline-primary:hover,
+        .btn-outline-primary:focus {
+            background: rgba(42, 111, 151, 0.08);
+            color: var(--brand-navy);
+            border-color: var(--brand-blue);
+        }
+
+        .btn-outline-secondary {
+            border-color: #cbd7e0;
+            color: var(--text-main);
+        }
+
+        .btn-outline-secondary:hover,
+        .btn-outline-secondary:focus {
+            background: rgba(16, 37, 61, 0.05);
+            color: var(--brand-ink);
+            border-color: #b2c3d0;
+        }
+
+        .page-footer {
+            margin-top: 4rem;
+            padding: 2.5rem 0;
+            border-top: 1px solid rgba(216, 228, 236, 0.9);
+            background: rgba(16, 37, 61, 0.96);
+            color: rgba(255, 255, 255, 0.78);
+        }
+
+        .page-footer h2,
+        .page-footer h3,
+        .page-footer a {
+            color: white;
+        }
+
+        .page-footer a {
+            text-decoration: none;
+            opacity: 0.84;
+        }
+
+        .page-footer a:hover {
+            opacity: 1;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1.7fr 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .footer-links {
+            display: grid;
+            gap: 0.6rem;
         }
 
         .data-info-link {
             display: inline-flex;
             align-items: center;
-            gap: 0.35rem;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #546e7a;
+            gap: 0.4rem;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--text-muted);
             text-decoration: none;
         }
 
         .data-info-link:hover {
-            color: #154c79;
+            color: var(--brand-navy);
         }
 
         .data-sources-card {
             margin-top: 2rem;
-            padding: 1.25rem 1.5rem;
-            border: 1px solid #dfe6eb;
-            border-radius: 16px;
-            background: #f7f9fb;
-            color: #425466;
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+            padding: 1.35rem 1.5rem;
+            border: 1px solid var(--border-soft);
+            border-radius: 20px;
+            background: linear-gradient(180deg, #fbfdff 0%, #f3f8fb 100%);
+            color: var(--text-muted);
+            box-shadow: var(--shadow-soft);
         }
 
         .data-sources-header {
@@ -176,16 +331,16 @@
 
         .data-sources-title {
             margin: 0 0 0.35rem;
-            font-size: 1rem;
-            font-weight: 700;
-            color: #243b53;
+            font-size: 1.02rem;
+            font-weight: 800;
+            color: var(--brand-ink);
         }
 
         .data-sources-meta,
         .data-source-label,
         .data-source-name,
         .data-sources-disclaimer {
-            font-size: 0.92rem;
+            font-size: 0.94rem;
             line-height: 1.55;
         }
 
@@ -202,34 +357,49 @@
         }
 
         .data-source-icon {
-            width: 2rem;
-            height: 2rem;
+            width: 2.1rem;
+            height: 2.1rem;
             border-radius: 999px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            background: #ffffff;
-            color: #154c79;
-            box-shadow: inset 0 0 0 1px #e4ebf0;
+            background: white;
+            color: var(--brand-navy);
+            box-shadow: inset 0 0 0 1px var(--border-soft);
             flex-shrink: 0;
         }
 
         .data-source-label {
-            font-weight: 700;
-            color: #243b53;
+            font-weight: 800;
+            color: var(--brand-ink);
         }
 
         .data-source-name {
-            color: #52606d;
+            color: var(--text-muted);
         }
 
         .data-sources-disclaimer {
-            margin-top: 0.5rem;
+            margin-top: 0.4rem;
             padding-top: 1rem;
-            border-top: 1px solid #dfe6eb;
+            border-top: 1px solid var(--border-soft);
+        }
+
+        @media (max-width: 991px) {
+            .navbar-nav .nav-link {
+                margin-top: 0.25rem;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
         }
 
         @media (max-width: 768px) {
+            .brand-subtitle {
+                display: none;
+            }
+
             .data-sources-card {
                 padding: 1rem;
             }
@@ -239,104 +409,134 @@
     {% block head %}{% endblock %}
 </head>
 <body>
+<div class="page-shell">
+    <nav class="navbar navbar-expand-lg site-navbar">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('home') }}">
+                <span class="brand-mark" aria-hidden="true">
+                    <i class="fas fa-shield-heart"></i>
+                </span>
+                <span class="brand-copy">
+                    <span class="brand-name">Stay Ready Now</span>
+                    <span class="brand-subtitle">Alameda County Preparedness</span>
+                </span>
+            </a>
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-    <div class="container">
-        <a class="navbar-brand" href="{{ url_for('home') }}">
-            <i class="fas fa-shield-alt me-2"></i>Stay Ready Now
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('home') }}">
-                        <i class="fas fa-home me-1"></i>Home
-                    </a>
-                </li>
-                {% if session.get('zip_code') %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('risk_summary') }}">
-                        <i class="fas fa-chart-bar me-1"></i>Risk Summary
-                    </a>
-                </li>
-                {% endif %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('map') }}">
-                        <i class="fas fa-layer-group me-1"></i>Risk Map
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('hazards_dashboard') }}">
-                        <i class="fas fa-triangle-exclamation me-1"></i>Hazards
-                    </a>
-                </li>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('resources') }}">
-                        <i class="fas fa-book me-1"></i>Resources
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('about') }}">
-                        <i class="fas fa-info-circle me-1"></i>About
-                    </a>
-                </li>
-            </ul>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-lg-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home') }}">
+                            <i class="fas fa-house"></i><span>Home</span>
+                        </a>
+                    </li>
+                    {% if session.get('zip_code') %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('risk_summary') }}">
+                            <i class="fas fa-chart-line"></i><span>Summary</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('map') }}">
+                            <i class="fas fa-layer-group"></i><span>Map</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('hazards_dashboard') }}">
+                            <i class="fas fa-triangle-exclamation"></i><span>Hazards</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('resources') }}">
+                            <i class="fas fa-book-open"></i><span>Resources</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('about') }}">
+                            <i class="fas fa-circle-info"></i><span>About</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
-<!-- Flash Messages -->
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        <div class="container mt-3">
-            {% for category, message in messages %}
-                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-                    <i class="fas fa-{% if category == 'info' %}info-circle{% elif category == 'success' %}check-circle{% elif category == 'warning' %}exclamation-triangle{% else %}exclamation-circle{% endif %} me-2"></i>
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <main class="site-main">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="container mt-3">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            <i class="fas fa-{% if category == 'info' %}info-circle{% elif category == 'success' %}check-circle{% elif category == 'warning' %}exclamation-triangle{% else %}exclamation-circle{% endif %} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
                 </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-{% endwith %}
+            {% endif %}
+        {% endwith %}
 
-<!-- Main page content -->
-<div class="container">
-    {% block content %}{% endblock %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="page-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <h2 class="h4 fw-bold mb-3">Stay Ready Now</h2>
+                    <p class="mb-2">A practical disaster-readiness platform for Alameda County households.</p>
+                    <p class="mb-0">Built to help people understand local risk, prepare faster, and act with confidence before an emergency.</p>
+                </div>
+                <div>
+                    <h3 class="h6 fw-bold mb-3">Explore</h3>
+                    <div class="footer-links">
+                        <a href="{{ url_for('risk_summary') if session.get('zip_code') else url_for('home') }}">Your Summary</a>
+                        <a href="{{ url_for('map') }}">Risk Map</a>
+                        <a href="{{ url_for('hazards_dashboard') }}">Hazard Rankings</a>
+                        <a href="{{ url_for('resources') }}">Resources</a>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="h6 fw-bold mb-3">Project</h3>
+                    <div class="footer-links">
+                        <a href="{{ url_for('about') }}">About the Builder</a>
+                        <a href="{{ url_for('live_earthquake_map') }}">Live Earthquake Map</a>
+                        <a href="#data-sources">Data Sources</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
 </div>
 
-<!-- Bootstrap JS CDN -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Auto-dismiss flash messages -->
 <script>
-    // Auto-dismiss flash messages after 8 seconds
     document.addEventListener('DOMContentLoaded', function() {
         const alerts = document.querySelectorAll('.alert');
-        alerts.forEach(alert => {
-            if (!alert.querySelector('.btn-close')) return;
-            
+        alerts.forEach((alert) => {
+            if (!alert.querySelector('.btn-close')) {
+                return;
+            }
+
             setTimeout(() => {
-                if (alert.parentNode) {
-                    const bsAlert = new bootstrap.Alert(alert);
-                    bsAlert.close();
+                if (!alert.parentNode || typeof bootstrap === 'undefined') {
+                    return;
                 }
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
             }, 8000);
         });
-    });
 
-    // Highlight active navigation item
-    document.addEventListener('DOMContentLoaded', function() {
         const currentPath = window.location.pathname;
         const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
-        
-        navLinks.forEach(link => {
-            if (link.getAttribute('href') === currentPath) {
+        navLinks.forEach((link) => {
+            const href = link.getAttribute('href');
+            if (href === currentPath) {
                 link.classList.add('active');
             }
         });

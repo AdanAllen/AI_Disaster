@@ -1,16 +1,49 @@
 {% extends "base.html" %}
-{% block title %}{{ title or "Temporary Error" }} - Disaster Prep Assistant{% endblock %}
+
+{% block title %}{{ title or "Temporary Error" }} - Stay Ready Now{% endblock %}
+
+{% block head %}
+<style>
+    .error-wrap {
+        padding: 5rem 0;
+    }
+
+    .error-card {
+        background: rgba(255, 255, 255, 0.97);
+        border: 1px solid #d8e4ec;
+        border-radius: 28px;
+        box-shadow: 0 22px 48px rgba(16, 37, 61, 0.1);
+        padding: 2rem;
+    }
+
+    .error-mark {
+        width: 4.5rem;
+        height: 4.5rem;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(145deg, #d96c3f, #b13a2d);
+        color: white;
+        font-size: 1.7rem;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<section class="py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4 p-md-5">
-                    <h1 class="h3 fw-bold mb-3">{{ error_heading or "Something went wrong" }}</h1>
-                    <p class="lead mb-3">{{ error_message or "Something went wrong, but your session data is محفوظ (safe). Please try again." }}</p>
-                    <p class="text-muted mb-4">{{ helper_message or "This page is under development, but your data is still valid." }}</p>
-                    <div class="d-flex flex-wrap gap-3">
+<section class="error-wrap">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="error-card text-center">
+                    <div class="error-mark">
+                        <i class="fas fa-triangle-exclamation"></i>
+                    </div>
+                    <h1 class="h2 fw-bold mb-3">{{ error_heading or "Something went wrong" }}</h1>
+                    <p class="lead mb-3">{{ error_message or "Something went wrong, but your saved location and profile are still available." }}</p>
+                    <p class="text-muted mb-4">{{ helper_message or "You can return to another part of the app and keep going." }}</p>
+                    <div class="d-flex flex-wrap justify-content-center gap-3">
                         <a class="btn btn-primary" href="{{ url_for('home') }}">Return Home</a>
                         <a class="btn btn-outline-secondary" href="{{ url_for('risk_summary') }}">Risk Summary</a>
                         <a class="btn btn-outline-secondary" href="{{ url_for('map') }}">Map</a>

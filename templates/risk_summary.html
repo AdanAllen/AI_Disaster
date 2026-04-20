@@ -1,20 +1,20 @@
 {% extends "base.html" %}
-{% block title %}Risk Summary - Disaster Prep Assistant{% endblock %}
+{% block title %}Risk Summary - Stay Ready Now{% endblock %}
 
 {% block head %}
 <style>
     :root {
-        --primary-orange: #ff7043;
-        --secondary-blue: #0288d1;
-        --accent-red: #f44336;
-        --text-dark: #2c3e50;
-        --bg-light: #f8f9fa;
-        --success-green: #4caf50;
-        --warning-yellow: #ff9800;
+        --primary-orange: #163b5d;
+        --secondary-blue: #2a6f97;
+        --accent-red: #d96c3f;
+        --text-dark: #203244;
+        --bg-light: #f5f8fb;
+        --success-green: #2f8f5b;
+        --warning-yellow: #f1b555;
     }
 
     .hero-section {
-        background: linear-gradient(135deg, var(--primary-orange), var(--accent-red));
+        background: linear-gradient(135deg, #14324f, #2a6f97);
         color: white;
         padding: 80px 0;
         margin-top: -2rem;
@@ -52,7 +52,7 @@
     }
 
     .zip-badge {
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.14);
         backdrop-filter: blur(10px);
         border-radius: 50px;
         padding: 10px 25px;
@@ -87,9 +87,9 @@
         position: relative;
     }
 
-    .risk-meter.high { background: linear-gradient(135deg, #f44336, #d32f2f); }
-    .risk-meter.moderate { background: linear-gradient(135deg, #ff9800, #f57c00); }
-    .risk-meter.low { background: linear-gradient(135deg, #4caf50, #388e3c); }
+    .risk-meter.high { background: linear-gradient(135deg, #cb5941, #9e3024); }
+    .risk-meter.moderate { background: linear-gradient(135deg, #f1b555, #c8881f); }
+    .risk-meter.low { background: linear-gradient(135deg, #2f8f5b, #256544); }
 
     .risk-card {
         background: white;
@@ -216,7 +216,7 @@
     }
 
     .priority-alert {
-        background: linear-gradient(135deg, #f44336, #ff5722);
+        background: linear-gradient(135deg, #cb5941, #d96c3f);
         color: white;
         border-radius: 15px;
         padding: 1.5rem;
@@ -246,7 +246,7 @@
     }
 
     .action-buttons {
-        background: var(--bg-light);
+        background: linear-gradient(180deg, #eff4f8 0%, #f7fafc 100%);
         padding: 60px 0;
     }
 
@@ -501,7 +501,7 @@
     }
 
     .stats-overview {
-        background: linear-gradient(135deg, var(--text-dark), #34495e);
+        background: linear-gradient(135deg, #112b44, #1e4f72);
         color: white;
         padding: 60px 0;
     }
@@ -550,10 +550,15 @@
     <div class="container">
         <div class="hero-content text-center">
             <div class="zip-badge">
-                <i class="fas fa-map-marker-alt me-2"></i>ZIP Code {{ zip_code }}
+                <i class="fas fa-map-marker-alt me-2"></i>
+                {% if location_context.address %}
+                    {{ location_context.address }}
+                {% else %}
+                    ZIP Code {{ zip_code }}
+                {% endif %}
             </div>
             <h1><i class="fas fa-shield-alt me-3"></i>Your Disaster Risk Summary</h1>
-            <p class="lead">Personalized risk assessment and emergency preparedness plan for your location</p>
+            <p class="lead">A clean starting point for understanding what deserves attention first and where to go next in the app.</p>
         </div>
     </div>
 </section>
@@ -588,18 +593,18 @@
                 </div>
                 <div class="col-md-8">
                     <h3 class="fw-bold mb-3">Your Risk Profile</h3>
-                    <p class="lead mb-3">Based on your location in ZIP {{ zip_code }}, your highest risk is <strong>{{ highest_hazard }}</strong> with a score of {{ "%.1f"|format(highest_score) }}/10.</p>
+                    <p class="lead mb-3">Based on {% if location_context.address %}your saved location{% else %}ZIP {{ zip_code }}{% endif %}, your highest current priority is <strong>{{ highest_hazard }}</strong> with a score of {{ "%.1f"|format(highest_score) }}/10.</p>
                     <p class="mb-4">
                         <i class="fas fa-arrow-down text-primary me-2"></i>
-                        <small class="text-muted">Scroll down to see detailed analysis for all hazards and get your personalized safety plans</small>
+                        <small class="text-muted">Use this page to decide whether to open the map, the ranked hazard dashboard, or a hazard-specific guidance page.</small>
                     </p>
                     
                     <div class="row g-3">
                         <div class="col-sm-4">
                             <div class="text-center">
                                 <i class="fas fa-home fa-2x text-primary mb-2"></i>
-                                <h6 class="fw-bold">Location Analyzed</h6>
-                                <p class="small text-muted mb-0">ZIP {{ zip_code }}</p>
+                                <h6 class="fw-bold">Location Used</h6>
+                                <p class="small text-muted mb-0">{% if location_context.address %}Address + ZIP{% else %}ZIP-level view{% endif %}</p>
                             </div>
                         </div>
                         <div class="col-sm-4">
@@ -612,8 +617,8 @@
                         <div class="col-sm-4">
                             <div class="text-center">
                                 <i class="fas fa-brain fa-2x text-success mb-2"></i>
-                                <h6 class="fw-bold">AI-Powered</h6>
-                                <p class="small text-muted mb-0">Personalized Plans</p>
+                                <h6 class="fw-bold">Next Step</h6>
+                                <p class="small text-muted mb-0">Map, hazards, and resources</p>
                             </div>
                         </div>
                     </div>
@@ -659,7 +664,7 @@
     {% include "_preparedness_checklist.html" %}
 </div>
 
-<!-- Priority Alert (if high risk) -->
+{% if highest_score >= 7 %}
 <section class="py-3">
     <div class="container">
         <div class="priority-alert">
@@ -671,13 +676,14 @@
         </div>
     </div>
 </section>
+{% endif %}
 
 <!-- Risk Cards -->
 <section class="py-5">
     <div class="container">
         <div class="text-center mb-5">
             <h2 class="display-5 fw-bold mb-3">Detailed Risk Assessment</h2>
-            <p class="lead">Click any hazard below to get your personalized safety plan</p>
+            <p class="lead">Use the score cards to jump deeper into the part of the experience that matters most right now.</p>
             <a href="#data-sources" class="data-info-link">
                 <i class="fas fa-circle-info"></i> Data Info
             </a>
@@ -730,7 +736,7 @@
                             </div>
                         {% endif %}
 
-                        <a href="{{ url_for(hazard_name.lower()) }}" class="btn btn-{{ hazard_name.lower() }}">
+                        <a href="{{ url_for('hazard_detail', name=hazard_name.lower()) }}" class="btn btn-{{ hazard_name.lower() }}">
                             <i class="fas fa-shield-alt me-2"></i>Get Safety Plan
                         </a>
                     </div>
@@ -740,11 +746,38 @@
         </div>
     </div>
 </section>
-<div class="text-center my-5">
-    <a href="{{ url_for('map') }}" class="btn btn-outline-dark btn-lg">
-        <i class="fas fa-layer-group me-2"></i>Explore Unified Hazard Map
-    </a>
-</div>
+<section class="pb-4">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="action-card h-100">
+                    <i class="fas fa-layer-group action-icon text-primary"></i>
+                    <h5 class="fw-bold mb-3">Explore the map next</h5>
+                    <p class="mb-4">See how your selected location sits inside wildfire, flood, fault-line, and live-earthquake layers.</p>
+                    <a href="{{ url_for('map') }}" class="btn btn-outline-dark btn-lg">
+                        <i class="fas fa-layer-group me-2"></i>Open Unified Hazard Map
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="action-card h-100">
+                    <i class="fas fa-triangle-exclamation action-icon text-warning"></i>
+                    <h5 class="fw-bold mb-3">Compare Oakland hazard priorities</h5>
+                    <p class="mb-4">
+                        {% if oakland_hazard_ready %}
+                        Open the ranked hazard dashboard to compare LHMP-backed hazards, see what is most important, and personalize the guidance.
+                        {% else %}
+                        The ranked hazard dashboard uses Oakland-specific planning data. Your current location is outside that Oakland-only layer, but you can still use the map and county resources.
+                        {% endif %}
+                    </p>
+                    <a href="{{ url_for('hazards_dashboard') }}" class="btn btn-outline-primary btn-lg {% if not oakland_hazard_ready %}disabled{% endif %}" {% if not oakland_hazard_ready %}aria-disabled="true"{% endif %}>
+                        <i class="fas fa-arrow-up-right-from-square me-2"></i>Open Hazard Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 <!-- Action Buttons -->
 <section class="action-buttons">
     <div class="container">
@@ -834,7 +867,7 @@
         <p class="lead mb-4">Don't wait for disaster to strike. Get personalized safety plans for each risk in your area.</p>
         <div class="d-flex justify-content-center gap-3 flex-wrap">
             {% for hazard_name, score, explanation in hazards %}
-            <a href="{{ url_for(hazard_name.lower()) }}" class="btn btn-light btn-lg px-4 py-3 fw-bold">
+            <a href="{{ url_for('hazard_detail', name=hazard_name.lower()) }}" class="btn btn-light btn-lg px-4 py-3 fw-bold">
                 <i class="fas fa-{% if hazard_name == 'Wildfire' %}fire{% elif hazard_name == 'Flood' %}water{% else %}mountain{% endif %} me-2"></i>{{ hazard_name }} Plan
             </a>
             {% endfor %}

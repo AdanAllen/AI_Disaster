@@ -64,6 +64,7 @@ DATA_SOURCES = [
 
 HAZARD_DATA_PATH = os.path.join(BASE_DIR, "oakland.json")
 HAZARD_PROFILE_SESSION_KEY = "hazard_user_profile"
+LOCATION_MODE_SESSION_KEY = "location_mode"
 HAZARD_LOCATION_OPTIONS = [
     {"value": "flatlands", "label": "Flatlands"},
     {"value": "hills", "label": "Hills"},
@@ -212,11 +213,19 @@ def get_saved_hazard_profile():
 def get_session_location_context():
     zip_code = session.get("zip_code")
     address = session.get("address")
+    location_mode = session.get(LOCATION_MODE_SESSION_KEY, "zip" if zip_code else "")
+    has_precise_location = (
+        location_mode == "address" and
+        address and
+        is_valid_coordinate(session.get("lat"), session.get("lon"))
+    )
     return {
         "zip_code": zip_code,
         "address": address,
         "display_name": address or (f"ZIP {zip_code}" if zip_code else "No location selected"),
         "is_oakland": is_oakland_hazard_context(zip_code, address),
+        "location_mode": location_mode,
+        "has_precise_location": bool(has_precise_location),
     }
 
 
@@ -385,8 +394,8 @@ def safe_render(template_name, **context):
             "error.html",
             title="Page Unavailable",
             error_heading="This page is temporarily unavailable",
-            error_message="Something went wrong, but your session data is محفوظ (safe). Please try again.",
-            helper_message="This page is under development, but your data is still valid.",
+            error_message="Something went wrong, but your saved location and profile are still available.",
+            helper_message="This page is temporarily unavailable. You can keep using the rest of the app.",
             **base_context
         ), 200
 
@@ -563,6 +572,7 @@ def process_form():
         final_zip = None
         lat = lon = None
         formatted_address = None
+        location_mode = ""
 
         if zip_code:
             if not zip_code.isdigit() or len(zip_code) != 5:
@@ -576,6 +586,7 @@ def process_form():
             final_zip = zip_code
             lat, lon = geocode_zip(zip_code)
             formatted_address = None
+            location_mode = "zip"
 
         elif address:
             if len(address) < 5 or re.search(r'[^a-zA-Z0-9\s,.-]', address):
@@ -603,6 +614,7 @@ def process_form():
                 return redirect(url_for("home"))
 
             final_zip = zip_from_address
+            location_mode = "address"
         else:
             session["form_error"] = "Please enter a ZIP code or address."
             session["form_data"] = request.form.to_dict()
@@ -626,6 +638,7 @@ def process_form():
         session["lat"] = lat
         session["lon"] = lon
         session["address"] = formatted_address
+        session[LOCATION_MODE_SESSION_KEY] = location_mode
         session["household"] = household
         session["special_needs"] = special_needs
         session["preparedness"] = preparedness
@@ -637,7 +650,7 @@ def process_form():
         return redirect(url_for("risk_summary"))
     except Exception:
         logger.exception("Form processing failed.")
-        session["form_error"] = "We could not process that request, but your session data is محفوظ (safe). Please try again."
+        session["form_error"] = "We could not process that request, but your saved data is still intact. Please try again."
         session["form_data"] = request.form.to_dict()
         return redirect(url_for("home"))
 
@@ -653,7 +666,7 @@ def not_found_error(error):
         "error.html",
         title="Page Not Found",
         error_heading="Page not found",
-        error_message="Something went wrong, but your session data is محفوظ (safe). Please try again.",
+        error_message="That page does not exist, but your saved location and profile are still available.",
         helper_message="This page does not exist, but you can return home and continue using the app."
     ), 404
 
@@ -664,7 +677,7 @@ def internal_error(error):
         "error.html",
         title="Temporary Error",
         error_heading="Something went wrong",
-        error_message="Something went wrong, but your session data is محفوظ (safe). Please try again.",
+        error_message="Something went wrong, but your saved location and profile are still available.",
         helper_message="You can return home or continue to your risk summary."
     ), 500
 
@@ -676,7 +689,7 @@ def handle_unexpected_error(error):
         "error.html",
         title="Temporary Error",
         error_heading="Something went wrong",
-        error_message="Something went wrong, but your session data is محفوظ (safe). Please try again.",
+        error_message="Something went wrong, but your saved location and profile are still available.",
         helper_message="The app has fallen back to a safe page so you can keep going."
     ), 500
 
@@ -880,7 +893,8 @@ def get_zip_boundary(zip_code):
 def home():
     error = session.pop("form_error", None)
     form_data = session.pop("form_data", None)
-    return safe_render("home.html", error=error, form_data=form_data)
+    location_context = get_session_location_context()
+    return safe_render("home.html", error=error, form_data=form_data, location_context=location_context)
 
 
 @app.route("/hazards/profile", methods=["POST"])
@@ -1004,12 +1018,14 @@ def risk_summary():
     return safe_render(
         "risk_summary.html",
         zip_code=zip_code,
+        location_context=get_session_location_context(),
         hazards=hazards_sorted,
         recommended_actions=recommended_actions,
         start_here_steps=start_here_steps,
         checklist_items=checklist_items,
         checklist_total_count=len(all_checklist_items),
-        warning_message=warning_message
+        warning_message=warning_message,
+        oakland_hazard_ready=is_oakland_hazard_context(session.get("zip_code"), session.get("address")),
     )
 
 # --- Unified Hazard Map ---
@@ -1018,6 +1034,7 @@ def map():
     """Unified hazard map showing all risks with toggleable layers"""
     zip_code = session.get("zip_code", "94601")
     address = session.get("address")
+    location_context = get_session_location_context()
     map_notice = None
 
     if request.method == "POST":
@@ -1066,44 +1083,11 @@ def map():
         user_lat=lat,
         user_lon=lon,
         user_address=address or f"ZIP {zip_code}",
-        map_notice=map_notice
-    )
-
-    # --- Get user session data ---
-    zip_code = session.get("zip_code", "94601")
-    lat = session.get("lat")
-    lon = session.get("lon")
-    address = session.get("address")
-
-    # --- Get risk data for the ZIP code ---
-    data = zip_risk_data.get(zip_code, {})
-
-    # --- Prepare risk scores ---
-    risk_scores = {
-        'wildfire': {
-            'score': data.get("Wildfire_Risk_Score", 0),
-            'explanation': data.get("Wildfire_Risk_Explanation", "No data available")
-        },
-        'earthquake': {
-            'score': data.get("Earthquake_Risk_Score", 0), 
-            'explanation': data.get("Earthquake_Risk_Explanation", "No data available")
-        },
-        'flood': {
-            'score': data.get("Flood_Risk_Score", 0),
-            'explanation': data.get("Flood_Risk_Explanation", "No data available")
-        }
-    }
-    print("DEBUG → Address:", address)
-    print("DEBUG → Lat:", lat)
-    print("DEBUG → Lon:", lon)
-    return render_template(
-        "map.html",
-        zip_code=zip_code,
-        risk_scores=risk_scores,
-        user_lat=lat,
-        user_lon=lon,
-        user_address=address,
-        **get_data_sources_context()
+        map_notice=map_notice,
+        has_precise_location=location_context.get("has_precise_location", False),
+        location_mode=location_context.get("location_mode", "zip"),
+        location_context=location_context,
+        oakland_hazard_ready=is_oakland_hazard_context(zip_code, address),
     )
 # ---  Page ---
 @app.route("/about")

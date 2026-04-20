@@ -517,11 +517,11 @@
                 <span aria-hidden="true">🏆</span>
                 <span>2025 Congressional App Challenge Winner (CA-12)</span>
             </div>
-            <h1>Check Your Disaster Risk in Alameda County (Fire, Flood, Earthquake)</h1>
-            <p class="lead">Interactive risk map and personalized preparedness guidance for households across Alameda County.</p>
+            <h1>Professional disaster readiness for Alameda County households</h1>
+            <p class="lead">Check local wildfire, flood, and earthquake risk, then move through a clear flow from summary to map to hazard-specific action steps.</p>
 
             <div class="quick-start-form mx-auto" style="max-width: 500px;">
-                <h3 class="text-center">Get Your Personalized Emergency Plan</h3>
+                <h3 class="text-center">Start Your Readiness Check</h3>
 
                 <div class="search-type-toggle mb-4">
                     <div class="btn-group w-100" role="group">
@@ -627,7 +627,7 @@
                     <div id="form-messages" class="mb-3" style="display: none;"></div>
 
                     <button type="submit" class="btn btn-get-started w-100">
-                        <i class="fas fa-rocket me-2"></i>Get My Emergency Plan
+                        <i class="fas fa-rocket me-2"></i>Build My Readiness Plan
                     </button>
                 </form>
 
@@ -639,7 +639,7 @@
                 </div>
             </div>
 
-            <a href="#features" class="cta-button mt-4">Get Started</a>
+            <a href="#features" class="cta-button mt-4">See How It Works</a>
         </div>
     </div>
 </section>
@@ -647,8 +647,8 @@
 <section id="features" class="features">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="display-4 fw-bold mb-3">Comprehensive Disaster Protection</h2>
-            <p class="lead">Advanced technology meets real-world emergency preparedness</p>
+            <h2 class="display-4 fw-bold mb-3">A clearer path from risk to action</h2>
+            <p class="lead">Every section is designed to help a resident understand risk, prioritize next steps, and keep moving.</p>
         </div>
 
         <div class="row g-4">
@@ -657,8 +657,8 @@
                     <div class="card-body text-center">
                         <i class="fas fa-fire feature-icon wildfire-icon"></i>
                         <h3 class="fw-bold mb-3">Wildfire Protection</h3>
-                        <p>Real-time wildfire tracking with evacuation routes and safety protocols specific to your area. Get alerts before it's too late.</p>
-                        <a href="{{ url_for('wildfire') }}" class="btn btn-outline-danger btn-sm">Learn More</a>
+                        <p>See where wildfire deserves attention in your area, understand the score, and get the first actions to take at home.</p>
+                        <a href="{{ url_for('hazard_detail', name='wildfire') }}" class="btn btn-outline-danger btn-sm">Review Wildfire Guidance</a>
                     </div>
                 </div>
             </div>
@@ -668,8 +668,8 @@
                     <div class="card-body text-center">
                         <i class="fas fa-mountain feature-icon earthquake-icon"></i>
                         <h3 class="fw-bold mb-3">Earthquake Readiness</h3>
-                        <p>Seismic risk assessment and personalized earthquake preparedness plans. Know what to do before, during, and after the shaking stops.</p>
-                        <a href="{{ url_for('earthquake') }}" class="btn btn-outline-secondary btn-sm">Learn More</a>
+                        <p>Move from seismic exposure to practical readiness with priority actions, Oakland context, and neighborhood-aware guidance.</p>
+                        <a href="{{ url_for('hazard_detail', name='earthquake') }}" class="btn btn-outline-secondary btn-sm">Review Earthquake Guidance</a>
                     </div>
                 </div>
             </div>
@@ -679,8 +679,63 @@
                     <div class="card-body text-center">
                         <i class="fas fa-water feature-icon flood-icon"></i>
                         <h3 class="fw-bold mb-3">Flood Safety</h3>
-                        <p>Flood zone mapping and water emergency protocols. Protect your family with accurate flood risk data and escape planning.</p>
-                        <a href="{{ url_for('flood') }}" class="btn btn-outline-primary btn-sm">Learn More</a>
+                        <p>Use flood-zone context, ZIP-level scoring, and action checklists to prepare before heavy rain, drainage failures, or coastal impacts.</p>
+                        <a href="{{ url_for('hazard_detail', name='flood') }}" class="btn btn-outline-primary btn-sm">Review Flood Guidance</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="surface-card p-4 p-lg-5">
+            <div class="row g-4 align-items-center">
+                <div class="col-lg-5">
+                    <span class="section-eyebrow">Recommended Flow</span>
+                    <h2 class="display-6 fw-bold mb-3">Designed to guide people, not just impress them</h2>
+                    <p class="lead mb-3">The app works best when visitors move through a clear path instead of jumping between disconnected pages.</p>
+                    <p class="mb-0 text-muted">Start with a location, review the risk summary, explore the map, and then open hazard pages that explain impact and action using Oakland LHMP context.</p>
+                </div>
+                <div class="col-lg-7">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="coverage-point h-100">
+                                <i class="fas fa-location-dot"></i>
+                                <div>
+                                    <strong>1. Enter a location</strong>
+                                    <div>Use ZIP for a fast overview or a street address for a precise map pin.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="coverage-point h-100">
+                                <i class="fas fa-chart-line"></i>
+                                <div>
+                                    <strong>2. Review the summary</strong>
+                                    <div>See which hazard deserves attention first and start with the highest-value steps.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="coverage-point h-100">
+                                <i class="fas fa-map"></i>
+                                <div>
+                                    <strong>3. Explore the map</strong>
+                                    <div>Turn hazard layers on and off without losing the context of your selected location.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="coverage-point h-100">
+                                <i class="fas fa-triangle-exclamation"></i>
+                                <div>
+                                    <strong>4. Open hazard guidance</strong>
+                                    <div>Use LHMP-backed hazard pages to understand impact, at-risk groups, and next actions.</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -781,8 +836,8 @@
 <section id="stats" class="stats">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="display-4 fw-bold mb-3">Making A Real Difference</h2>
-            <p class="lead">Empowering communities with life-saving information</p>
+            <h2 class="display-4 fw-bold mb-3">Built for practical public use</h2>
+            <p class="lead">The product is designed to feel trustworthy, local, and useful before an emergency happens.</p>
         </div>
 
         <div class="row">
@@ -795,19 +850,19 @@
             <div class="col-lg-3 col-md-6">
                 <div class="stat-item">
                     <span class="stat-number">1.7M+</span>
-                    <span class="stat-label">Alameda County Residents Protected</span>
+                    <span class="stat-label">Residents in Alameda County</span>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
                 <div class="stat-item">
                     <span class="stat-number">24/7</span>
-                    <span class="stat-label">Real-Time Monitoring</span>
+                    <span class="stat-label">Live Monitoring Layer</span>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
                 <div class="stat-item">
-                    <span class="stat-number">AI</span>
-                    <span class="stat-label">Powered Personalization</span>
+                    <span class="stat-number">Guided</span>
+                    <span class="stat-label">Personalized Planning</span>
                 </div>
             </div>
         </div>
@@ -865,8 +920,8 @@
 
 <section class="bg-primary text-white text-center py-5">
     <div class="container">
-        <h2 class="display-5 fw-bold mb-3">Ready to Protect Your Family?</h2>
-        <p class="lead mb-4">Use the Alameda County disaster risk map to check fire, flood, and earthquake risk in one place.</p>
+        <h2 class="display-5 fw-bold mb-3">Ready to understand your risk and act on it?</h2>
+        <p class="lead mb-4">Use one connected experience to check risk, explore the map, and move into practical preparedness steps.</p>
         <a href="#" onclick="document.getElementById('zip_code').scrollIntoView({behavior: 'smooth'}); document.getElementById('zip_code').focus();" class="btn btn-light btn-lg px-5 py-3 fw-bold">
             <i class="fas fa-shield-alt me-2"></i>Start Your Emergency Plan Now
         </a>
@@ -902,26 +957,6 @@
     </div>
 </section>
 
-<footer class="bg-dark text-white py-4">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-6">
-                <h2 class="h5 fw-bold mb-3">
-                    <i class="fas fa-shield-alt me-2 text-warning"></i>
-                    Stay Ready Now
-                </h2>
-                <p class="mb-0">&copy; 2025 Adan J Allen | Hidden Genius Project</p>
-            </div>
-            <div class="col-md-6 text-md-end">
-                <div class="d-flex justify-content-md-end justify-content-start gap-3">
-                    <a href="{{ url_for('about') }}" class="text-white-50 text-decoration-none">About</a>
-                    <a href="{{ url_for('resources') }}" class="text-white-50 text-decoration-none">Resources</a>
-                    <a href="{{ url_for('live_earthquake_map') }}" class="text-white-50 text-decoration-none">Live Earthquake Map</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</footer>
 {% endblock %}
 
 {% block scripts %}
@@ -1020,6 +1055,12 @@
 
         function hideMessage() {
             document.getElementById('form-messages').style.display = 'none';
+        }
+
+        const hasAddressValue = Boolean(addressInput.value.trim());
+        if (hasAddressValue) {
+            addressRadio.checked = true;
+            zipRadio.checked = false;
         }
 
         zipRadio.addEventListener('change', toggleSearchType);
