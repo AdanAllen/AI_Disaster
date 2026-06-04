@@ -113,45 +113,45 @@
     "jurisdiction_id": "albany",
     "name": "Albany",
     "jurisdiction_type": "city",
-    "plan_name": "Local hazard mitigation source not confirmed",
-    "plan_group": "Needs source review",
-    "review_status": "needs_source_review",
-    "url": "",
-    "hazards": [],
-    "notes": "Do not show city-specific hazard claims until an official source is reviewed."
+    "plan_name": "Albany Hazard Mitigation",
+    "plan_group": "Albany Fire Department",
+    "review_status": "draft_reviewed",
+    "url": "https://www.albanyca.gov/Departments/Fire-Department",
+    "hazards": ["earthquake", "flood", "wildfire", "severe_weather"],
+    "notes": "Official Fire Department page confirms Albany's LHMP addresses earthquakes, wildfires, flooding, and other emergencies; detailed plan PDF extraction is still needed."
   },
   {
     "jurisdiction_id": "emeryville",
     "name": "Emeryville",
     "jurisdiction_type": "city",
-    "plan_name": "Local hazard mitigation source not confirmed",
-    "plan_group": "Needs source review",
-    "review_status": "needs_source_review",
-    "url": "",
-    "hazards": [],
-    "notes": "Do not show city-specific hazard claims until an official source is reviewed."
+    "plan_name": "2025-2030 Local Hazard Mitigation Plan",
+    "plan_group": "Emeryville LHMP",
+    "review_status": "draft_reviewed",
+    "url": "https://www.emeryville.org/Services/Residents/Local-Hazard-Mitigation-Plan-LHMP",
+    "hazards": ["earthquake", "flood", "wildfire", "severe_weather"],
+    "notes": "Official LHMP page confirmed; detailed 91MB plan extraction is still needed before stronger city-specific claims."
   },
   {
     "jurisdiction_id": "piedmont",
     "name": "Piedmont",
     "jurisdiction_type": "city",
-    "plan_name": "Local hazard mitigation source not confirmed",
-    "plan_group": "Needs source review",
-    "review_status": "needs_source_review",
-    "url": "",
-    "hazards": [],
-    "notes": "Do not show city-specific hazard claims until an official source is reviewed."
+    "plan_name": "Draft Local Hazard Mitigation Plan",
+    "plan_group": "Piedmont LHMP Update",
+    "review_status": "draft_reviewed",
+    "url": "https://www.ci.piedmont.ca.us/services___departments/planning___building/general_plan___other_policy_documents/hazard_mitigation_plan_",
+    "hazards": ["earthquake", "flood", "wildfire", "severe_weather"],
+    "notes": "Official draft LHMP page confirmed; page identifies earthquake, wildfire, and severe weather examples. A 2025 LHMP meeting handout provides limited flood context; full draft PDF extraction is still needed."
   },
   {
     "jurisdiction_id": "san_leandro",
     "name": "San Leandro",
     "jurisdiction_type": "city",
-    "plan_name": "Local hazard mitigation source not confirmed",
-    "plan_group": "Needs source review",
-    "review_status": "needs_source_review",
-    "url": "",
-    "hazards": [],
-    "notes": "Do not show city-specific hazard claims until an official source is reviewed."
+    "plan_name": "Environmental Hazards Element Update",
+    "plan_group": "San Leandro General Plan Hazard Context",
+    "review_status": "draft_reviewed",
+    "url": "https://www.sanleandro.org/1137/Environmental-Hazards-Element-Update",
+    "hazards": ["earthquake", "flood", "wildfire", "landslide", "sea_level_rise", "severe_weather"],
+    "notes": "Official hazard element source confirmed; not a full LHMP record. Use as hazard context, especially evacuation, climate, and wildfire planning."
   },
   {
     "jurisdiction_id": "unincorporated_alameda_county",
@@ -159,9 +159,9 @@
     "jurisdiction_type": "unincorporated",
     "plan_name": "Alameda County hazard mitigation planning context",
     "plan_group": "Alameda County",
-    "review_status": "needs_source_review",
+    "review_status": "draft_reviewed",
     "url": "https://acgov.org/government/reports/mitigationplan.htm",
     "hazards": ["earthquake", "flood", "wildfire", "severe_weather"],
-    "notes": "County source exists, but community-specific claims for unincorporated areas still need reviewed chunks."
+    "notes": "County mitigation source confirmed for countywide context; community-specific unincorporated claims still need reviewed chunks."
   }
 ]

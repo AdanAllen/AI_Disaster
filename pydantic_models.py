@@ -72,11 +72,27 @@ class RecoveryQuestion(BaseModel):
     source_id: str = ""
 
 
+class ResidentGuidanceItem(BaseModel):
+    chunk_id: str
+    source_id: str
+    jurisdiction: str
+    hazard_type: str
+    resident_phase: Literal["hazard_priority", "local_context", "before", "during", "after", "recovery", "limitations"]
+    guidance_type: str = ""
+    plain_language: str
+    recommended_action: str = ""
+    recovery_question: str = ""
+    source_url: str = ""
+    review_status: ReviewStatus = "draft"
+
+
 class SpecializedGuidance(BaseModel):
     city_context: List[str] = Field(default_factory=list)
     household_factors: List[str] = Field(default_factory=list)
     access_functional_needs: List[str] = Field(default_factory=list)
     recovery_needs: List[str] = Field(default_factory=list)
+    resident_guidance: Dict[str, List[ResidentGuidanceItem]] = Field(default_factory=dict)
+    guidance_source_status: str = "county_fallback"
     source_ids: List[str] = Field(default_factory=list)
 
 

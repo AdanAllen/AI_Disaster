@@ -6,8 +6,8 @@ from typing import Dict, List, Optional
 
 from shapely.geometry import Point, shape
 
-from pydantic_models import HazardResult, PreparednessAction, RecoveryQuestion, SpecializedGuidance
-from source_registry import get_city_chunks, get_local_plan_for_city, get_source, get_sources_for_hazard
+from pydantic_models import HazardResult, PreparednessAction, RecoveryQuestion, ResidentGuidanceItem, SpecializedGuidance
+from source_registry import get_city_chunks, get_local_plan_for_city, get_resident_guidance, get_source, get_sources_for_hazard
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -162,12 +162,16 @@ def check_flood_layer(lat: Optional[float], lon: Optional[float]) -> Dict:
 
 
 def _source_payload(hazard_type: str, extra_source_ids: Optional[List[str]] = None):
-    sources = get_sources_for_hazard(hazard_type)
-    existing = {source.source_id for source in sources}
+    sources = []
+    existing = set()
     for source_id in extra_source_ids or []:
         if source_id and source_id not in existing:
             sources.append(get_source(source_id))
             existing.add(source_id)
+    for source in get_sources_for_hazard(hazard_type):
+        if source.source_id not in existing:
+            sources.append(source)
+            existing.add(source.source_id)
     return sources
 
 
@@ -205,8 +209,50 @@ def _local_plan_match(location_result, hazard_type: str) -> Optional[Dict]:
 def _specialized_guidance(location_result, hazard_type: str, user_context: Optional[Dict] = None) -> SpecializedGuidance:
     user_context = user_context or {}
     city_chunks = get_city_chunks(location_result.city, hazard_type)
-    city_context = [chunk.get("text", "") for chunk in city_chunks if chunk.get("text")]
+    guidance_chunks = get_resident_guidance(location_result.city, hazard_type)
+    plan = get_local_plan_for_city(location_result.city)
+    grouped_guidance = {
+        "hazard_priority": [],
+        "local_context": [],
+        "before": [],
+        "during": [],
+        "after": [],
+        "recovery": [],
+        "limitations": [],
+    }
+    guidance_source_status = "county_fallback"
     source_ids = list(dict.fromkeys(chunk.get("source_id") for chunk in city_chunks if chunk.get("source_id")))
+
+    for chunk in guidance_chunks:
+        try:
+            item = ResidentGuidanceItem(**chunk)
+        except Exception:
+            continue
+        grouped_guidance.setdefault(item.resident_phase, []).append(item)
+        if item.recovery_question and item.resident_phase != "recovery":
+            grouped_guidance["recovery"].append(item)
+        if item.source_id not in source_ids:
+            source_ids.append(item.source_id)
+        if (
+            location_result.city
+            and item.jurisdiction.strip().lower() == location_result.city.strip().lower()
+            and item.review_status in {"reviewed", "draft_reviewed"}
+        ):
+            guidance_source_status = "local_reviewed"
+
+    city_context = [
+        item.plain_language
+        for phase in ("hazard_priority", "local_context", "limitations")
+        for item in grouped_guidance.get(phase, [])
+    ]
+    if plan and plan.get("review_status") == "needs_source_review" and guidance_source_status != "local_reviewed":
+        guidance_source_status = "needs_source_review"
+        city_context.insert(
+            0,
+            f"{location_result.city} is represented in the Alameda County registry, but its city-specific source still needs review. Countywide guidance is shown instead.",
+        )
+    if not city_context:
+        city_context = [chunk.get("text", "") for chunk in city_chunks if chunk.get("text")]
     household_factors = []
     access_functional_needs = []
 
@@ -227,15 +273,23 @@ def _specialized_guidance(location_result, hazard_type: str, user_context: Optio
         "Keep documents, insurance, housing, medications, transportation, and family continuity plans accessible.",
     ])
     if not city_context and location_result.city:
-        city_context.append(
-            f"No reviewed {location_result.city} hazard chunk is available for this hazard yet, so city-specific claims remain limited."
-        )
+        if plan and plan.get("review_status") == "needs_source_review":
+            guidance_source_status = "needs_source_review"
+            city_context.append(
+                f"{location_result.city} is represented in the Alameda County registry, but its city-specific source still needs review. Countywide guidance is shown instead."
+            )
+        else:
+            city_context.append(
+                f"No reviewed {location_result.city} resident guidance chunk is available for this hazard yet, so city-specific claims remain limited."
+            )
 
     return SpecializedGuidance(
         city_context=city_context,
         household_factors=household_factors,
         access_functional_needs=access_functional_needs,
         recovery_needs=recovery_needs,
+        resident_guidance=grouped_guidance,
+        guidance_source_status=guidance_source_status,
         source_ids=source_ids,
     )
 
@@ -278,7 +332,10 @@ def _jurisdiction_result(hazard: Dict, location_result, zip_snapshot: Dict, user
         limitations=limitations,
         recommended_actions=DEFAULT_ACTIONS.get(hazard_type, DEFAULT_ACTIONS["earthquake"]),
         recovery_questions=RECOVERY_QUESTIONS,
-        sources=_source_payload(hazard_type, ["alameda_county_emergency", "ready_recovery"]),
+        sources=_source_payload(
+            hazard_type,
+            specialized_guidance.source_ids + ["alameda_county_emergency", "ready_recovery"],
+        ),
         local_plan_match=local_plan_match,
         specialized_guidance=specialized_guidance,
         legacy_score=score,
@@ -292,6 +349,7 @@ def _zip_result(hazard: Dict, location_result, zip_snapshot: Dict, user_context:
     exposure = exposure_from_score(score)
     explanation = _zip_explanation(zip_snapshot, hazard_type)
     zip_code = location_result.zip_code or "the selected ZIP"
+    specialized_guidance = _specialized_guidance(location_result, hazard_type, user_context)
 
     return HazardResult(
         hazard_id=hazard_type,
@@ -318,9 +376,12 @@ def _zip_result(hazard: Dict, location_result, zip_snapshot: Dict, user_context:
         ],
         recommended_actions=DEFAULT_ACTIONS.get(hazard_type, DEFAULT_ACTIONS["earthquake"]),
         recovery_questions=RECOVERY_QUESTIONS,
-        sources=_source_payload(hazard_type, ["alameda_county_emergency", "ready_recovery"]),
+        sources=_source_payload(
+            hazard_type,
+            specialized_guidance.source_ids + ["alameda_county_emergency", "ready_recovery"],
+        ),
         local_plan_match=_local_plan_match(location_result, hazard_type),
-        specialized_guidance=_specialized_guidance(location_result, hazard_type, user_context),
+        specialized_guidance=specialized_guidance,
         legacy_score=score,
         legacy_priority_score=hazard.get("priority_score"),
     )
@@ -359,6 +420,7 @@ def _flood_address_result(hazard: Dict, location_result, flood_check: Dict, zip_
     score = _legacy_score(zip_snapshot, hazard_type)
     inside = bool(flood_check.get("inside"))
     layers = flood_check.get("layers") or []
+    specialized_guidance = _specialized_guidance(location_result, hazard_type, user_context)
     status = "checked" if inside else "not_in_layer"
     exposure = "high" if inside else "low"
     limitations = [
@@ -392,9 +454,12 @@ def _flood_address_result(hazard: Dict, location_result, flood_check: Dict, zip_
         limitations=limitations,
         recommended_actions=DEFAULT_ACTIONS["flood"],
         recovery_questions=RECOVERY_QUESTIONS,
-        sources=_source_payload(hazard_type, ["fema_nfhl", "ready_floods", "ready_recovery"]),
+        sources=_source_payload(
+            hazard_type,
+            specialized_guidance.source_ids + ["fema_nfhl", "ready_floods", "ready_recovery"],
+        ),
         local_plan_match=_local_plan_match(location_result, hazard_type),
-        specialized_guidance=_specialized_guidance(location_result, hazard_type, user_context),
+        specialized_guidance=specialized_guidance,
         legacy_score=score,
         legacy_priority_score=hazard.get("priority_score"),
     )

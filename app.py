@@ -15,7 +15,7 @@ from copy import deepcopy
 from hazard_engine import build_hazard_results, merge_structured_result
 from location_service import location_from_session
 from rag_service import retrieve_chunks
-from source_registry import load_hazard_registry, load_jurisdictions, load_local_plans, source_records_payload
+from source_registry import load_hazard_registry, load_jurisdictions, load_local_plans, load_resident_guidance_chunks, source_records_payload
 
 try:
     from openai import OpenAI
@@ -1296,6 +1296,7 @@ def api_health():
         "required_gis_slice": "flood_address_point",
         "source_count": len(source_records_payload()),
         "local_plan_count": len(load_local_plans()),
+        "resident_guidance_count": len(load_resident_guidance_chunks()),
     })
 
 
@@ -1306,6 +1307,7 @@ def api_sources():
         "hazards": load_hazard_registry(),
         "jurisdictions": load_jurisdictions(),
         "local_plans": load_local_plans(),
+        "resident_guidance_count": len(load_resident_guidance_chunks()),
     })
 
 

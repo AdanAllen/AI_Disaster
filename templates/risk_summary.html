@@ -925,11 +925,18 @@
                                 {% endif %}
                             </div>
                             <div class="hub-panel">
-                                <h4>Local plan context</h4>
-                                {% if hazard.local_plan_match and hazard.local_plan_match.review_status in ["reviewed", "draft_reviewed"] %}
-                                <p class="text-muted mb-2">{{ hazard.local_plan_match.plan_name }}</p>
+                                <h4>Local source status</h4>
+                                {% if hazard.specialized_guidance.guidance_source_status == "local_reviewed" %}
+                                <span class="evidence-badge source mb-2">Local source reviewed</span>
+                                {% elif hazard.specialized_guidance.guidance_source_status == "needs_source_review" %}
+                                <span class="evidence-badge status mb-2">Needs source review</span>
                                 {% else %}
-                                <p class="text-muted mb-0">No reviewed city-specific plan claim is attached yet. County and official fallback sources are still shown.</p>
+                                <span class="evidence-badge status mb-2">County fallback guidance</span>
+                                {% endif %}
+                                {% if hazard.local_plan_match and hazard.local_plan_match.review_status in ["reviewed", "draft_reviewed"] %}
+                                <p class="text-muted mb-2 mt-2">{{ hazard.local_plan_match.plan_name }}</p>
+                                {% else %}
+                                <p class="text-muted mb-2 mt-2">No reviewed city-specific plan claim is attached for this hazard. County and official fallback sources are shown.</p>
                                 {% endif %}
                                 {% if hazard.specialized_guidance.city_context %}
                                 <ul>
@@ -940,7 +947,15 @@
                                 {% endif %}
                             </div>
                             <div class="hub-panel">
-                                <h4>Specialized factors</h4>
+                                <h4>What to do before</h4>
+                                {% set before_items = hazard.specialized_guidance.resident_guidance.before if hazard.specialized_guidance.resident_guidance else [] %}
+                                {% if before_items %}
+                                <ul>
+                                    {% for item in before_items[:2] %}
+                                    <li>{{ item.recommended_action or item.plain_language }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% else %}
                                 <ul>
                                     {% for item in hazard.specialized_guidance.household_factors[:2] %}
                                     <li>{{ item }}</li>
@@ -949,14 +964,46 @@
                                     <li>{{ item }}</li>
                                     {% endfor %}
                                 </ul>
+                                {% endif %}
+                            </div>
+                            <div class="hub-panel">
+                                <h4>During and after</h4>
+                                {% set during_items = hazard.specialized_guidance.resident_guidance.during if hazard.specialized_guidance.resident_guidance else [] %}
+                                {% set after_items = hazard.specialized_guidance.resident_guidance.after if hazard.specialized_guidance.resident_guidance else [] %}
+                                {% set limitation_items = hazard.specialized_guidance.resident_guidance.limitations if hazard.specialized_guidance.resident_guidance else [] %}
+                                {% if during_items or after_items or limitation_items %}
+                                <ul>
+                                    {% for item in (during_items + after_items + limitation_items)[:3] %}
+                                    <li>{{ item.recommended_action or item.plain_language }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% else %}
+                                <ul>
+                                    {% for item in hazard.specialized_guidance.access_functional_needs[:1] %}
+                                    <li>{{ item }}</li>
+                                    {% endfor %}
+                                    {% for item in hazard.limitations[:1] %}
+                                    <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
                             </div>
                             <div class="hub-panel">
                                 <h4>Recovery needs</h4>
+                                {% set recovery_items = hazard.specialized_guidance.resident_guidance.recovery if hazard.specialized_guidance.resident_guidance else [] %}
+                                {% if recovery_items %}
+                                <ul>
+                                    {% for item in recovery_items[:3] %}
+                                    <li>{{ item.recovery_question or item.recommended_action or item.plain_language }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% else %}
                                 <ul>
                                     {% for item in hazard.specialized_guidance.recovery_needs[:3] %}
                                     <li>{{ item }}</li>
                                     {% endfor %}
                                 </ul>
+                                {% endif %}
                             </div>
                         </div>
                         <div class="d-flex flex-wrap gap-2 mt-3">

@@ -48,6 +48,11 @@ def load_city_hazard_chunks() -> List[Dict]:
     return _load_json_file("city_hazard_chunks.json", [])
 
 
+@lru_cache(maxsize=1)
+def load_resident_guidance_chunks() -> List[Dict]:
+    return _load_json_file("resident_guidance_chunks.json", [])
+
+
 def normalize_jurisdiction_name(value: str) -> str:
     return (value or "").strip().lower().replace(" ", "_").replace("-", "_")
 
@@ -76,6 +81,40 @@ def get_city_chunks(city: str, hazard_type: str) -> List[Dict]:
         if chunk_hazard in {hazard_key, "all"}:
             chunks.append(chunk)
     return chunks
+
+
+def get_resident_guidance(city: str, hazard_type: str, limit: int = 12) -> List[Dict]:
+    city_key = normalize_jurisdiction_name(city)
+    hazard_key = (hazard_type or "").strip().lower()
+    reviewed_statuses = {"reviewed", "draft_reviewed"}
+    plan = get_local_plan_for_city(city)
+    local_allowed = bool(plan and plan.get("review_status") in reviewed_statuses)
+
+    matches = []
+    if city_key and local_allowed:
+        for chunk in load_resident_guidance_chunks():
+            if normalize_jurisdiction_name(chunk.get("jurisdiction", "")) != city_key:
+                continue
+            if chunk.get("review_status") not in reviewed_statuses:
+                continue
+            if chunk.get("hazard_type", "").strip().lower() == hazard_key:
+                matches.append(chunk)
+
+    if matches:
+        return matches[:limit]
+
+    fallback = []
+    for chunk in load_resident_guidance_chunks():
+        if normalize_jurisdiction_name(chunk.get("jurisdiction", "")) not in {
+            "alameda_county",
+            "unincorporated_alameda_county",
+        }:
+            continue
+        if chunk.get("review_status") not in reviewed_statuses:
+            continue
+        if chunk.get("hazard_type", "").strip().lower() == hazard_key:
+            fallback.append(chunk)
+    return fallback[:limit]
 
 
 def get_source(source_id: str) -> SourceRecord:
