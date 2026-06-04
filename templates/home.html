@@ -49,10 +49,8 @@
     }
 
     .hero {
-        background:
-            var(--hero-overlay),
-            url("{{ url_for('static', filename='oakland-skyline-real.jpg') }}") center bottom / cover no-repeat;
-        min-height: 920px;
+        background: linear-gradient(180deg, #f7fbff 0%, #eef4f8 100%);
+        min-height: 820px;
         display: flex;
         align-items: center;
         position: relative;
@@ -65,8 +63,8 @@
         position: absolute;
         inset: 0;
         background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 20%),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.12) 40%, rgba(255, 255, 255, 0.3) 100%);
+            linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 20%),
+            radial-gradient(circle at top center, rgba(173, 201, 224, 0.28), rgba(173, 201, 224, 0) 58%);
         pointer-events: none;
     }
 
@@ -74,7 +72,7 @@
         content: '';
         position: absolute;
         inset: auto 0 0;
-        height: 230px;
+        height: 260px;
         background: linear-gradient(180deg, rgba(240, 246, 251, 0) 0%, rgba(240, 246, 251, 0.75) 48%, rgba(242, 247, 251, 0.98) 100%);
         pointer-events: none;
     }
@@ -87,6 +85,30 @@
         max-width: 880px;
         margin: 0 auto;
         padding: 5rem 0 13rem;
+    }
+
+    .hero-photo-wrap {
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        transform: translateX(-50%);
+        width: min(1280px, calc(100% - 48px));
+        z-index: 1;
+        border-radius: 28px 28px 0 0;
+        overflow: hidden;
+        box-shadow: 0 22px 48px rgba(17, 40, 61, 0.12);
+        border: 1px solid rgba(205, 217, 227, 0.96);
+        border-bottom: 0;
+        background: #dfeaf3;
+    }
+
+    .hero-photo {
+        display: block;
+        width: 100%;
+        height: 255px;
+        object-fit: cover;
+        object-position: center center;
+        filter: saturate(0.98) contrast(1.01);
     }
 
     .hero h1 {
@@ -453,7 +475,7 @@
     .hero-trust-strip {
         position: relative;
         z-index: 2;
-        margin-top: -112px;
+        margin-top: -86px;
         margin-bottom: 2rem;
     }
 
@@ -552,11 +574,18 @@
     @media (max-width: 768px) {
         .hero {
             min-height: auto;
-            background-position: center bottom;
         }
 
         .hero-content {
-            padding: 4rem 0 10rem;
+            padding: 4rem 0 9rem;
+        }
+
+        .hero-photo-wrap {
+            width: calc(100% - 24px);
+        }
+
+        .hero-photo {
+            height: 180px;
         }
 
         .hero h1 { font-size: 2.7rem; }
@@ -566,7 +595,7 @@
         .quick-start-form { margin-top: 2rem; padding: 1.5rem; }
         .trust-grid { grid-template-columns: 1fr; }
         .trust-item + .trust-item { border-left: 0; border-top: 1px solid var(--border-soft); }
-        .hero-trust-strip { margin-top: -78px; }
+        .hero-trust-strip { margin-top: -52px; }
         .section-panel .surface-card,
         .about-panel,
         .coverage-map-card { padding: 1.5rem; }
@@ -582,7 +611,7 @@
         }
 
         .hero-content {
-            padding-bottom: 8.5rem;
+            padding-bottom: 8rem;
         }
     }
 </style>
@@ -720,6 +749,9 @@
 
             <a href="#features" class="cta-button mt-4">See How It Works</a>
         </div>
+    </div>
+    <div class="hero-photo-wrap" aria-hidden="true">
+        <img class="hero-photo" src="{{ url_for('static', filename='oakland-skyline-real.jpg') }}" alt="Oakland skyline and Lake Merritt">
     </div>
 </section>
 
