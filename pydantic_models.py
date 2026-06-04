@@ -82,6 +82,7 @@ class ResidentGuidanceItem(BaseModel):
     plain_language: str
     recommended_action: str = ""
     recovery_question: str = ""
+    source_detail: str = ""
     source_url: str = ""
     review_status: ReviewStatus = "draft"
 

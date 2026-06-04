@@ -103,6 +103,19 @@ def exposure_from_score(score: Optional[float]) -> str:
     return "low"
 
 
+def _hazard_type(hazard: Dict) -> str:
+    return (
+        hazard.get("hazard_id")
+        or hazard.get("slug")
+        or hazard.get("name", "")
+        or hazard.get("label", "")
+    ).strip().lower()
+
+
+def _hazard_label(hazard: Dict, fallback: str) -> str:
+    return hazard.get("label") or hazard.get("name") or fallback.title()
+
+
 def display_scope(scope: str) -> str:
     labels = {
         "address_level": "Address-level",
@@ -234,6 +247,80 @@ def check_flood_layer(lat: Optional[float], lon: Optional[float]) -> Dict:
             })
 
     return {"checked": True, "inside": bool(layers), "layers": layers}
+
+
+def check_wildfire_layer(lat: Optional[float], lon: Optional[float]) -> Dict:
+    if lat is None or lon is None:
+        return {"checked": False, "inside": None, "layers": []}
+
+    point = Point(float(lon), float(lat))
+    data = load_geojson("FireHaz.geojson")
+    layers = []
+    for feature in data.get("features", []):
+        geometry = feature.get("geometry")
+        if not geometry:
+            continue
+        try:
+            polygon = shape(geometry)
+        except Exception:
+            continue
+        if polygon.contains(point) or polygon.touches(point):
+            props = feature.get("properties", {})
+            hazard_class = props.get("HAZ_CLASS") or props.get("VH_REC") or "Unknown"
+            layers.append({
+                "layer_id": f"calfire_fhsz_{props.get('HAZ_CODE', 'unknown')}",
+                "name": f"CAL FIRE Fire Hazard Severity Zone: {hazard_class}",
+                "hazard_class": hazard_class,
+                "state_responsibility_area": props.get("SRA", ""),
+                "incorporated": props.get("INCORP", ""),
+            })
+
+    return {"checked": True, "inside": bool(layers), "layers": layers}
+
+
+def check_fault_layer(lat: Optional[float], lon: Optional[float], threshold_km: float = 2.0) -> Dict:
+    if lat is None or lon is None:
+        return {"checked": False, "near": None, "layers": []}
+
+    point = Point(float(lon), float(lat))
+    data = load_geojson("Fault_lines.Geojson")
+    nearest = None
+    nearest_km = None
+    for feature in data.get("features", []):
+        geometry = feature.get("geometry")
+        if not geometry:
+            continue
+        try:
+            line = shape(geometry)
+        except Exception:
+            continue
+        # Local approximation: latitude/longitude degrees to kilometers.
+        distance_km = point.distance(line) * 111.0
+        if nearest_km is None or distance_km < nearest_km:
+            props = feature.get("properties", {})
+            nearest_km = distance_km
+            nearest = {
+                "layer_id": props.get("fault_id") or "mapped_fault",
+                "name": props.get("fault_name") or "Mapped fault line",
+                "distance_km": round(distance_km, 2),
+                "line_type": props.get("linetype", ""),
+                "age": props.get("age", ""),
+                "source_url": props.get("fault_url", ""),
+            }
+
+    near = nearest_km is not None and nearest_km <= threshold_km
+    return {"checked": True, "near": near, "layers": [nearest] if near and nearest else [], "nearest_layer": nearest}
+
+
+def _fema_layer_is_sfha(layer: Dict) -> bool:
+    zone = str(layer.get("zone") or "").upper()
+    sfha = str(layer.get("sfha") or "").upper()
+    return sfha in {"T", "TRUE", "Y", "YES"} or zone.startswith(("A", "V"))
+
+
+def _fire_layer_is_hazard_zone(layer: Dict) -> bool:
+    hazard_class = str(layer.get("hazard_class") or "").strip().lower()
+    return hazard_class in {"moderate", "high", "very high"}
 
 
 def _source_payload(hazard_type: str, extra_source_ids: Optional[List[str]] = None):
@@ -370,7 +457,8 @@ def _specialized_guidance(location_result, hazard_type: str, user_context: Optio
 
 
 def _jurisdiction_result(hazard: Dict, location_result, zip_snapshot: Dict, user_context: Optional[Dict] = None) -> HazardResult:
-    hazard_type = hazard.get("slug") or hazard.get("name", "").lower()
+    hazard_type = _hazard_type(hazard)
+    label = _hazard_label(hazard, hazard_type)
     city = location_result.city or "Alameda County"
     score = _legacy_score(zip_snapshot, hazard_type)
     exposure = exposure_from_score(score) if score is not None else normalize_exposure(hazard.get("risk_level"))
@@ -388,7 +476,7 @@ def _jurisdiction_result(hazard: Dict, location_result, zip_snapshot: Dict, user
     return HazardResult(
         hazard_id=hazard_type,
         hazard_type=hazard_type,
-        label=hazard.get("name", hazard_type.title()),
+        label=label,
         scope="jurisdiction_level",
         basis="official_registry",
         location_precision="city" if location_result.city else "county",
@@ -401,7 +489,7 @@ def _jurisdiction_result(hazard: Dict, location_result, zip_snapshot: Dict, user
         confidence="mixed_support",
         review_status="draft",
         why_shown=(
-            f"{hazard.get('name', hazard_type.title())} is shown because {city} and Alameda County source context "
+            f"{label} is shown because {city} and Alameda County source context "
             "identify it as relevant for local preparedness planning."
         ),
         limitations=limitations,
@@ -419,7 +507,8 @@ def _jurisdiction_result(hazard: Dict, location_result, zip_snapshot: Dict, user
 
 
 def _zip_result(hazard: Dict, location_result, zip_snapshot: Dict, user_context: Optional[Dict] = None) -> HazardResult:
-    hazard_type = hazard.get("slug") or hazard.get("name", "").lower()
+    hazard_type = _hazard_type(hazard)
+    label = _hazard_label(hazard, hazard_type)
     score = _legacy_score(zip_snapshot, hazard_type)
     exposure = exposure_from_score(score)
     explanation = _zip_explanation(zip_snapshot, hazard_type)
@@ -429,7 +518,7 @@ def _zip_result(hazard: Dict, location_result, zip_snapshot: Dict, user_context:
     return HazardResult(
         hazard_id=hazard_type,
         hazard_type=hazard_type,
-        label=hazard.get("name", hazard_type.title()),
+        label=label,
         scope="zip_estimate",
         basis="zip_csv_heuristic",
         location_precision="zip",
@@ -442,7 +531,7 @@ def _zip_result(hazard: Dict, location_result, zip_snapshot: Dict, user_context:
         confidence="mixed_support",
         review_status="draft",
         why_shown=(
-            f"{hazard.get('name', hazard_type.title())} is shown from ZIP-level fallback context for {zip_code}. "
+            f"{label} is shown from ZIP-level fallback context for {zip_code}. "
             f"{explanation}".strip()
         ),
         limitations=[
@@ -463,11 +552,12 @@ def _zip_result(hazard: Dict, location_result, zip_snapshot: Dict, user_context:
 
 
 def _county_result(hazard: Dict) -> HazardResult:
-    hazard_type = hazard.get("slug") or hazard.get("name", "").lower()
+    hazard_type = _hazard_type(hazard)
+    label = _hazard_label(hazard, hazard_type)
     return HazardResult(
         hazard_id=hazard_type,
         hazard_type=hazard_type,
-        label=hazard.get("name", hazard_type.title()),
+        label=label,
         scope="county_fallback",
         basis="county_guidance",
         location_precision="county",
@@ -479,7 +569,7 @@ def _county_result(hazard: Dict) -> HazardResult:
         source_url="",
         confidence="needs_review",
         review_status="draft",
-        why_shown=f"{hazard.get('name', hazard_type.title())} is shown as general Alameda County preparedness guidance.",
+        why_shown=f"{label} is shown as general Alameda County preparedness guidance.",
         limitations=[
             "This is countywide guidance only. No address, city, or ZIP-specific hazard check is available for this result.",
         ],
@@ -493,8 +583,9 @@ def _county_result(hazard: Dict) -> HazardResult:
 def _flood_address_result(hazard: Dict, location_result, flood_check: Dict, zip_snapshot: Dict, user_context: Optional[Dict] = None) -> HazardResult:
     hazard_type = "flood"
     score = _legacy_score(zip_snapshot, hazard_type)
-    inside = bool(flood_check.get("inside"))
     layers = flood_check.get("layers") or []
+    hazard_layers = [layer for layer in layers if _fema_layer_is_sfha(layer)]
+    inside = bool(hazard_layers)
     specialized_guidance = _specialized_guidance(location_result, hazard_type, user_context)
     status = "checked" if inside else "not_in_layer"
     exposure = "high" if inside else "low"
@@ -505,11 +596,12 @@ def _flood_address_result(hazard: Dict, location_result, flood_check: Dict, zip_
     if not inside:
         limitations.append("Not being inside the loaded layer does not mean flood impacts are impossible.")
 
-    zone_text = f" and matched {layers[0]['name']}" if layers else ""
+    zone_text = f" and matched {hazard_layers[0]['name']}" if hazard_layers else ""
+    context_text = f" The address matched {layers[0]['name']}, which is not treated here as Special Flood Hazard Area membership." if layers and not inside else ""
     return HazardResult(
         hazard_id=hazard_type,
         hazard_type=hazard_type,
-        label=hazard.get("name", "Flood"),
+        label=_hazard_label(hazard, "Flood"),
         scope="address_level",
         basis="gis_overlay",
         location_precision="address_point",
@@ -524,7 +616,7 @@ def _flood_address_result(hazard: Dict, location_result, flood_check: Dict, zip_
         why_shown=(
             f"Flood is shown because the saved address point was checked against an official FEMA flood layer{zone_text}."
             if inside else
-            "Flood is shown because the saved address point was checked against the FEMA flood layer and was not inside the loaded flood polygon."
+            f"Flood is shown because the saved address point was checked against the FEMA flood layer and was not inside a loaded Special Flood Hazard Area.{context_text}"
         ),
         limitations=limitations,
         recommended_actions=DEFAULT_ACTIONS["flood"],
@@ -540,18 +632,126 @@ def _flood_address_result(hazard: Dict, location_result, flood_check: Dict, zip_
     )
 
 
+def _wildfire_address_result(hazard: Dict, location_result, wildfire_check: Dict, zip_snapshot: Dict, user_context: Optional[Dict] = None) -> HazardResult:
+    hazard_type = "wildfire"
+    score = _legacy_score(zip_snapshot, hazard_type)
+    layers = wildfire_check.get("layers") or []
+    hazard_layers = [layer for layer in layers if _fire_layer_is_hazard_zone(layer)]
+    inside = bool(hazard_layers)
+    hazard_class = (hazard_layers[0].get("hazard_class", "") if hazard_layers else "").lower()
+    exposure = "high" if "very high" in hazard_class or "high" in hazard_class else "medium" if inside else "low"
+    specialized_guidance = _specialized_guidance(location_result, hazard_type, user_context)
+    limitations = [
+        "This checks the saved address point against the loaded CAL FIRE fire hazard polygon layer.",
+        "Fire hazard zones do not capture all wildfire smoke, evacuation, power shutoff, or ember exposure.",
+    ]
+    if not inside:
+        limitations.append("Not being inside the loaded fire hazard polygon does not mean smoke, evacuation, or regional wildfire impacts are impossible.")
+
+    zone_text = f" and matched {hazard_layers[0]['name']}" if hazard_layers else ""
+    context_text = f" The address matched {layers[0]['name']}, which is not treated here as a moderate/high/very-high fire hazard zone." if layers and not inside else ""
+    return HazardResult(
+        hazard_id=hazard_type,
+        hazard_type=hazard_type,
+        label=_hazard_label(hazard, "Wildfire"),
+        scope="address_level",
+        basis="gis_overlay",
+        location_precision="address_point",
+        data_status="checked" if inside else "not_in_layer",
+        exposure_level=exposure,
+        is_in_hazard_zone=inside,
+        match_type="inside" if inside else "none",
+        matched_layers=layers,
+        source_url=get_source("calfire_fhsz").url,
+        confidence="source_backed",
+        review_status="draft_reviewed",
+        why_shown=(
+            f"Wildfire is shown because the saved address point was checked against a CAL FIRE fire hazard layer{zone_text}."
+            if inside else
+            f"Wildfire is shown because the saved address point was checked against the CAL FIRE fire hazard layer and was not inside a loaded moderate, high, or very-high fire hazard zone.{context_text}"
+        ),
+        limitations=limitations,
+        recommended_actions=DEFAULT_ACTIONS["wildfire"],
+        recovery_questions=RECOVERY_QUESTIONS,
+        sources=_source_payload(
+            hazard_type,
+            specialized_guidance.source_ids + ["calfire_fhsz", "ready_kit", "ready_plan", "ready_recovery"],
+        ),
+        local_plan_match=_local_plan_match(location_result, hazard_type),
+        specialized_guidance=specialized_guidance,
+        legacy_score=score,
+        legacy_priority_score=hazard.get("priority_score"),
+    )
+
+
+def _earthquake_address_result(hazard: Dict, location_result, fault_check: Dict, zip_snapshot: Dict, user_context: Optional[Dict] = None) -> HazardResult:
+    hazard_type = "earthquake"
+    score = _legacy_score(zip_snapshot, hazard_type)
+    layers = fault_check.get("layers") or []
+    nearest = fault_check.get("nearest_layer") or {}
+    near = bool(fault_check.get("near"))
+    specialized_guidance = _specialized_guidance(location_result, hazard_type, user_context)
+    limitations = [
+        "This checks address proximity to loaded mapped fault lines only; it does not check liquefaction, shaking intensity, landslide susceptibility, building retrofit status, or parcel-level seismic risk.",
+        "Earthquake risk can still be significant even when the address is not near the nearest loaded fault trace.",
+    ]
+    if nearest and not near:
+        limitations.append(f"The nearest loaded mapped fault line is {nearest.get('distance_km')} km away: {nearest.get('name')}.")
+
+    return HazardResult(
+        hazard_id=hazard_type,
+        hazard_type=hazard_type,
+        label=_hazard_label(hazard, "Earthquake"),
+        scope="address_level",
+        basis="gis_overlay",
+        location_precision="address_point",
+        data_status="checked" if near else "not_in_layer",
+        exposure_level="high" if near else "unknown",
+        is_in_hazard_zone=near,
+        match_type="near" if near else "none",
+        matched_layers=layers,
+        source_url=get_source("usgs_faults").url,
+        confidence="mixed_support",
+        review_status="draft_reviewed",
+        why_shown=(
+            f"Earthquake is shown because the saved address point is within about 2 km of a loaded mapped fault line: {layers[0].get('name')}."
+            if near and layers else
+            "Earthquake is shown because the saved address point was checked against loaded mapped fault lines; this point check did not find a nearby loaded fault trace, but citywide seismic risk still requires preparedness."
+        ),
+        limitations=limitations,
+        recommended_actions=DEFAULT_ACTIONS["earthquake"],
+        recovery_questions=RECOVERY_QUESTIONS,
+        sources=_source_payload(
+            hazard_type,
+            specialized_guidance.source_ids + ["usgs_faults", "ready_earthquakes", "ready_recovery"],
+        ),
+        local_plan_match=_local_plan_match(location_result, hazard_type),
+        specialized_guidance=specialized_guidance,
+        legacy_score=score,
+        legacy_priority_score=hazard.get("priority_score"),
+    )
+
+
 def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dict, user_context: Optional[Dict] = None) -> List[HazardResult]:
     results = []
     flood_check = {"checked": False, "inside": None, "layers": []}
+    wildfire_check = {"checked": False, "inside": None, "layers": []}
+    fault_check = {"checked": False, "near": None, "layers": []}
     if location_result.lat is not None and location_result.lon is not None and location_result.formatted_address:
         flood_check = check_flood_layer(location_result.lat, location_result.lon)
+        wildfire_check = check_wildfire_layer(location_result.lat, location_result.lon)
+        fault_check = check_fault_layer(location_result.lat, location_result.lon)
 
     for raw_hazard in hazards:
         hazard = deepcopy(raw_hazard)
-        hazard_type = hazard.get("slug") or hazard.get("name", "").strip().lower()
+        hazard_type = _hazard_type(hazard)
 
         if hazard_type == "flood" and flood_check.get("checked"):
             result = _flood_address_result(hazard, location_result, flood_check, zip_snapshot, user_context)
+        elif hazard_type == "wildfire" and wildfire_check.get("checked"):
+            result = _wildfire_address_result(hazard, location_result, wildfire_check, zip_snapshot, user_context)
+        elif hazard_type == "earthquake" and fault_check.get("checked"):
+            result = _earthquake_address_result(hazard, location_result, fault_check, zip_snapshot, user_context)
         elif location_result.city or location_result.county:
             result = _jurisdiction_result(hazard, location_result, zip_snapshot, user_context)
             if hazard_type in {"wildfire", "earthquake"} and location_result.formatted_address:

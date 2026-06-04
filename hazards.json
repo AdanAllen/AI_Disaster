@@ -9,15 +9,15 @@
   {
     "hazard_id": "wildfire",
     "label": "Wildfire",
-    "supported_scopes": ["jurisdiction_level", "zip_estimate", "county_fallback"],
-    "primary_demo_basis": "official_registry",
-    "status": "draft"
+    "supported_scopes": ["address_level", "jurisdiction_level", "zip_estimate", "county_fallback"],
+    "primary_demo_basis": "gis_overlay",
+    "status": "draft_reviewed"
   },
   {
     "hazard_id": "earthquake",
     "label": "Earthquake",
-    "supported_scopes": ["jurisdiction_level", "zip_estimate", "county_fallback"],
-    "primary_demo_basis": "official_registry",
-    "status": "draft"
+    "supported_scopes": ["address_level", "jurisdiction_level", "zip_estimate", "county_fallback"],
+    "primary_demo_basis": "gis_overlay",
+    "status": "draft_reviewed"
   }
 ]

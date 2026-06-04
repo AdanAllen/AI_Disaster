@@ -400,7 +400,10 @@
                                 <h3 class="h6 fw-bold">Before</h3>
                                 <ul class="detail-list">
                                     {% for item in before_items[:2] %}
-                                    <li>{{ item.recommended_action or item.plain_language }}</li>
+                                    <li>
+                                        {{ item.recommended_action or item.plain_language }}
+                                        {% if item.source_detail %}<span class="d-block small text-muted mt-1">{{ item.source_detail }}</span>{% endif %}
+                                    </li>
                                     {% endfor %}
                                 </ul>
                             </div>
@@ -410,7 +413,10 @@
                                 <h3 class="h6 fw-bold">Precision limits</h3>
                                 <ul class="detail-list">
                                     {% for item in limitation_items[:2] %}
-                                    <li>{{ item.plain_language }}</li>
+                                    <li>
+                                        {{ item.plain_language }}
+                                        {% if item.source_detail %}<span class="d-block small text-muted mt-1">{{ item.source_detail }}</span>{% endif %}
+                                    </li>
                                     {% endfor %}
                                 </ul>
                             </div>
@@ -420,7 +426,10 @@
                                 <h3 class="h6 fw-bold">Recovery prompt</h3>
                                 <ul class="detail-list">
                                     {% for item in recovery_items[:2] %}
-                                    <li>{{ item.recovery_question or item.recommended_action or item.plain_language }}</li>
+                                    <li>
+                                        {{ item.recovery_question or item.recommended_action or item.plain_language }}
+                                        {% if item.source_detail %}<span class="d-block small text-muted mt-1">{{ item.source_detail }}</span>{% endif %}
+                                    </li>
                                     {% endfor %}
                                 </ul>
                             </div>

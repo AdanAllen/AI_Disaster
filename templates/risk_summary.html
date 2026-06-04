@@ -952,7 +952,10 @@
                                 {% if before_items %}
                                 <ul>
                                     {% for item in before_items[:2] %}
-                                    <li>{{ item.recommended_action or item.plain_language }}</li>
+                                    <li>
+                                        {{ item.recommended_action or item.plain_language }}
+                                        {% if item.source_detail %}<span class="d-block small text-muted mt-1">{{ item.source_detail }}</span>{% endif %}
+                                    </li>
                                     {% endfor %}
                                 </ul>
                                 {% else %}
@@ -974,7 +977,10 @@
                                 {% if during_items or after_items or limitation_items %}
                                 <ul>
                                     {% for item in (during_items + after_items + limitation_items)[:3] %}
-                                    <li>{{ item.recommended_action or item.plain_language }}</li>
+                                    <li>
+                                        {{ item.recommended_action or item.plain_language }}
+                                        {% if item.source_detail %}<span class="d-block small text-muted mt-1">{{ item.source_detail }}</span>{% endif %}
+                                    </li>
                                     {% endfor %}
                                 </ul>
                                 {% else %}
@@ -994,7 +1000,10 @@
                                 {% if recovery_items %}
                                 <ul>
                                     {% for item in recovery_items[:3] %}
-                                    <li>{{ item.recovery_question or item.recommended_action or item.plain_language }}</li>
+                                    <li>
+                                        {{ item.recovery_question or item.recommended_action or item.plain_language }}
+                                        {% if item.source_detail %}<span class="d-block small text-muted mt-1">{{ item.source_detail }}</span>{% endif %}
+                                    </li>
                                     {% endfor %}
                                 </ul>
                                 {% else %}
