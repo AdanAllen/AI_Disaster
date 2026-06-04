@@ -1,0 +1,18 @@
+[
+  {
+    "jurisdiction_id": "alameda_county",
+    "name": "Alameda County",
+    "type": "county",
+    "state": "California",
+    "supported_hazards": ["wildfire", "flood", "earthquake"],
+    "notes": "Countywide fallback and source registry context for the two-week demo."
+  },
+  {
+    "jurisdiction_id": "oakland",
+    "name": "Oakland",
+    "type": "city",
+    "state": "California",
+    "supported_hazards": ["wildfire", "flood", "earthquake"],
+    "notes": "Existing JSON hazard dataset is Oakland-focused and should be labeled carefully when used."
+  }
+]

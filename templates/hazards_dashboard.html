@@ -111,6 +111,19 @@
         color: #1e7a38;
     }
 
+    .evidence-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.65rem;
+        border-radius: 999px;
+        background: #edf4f8;
+        color: #28465f;
+        font-size: 0.78rem;
+        font-weight: 800;
+        margin: 0 0.35rem 0.55rem 0;
+    }
+
     .priority-score {
         color: #173552;
         font-weight: 800;
@@ -224,10 +237,10 @@
 {% block content %}
 <section class="dashboard-hero">
     <div class="container">
-        <span class="section-eyebrow text-white-50">Oakland LHMP Intelligence Layer</span>
+        <span class="section-eyebrow text-white-50">Source-Backed Hazard Layer</span>
         <h1>Hazard Dashboard</h1>
         <p class="mb-0">
-            This view turns the Oakland Local Hazard Mitigation Plan into a clearer public-facing experience by ranking hazards, connecting them to your saved location, and linking them to the rest of the app flow.
+            This view ranks hazards while keeping the evidence basis visible: address checks when available, jurisdiction context next, ZIP estimates after that, and county guidance as fallback.
         </p>
     </div>
 </section>
@@ -237,7 +250,7 @@
         <div class="profile-panel">
             <span class="section-eyebrow">Personalization</span>
             <h2 class="h3 mb-2">Make the hazard ranking fit your situation</h2>
-            <p class="text-muted mb-3">Current Oakland location: <strong>{{ location_context.display_name }}</strong></p>
+            <p class="text-muted mb-3">Current location: <strong>{{ location_context.display_name }}</strong> · {{ location_context.precision_label }}</p>
             {% include "_hazard_profile_form.html" %}
         </div>
     </div>
@@ -248,8 +261,8 @@
         <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
             <div>
                 <span class="section-eyebrow">Top 3 Hazards</span>
-                <h2 class="h3 mb-1">Highest-priority risks</h2>
-                <p class="text-muted mb-0">Ranked from the LHMP-style dataset, then adjusted by your current Oakland ZIP risk where local scores are available.</p>
+                <h2 class="h3 mb-1">Highest-priority hazards</h2>
+                <p class="text-muted mb-0">Ranked by the structured hazard engine, with precision and data status shown before legacy scoring.</p>
             </div>
             <a class="btn btn-outline-primary" href="{{ url_for('api_top_risks') }}" target="_blank" rel="noopener noreferrer">
                 <i class="fas fa-code me-2"></i>View API
@@ -265,10 +278,11 @@
                     <div class="risk-pill {{ risk_class }}">{{ hazard.risk_level }} risk</div>
                     <h3>{{ hazard.name }}</h3>
                     <p class="hazard-summary">{{ hazard.summary }}</p>
-                    {% if hazard.local_risk_score is defined %}
-                    <p class="mb-2 text-muted">Local ZIP risk: <strong>{{ '%.1f'|format(hazard.local_risk_score) }}/10</strong> ({{ hazard.local_risk_level }})</p>
-                    {% endif %}
-                    <p class="mb-2 text-muted"><span class="priority-score">{{ hazard.priority_score }}/10</span> priority</p>
+                    <div class="mb-2">
+                        <span class="evidence-pill">{{ hazard.scope_label or "County fallback" }}</span>
+                        <span class="evidence-pill">{{ hazard.data_status_label or "Needs review" }}</span>
+                    </div>
+                    <p class="mb-2 text-muted">{{ hazard.why_shown or "Shown from the reviewed hazard registry and available local context." }}</p>
                     <a class="btn btn-primary" href="{{ url_for('hazard_detail', name=hazard.slug) }}">
                         View hazard page
                     </a>
@@ -289,7 +303,7 @@
                     <ul>
                         <li>Use the risk summary to understand what is most urgent.</li>
                         <li>Use the map to see where your location sits inside hazard layers.</li>
-                        <li>Use these hazard pages to read deeper Oakland-specific impact and action guidance.</li>
+                        <li>Use these hazard pages to read why a hazard is shown, where precision is limited, and what to do next.</li>
                     </ul>
                 </div>
             </div>
@@ -298,8 +312,8 @@
                     <span class="section-eyebrow">Data Logic</span>
                     <h3 class="h5 mb-3">What this ranking combines</h3>
                     <ul>
-                        <li>Oakland hazard priority from the LHMP-derived dataset.</li>
-                        <li>Your saved ZIP risk snapshot when local scoring exists.</li>
+                        <li>Address-level official GIS checks when available.</li>
+                        <li>Jurisdiction context, ZIP estimates, or county guidance when stronger checks are unavailable.</li>
                         <li>Your profile choices for renter, age, and neighborhood setting.</li>
                     </ul>
                 </div>
@@ -329,7 +343,7 @@
                 <div>
                     <span class="section-eyebrow">All Hazards</span>
                     <h2 class="h3 mb-1">Full ranked list</h2>
-                    <p class="text-muted mb-0">Every hazard page uses the same LHMP-backed JSON dataset, then adds your saved Oakland location and profile rules.</p>
+                    <p class="text-muted mb-0">Every hazard page uses the same structured result model and clearly labels source, precision, status, and limitations.</p>
                 </div>
                 <a class="btn btn-outline-secondary" href="{{ url_for('api_hazards') }}" target="_blank" rel="noopener noreferrer">
                     <i class="fas fa-database me-2"></i>All hazards JSON
@@ -342,17 +356,15 @@
                 <div>
                     <div class="hazard-row-name">{{ hazard.name }}</div>
                     <p>{{ hazard.summary }}</p>
-                    {% if hazard.local_risk_score is defined %}
-                    <small>Local ZIP risk: {{ '%.1f'|format(hazard.local_risk_score) }}/10 ({{ hazard.local_risk_level }})</small>
-                    {% endif %}
+                    <small>{{ hazard.scope_label or "County fallback" }} · {{ hazard.data_status_label or "Needs review" }}</small>
                 </div>
                 <div>
-                    <small class="text-uppercase fw-semibold">Risk level</small>
-                    <div>{{ hazard.risk_level }}</div>
+                    <small class="text-uppercase fw-semibold">Exposure</small>
+                    <div>{{ hazard.exposure_level | title if hazard.exposure_level else hazard.risk_level }}</div>
                 </div>
                 <div>
-                    <small class="text-uppercase fw-semibold">Priority</small>
-                    <div>{{ hazard.priority_score }}/10</div>
+                    <small class="text-uppercase fw-semibold">Precision</small>
+                    <div>{{ hazard.location_precision_label or "Needs review" }}</div>
                 </div>
                 <div>
                     <a class="btn btn-sm btn-outline-primary" href="{{ url_for('hazard_detail', name=hazard.slug) }}">
@@ -370,8 +382,8 @@
         <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
             <div>
                 <span class="section-eyebrow">System Insights</span>
-                <h2 class="h3 mb-1">How Prepared is Oakland?</h2>
-                <p class="text-muted mb-0">Strengths, weaknesses, and recommendations drawn from the Oakland planning dataset so the dashboard feels connected to real mitigation priorities.</p>
+                <h2 class="h3 mb-1">Preparedness Context</h2>
+                <p class="text-muted mb-0">Strengths, weaknesses, and recommendations are treated as planning context, not as address-level hazard determinations.</p>
             </div>
         </div>
 

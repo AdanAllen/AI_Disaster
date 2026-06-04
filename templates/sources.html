@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Source Registry | Stay Ready Now{% endblock %}
+
+{% block head %}
+<style>
+    .sources-hero {
+        padding: 4.5rem 0 3rem;
+        background: linear-gradient(135deg, #14324f, #2a6f97);
+        color: white;
+    }
+
+    .source-section {
+        padding: 4rem 0;
+    }
+
+    .source-table-card {
+        background: white;
+        border: 1px solid var(--border-soft);
+        border-radius: 18px;
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+    }
+
+    .source-table {
+        margin-bottom: 0;
+    }
+
+    .source-table th {
+        color: var(--brand-ink);
+        font-size: 0.82rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        background: #f3f7fa;
+    }
+
+    .source-table td {
+        vertical-align: top;
+        color: var(--text-main);
+    }
+
+    .source-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.34rem 0.62rem;
+        border-radius: 999px;
+        background: #edf4f8;
+        color: #26475f;
+        font-size: 0.82rem;
+        font-weight: 800;
+        margin: 0 0.25rem 0.25rem 0;
+    }
+
+    .registry-note {
+        border: 1px solid #cbdce9;
+        background: #f4f9fc;
+        border-radius: 16px;
+        padding: 1.2rem 1.35rem;
+        color: #36536b;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="sources-hero">
+    <div class="container">
+        <span class="section-eyebrow text-white-50">Source Registry</span>
+        <h1 class="display-4 fw-bold mb-3">What StayReady is using</h1>
+        <p class="lead mb-0">This page shows the official sources and reviewed guidance that support the demo. Address-level hazard checks, jurisdiction context, and fallback guidance are labeled separately.</p>
+    </div>
+</section>
+
+<section class="source-section">
+    <div class="container">
+        <div class="registry-note mb-4">
+            <strong>Precision rule:</strong>
+            GIS layers determine address-level checks. ZIP data is fallback context only, and countywide guidance is used only when stronger location evidence is unavailable.
+        </div>
+
+        <div class="source-table-card">
+            <div class="table-responsive">
+                <table class="table source-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Source</th>
+                            <th>Agency</th>
+                            <th>Hazards</th>
+                            <th>Geography</th>
+                            <th>Use</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for source in sources %}
+                        <tr>
+                            <td>
+                                <a class="fw-bold" href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.name }}</a>
+                                <div class="small text-muted">{{ source.source_type }}</div>
+                            </td>
+                            <td>{{ source.agency }}</td>
+                            <td>
+                                {% for hazard in source.hazards %}
+                                <span class="source-badge">{{ hazard }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>{{ source.geographic_scope }}</td>
+                            <td>{{ source.use_in_app }}</td>
+                            <td>
+                                <span class="source-badge">{{ source.review_status }}</span>
+                                <span class="source-badge">{{ source.confidence }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

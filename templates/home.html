@@ -626,7 +626,7 @@
                 <span>2025 Congressional App Challenge Winner (CA-12)</span>
             </div>
             <h1>Professional disaster readiness for Alameda County households</h1>
-            <p class="lead">Check local wildfire, flood, and earthquake risk, then move through a clear flow from summary to map to hazard-specific action steps.</p>
+            <p class="lead">Enter an address, see what official layers and local context can actually support, then move from hazards to practical preparedness and recovery planning.</p>
 
             <div class="quick-start-form mx-auto" style="max-width: 500px;">
                 <h3 class="text-center">Start Your Readiness Check</h3>
@@ -666,7 +666,7 @@
                             >
                             <div class="form-text">
                                 <i class="fas fa-info-circle me-1"></i>
-                                We cover all Alameda County ZIP codes
+                                ZIP is available as a fallback estimate when address checks are unavailable
                             </div>
                         </div>
                     </div>
@@ -763,7 +763,7 @@
                     <span class="trust-icon text-danger"><i class="fas fa-triangle-exclamation"></i></span>
                     <div>
                         <h3>Wildfire Protection</h3>
-                        <p>See where wildfire deserves attention in your area, understand the score, and get the first actions to take at home.</p>
+                        <p>See whether wildfire is address-checked, jurisdiction-backed, or fallback guidance before choosing home actions.</p>
                         <a href="{{ url_for('hazard_detail', name='wildfire') }}">Review Wildfire Guidance</a>
                     </div>
                 </article>
@@ -771,7 +771,7 @@
                     <span class="trust-icon text-success"><i class="fas fa-shield-heart"></i></span>
                     <div>
                         <h3>Earthquake Readiness</h3>
-                        <p>Move from seismic exposure to practical readiness with priority actions, Oakland context, and neighborhood-aware guidance.</p>
+                        <p>Move from seismic context to practical readiness with clear limitations and local source labels.</p>
                         <a href="{{ url_for('hazard_detail', name='earthquake') }}">Review Earthquake Guidance</a>
                     </div>
                 </article>
@@ -779,7 +779,7 @@
                     <span class="trust-icon text-primary"><i class="fas fa-clipboard-list"></i></span>
                     <div>
                         <h3>Flood Safety</h3>
-                        <p>Use flood-zone context, ZIP-level scoring, and action checklists to prepare before heavy rain, drainage failures, or coastal impacts.</p>
+                        <p>Use the address-first flood check when available, with fallback labels for anything less precise.</p>
                         <a href="{{ url_for('hazard_detail', name='flood') }}">Review Flood Guidance</a>
                     </div>
                 </article>
@@ -794,8 +794,8 @@
 <section id="features" class="features">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="display-4 fw-bold mb-3">A clearer path from risk to action</h2>
-            <p class="lead">Every section is designed to help a resident understand risk, prioritize next steps, and keep moving.</p>
+            <h2 class="display-4 fw-bold mb-3">A clearer path from evidence to action</h2>
+            <p class="lead">Every section is designed to show what was checked, what was not checked, and what residents can do next.</p>
         </div>
 
         <div class="row g-4">
@@ -803,8 +803,8 @@
                 <div class="card feature-card">
                     <div class="card-body text-center">
                         <i class="fas fa-fire feature-icon wildfire-icon"></i>
-                        <h3 class="fw-bold mb-3">Wildfire Protection</h3>
-                        <p>See where wildfire deserves attention in your area, understand the score, and get the first actions to take at home.</p>
+                        <h3 class="fw-bold mb-3">Official Source Labels</h3>
+                        <p>Hazard cards identify the source, review status, and whether the result is address-level, jurisdiction-level, ZIP estimate, or county fallback.</p>
                         <a href="{{ url_for('hazard_detail', name='wildfire') }}" class="btn btn-outline-danger btn-sm">Review Wildfire Guidance</a>
                     </div>
                 </div>
@@ -814,8 +814,8 @@
                 <div class="card feature-card">
                     <div class="card-body text-center">
                         <i class="fas fa-mountain feature-icon earthquake-icon"></i>
-                        <h3 class="fw-bold mb-3">Earthquake Readiness</h3>
-                        <p>Move from seismic exposure to practical readiness with priority actions, Oakland context, and neighborhood-aware guidance.</p>
+                        <h3 class="fw-bold mb-3">Address-First When Available</h3>
+                        <p>The strongest result comes from a resolved address point and official GIS layer checks. ZIP estimates are kept as fallback.</p>
                         <a href="{{ url_for('hazard_detail', name='earthquake') }}" class="btn btn-outline-secondary btn-sm">Review Earthquake Guidance</a>
                     </div>
                 </div>
@@ -825,8 +825,8 @@
                 <div class="card feature-card">
                     <div class="card-body text-center">
                         <i class="fas fa-water feature-icon flood-icon"></i>
-                        <h3 class="fw-bold mb-3">Flood Safety</h3>
-                        <p>Use flood-zone context, ZIP-level scoring, and action checklists to prepare before heavy rain, drainage failures, or coastal impacts.</p>
+                        <h3 class="fw-bold mb-3">Recovery Planning Included</h3>
+                        <p>Preparedness cards include recovery questions for documents, insurance, housing, medications, pets, children, school, and work continuity.</p>
                         <a href="{{ url_for('hazard_detail', name='flood') }}" class="btn btn-outline-primary btn-sm">Review Flood Guidance</a>
                     </div>
                 </div>
@@ -840,10 +840,10 @@
         <div class="surface-card p-4 p-lg-5">
             <div class="row g-4 align-items-center">
                 <div class="col-lg-5">
-                    <span class="section-eyebrow">Recommended Flow</span>
-                    <h2 class="display-6 fw-bold mb-3">Designed to guide people, not just impress them</h2>
-                    <p class="lead mb-3">The app works best when visitors move through a clear path instead of jumping between disconnected pages.</p>
-                    <p class="mb-0 text-muted">Start with a location, review the risk summary, explore the map, and then open hazard pages that explain impact and action using Oakland LHMP context.</p>
+                    <span class="section-eyebrow">How StayReady Works</span>
+                    <h2 class="display-6 fw-bold mb-3">Serious guidance starts with honest precision</h2>
+                    <p class="lead mb-3">The demo flow makes the source-backed logic visible instead of hiding it behind a generic score.</p>
+                    <p class="mb-0 text-muted">Start with a location, check official layers and local context, review the top hazards and limitations, then plan preparedness and recovery steps.</p>
                 </div>
                 <div class="col-lg-7">
                     <div class="row g-3">
@@ -851,8 +851,8 @@
                             <div class="coverage-point h-100">
                                 <i class="fas fa-location-dot"></i>
                                 <div>
-                                    <strong>1. Enter a location</strong>
-                                    <div>Use ZIP for a fast overview or a street address for a precise map pin.</div>
+                                    <strong>1. Enter an address</strong>
+                                    <div>Address input is preferred. ZIP remains available only as a fallback estimate.</div>
                                 </div>
                             </div>
                         </div>
@@ -860,8 +860,8 @@
                             <div class="coverage-point h-100">
                                 <i class="fas fa-chart-line"></i>
                                 <div>
-                                    <strong>2. Review the summary</strong>
-                                    <div>See which hazard deserves attention first and start with the highest-value steps.</div>
+                                    <strong>2. Check official layers</strong>
+                                    <div>StayReady checks official GIS data where available and labels every fallback clearly.</div>
                                 </div>
                             </div>
                         </div>
@@ -869,8 +869,8 @@
                             <div class="coverage-point h-100">
                                 <i class="fas fa-map"></i>
                                 <div>
-                                    <strong>3. Explore the map</strong>
-                                    <div>Turn hazard layers on and off without losing the context of your selected location.</div>
+                                    <strong>3. See hazards and limitations</strong>
+                                    <div>Top cards explain why each hazard is shown, what matched, and what has not been checked yet.</div>
                                 </div>
                             </div>
                         </div>
@@ -878,8 +878,8 @@
                             <div class="coverage-point h-100">
                                 <i class="fas fa-triangle-exclamation"></i>
                                 <div>
-                                    <strong>4. Open hazard guidance</strong>
-                                    <div>Use LHMP-backed hazard pages to understand impact, at-risk groups, and next actions.</div>
+                                    <strong>4. Prepare and plan recovery</strong>
+                                    <div>Move into actions and recovery questions before documents, housing, medication, or continuity needs become urgent.</div>
                                 </div>
                             </div>
                         </div>

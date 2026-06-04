@@ -101,7 +101,6 @@
         background: linear-gradient(135deg, #ffffff, #f8f9fa);
         border-radius: 15px;
         padding: 1.2rem;
-        text-align: center;
         border-left: 5px solid;
         transition: all 0.3s ease;
         cursor: pointer;
@@ -122,9 +121,11 @@
     }
 
     .risk-score {
-        font-size: 2rem;
+        font-size: 0.76rem;
         font-weight: 800;
-        margin-bottom: 0.3rem;
+        margin-bottom: 0.55rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
     .risk-card.wildfire .risk-score { color: var(--wildfire-color); }
@@ -135,7 +136,7 @@
         font-weight: 700;
         margin-bottom: 0.3rem;
         color: var(--text-dark);
-        font-size: 0.9rem;
+        font-size: 1rem;
     }
 
     .risk-level {
@@ -144,6 +145,13 @@
         border-radius: 15px;
         color: white;
         font-weight: 600;
+    }
+
+    .risk-evidence {
+        color: #536678;
+        font-size: 0.86rem;
+        line-height: 1.45;
+        margin-top: 0.65rem;
     }
 
     .level-high { background: #f44336; }
@@ -604,29 +612,16 @@
             <!-- Risk Overview & Controls -->
             <div class="control-panel">
                 <div class="risk-overview">
-                    <div class="risk-card wildfire" data-hazard="wildfire" onclick="toggleRiskFocus('wildfire')">
-                        <div class="risk-score">{{ "%.1f"|format(risk_scores.wildfire.score) }}/10</div>
-                        <div class="risk-label">Wildfire Risk</div>
-                        <span class="risk-level {% if risk_scores.wildfire.score >= 7 %}level-high{% elif risk_scores.wildfire.score >= 4 %}level-moderate{% else %}level-low{% endif %}">
-                            {% if risk_scores.wildfire.score >= 7 %}High{% elif risk_scores.wildfire.score >= 4 %}Moderate{% else %}Low{% endif %}
-                        </span>
+                    {% for hazard in structured_hazards %}
+                    {% set exposure_key = hazard.exposure_level | lower %}
+                    {% set level_class = 'level-high' if exposure_key == 'high' else 'level-moderate' if exposure_key == 'medium' else 'level-low' %}
+                    <div class="risk-card {{ hazard.slug }}" data-hazard="{{ hazard.slug }}" onclick="toggleRiskFocus('{{ hazard.slug }}')">
+                        <div class="risk-score">{{ hazard.scope_label }}</div>
+                        <div class="risk-label">{{ hazard.name }}</div>
+                        <span class="risk-level {{ level_class }}">{{ hazard.data_status_label }}</span>
+                        <div class="risk-evidence">{{ hazard.location_precision_label }} · {{ hazard.why_shown }}</div>
                     </div>
-
-                    <div class="risk-card flood" data-hazard="flood" onclick="toggleRiskFocus('flood')">
-                        <div class="risk-score">{{ "%.1f"|format(risk_scores.flood.score) }}/10</div>
-                        <div class="risk-label">Flood Risk</div>
-                        <span class="risk-level {% if risk_scores.flood.score >= 7 %}level-high{% elif risk_scores.flood.score >= 4 %}level-moderate{% else %}level-low{% endif %}">
-                            {% if risk_scores.flood.score >= 7 %}High{% elif risk_scores.flood.score >= 4 %}Moderate{% else %}Low{% endif %}
-                        </span>
-                    </div>
-
-                    <div class="risk-card earthquake" data-hazard="earthquake" onclick="toggleRiskFocus('earthquake')">
-                        <div class="risk-score">{{ "%.1f"|format(risk_scores.earthquake.score) }}/10</div>
-                        <div class="risk-label">Earthquake Risk</div>
-                        <span class="risk-level {% if risk_scores.earthquake.score >= 7 %}level-high{% elif risk_scores.earthquake.score >= 4 %}level-moderate{% else %}level-low{% endif %}">
-                            {% if risk_scores.earthquake.score >= 7 %}High{% elif risk_scores.earthquake.score >= 4 %}Moderate{% else %}Low{% endif %}
-                        </span>
-                    </div>
+                    {% endfor %}
                 </div>
 
                 <div class="text-center mb-3">
@@ -682,11 +677,11 @@
             </div>
         </div>
 
-        <!-- AI Chatbot Section -->
+        <!-- Preparedness Assistant Section -->
         <div class="chatbot-section">
             <div class="chatbot-header">
-                <h3><i class="fas fa-robot me-2"></i>AI Risk Assistant</h3>
-                <div style="font-size: 0.8rem; opacity: 0.9;">Ask about safety plans, evacuation routes, supplies, or any emergency question</div>
+                <h3><i class="fas fa-comments me-2"></i>Preparedness Assistant</h3>
+                <div style="font-size: 0.8rem; opacity: 0.9;">Guidance is educational and cannot upgrade GIS status or precision labels</div>
             </div>
 
             <!-- Quick Questions -->
@@ -709,16 +704,13 @@
             <!-- Chat Messages -->
             <div class="chatbot-messages" id="chatbot-messages">
                 <div class="chat-message bot">
-                    <div class="message-avatar">AI</div>
-                    <div class="message-content">Hello! I'm your personal disaster preparedness assistant. Based on {% if has_precise_location %}your saved address in ZIP {{ zip_code }}{% else %}ZIP {{ zip_code }}{% endif %}, I can see you have:
+                    <div class="message-avatar">SR</div>
+                    <div class="message-content">Hello. I can help explain preparedness steps for {% if has_precise_location %}your saved address{% else %}ZIP {{ zip_code }}{% endif %}, but the hazard cards and map labels are the authority for precision.
 
-• {% if risk_scores.wildfire.score >= 7 %}High{% elif risk_scores.wildfire.score >= 4 %}Moderate{% else %}Low{% endif %} wildfire risk ({{ "%.1f"|format(risk_scores.wildfire.score) }}/10)
-• {% if risk_scores.earthquake.score >= 7 %}High{% elif risk_scores.earthquake.score >= 4 %}Moderate{% else %}Low{% endif %} earthquake risk ({{ "%.1f"|format(risk_scores.earthquake.score) }}/10) 
-• {% if risk_scores.flood.score >= 7 %}High{% elif risk_scores.flood.score >= 4 %}Moderate{% else %}Low{% endif %} flood risk ({{ "%.1f"|format(risk_scores.flood.score) }}/10)
-
-I can help you create personalized safety plans, understand evacuation procedures, prepare emergency kits, and answer any questions about disaster preparedness for your specific area.
-
-What would you like to know about staying safe in your neighborhood?</div>
+Visible checks:
+{% for hazard in structured_hazards %}• {{ hazard.name }}: {{ hazard.scope_label }} · {{ hazard.data_status_label }}
+{% endfor %}
+Ask about supplies, evacuation planning, documents, insurance, medications, pets, or recovery planning.</div>
                 </div>
             </div>
 

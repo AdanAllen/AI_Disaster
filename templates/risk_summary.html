@@ -245,6 +245,116 @@
         color: var(--accent-red);
     }
 
+    .location-check-panel,
+    .structured-risk-card,
+    .recovery-readiness-card {
+        background: white;
+        border: 1px solid #d8e4ec;
+        border-radius: 18px;
+        box-shadow: 0 14px 32px rgba(16, 37, 61, 0.08);
+    }
+
+    .location-check-panel {
+        margin-top: -48px;
+        position: relative;
+        z-index: 3;
+        padding: 1.5rem;
+    }
+
+    .location-check-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.9rem;
+    }
+
+    .location-check-item {
+        border: 1px solid #d8e4ec;
+        border-radius: 14px;
+        padding: 0.9rem 1rem;
+        background: #f7fafc;
+    }
+
+    .location-check-label {
+        display: block;
+        color: #5d6f80;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 0.25rem;
+    }
+
+    .location-check-value {
+        color: #18324a;
+        font-weight: 800;
+        line-height: 1.35;
+    }
+
+    .structured-risk-card {
+        height: 100%;
+        padding: 1.35rem;
+    }
+
+    .structured-risk-card h3 {
+        color: #18324a;
+        font-weight: 800;
+    }
+
+    .evidence-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-bottom: 1rem;
+    }
+
+    .evidence-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        border-radius: 999px;
+        padding: 0.38rem 0.66rem;
+        background: #edf4f8;
+        color: #28465f;
+        font-size: 0.78rem;
+        font-weight: 800;
+    }
+
+    .evidence-badge.address { background: #e8f4ee; color: #236345; }
+    .evidence-badge.status { background: #fff4db; color: #8d5b08; }
+    .evidence-badge.source { background: #e9f1fb; color: #244d73; }
+
+    .evidence-section-title {
+        color: #173552;
+        font-size: 0.82rem;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 0.35rem;
+    }
+
+    .evidence-copy {
+        color: #4f6274;
+        line-height: 1.58;
+    }
+
+    .limitation-list,
+    .recovery-list,
+    .source-list {
+        margin: 0;
+        padding-left: 1.1rem;
+        color: #4f6274;
+    }
+
+    .source-list a {
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .recovery-readiness-card {
+        padding: 1.5rem;
+        background: linear-gradient(180deg, #ffffff 0%, #f5f8fb 100%);
+    }
+
     .action-buttons {
         background: linear-gradient(180deg, #eff4f8 0%, #f7fafc 100%);
         padding: 60px 0;
@@ -533,11 +643,13 @@
         .start-here-card { padding: 1.5rem; }
         .preparedness-header { flex-direction: column; }
         .preparedness-progress-text { white-space: normal; }
+        .location-check-grid { grid-template-columns: 1fr; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
+{% set primary_hazard = structured_hazards[0] if structured_hazards else none %}
 {% if warning_message %}
 <div class="container mt-4">
     <div class="alert alert-warning" role="alert">
@@ -563,63 +675,32 @@
     </div>
 </section>
 
-<!-- Overall Risk Summary -->
 <section class="py-5">
     <div class="container">
-        <div class="overall-risk-summary">
-            <div class="row align-items-center">
-                <div class="col-md-4 text-center">
-                    {% set highest_score = hazards[0][1] | float %}
-                    {% set highest_hazard = hazards[0][0] %}
-                    {% if highest_score >= 7 %}
-                        <div class="risk-meter high">
-                            <span>{{ "%.1f"|format(highest_score) }}/10</span>
-                        </div>
-                        <h4 class="fw-bold text-danger">High {{ highest_hazard }} Risk</h4>
-                        <p class="text-muted">Immediate attention required</p>
-                    {% elif highest_score >= 4 %}
-                        <div class="risk-meter moderate">
-                            <span>{{ "%.1f"|format(highest_score) }}/10</span>
-                        </div>
-                        <h4 class="fw-bold text-warning">Moderate {{ highest_hazard }} Risk</h4>
-                        <p class="text-muted">Preparation recommended</p>
-                    {% else %}
-                        <div class="risk-meter low">
-                            <span>{{ "%.1f"|format(highest_score) }}/10</span>
-                        </div>
-                        <h4 class="fw-bold text-success">Lower {{ highest_hazard }} Risk</h4>
-                        <p class="text-muted">Basic preparedness advised</p>
-                    {% endif %}
+        <div class="location-check-panel">
+            <div class="row g-4 align-items-start">
+                <div class="col-lg-4">
+                    <span class="section-eyebrow">Location Check</span>
+                    <h2 class="h3 fw-bold mb-2">What StayReady checked</h2>
+                    <p class="text-muted mb-0">This page separates address-level checks from jurisdiction context and ZIP fallback estimates.</p>
                 </div>
-                <div class="col-md-8">
-                    <h3 class="fw-bold mb-3">Your Risk Profile</h3>
-                    <p class="lead mb-3">Based on {% if location_context.address %}your saved location{% else %}ZIP {{ zip_code }}{% endif %}, your highest current priority is <strong>{{ highest_hazard }}</strong> with a score of {{ "%.1f"|format(highest_score) }}/10.</p>
-                    <p class="mb-4">
-                        <i class="fas fa-arrow-down text-primary me-2"></i>
-                        <small class="text-muted">Use this page to decide whether to open the map, the ranked hazard dashboard, or a hazard-specific guidance page.</small>
-                    </p>
-                    
-                    <div class="row g-3">
-                        <div class="col-sm-4">
-                            <div class="text-center">
-                                <i class="fas fa-home fa-2x text-primary mb-2"></i>
-                                <h6 class="fw-bold">Location Used</h6>
-                                <p class="small text-muted mb-0">{% if location_context.address %}Address + ZIP{% else %}ZIP-level view{% endif %}</p>
-                            </div>
+                <div class="col-lg-8">
+                    <div class="location-check-grid">
+                        <div class="location-check-item">
+                            <span class="location-check-label">Resolved Location</span>
+                            <div class="location-check-value">{{ location_context.display_name }}</div>
                         </div>
-                        <div class="col-sm-4">
-                            <div class="text-center">
-                                <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
-                                <h6 class="fw-bold">Hazards Assessed</h6>
-                                <p class="small text-muted mb-0">3 Major Disasters</p>
-                            </div>
+                        <div class="location-check-item">
+                            <span class="location-check-label">City / County</span>
+                            <div class="location-check-value">{{ location_context.city or "City not verified" }}{% if location_context.county %}, {{ location_context.county }}{% endif %}</div>
                         </div>
-                        <div class="col-sm-4">
-                            <div class="text-center">
-                                <i class="fas fa-brain fa-2x text-success mb-2"></i>
-                                <h6 class="fw-bold">Next Step</h6>
-                                <p class="small text-muted mb-0">Map, hazards, and resources</p>
-                            </div>
+                        <div class="location-check-item">
+                            <span class="location-check-label">Precision</span>
+                            <div class="location-check-value">{{ location_context.precision_label }}</div>
+                        </div>
+                        <div class="location-check-item">
+                            <span class="location-check-label">GIS Status</span>
+                            <div class="location-check-value">{{ location_context.gis_status }}</div>
                         </div>
                     </div>
                 </div>
@@ -664,12 +745,12 @@
     {% include "_preparedness_checklist.html" %}
 </div>
 
-{% if highest_score >= 7 %}
+{% if primary_hazard and (primary_hazard.exposure_level | lower) == 'high' %}
 <section class="py-3">
     <div class="container">
         <div class="priority-alert">
             <h4><i class="fas fa-exclamation-triangle me-2"></i>High Priority Alert</h4>
-            <p class="mb-3">Your area has a high risk score. Immediate preparation is strongly recommended.</p>
+            <p class="mb-3">{{ primary_hazard.name }} is currently labeled high exposure. Review the evidence, limitations, and next steps before treating this as a complete risk determination.</p>
             <a href="{{ url_for('map') }}" class="btn btn-lg">
                 <i class="fas fa-arrow-right me-2"></i>Explore Unified Hazard Map
             </a>
@@ -678,72 +759,77 @@
 </section>
 {% endif %}
 
-<!-- Risk Cards -->
 <section class="py-5">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold mb-3">Detailed Risk Assessment</h2>
-            <p class="lead">Use the score cards to jump deeper into the part of the experience that matters most right now.</p>
-            <a href="#data-sources" class="data-info-link">
-                <i class="fas fa-circle-info"></i> Data Info
+            <h2 class="display-5 fw-bold mb-3">Top hazards and evidence</h2>
+            <p class="lead">These cards show the best available evidence first, then clearly label fallbacks and limitations.</p>
+            <a href="{{ url_for('sources') }}" class="data-info-link">
+                <i class="fas fa-circle-info"></i> Source Registry
             </a>
         </div>
 
         <div class="row g-4">
-            {% for hazard_name, score, explanation in hazards %}
-            <div class="col-lg-4 col-md-6">
-                <div class="card risk-card {{ hazard_name.lower() }}">
-                    <div class="card-body text-center p-4">
-                        {% if hazard_name == 'Wildfire' %}
-                            <i class="fas fa-fire hazard-icon wildfire-icon"></i>
-                        {% elif hazard_name == 'Flood' %}
-                            <i class="fas fa-water hazard-icon flood-icon"></i>
-                        {% elif hazard_name == 'Earthquake' %}
-                            <i class="fas fa-mountain hazard-icon earthquake-icon"></i>
-                        {% endif %}
-                        
-                        <h4 class="fw-bold mb-3">{{ hazard_name }} Risk</h4>
-                        
-                        <!-- Progress Ring -->
-                        <div class="progress-ring">
-                            {% set score_float = score | float %}
-                            {% set circumference = 2 * 3.14159 * 32 %}
-                            {% set progress_offset = circumference - (score_float / 10) * circumference %}
-                            
-                            <svg>
-                                <circle class="background" stroke-dasharray="{{ circumference }}" stroke-dashoffset="0"></circle>
-                                <circle class="progress" 
-                                        stroke="{% if score_float >= 7 %}#f44336{% elif score_float >= 4 %}#ff9800{% else %}#4caf50{% endif %}"
-                                        stroke-dasharray="{{ circumference }}" 
-                                        stroke-dashoffset="{{ progress_offset }}"></circle>
-                            </svg>
-                            <div class="risk-score">{{ score }}/10</div>
-                        </div>
-
-                        <p class="mb-4">{{ explanation }}</p>
-                        
-                        {% if score | float >= 7 %}
-                            <div class="mb-3">
-                                <span class="badge bg-danger fs-6">High Priority</span>
-                            </div>
-                        {% elif score | float >= 4 %}
-                            <div class="mb-3">
-                                <span class="badge bg-warning fs-6">Moderate Priority</span>
-                            </div>
-                        {% else %}
-                            <div class="mb-3">
-                                <span class="badge bg-success fs-6">Lower Priority</span>
-                            </div>
-                        {% endif %}
-
-                        <a href="{{ url_for('hazard_detail', name=hazard_name.lower()) }}" class="btn btn-{{ hazard_name.lower() }}">
-                            <i class="fas fa-shield-alt me-2"></i>Get Safety Plan
-                        </a>
+            {% for hazard in structured_hazards %}
+            <div class="col-lg-4">
+                <article class="structured-risk-card">
+                    <div class="evidence-badges">
+                        <span class="evidence-badge address">{{ hazard.scope_label }}</span>
+                        <span class="evidence-badge status">{{ hazard.data_status_label }}</span>
+                        <span class="evidence-badge source">{{ hazard.structured_result.confidence | replace('_', ' ') | title }}</span>
                     </div>
-                </div>
+                    <h3 class="h4 mb-2">{{ hazard.name }}</h3>
+                    <p class="text-muted mb-3">{{ hazard.exposure_level }} exposure · {{ hazard.location_precision_label }}</p>
+
+                    <div class="mb-3">
+                        <div class="evidence-section-title">Why am I seeing this?</div>
+                        <p class="evidence-copy mb-0">{{ hazard.why_shown }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="evidence-section-title">Limitations</div>
+                        <ul class="limitation-list">
+                            {% for limitation in hazard.limitations[:2] %}
+                            <li>{{ limitation }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="evidence-section-title">Sources</div>
+                        <ul class="source-list">
+                            {% for source in hazard.sources[:2] %}
+                            <li><a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.name }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <a href="{{ url_for('hazard_detail', name=hazard.slug) }}" class="btn btn-primary w-100">
+                        <i class="fas fa-arrow-up-right-from-square me-2"></i>Open {{ hazard.name }} Detail
+                    </a>
+                </article>
             </div>
             {% endfor %}
         </div>
+
+        {% if primary_hazard %}
+        <div class="recovery-readiness-card mt-4">
+            <div class="row g-4 align-items-start">
+                <div class="col-lg-4">
+                    <span class="section-eyebrow">Recovery Readiness</span>
+                    <h3 class="h4 fw-bold mb-2">Plan for the long part too</h3>
+                    <p class="text-muted mb-0">Recovery can last longer than the emergency itself. Start these questions before you need them.</p>
+                </div>
+                <div class="col-lg-8">
+                    <ul class="recovery-list">
+                        {% for item in primary_hazard.recovery_questions %}
+                        <li>{{ item.question }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </section>
 <section class="pb-4">
@@ -827,33 +913,33 @@
 <section class="stats-overview">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="fw-bold mb-3">Your Area At A Glance</h2>
-            <p class="lead">Key statistics for ZIP {{ zip_code }}</p>
+            <h2 class="fw-bold mb-3">Your Location At A Glance</h2>
+            <p class="lead">Evidence status for {{ location_context.display_name }}</p>
         </div>
         
         <div class="row">
             <div class="col-md-3 col-sm-6">
                 <div class="stat-item">
                     <span class="stat-number">{{ zip_code }}</span>
-                    <span class="stat-label">Your ZIP Code</span>
+                    <span class="stat-label">ZIP Fallback Area</span>
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">
                 <div class="stat-item">
-                    <span class="stat-number">{{ hazards | length }}</span>
-                    <span class="stat-label">Hazards Analyzed</span>
+                    <span class="stat-number">{{ structured_hazards | length }}</span>
+                    <span class="stat-label">Top Hazards Shown</span>
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">
                 <div class="stat-item">
-                    <span class="stat-number">{{ "%.1f"|format(hazards[0][1] | float) }}</span>
-                    <span class="stat-label">Highest Risk Score</span>
+                    <span class="stat-number">{{ primary_hazard.scope_label if primary_hazard else "Fallback" }}</span>
+                    <span class="stat-label">Best Precision Shown</span>
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">
                 <div class="stat-item">
-                    <span class="stat-number">24/7</span>
-                    <span class="stat-label">Monitoring Active</span>
+                    <span class="stat-number">{{ primary_hazard.data_status_label if primary_hazard else "Needs review" }}</span>
+                    <span class="stat-label">Primary Data Status</span>
                 </div>
             </div>
         </div>
@@ -864,11 +950,11 @@
 <section class="bg-primary text-white text-center py-5">
     <div class="container">
         <h2 class="fw-bold mb-3">Ready to Create Your Emergency Plan?</h2>
-        <p class="lead mb-4">Don't wait for disaster to strike. Get personalized safety plans for each risk in your area.</p>
+        <p class="lead mb-4">Use source-labeled hazard pages to prepare for the risks and recovery needs shown for your location.</p>
         <div class="d-flex justify-content-center gap-3 flex-wrap">
-            {% for hazard_name, score, explanation in hazards %}
-            <a href="{{ url_for('hazard_detail', name=hazard_name.lower()) }}" class="btn btn-light btn-lg px-4 py-3 fw-bold">
-                <i class="fas fa-{% if hazard_name == 'Wildfire' %}fire{% elif hazard_name == 'Flood' %}water{% else %}mountain{% endif %} me-2"></i>{{ hazard_name }} Plan
+            {% for hazard in structured_hazards %}
+            <a href="{{ url_for('hazard_detail', name=hazard.slug) }}" class="btn btn-light btn-lg px-4 py-3 fw-bold">
+                <i class="fas fa-{% if hazard.slug == 'wildfire' %}fire{% elif hazard.slug == 'flood' %}water{% else %}mountain{% endif %} me-2"></i>{{ hazard.name }} Plan
             </a>
             {% endfor %}
         </div>

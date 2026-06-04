@@ -111,6 +111,47 @@
         color: #1e7a38;
     }
 
+    .evidence-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .evidence-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        border-radius: 999px;
+        padding: 0.45rem 0.75rem;
+        background: #edf4f8;
+        color: #25455f;
+        font-size: 0.84rem;
+        font-weight: 800;
+    }
+
+    .evidence-badge.address {
+        background: #e8f4ee;
+        color: #236345;
+    }
+
+    .evidence-badge.status {
+        background: #fff4db;
+        color: #8d5b08;
+    }
+
+    .source-link-list {
+        display: grid;
+        gap: 0.55rem;
+        margin: 0;
+        padding-left: 1.1rem;
+    }
+
+    .source-link-list a {
+        font-weight: 800;
+        text-decoration: none;
+    }
+
     .detail-list {
         display: grid;
         gap: 0.65rem;
@@ -274,16 +315,14 @@
 {% block content %}
 <section class="hazard-hero">
     <div class="container">
-        <span class="section-eyebrow text-white-50">Oakland LHMP Hazard Detail</span>
+        <span class="section-eyebrow text-white-50">Source-Backed Hazard Detail</span>
         <h1>{{ hazard.name }}</h1>
         <p class="mb-0">{{ hazard.summary }}</p>
         {% set risk_class = 'high' if hazard.risk_level == 'High' else 'medium' if hazard.risk_level == 'Medium' else 'low' %}
         <div class="hero-meta">
-            <span class="meta-pill">{{ hazard.risk_level }} risk</span>
-            <span class="meta-pill">{{ hazard.priority_score }}/10 priority</span>
-            {% if hazard.local_risk_score is defined %}
-            <span class="meta-pill">Local ZIP risk {{ '%.1f'|format(hazard.local_risk_score) }}/10</span>
-            {% endif %}
+            <span class="meta-pill">{{ hazard.scope_label }}</span>
+            <span class="meta-pill">{{ hazard.data_status_label }}</span>
+            <span class="meta-pill">{{ hazard.location_precision_label }}</span>
             <span class="meta-pill">{{ hazard.slug }}</span>
         </div>
     </div>
@@ -294,7 +333,7 @@
         <div class="profile-card">
             <span class="section-eyebrow">Personalization</span>
             <h2 class="h3 mb-2">Adjust this page for your situation</h2>
-            <p class="text-muted mb-3">Current Oakland location: <strong>{{ location_context.display_name }}</strong></p>
+            <p class="text-muted mb-3">Current location: <strong>{{ location_context.display_name }}</strong> · {{ location_context.precision_label }}</p>
             {% include "_hazard_profile_form.html" %}
         </div>
     </div>
@@ -313,34 +352,48 @@
                     {% endif %}
 
                     <article class="detail-card">
-                        <span class="section-eyebrow">Why Oakland Flags This</span>
-                        <h2 class="h4 mb-3">Why this is a real threat in Oakland</h2>
-                        <p class="detail-copy mb-0">{{ hazard.why_this_is_a_real_threat_in_oakland or hazard.summary }}</p>
+                        <span class="section-eyebrow">Why This Is Shown</span>
+                        <h2 class="h4 mb-3">Why am I seeing this?</h2>
+                        <div class="evidence-badges mb-3">
+                            <span class="evidence-badge address">{{ hazard.scope_label }}</span>
+                            <span class="evidence-badge status">{{ hazard.data_status_label }}</span>
+                            <span class="evidence-badge">{{ hazard.basis_label }}</span>
+                        </div>
+                        <p class="detail-copy mb-0">{{ hazard.why_shown }}</p>
                     </article>
 
                     <article class="detail-card">
-                        <span class="section-eyebrow">Location Context</span>
-                        <h2 class="h4 mb-3">What this page is using</h2>
+                        <span class="section-eyebrow">Location Precision</span>
+                        <h2 class="h4 mb-3">What this page checked</h2>
                         <p class="detail-copy mb-2">
-                            This hazard page is using your saved Oakland location:
+                            This hazard page is using your saved location:
                             <strong>{{ location_context.display_name }}</strong>.
                         </p>
-                        {% if hazard.local_risk_score is defined %}
                         <p class="detail-copy mb-2">
-                            Local {{ hazard.name }} score for your ZIP: <strong>{{ '%.1f'|format(hazard.local_risk_score) }}/10</strong> ({{ hazard.local_risk_level }}).
+                            Precision: <strong>{{ hazard.location_precision_label }}</strong>.
+                            Data status: <strong>{{ hazard.data_status_label }}</strong>.
                         </p>
-                        <p class="detail-copy mb-0">{{ hazard.local_risk_explanation }}</p>
+                        {% if hazard.matched_layers %}
+                        <ul class="detail-list">
+                            {% for layer in hazard.matched_layers %}
+                            <li>{{ layer.name }}{% if layer.zone %} (zone {{ layer.zone }}){% endif %}</li>
+                            {% endfor %}
+                        </ul>
                         {% else %}
                         <p class="detail-copy mb-0">
-                            This page is still grounded in the JSON dataset, but this hazard does not yet have ZIP-specific scoring in the current risk CSV.
+                            No address-level matched layer is available for this result.
                         </p>
                         {% endif %}
                     </article>
 
                     <article class="detail-card">
-                        <span class="section-eyebrow">What This Means</span>
-                        <h2 class="h4 mb-3">Why it matters for your situation</h2>
-                        <p class="detail-copy mb-0">{{ hazard.personalized_what_this_means_for_you or hazard.what_this_means_for_you }}</p>
+                        <span class="section-eyebrow">Limitations</span>
+                        <h2 class="h4 mb-3">What this result does not prove</h2>
+                        <ul class="detail-list">
+                            {% for limitation in hazard.limitations %}
+                            <li>{{ limitation }}</li>
+                            {% endfor %}
+                        </ul>
                     </article>
 
                     <article class="detail-card">
@@ -351,7 +404,7 @@
                     </article>
 
                     <article class="checklist-card">
-                        <span class="section-eyebrow">Action Steps</span>
+                        <span class="section-eyebrow">Preparedness Steps</span>
                         <h2 class="h4 mb-2">Interactive checklist</h2>
                         <div class="progress-row">
                             <p class="progress-text mb-0">
@@ -374,6 +427,29 @@
                             </label>
                             {% endfor %}
                         </div>
+                    </article>
+
+                    <article class="detail-card">
+                        <span class="section-eyebrow">Recovery Readiness</span>
+                        <h2 class="h4 mb-3">Questions to answer before recovery starts</h2>
+                        <ul class="detail-list">
+                            {% for item in hazard.recovery_questions %}
+                            <li>{{ item.question }}</li>
+                            {% endfor %}
+                        </ul>
+                    </article>
+
+                    <article class="detail-card">
+                        <span class="section-eyebrow">Sources</span>
+                        <h2 class="h4 mb-3">Matched sources and references</h2>
+                        <ul class="source-link-list">
+                            {% for source in hazard.sources %}
+                            <li>
+                                <a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.name }}</a>
+                                <span class="text-muted"> — {{ source.agency }} · {{ source.review_status }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
                     </article>
 
                     <article class="detail-card">

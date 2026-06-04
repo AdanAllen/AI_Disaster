@@ -15,4 +15,5 @@ shapely==2.1.1
 requests==2.31.0
 pandas==2.2.3
 numpy==1.26.4
+pydantic>=2.7.0
 gunicorn==21.2.0

@@ -476,6 +476,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('sources') }}">
+                            <i class="fas fa-database"></i><span>Sources</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('about') }}">
                             <i class="fas fa-circle-info"></i><span>About</span>
                         </a>
@@ -518,6 +523,7 @@
                         <a href="{{ url_for('map') }}">Risk Map</a>
                         <a href="{{ url_for('hazards_dashboard') }}">Hazard Rankings</a>
                         <a href="{{ url_for('resources') }}">Resources</a>
+                        <a href="{{ url_for('sources') }}">Source Registry</a>
                     </div>
                 </div>
                 <div>
@@ -525,7 +531,7 @@
                     <div class="footer-links">
                         <a href="{{ url_for('about') }}">About the Builder</a>
                         <a href="{{ url_for('live_earthquake_map') }}">Live Earthquake Map</a>
-                        <a href="#data-sources">Data Sources</a>
+                        <a href="{{ url_for('sources') }}">Data Sources</a>
                     </div>
                 </div>
             </div>
