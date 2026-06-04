@@ -124,6 +124,81 @@ def display_data_status(status: str) -> str:
     return labels.get(status, status.replace("_", " ").title())
 
 
+def _dedupe_text(items: List[str]) -> List[str]:
+    deduped = []
+    seen = set()
+    for item in items:
+        text = (item or "").strip()
+        if not text:
+            continue
+        key = text.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(text)
+    return deduped
+
+
+def _resident_guidance_items(result: HazardResult, *phases: str) -> List:
+    items = []
+    guidance = result.specialized_guidance.resident_guidance or {}
+    for phase in phases:
+        items.extend(guidance.get(phase, []))
+    return items
+
+
+def _resident_actions(result: HazardResult) -> List[str]:
+    actions = []
+    for item in _resident_guidance_items(result, "before", "during", "after", "limitations"):
+        actions.append(item.recommended_action or item.plain_language)
+    actions.extend(action.label for action in result.recommended_actions)
+    return _dedupe_text(actions)
+
+
+def _local_summary(result: HazardResult) -> str:
+    context = _dedupe_text(result.specialized_guidance.city_context)
+    if context:
+        return context[0]
+    return result.why_shown
+
+
+def _local_impact(result: HazardResult) -> str:
+    recovery_questions = [
+        item.recovery_question
+        for item in _resident_guidance_items(result, "recovery")
+        if getattr(item, "recovery_question", "")
+    ]
+    if recovery_questions:
+        return "Recovery planning question: " + recovery_questions[0]
+    if result.specialized_guidance.recovery_needs:
+        return " ".join(result.specialized_guidance.recovery_needs[:2])
+    return "Recovery planning should account for documents, insurance, housing, medications, pets, transportation, and school or work continuity."
+
+
+def _local_top_risks(result: HazardResult) -> List[str]:
+    risks = [
+        item.plain_language
+        for item in _resident_guidance_items(result, "hazard_priority", "local_context", "limitations")
+    ]
+    risks.extend(result.limitations[:2])
+    return _dedupe_text(risks)[:4]
+
+
+def _local_locations(result: HazardResult) -> List[str]:
+    locations = []
+    if result.local_plan_match:
+        name = result.local_plan_match.get("name")
+        plan_name = result.local_plan_match.get("plan_name")
+        if name:
+            locations.append(f"Resolved jurisdiction: {name}")
+        if plan_name:
+            locations.append(f"Local source context: {plan_name}")
+    if result.matched_layers:
+        locations.extend(layer.get("name", "") for layer in result.matched_layers)
+    locations.append(f"Precision shown by app: {result.location_precision.replace('_', ' ')}")
+    return _dedupe_text(locations)
+
+
 @lru_cache(maxsize=4)
 def load_geojson(filename: str) -> Dict:
     path = os.path.join(BASE_DIR, "static", filename)
@@ -509,12 +584,40 @@ def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dic
 def merge_structured_result(hazard: Dict, result: HazardResult) -> Dict:
     merged = deepcopy(hazard)
     payload = result.model_dump()
+    local_summary = _local_summary(result)
+    resident_actions = _resident_actions(result)
     merged["structured_result"] = payload
     merged["scope_label"] = display_scope(result.scope)
     merged["data_status_label"] = display_data_status(result.data_status)
     merged["basis_label"] = result.basis.replace("_", " ").title()
     merged["location_precision_label"] = result.location_precision.replace("_", " ").title()
     merged["exposure_level"] = result.exposure_level.title()
+    merged["risk_level"] = result.exposure_level.title()
+    merged["priority_score"] = {
+        "high": 8,
+        "medium": 5,
+        "low": 2,
+        "unknown": 0,
+    }.get(result.exposure_level, 0)
+    merged["summary"] = local_summary
+    merged["what_this_means_for_you"] = local_summary
+    merged["personalized_what_this_means_for_you"] = local_summary
+    merged["what_could_realistically_happen"] = local_summary
+    merged["real_world_impact"] = _local_impact(result)
+    merged["priority_reason"] = result.why_shown
+    merged["action_steps"] = resident_actions
+    merged["top_risks"] = _local_top_risks(result)
+    merged["locations"] = _local_locations(result)
+    merged["at_risk_groups"] = _dedupe_text(
+        result.specialized_guidance.household_factors + result.specialized_guidance.access_functional_needs
+    )
+    merged["historical_examples"] = []
+    merged["key_stats"] = _dedupe_text([
+        f"Scope: {display_scope(result.scope)}",
+        f"Data status: {display_data_status(result.data_status)}",
+        f"Precision: {result.location_precision.replace('_', ' ')}",
+        f"Source status: {result.specialized_guidance.guidance_source_status.replace('_', ' ')}",
+    ])
     merged["why_shown"] = result.why_shown
     merged["limitations"] = result.limitations
     merged["recommended_actions"] = [item.model_dump() for item in result.recommended_actions]

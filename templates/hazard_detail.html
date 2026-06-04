@@ -363,6 +363,73 @@
                     </article>
 
                     <article class="detail-card">
+                        <span class="section-eyebrow">Local Guidance</span>
+                        <h2 class="h4 mb-3">What the local source says</h2>
+                        {% if hazard.specialized_guidance.guidance_source_status == "local_reviewed" %}
+                        <div class="evidence-badges mb-3">
+                            <span class="evidence-badge address">Local source reviewed</span>
+                            {% if hazard.local_plan_match %}
+                            <span class="evidence-badge">{{ hazard.local_plan_match.name }}</span>
+                            {% endif %}
+                        </div>
+                        {% elif hazard.specialized_guidance.guidance_source_status == "needs_source_review" %}
+                        <div class="evidence-badges mb-3">
+                            <span class="evidence-badge status">Needs source review</span>
+                        </div>
+                        {% else %}
+                        <div class="evidence-badges mb-3">
+                            <span class="evidence-badge status">County fallback guidance</span>
+                        </div>
+                        {% endif %}
+
+                        {% if hazard.specialized_guidance.city_context %}
+                        <ul class="detail-list mb-3">
+                            {% for item in hazard.specialized_guidance.city_context[:3] %}
+                            <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+
+                        {% set before_items = hazard.specialized_guidance.resident_guidance.before if hazard.specialized_guidance.resident_guidance else [] %}
+                        {% set limitation_items = hazard.specialized_guidance.resident_guidance.limitations if hazard.specialized_guidance.resident_guidance else [] %}
+                        {% set recovery_items = hazard.specialized_guidance.resident_guidance.recovery if hazard.specialized_guidance.resident_guidance else [] %}
+                        {% if before_items or limitation_items or recovery_items %}
+                        <div class="row g-3">
+                            {% if before_items %}
+                            <div class="col-md-6">
+                                <h3 class="h6 fw-bold">Before</h3>
+                                <ul class="detail-list">
+                                    {% for item in before_items[:2] %}
+                                    <li>{{ item.recommended_action or item.plain_language }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                            {% if limitation_items %}
+                            <div class="col-md-6">
+                                <h3 class="h6 fw-bold">Precision limits</h3>
+                                <ul class="detail-list">
+                                    {% for item in limitation_items[:2] %}
+                                    <li>{{ item.plain_language }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                            {% if recovery_items %}
+                            <div class="col-12">
+                                <h3 class="h6 fw-bold">Recovery prompt</h3>
+                                <ul class="detail-list">
+                                    {% for item in recovery_items[:2] %}
+                                    <li>{{ item.recovery_question or item.recommended_action or item.plain_language }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </article>
+
+                    <article class="detail-card">
                         <span class="section-eyebrow">Location Precision</span>
                         <h2 class="h4 mb-3">What this page checked</h2>
                         <p class="detail-copy mb-2">
@@ -455,7 +522,7 @@
                     <article class="detail-card">
                         <span class="section-eyebrow">App Flow</span>
                         <h2 class="h4 mb-3">Where to go next</h2>
-                        <p class="detail-copy mb-3">This page is the deep-dive layer of the app. Once you understand this hazard, use the map to see spatial context or return to the dashboard to compare it with the rest of Oakland’s hazard priorities.</p>
+                        <p class="detail-copy mb-3">This page is the deep-dive layer of the app. Once you understand this hazard, use the map to see spatial context or return to the risk summary to compare it with the other hazards shown for your saved location.</p>
                         <div class="d-flex flex-wrap gap-2">
                             <a class="btn btn-primary" href="{{ url_for('map') }}">
                                 <i class="fas fa-layer-group me-2"></i>Open Unified Map
