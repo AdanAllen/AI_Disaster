@@ -25,13 +25,14 @@
 </script>
 <style>
     :root {
-        --primary-orange: #154c79;
-        --secondary-blue: #2f6f98;
-        --accent-red: #d96c3f;
-        --text-dark: #1f2f3f;
-        --bg-light: #f4f7fb;
-        --surface-muted: #e9f0f6;
+        --primary-orange: #173f5f;
+        --secondary-blue: #6d97b8;
+        --accent-red: #c86948;
+        --text-dark: #1f3242;
+        --bg-light: #f3f7fa;
+        --surface-muted: #edf3f7;
         --border-soft: #d7e2ed;
+        --hero-overlay: linear-gradient(180deg, rgba(247, 251, 255, 0.78) 0%, rgba(240, 246, 251, 0.82) 46%, rgba(228, 238, 247, 0.94) 100%);
     }
 
     * {
@@ -41,58 +42,69 @@
     }
 
     body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-family: 'Manrope', sans-serif;
         line-height: 1.6;
         color: var(--text-dark);
         overflow-x: hidden;
     }
 
     .hero {
-        background: linear-gradient(135deg,
-            rgba(21, 76, 121, 0.96) 0%,
-            rgba(33, 104, 138, 0.94) 55%,
-            rgba(74, 137, 168, 0.92) 100%);
-        min-height: 100vh;
+        background:
+            var(--hero-overlay),
+            url("{{ url_for('static', filename='oakland-skyline.svg') }}") center bottom / cover no-repeat;
+        min-height: 920px;
         display: flex;
         align-items: center;
         position: relative;
         overflow: hidden;
+        border-bottom: 1px solid rgba(215, 226, 237, 0.85);
     }
 
     .hero::before {
         content: '';
         position: absolute;
         inset: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
-        animation: float 20s infinite linear;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 18%),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08) 38%, rgba(255, 255, 255, 0.28) 100%);
+        pointer-events: none;
     }
 
-    @keyframes float {
-        0% { transform: translateX(0) translateY(0); }
-        50% { transform: translateX(-20px) translateY(-20px); }
-        100% { transform: translateX(0) translateY(0); }
+    .hero::after {
+        content: '';
+        position: absolute;
+        inset: auto 0 0;
+        height: 230px;
+        background: linear-gradient(180deg, rgba(240, 246, 251, 0) 0%, rgba(240, 246, 251, 0.75) 48%, rgba(242, 247, 251, 0.98) 100%);
+        pointer-events: none;
     }
 
     .hero-content {
         position: relative;
         z-index: 2;
-        color: white;
+        color: var(--text-dark);
         text-align: center;
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 5rem 0 13rem;
     }
 
     .hero h1 {
-        font-size: 3.5rem;
+        font-size: clamp(3rem, 5.2vw, 5rem);
         font-weight: 800;
-        margin-bottom: 1rem;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        animation: slideInUp 1s ease-out;
+        margin-bottom: 1.15rem;
+        letter-spacing: -0.05em;
+        line-height: 0.98;
+        color: #13273c;
     }
 
     .hero p {
-        font-size: 1.3rem;
-        margin-bottom: 2rem;
-        opacity: 0.95;
-        animation: slideInUp 1s ease-out 0.3s both;
+        font-size: clamp(1.1rem, 1.7vw, 1.35rem);
+        margin-bottom: 2.25rem;
+        color: #415a6d;
+        max-width: 720px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .credibility-badge {
@@ -100,104 +112,96 @@
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
-        padding: 0.65rem 1rem;
+        padding: 0.72rem 1.1rem;
         border-radius: 999px;
-        background: rgba(255, 255, 255, 0.16);
-        border: 1px solid rgba(255, 255, 255, 0.28);
+        background: rgba(255, 255, 255, 0.88);
+        border: 1px solid rgba(195, 210, 222, 0.95);
         font-weight: 700;
-        margin-bottom: 1.25rem;
-        animation: slideInUp 1s ease-out 0.15s both;
+        margin-bottom: 1.5rem;
         letter-spacing: 0.01em;
+        box-shadow: 0 12px 30px rgba(17, 40, 61, 0.08);
+        color: #28465f;
     }
 
     .cta-button {
-        background: linear-gradient(45deg, #fff, #f8f9fa);
+        background: rgba(255, 255, 255, 0.82);
         color: var(--primary-orange);
-        padding: 15px 40px;
-        font-size: 1.2rem;
-        font-weight: 700;
-        border: none;
-        border-radius: 50px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-        transition: all 0.3s ease;
-        animation: slideInUp 1s ease-out 0.6s both;
+        padding: 14px 26px;
+        font-size: 1rem;
+        font-weight: 800;
+        border: 1px solid rgba(194, 210, 222, 0.95);
+        border-radius: 14px;
+        box-shadow: 0 18px 34px rgba(17, 40, 61, 0.08);
+        transition: all 0.25s ease;
         text-decoration: none;
         display: inline-block;
     }
 
     .cta-button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 35px rgba(0,0,0,0.3);
-        color: var(--accent-red);
-    }
-
-    @keyframes slideInUp {
-        from {
-            opacity: 0;
-            transform: translateY(50px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        transform: translateY(-2px);
+        box-shadow: 0 24px 40px rgba(17, 40, 61, 0.12);
+        color: #102d46;
     }
 
     .quick-start-form {
-        background: rgba(255, 255, 255, 0.97);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(18px);
+        border-radius: 24px;
         padding: 2rem;
-        box-shadow: 0 22px 48px rgba(18, 44, 67, 0.16);
-        border: 1px solid rgba(21, 76, 121, 0.12);
-        margin-top: 3rem;
-        animation: slideInUp 1s ease-out 0.9s both;
+        box-shadow: 0 28px 60px rgba(18, 44, 67, 0.13);
+        border: 1px solid rgba(196, 211, 223, 0.95);
+        margin-top: 2.5rem;
+        text-align: left;
     }
 
     .quick-start-form h3 {
         color: var(--text-dark);
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.35rem;
         font-weight: 700;
+        font-size: 1.2rem;
     }
 
     .form-control {
-        border-radius: 10px;
+        border-radius: 14px;
         border: 2px solid var(--border-soft);
-        padding: 12px 15px;
+        padding: 14px 16px;
         transition: all 0.3s ease;
         background: #fbfdff;
+        min-height: 52px;
     }
 
     .form-control:focus {
         border-color: var(--primary-orange);
-        box-shadow: 0 0 0 0.2rem rgba(255, 112, 67, 0.25);
+        box-shadow: 0 0 0 0.22rem rgba(45, 95, 134, 0.15);
     }
 
     .btn-get-started {
-        background: linear-gradient(45deg, var(--primary-orange), var(--accent-red));
+        background: linear-gradient(145deg, #153a59, #2a648c);
         border: none;
-        border-radius: 10px;
-        padding: 12px 30px;
+        border-radius: 14px;
+        padding: 14px 30px;
         font-weight: 700;
         color: white;
         transition: all 0.3s ease;
+        min-height: 56px;
     }
 
     .btn-get-started:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(255, 112, 67, 0.3);
+        box-shadow: 0 18px 34px rgba(21, 58, 89, 0.22);
         color: white;
     }
 
     .features {
-        padding: 100px 0;
-        background: var(--bg-light);
+        padding: 88px 0;
+        background: linear-gradient(180deg, #f4f8fb 0%, #f9fbfd 100%);
     }
 
     .feature-card {
         background: white;
-        border-radius: 20px;
+        border-radius: 24px;
         padding: 2rem;
-        box-shadow: 0 14px 32px rgba(17, 34, 51, 0.08);
+        box-shadow: 0 18px 38px rgba(17, 34, 51, 0.07);
         transition: all 0.3s ease;
         height: 100%;
         border: 1px solid var(--border-soft);
@@ -212,34 +216,32 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, var(--primary-orange), var(--accent-red));
+        background: linear-gradient(90deg, #1d4f76, #7ea3c3);
     }
 
     .feature-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 24px 48px rgba(17, 34, 51, 0.12);
+        transform: translateY(-6px);
+        box-shadow: 0 26px 48px rgba(17, 34, 51, 0.1);
     }
 
     .feature-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
+        font-size: 2.7rem;
+        margin-bottom: 1.2rem;
         display: block;
-        animation: pulse 2s infinite;
+    }
+
+    .feature-card .card-body {
+        text-align: left !important;
     }
 
     .wildfire-icon { color: var(--accent-red); }
     .earthquake-icon { color: #8d6e63; }
     .flood-icon { color: var(--secondary-blue); }
 
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-    }
-
     .stats {
-        background: linear-gradient(135deg, #173552, #214e70);
+        background: linear-gradient(135deg, #183a58, #285b80);
         color: white;
-        padding: 80px 0;
+        padding: 84px 0;
     }
 
     .stat-item {
@@ -260,16 +262,16 @@
     }
 
     .coverage-map-section {
-        padding: 80px 0;
+        padding: 88px 0;
         background: linear-gradient(180deg, #ffffff 0%, #f5f8fc 100%);
     }
 
     .coverage-map-card {
         background: #fff;
         border: 1px solid var(--border-soft);
-        border-radius: 24px;
-        padding: 2rem;
-        box-shadow: 0 18px 40px rgba(17, 34, 51, 0.08);
+        border-radius: 28px;
+        padding: 2.25rem;
+        box-shadow: 0 20px 42px rgba(17, 34, 51, 0.07);
     }
 
     .coverage-map-copy .eyebrow {
@@ -297,10 +299,10 @@
         display: flex;
         align-items: flex-start;
         gap: 0.75rem;
-        padding: 0.9rem 1rem;
-        background: var(--bg-light);
+        padding: 1rem 1.05rem;
+        background: linear-gradient(180deg, #f6f9fc 0%, #f0f5f9 100%);
         border: 1px solid var(--border-soft);
-        border-radius: 14px;
+        border-radius: 18px;
     }
 
     .coverage-point i {
@@ -311,9 +313,9 @@
     .coverage-map-visual {
         background: linear-gradient(160deg, #f7fbff 0%, #ebf3f9 100%);
         border: 1px solid var(--border-soft);
-        border-radius: 20px;
+        border-radius: 24px;
         min-height: 100%;
-        padding: 1rem;
+        padding: 1.1rem;
     }
 
     .coverage-map-svg {
@@ -330,14 +332,14 @@
     }
 
     .about {
-        padding: 100px 0;
-        background: white;
+        padding: 92px 0;
+        background: linear-gradient(180deg, #ffffff 0%, #f6f9fc 100%);
     }
 
     .about-content {
         display: flex;
         align-items: center;
-        gap: 3rem;
+        gap: 3.5rem;
     }
 
     .about-text {
@@ -352,33 +354,33 @@
     .about-image::before {
         content: '';
         position: absolute;
-        top: 20px;
-        left: 20px;
-        right: -20px;
-        bottom: -20px;
-        background: linear-gradient(135deg, var(--primary-orange), var(--accent-red));
-        border-radius: 20px;
+        top: 24px;
+        left: 24px;
+        right: -24px;
+        bottom: -24px;
+        background: linear-gradient(145deg, #dbe8f2, #b6ccde);
+        border-radius: 28px;
         z-index: -1;
     }
 
     .about-image img {
         width: 100%;
-        border-radius: 20px;
+        border-radius: 24px;
         box-shadow: 0 20px 40px rgba(0,0,0,0.1);
     }
 
     .seo-content {
-        padding: 80px 0;
+        padding: 88px 0;
         background: #fff;
     }
 
     .seo-card {
         background: #fff;
         border: 1px solid var(--border-soft);
-        border-radius: 18px;
-        padding: 1.5rem;
+        border-radius: 22px;
+        padding: 1.65rem;
         height: 100%;
-        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.05);
     }
 
     .seo-card h2 {
@@ -387,56 +389,15 @@
         margin-bottom: 0.85rem;
     }
 
-    .floating-element {
-        position: absolute;
-        opacity: 0.1;
-        animation: float 6s ease-in-out infinite;
-    }
-
-    .floating-1 {
-        top: 20%;
-        left: 10%;
-        animation-delay: 0s;
-    }
-
-    .floating-2 {
-        top: 60%;
-        right: 15%;
-        animation-delay: 2s;
-    }
-
-    .floating-3 {
-        bottom: 20%;
-        left: 20%;
-        animation-delay: 4s;
-    }
-
-    .navbar {
-        background: rgba(255, 255, 255, 0.95) !important;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 2px 20px rgba(0,0,0,0.1);
-    }
-
-    .navbar-brand {
-        font-weight: 800 !important;
-        color: var(--primary-orange) !important;
-        font-size: 1.5rem !important;
-    }
-
-    .nav-link {
-        font-weight: 600 !important;
-        color: var(--text-dark) !important;
-        transition: color 0.3s ease;
-    }
-
-    .nav-link:hover {
-        color: var(--primary-orange) !important;
-    }
-
     .search-type-toggle .btn-check:checked + .btn {
-        background: linear-gradient(45deg, var(--primary-orange), var(--accent-red));
+        background: linear-gradient(145deg, #173d5d, #2f698f);
         border-color: var(--primary-orange);
         color: white;
+    }
+
+    .search-type-toggle .btn {
+        min-height: 52px;
+        border-radius: 14px !important;
     }
 
     .search-container {
@@ -489,28 +450,146 @@
         color: white;
     }
 
+    .hero-trust-strip {
+        position: relative;
+        z-index: 2;
+        margin-top: -112px;
+        margin-bottom: 2rem;
+    }
+
+    .hero-trust-card {
+        background: rgba(255, 255, 255, 0.94);
+        border: 1px solid rgba(199, 212, 224, 0.95);
+        border-radius: 26px;
+        box-shadow: 0 24px 48px rgba(17, 40, 61, 0.1);
+        overflow: hidden;
+    }
+
+    .trust-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .trust-item {
+        padding: 1.6rem 1.4rem;
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .trust-item + .trust-item {
+        border-left: 1px solid var(--border-soft);
+    }
+
+    .trust-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 18px;
+        background: linear-gradient(145deg, #edf4f9, #f8fbfd);
+        border: 1px solid var(--border-soft);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 1.2rem;
+    }
+
+    .trust-item h3 {
+        font-size: 1rem;
+        font-weight: 800;
+        margin-bottom: 0.35rem;
+        color: #173149;
+    }
+
+    .trust-item p {
+        margin: 0;
+        font-size: 0.95rem;
+        color: #597083;
+    }
+
+    .trust-item a {
+        text-decoration: none;
+        font-weight: 800;
+    }
+
+    .trust-banner {
+        border-top: 1px solid var(--border-soft);
+        background: linear-gradient(180deg, #edf5fb 0%, #e7f0f8 100%);
+        padding: 1rem 1.35rem;
+        text-align: center;
+        font-weight: 800;
+        color: #2e4b63;
+    }
+
+    .section-panel {
+        padding: 0 0 1.25rem;
+    }
+
+    .section-panel .surface-card {
+        padding: 2rem;
+    }
+
+    .about-panel {
+        background: linear-gradient(180deg, #ffffff 0%, #f5f8fb 100%);
+        border: 1px solid var(--border-soft);
+        border-radius: 28px;
+        padding: 2.35rem;
+        box-shadow: 0 20px 42px rgba(17, 34, 51, 0.07);
+    }
+
+    .about-image .bg-primary {
+        background: linear-gradient(160deg, #173d5d, #6d97b8) !important;
+        border-radius: 26px !important;
+        box-shadow: 0 24px 44px rgba(23, 61, 93, 0.16);
+    }
+
+    .home-cta-section {
+        background: linear-gradient(135deg, #183a58, #285b80);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
     @media (max-width: 768px) {
-        .hero h1 { font-size: 2.5rem; }
-        .hero p { font-size: 1.1rem; }
+        .hero {
+            min-height: auto;
+            background-position: center bottom;
+        }
+
+        .hero-content {
+            padding: 4rem 0 10rem;
+        }
+
+        .hero h1 { font-size: 2.7rem; }
+        .hero p { font-size: 1.05rem; }
         .about-content { flex-direction: column; }
         .feature-card { margin-bottom: 2rem; }
         .quick-start-form { margin-top: 2rem; padding: 1.5rem; }
+        .trust-grid { grid-template-columns: 1fr; }
+        .trust-item + .trust-item { border-left: 0; border-top: 1px solid var(--border-soft); }
+        .hero-trust-strip { margin-top: -78px; }
+        .section-panel .surface-card,
+        .about-panel,
+        .coverage-map-card { padding: 1.5rem; }
+    }
+
+    @media (max-width: 576px) {
+        .credibility-badge {
+            width: 100%;
+        }
+
+        .cta-button {
+            width: 100%;
+        }
+
+        .hero-content {
+            padding-bottom: 8.5rem;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <section class="hero">
-    <div class="floating-element floating-1">
-        <i class="fas fa-fire fa-3x"></i>
-    </div>
-    <div class="floating-element floating-2">
-        <i class="fas fa-water fa-3x"></i>
-    </div>
-    <div class="floating-element floating-3">
-        <i class="fas fa-home fa-3x"></i>
-    </div>
-
     <div class="container">
         <div class="hero-content">
             <div class="credibility-badge">
@@ -644,6 +723,42 @@
     </div>
 </section>
 
+<section class="hero-trust-strip">
+    <div class="container">
+        <div class="hero-trust-card">
+            <div class="trust-grid">
+                <article class="trust-item">
+                    <span class="trust-icon text-danger"><i class="fas fa-triangle-exclamation"></i></span>
+                    <div>
+                        <h3>Wildfire Protection</h3>
+                        <p>See where wildfire deserves attention in your area, understand the score, and get the first actions to take at home.</p>
+                        <a href="{{ url_for('hazard_detail', name='wildfire') }}">Review Wildfire Guidance</a>
+                    </div>
+                </article>
+                <article class="trust-item">
+                    <span class="trust-icon text-success"><i class="fas fa-shield-heart"></i></span>
+                    <div>
+                        <h3>Earthquake Readiness</h3>
+                        <p>Move from seismic exposure to practical readiness with priority actions, Oakland context, and neighborhood-aware guidance.</p>
+                        <a href="{{ url_for('hazard_detail', name='earthquake') }}">Review Earthquake Guidance</a>
+                    </div>
+                </article>
+                <article class="trust-item">
+                    <span class="trust-icon text-primary"><i class="fas fa-clipboard-list"></i></span>
+                    <div>
+                        <h3>Flood Safety</h3>
+                        <p>Use flood-zone context, ZIP-level scoring, and action checklists to prepare before heavy rain, drainage failures, or coastal impacts.</p>
+                        <a href="{{ url_for('hazard_detail', name='flood') }}">Review Flood Guidance</a>
+                    </div>
+                </article>
+            </div>
+            <div class="trust-banner">
+                Built for Alameda County. Backed by official sources. Here for our community.
+            </div>
+        </div>
+    </div>
+</section>
+
 <section id="features" class="features">
     <div class="container">
         <div class="text-center mb-5">
@@ -688,7 +803,7 @@
     </div>
 </section>
 
-<section class="py-5">
+<section class="section-panel py-5">
     <div class="container">
         <div class="surface-card p-4 p-lg-5">
             <div class="row g-4 align-items-center">
@@ -871,7 +986,8 @@
 
 <section id="about" class="about">
     <div class="container">
-        <div class="about-content">
+        <div class="about-panel">
+            <div class="about-content">
             <div class="about-text">
                 <h2 class="display-4 fw-bold mb-4">Built by the Community, For the Community</h2>
                 <p class="lead mb-4">Created by <strong>Adan J Allen</strong> through the Hidden Genius Project, this platform bridges the gap between technology and emergency preparedness.</p>
@@ -915,10 +1031,11 @@
                 </div>
             </div>
         </div>
+        </div>
     </div>
 </section>
 
-<section class="bg-primary text-white text-center py-5">
+<section class="home-cta-section text-white text-center py-5">
     <div class="container">
         <h2 class="display-5 fw-bold mb-3">Ready to understand your risk and act on it?</h2>
         <p class="lead mb-4">Use one connected experience to check risk, explore the map, and move into practical preparedness steps.</p>
