@@ -15,7 +15,7 @@ from copy import deepcopy
 from hazard_engine import build_hazard_results, merge_structured_result
 from location_service import location_from_session
 from rag_service import retrieve_chunks
-from source_registry import load_hazard_registry, load_jurisdictions, source_records_payload
+from source_registry import load_hazard_registry, load_jurisdictions, load_local_plans, source_records_payload
 
 try:
     from openai import OpenAI
@@ -370,7 +370,17 @@ def get_all_hazards(user=None, location_context=None):
         "zip_code": location_context.get("zip_code"),
         "location_mode": location_context.get("location_mode"),
     })
-    structured_results = build_hazard_results(hazards, location_result, location_context.get("zip_risk_snapshot") or {})
+    user_context = {
+        "household": session.get("household"),
+        "preparedness": session.get("preparedness"),
+        "special_needs": session.get("special_needs"),
+    }
+    structured_results = build_hazard_results(
+        hazards,
+        location_result,
+        location_context.get("zip_risk_snapshot") or {},
+        user_context=user_context,
+    )
     hazards_by_slug = {hazard.get("slug"): hazard for hazard in hazards}
     merged_hazards = []
     used_slugs = set()
@@ -901,6 +911,91 @@ def load_geojson_file(filename):
         logger.exception("Unexpected error loading GeoJSON file %s", filepath)
         return None
 
+
+def geojson_feature_bounds(feature):
+    try:
+        return shape(feature.get("geometry", {})).bounds
+    except Exception:
+        return None
+
+
+def bounds_intersect(a, b):
+    if not a or not b:
+        return False
+    minx, miny, maxx, maxy = a
+    other_minx, other_miny, other_maxx, other_maxy = b
+    return not (maxx < other_minx or minx > other_maxx or maxy < other_miny or miny > other_maxy)
+
+
+def get_geojson_bounds(data):
+    bounds = None
+    for feature in (data or {}).get("features", []):
+        feature_bounds = geojson_feature_bounds(feature)
+        if not feature_bounds:
+            continue
+        if bounds is None:
+            bounds = feature_bounds
+        else:
+            bounds = (
+                min(bounds[0], feature_bounds[0]),
+                min(bounds[1], feature_bounds[1]),
+                max(bounds[2], feature_bounds[2]),
+                max(bounds[3], feature_bounds[3]),
+            )
+    return bounds
+
+
+def expand_bounds(bounds, padding=0.025):
+    if not bounds:
+        return None
+    return (
+        bounds[0] - padding,
+        bounds[1] - padding,
+        bounds[2] + padding,
+        bounds[3] + padding,
+    )
+
+
+def build_filter_bounds(zip_code=None, lat=None, lon=None):
+    bounds = None
+    if zip_code:
+        zip_boundary = get_zip_boundary(str(zip_code))
+        bounds = get_geojson_bounds(zip_boundary)
+
+    try:
+        if lat is not None and lon is not None:
+            lat_value = float(lat)
+            lon_value = float(lon)
+            point_bounds = (lon_value - 0.045, lat_value - 0.045, lon_value + 0.045, lat_value + 0.045)
+            bounds = point_bounds if bounds is None else (
+                min(bounds[0], point_bounds[0]),
+                min(bounds[1], point_bounds[1]),
+                max(bounds[2], point_bounds[2]),
+                max(bounds[3], point_bounds[3]),
+            )
+    except (TypeError, ValueError):
+        pass
+
+    return expand_bounds(bounds, padding=0.02)
+
+
+def filter_geojson_by_bounds(data, filter_bounds, max_features=400):
+    if not data:
+        return {"type": "FeatureCollection", "features": []}
+    if not filter_bounds:
+        return {
+            **data,
+            "features": data.get("features", [])[:max_features],
+        }
+    filtered_features = [
+        feature for feature in data.get("features", [])
+        if bounds_intersect(geojson_feature_bounds(feature), filter_bounds)
+    ]
+    return {
+        "type": "FeatureCollection",
+        "features": filtered_features[:max_features],
+    }
+
 def get_zip_boundary(zip_code):
     """Get ZIP boundary from zipbound.geojson"""
     try:
@@ -1186,6 +1281,7 @@ def sources():
         sources=source_records_payload(),
         hazards=load_hazard_registry(),
         jurisdictions=load_jurisdictions(),
+        local_plans=load_local_plans(),
     )
 
 # --- API Endpoints ---
@@ -1199,6 +1295,7 @@ def api_health():
         "hazard_engine": "structured",
         "required_gis_slice": "flood_address_point",
         "source_count": len(source_records_payload()),
+        "local_plan_count": len(load_local_plans()),
     })
 
 
@@ -1208,6 +1305,16 @@ def api_sources():
         "sources": source_records_payload(),
         "hazards": load_hazard_registry(),
         "jurisdictions": load_jurisdictions(),
+        "local_plans": load_local_plans(),
+    })
+
+
+@app.route("/api/local-plans")
+def api_local_plans():
+    return jsonify({
+        "plans": load_local_plans(),
+        "count": len(load_local_plans()),
+        "review_note": "City-specific hazard claims are only used when the plan/chunk has reviewed or draft-reviewed status.",
     })
 
 
@@ -1281,8 +1388,11 @@ def api_explain_hazard():
 # Live Earthquake API
 @app.route("/api/live-earthquakes")
 def api_live_earthquakes():
-    """API endpoint for live earthquake data with Alameda County filtering"""
-    url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson"
+    """API endpoint for recent earthquake data with normal empty states."""
+    scope = request.args.get("scope", "bay_area").strip().lower()
+    days = request.args.get("days", "7").strip()
+    feed = "all_week" if days == "7" else "all_day"
+    url = f"https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/{feed}.geojson"
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
@@ -1292,14 +1402,18 @@ def api_live_earthquakes():
         return jsonify({
             "type": "FeatureCollection",
             "features": [],
-            "message": "Map data temporarily unavailable. You can still view your risk and preparedness steps below."
+            "source": "USGS Earthquake Hazards Program",
+            "feature_count": 0,
+            "filtered": True,
+            "data_status": "unavailable",
+            "message": "Recent earthquake feed is temporarily unavailable. You can still use the preparedness guidance below."
         })
 
-    # Alameda County bounds (more precise)
-    bounds = {
-        "min_lat": 37.4, "max_lat": 37.9,
-        "min_lon": -122.4, "max_lon": -121.4
+    bounds_by_scope = {
+        "alameda": {"min_lat": 37.4, "max_lat": 37.9, "min_lon": -122.4, "max_lon": -121.4},
+        "bay_area": {"min_lat": 36.7, "max_lat": 38.7, "min_lon": -123.4, "max_lon": -120.8},
     }
+    bounds = bounds_by_scope.get(scope, bounds_by_scope["bay_area"])
     
     features = []
     for feature in data.get("features", []):
@@ -1314,7 +1428,22 @@ def api_live_earthquakes():
         except Exception:
             logger.exception("Skipping malformed earthquake feature.")
 
-    return jsonify({"type": "FeatureCollection", "features": features})
+    message = (
+        f"No recent earthquakes found in the selected {scope.replace('_', ' ')} window."
+        if not features else
+        f"Showing {len(features)} recent earthquakes from the USGS {feed.replace('_', ' ')} feed."
+    )
+    return jsonify({
+        "type": "FeatureCollection",
+        "features": features,
+        "source": "USGS Earthquake Hazards Program",
+        "feature_count": len(features),
+        "filtered": True,
+        "data_status": "no_recent_events" if not features else "checked",
+        "message": message,
+        "scope": scope,
+        "days": 7 if feed == "all_week" else 1,
+    })
 
 # Wildfire zones API
 @app.route("/api/wildfire-zones")
@@ -1332,14 +1461,35 @@ def api_wildfire_zones():
 # Flood zones API
 @app.route("/api/flood-zones")
 def api_flood_zones():
-    """API endpoint for flood hazard zones"""
+    """API endpoint for filtered flood hazard zones."""
     data = load_geojson_file("FldHaz.geojson")
     if data:
-        return jsonify(data)
+        zip_code = request.args.get("zip") or session.get("zip_code")
+        lat = request.args.get("lat") or session.get("lat")
+        lon = request.args.get("lon") or session.get("lon")
+        filter_bounds = build_filter_bounds(zip_code=zip_code, lat=lat, lon=lon)
+        filtered = filter_geojson_by_bounds(data, filter_bounds)
+        feature_count = len(filtered.get("features", []))
+        filtered.update({
+            "source": "FEMA National Flood Hazard Layer",
+            "feature_count": feature_count,
+            "filtered": bool(filter_bounds),
+            "data_status": "checked" if feature_count else "not_in_layer",
+            "message": (
+                f"Showing {feature_count} nearby flood polygons from the FEMA flood layer."
+                if feature_count else
+                "No FEMA flood polygons were returned for the selected map area. This does not prove there is no flood risk."
+            ),
+        })
+        return jsonify(filtered)
     return jsonify({
         "type": "FeatureCollection",
         "features": [],
-        "message": "Map data temporarily unavailable. You can still view your risk and preparedness steps below."
+        "source": "FEMA National Flood Hazard Layer",
+        "feature_count": 0,
+        "filtered": True,
+        "data_status": "unavailable",
+        "message": "Flood map data is temporarily unavailable. You can still view your risk and preparedness steps below."
     })
 
 # Fault lines API

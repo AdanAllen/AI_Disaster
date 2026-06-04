@@ -654,7 +654,7 @@
 
                     <div class="layer-toggle live" id="live-toggle" onclick="toggleLayer('live')">
                         <i class="fas fa-broadcast-tower layer-icon"></i>
-                        <span>Live Earthquakes</span>
+                        <span>Recent Bay Area Earthquakes</span>
                     </div>
                 </div>
             </div>
@@ -890,7 +890,7 @@ Ask about supplies, evacuation planning, documents, insurance, medications, pets
             wildfire: 'Wildfire Zones',
             flood: 'Flood Zones', 
             earthquake: 'Fault Lines',
-            live: 'Live Earthquakes',
+            live: 'Recent Bay Area Earthquakes',
             zip: `ZIP Boundary ({{ zip_code }})`
         };
         
@@ -955,11 +955,22 @@ Ask about supplies, evacuation planning, documents, insurance, medications, pets
 
     // Load flood zones
     function loadFloodZones() {
-        fetch('/api/flood-zones')
+        const params = new URLSearchParams({
+            zip: "{{ zip_code }}",
+            lat: "{{ user_lat }}",
+            lon: "{{ user_lon }}"
+        });
+        fetch(`/api/flood-zones?${params.toString()}`)
             .then(response => response.json())
             .then(data => {
-                if (data.error || !data.features || data.features.length === 0) {
+                if (data.error || data.data_status === 'unavailable') {
                     showError('flood');
+                    return;
+                }
+                if (!data.features || data.features.length === 0) {
+                    showLayerMessage(data.message || 'No flood polygons were returned for the selected map area.');
+                    setLoadingState('flood', false);
+                    updateActiveLayers();
                     return;
                 }
 
@@ -986,6 +997,7 @@ Ask about supplies, evacuation planning, documents, insurance, medications, pets
                 }).addTo(map);
 
                 setLoadingState('flood', false);
+                showLayerMessage(data.message || 'Flood zones loaded.');
                 console.log('Flood zones loaded successfully');
                 
             })
@@ -1027,11 +1039,18 @@ Ask about supplies, evacuation planning, documents, insurance, medications, pets
 
     // Load live earthquakes
     function loadLiveEarthquakes() {
-        fetch('/api/live-earthquakes')
+        fetch('/api/live-earthquakes?scope=bay_area&days=7')
             .then(response => response.json())
             .then(data => {
-                if (data.error || !data.features || data.features.length === 0) {
+                if (data.error || data.data_status === 'unavailable') {
                     showError('live');
+                    return;
+                }
+                if (!data.features || data.features.length === 0) {
+                    layers.live = L.layerGroup([]).addTo(map);
+                    setLoadingState('live', false);
+                    showLayerMessage(data.message || 'No recent Bay Area earthquakes in this time window.');
+                    updateActiveLayers();
                     return;
                 }
                 
@@ -1063,6 +1082,7 @@ Ask about supplies, evacuation planning, documents, insurance, medications, pets
                 }).addTo(map);
                 
                 setLoadingState('live', false);
+                showLayerMessage(data.message || 'Recent Bay Area earthquakes loaded.');
                 console.log('Live earthquake data loaded successfully');
                 
             })
@@ -1182,6 +1202,25 @@ Ask about supplies, evacuation planning, documents, insurance, medications, pets
         }, 5000);
         
         updateActiveLayers();
+    }
+
+    function showLayerMessage(message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'error-message';
+        messageDiv.textContent = message;
+        messageDiv.style.position = 'absolute';
+        messageDiv.style.top = '80px';
+        messageDiv.style.left = '20px';
+        messageDiv.style.right = '20px';
+        messageDiv.style.zIndex = '1000';
+
+        document.querySelector('.map-container').appendChild(messageDiv);
+
+        setTimeout(() => {
+            if (messageDiv.parentNode) {
+                messageDiv.parentNode.removeChild(messageDiv);
+            }
+        }, 5000);
     }
 
     // Chatbot functionality

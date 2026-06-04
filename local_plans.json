@@ -1,0 +1,167 @@
+[
+  {
+    "jurisdiction_id": "oakland",
+    "name": "Oakland",
+    "jurisdiction_type": "city",
+    "plan_name": "City of Oakland 2021-2026 Local Hazard Mitigation Plan",
+    "plan_group": "Oakland LHMP",
+    "review_status": "draft_reviewed",
+    "url": "https://www.oaklandca.gov/Public-Safety-Streets/Fire/EMSD/Local-Hazard-Mitigation-Plan-LHMP",
+    "hazards": ["earthquake", "flood", "wildfire", "drought", "landslide", "sea_level_rise", "severe_weather", "tsunami", "dam_failure"],
+    "notes": "Existing app dataset is derived from Oakland LHMP-style content; source should be expanded with direct page citations before making stronger claims."
+  },
+  {
+    "jurisdiction_id": "berkeley",
+    "name": "Berkeley",
+    "jurisdiction_type": "city",
+    "plan_name": "City of Berkeley 2024 Local Hazard Mitigation Plan",
+    "plan_group": "Berkeley LHMP",
+    "review_status": "draft_reviewed",
+    "url": "https://berkeleyca.gov/Mitigation/",
+    "hazards": ["earthquake", "flood", "wildfire", "landslide", "severe_weather"],
+    "notes": "Official city LHMP page confirmed; city-specific hazard claims should use reviewed chunks only."
+  },
+  {
+    "jurisdiction_id": "fremont",
+    "name": "Fremont",
+    "jurisdiction_type": "city",
+    "plan_name": "2024 Tri-City Multi-jurisdictional Local Hazard Mitigation Plan",
+    "plan_group": "Tri-City LHMP",
+    "review_status": "draft_reviewed",
+    "url": "https://www.fremont.gov/residents/emergency-preparedness/mitigation",
+    "hazards": ["earthquake", "flood", "landslide", "sea_level_rise", "severe_weather", "tsunami", "wildfire"],
+    "notes": "FEMA-approved Tri-City plan covers Fremont, Newark, Union City, Alameda County Water District, and Union Sanitary District."
+  },
+  {
+    "jurisdiction_id": "newark",
+    "name": "Newark",
+    "jurisdiction_type": "city",
+    "plan_name": "2024 Tri-City Multi-jurisdictional Local Hazard Mitigation Plan",
+    "plan_group": "Tri-City LHMP",
+    "review_status": "draft_reviewed",
+    "url": "https://www.fremont.gov/residents/emergency-preparedness/mitigation",
+    "hazards": ["earthquake", "flood", "landslide", "sea_level_rise", "severe_weather", "tsunami", "wildfire"],
+    "notes": "Covered by the Tri-City plan; claims should remain plan-level until annex chunks are reviewed."
+  },
+  {
+    "jurisdiction_id": "union_city",
+    "name": "Union City",
+    "jurisdiction_type": "city",
+    "plan_name": "2024 Tri-City Multi-jurisdictional Local Hazard Mitigation Plan",
+    "plan_group": "Tri-City LHMP",
+    "review_status": "draft_reviewed",
+    "url": "https://www.fremont.gov/residents/emergency-preparedness/mitigation",
+    "hazards": ["earthquake", "flood", "landslide", "sea_level_rise", "severe_weather", "tsunami", "wildfire"],
+    "notes": "Covered by the Tri-City plan; claims should remain plan-level until annex chunks are reviewed."
+  },
+  {
+    "jurisdiction_id": "alameda",
+    "name": "Alameda",
+    "jurisdiction_type": "city",
+    "plan_name": "Climate Adaptation and Hazard Mitigation Plan",
+    "plan_group": "Alameda CAHMP",
+    "review_status": "draft_reviewed",
+    "url": "https://www.alamedaca.gov/Departments/Planning-Building-and-Transportation/Sustainability-and-Resilience/Climate-Adaptation-and-Hazard-Mitigation-Plan",
+    "hazards": ["flood", "sea_level_rise", "earthquake", "severe_weather"],
+    "notes": "Official city plan page confirmed; use reviewed chunks before making specific exposure claims."
+  },
+  {
+    "jurisdiction_id": "hayward",
+    "name": "Hayward",
+    "jurisdiction_type": "city",
+    "plan_name": "Hayward Local Resilience Plan",
+    "plan_group": "Hayward LRP",
+    "review_status": "draft_reviewed",
+    "url": "https://hayward-ca.gov/your-government/documents/local-resilience-plan",
+    "hazards": ["earthquake", "flood", "wildfire", "landslide", "severe_weather"],
+    "notes": "Official Hayward LRP page confirmed; source chunks should be expanded from the plan PDF."
+  },
+  {
+    "jurisdiction_id": "dublin",
+    "name": "Dublin",
+    "jurisdiction_type": "city",
+    "plan_name": "Tri-Valley Local Hazard Mitigation Plan",
+    "plan_group": "Tri-Valley LHMP",
+    "review_status": "draft_reviewed",
+    "url": "https://www.livermoreca.gov/departments/community-development/planning/hazard-mitigation",
+    "hazards": ["earthquake", "flood", "wildfire", "severe_weather"],
+    "notes": "Tri-Valley plan covers Dublin, Livermore, Pleasanton, and Dublin San Ramon Services District."
+  },
+  {
+    "jurisdiction_id": "livermore",
+    "name": "Livermore",
+    "jurisdiction_type": "city",
+    "plan_name": "Tri-Valley Local Hazard Mitigation Plan",
+    "plan_group": "Tri-Valley LHMP",
+    "review_status": "draft_reviewed",
+    "url": "https://www.livermoreca.gov/departments/community-development/planning/hazard-mitigation",
+    "hazards": ["earthquake", "flood", "wildfire", "severe_weather"],
+    "notes": "Tri-Valley plan covers Dublin, Livermore, Pleasanton, and Dublin San Ramon Services District."
+  },
+  {
+    "jurisdiction_id": "pleasanton",
+    "name": "Pleasanton",
+    "jurisdiction_type": "city",
+    "plan_name": "Tri-Valley Local Hazard Mitigation Plan",
+    "plan_group": "Tri-Valley LHMP",
+    "review_status": "draft_reviewed",
+    "url": "https://www.livermoreca.gov/departments/community-development/planning/hazard-mitigation",
+    "hazards": ["earthquake", "flood", "wildfire", "severe_weather"],
+    "notes": "Tri-Valley plan covers Dublin, Livermore, Pleasanton, and Dublin San Ramon Services District."
+  },
+  {
+    "jurisdiction_id": "albany",
+    "name": "Albany",
+    "jurisdiction_type": "city",
+    "plan_name": "Local hazard mitigation source not confirmed",
+    "plan_group": "Needs source review",
+    "review_status": "needs_source_review",
+    "url": "",
+    "hazards": [],
+    "notes": "Do not show city-specific hazard claims until an official source is reviewed."
+  },
+  {
+    "jurisdiction_id": "emeryville",
+    "name": "Emeryville",
+    "jurisdiction_type": "city",
+    "plan_name": "Local hazard mitigation source not confirmed",
+    "plan_group": "Needs source review",
+    "review_status": "needs_source_review",
+    "url": "",
+    "hazards": [],
+    "notes": "Do not show city-specific hazard claims until an official source is reviewed."
+  },
+  {
+    "jurisdiction_id": "piedmont",
+    "name": "Piedmont",
+    "jurisdiction_type": "city",
+    "plan_name": "Local hazard mitigation source not confirmed",
+    "plan_group": "Needs source review",
+    "review_status": "needs_source_review",
+    "url": "",
+    "hazards": [],
+    "notes": "Do not show city-specific hazard claims until an official source is reviewed."
+  },
+  {
+    "jurisdiction_id": "san_leandro",
+    "name": "San Leandro",
+    "jurisdiction_type": "city",
+    "plan_name": "Local hazard mitigation source not confirmed",
+    "plan_group": "Needs source review",
+    "review_status": "needs_source_review",
+    "url": "",
+    "hazards": [],
+    "notes": "Do not show city-specific hazard claims until an official source is reviewed."
+  },
+  {
+    "jurisdiction_id": "unincorporated_alameda_county",
+    "name": "Unincorporated Alameda County",
+    "jurisdiction_type": "unincorporated",
+    "plan_name": "Alameda County hazard mitigation planning context",
+    "plan_group": "Alameda County",
+    "review_status": "needs_source_review",
+    "url": "https://acgov.org/government/reports/mitigationplan.htm",
+    "hazards": ["earthquake", "flood", "wildfire", "severe_weather"],
+    "notes": "County source exists, but community-specific claims for unincorporated areas still need reviewed chunks."
+  }
+]

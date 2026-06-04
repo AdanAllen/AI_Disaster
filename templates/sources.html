@@ -115,6 +115,59 @@
                 </table>
             </div>
         </div>
+
+        <div class="mt-5 mb-4">
+            <h2 class="h3 fw-bold mb-2">Local plan coverage audit</h2>
+            <p class="text-muted mb-0">
+                StayReady includes every incorporated Alameda County city plus unincorporated county in this audit.
+                City-specific hazard claims are only shown when reviewed or draft-reviewed source chunks exist.
+            </p>
+        </div>
+
+        <div class="source-table-card">
+            <div class="table-responsive">
+                <table class="table source-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Jurisdiction</th>
+                            <th>Plan / Source</th>
+                            <th>Hazards Covered</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for plan in local_plans %}
+                        <tr>
+                            <td>
+                                <strong>{{ plan.name }}</strong>
+                                <div class="small text-muted">{{ plan.jurisdiction_type }}</div>
+                            </td>
+                            <td>
+                                {% if plan.url %}
+                                <a class="fw-bold" href="{{ plan.url }}" target="_blank" rel="noopener noreferrer">{{ plan.plan_name }}</a>
+                                {% else %}
+                                <strong>{{ plan.plan_name }}</strong>
+                                {% endif %}
+                                <div class="small text-muted">{{ plan.plan_group }}</div>
+                            </td>
+                            <td>
+                                {% if plan.hazards %}
+                                {% for hazard in plan.hazards %}
+                                <span class="source-badge">{{ hazard }}</span>
+                                {% endfor %}
+                                {% else %}
+                                <span class="source-badge">not reviewed</span>
+                                {% endif %}
+                            </td>
+                            <td><span class="source-badge">{{ plan.review_status }}</span></td>
+                            <td>{{ plan.notes }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </section>
 {% endblock %}

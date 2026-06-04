@@ -10,7 +10,7 @@ DataStatus = Literal["checked", "not_checked", "not_in_layer", "fallback_used", 
 MatchType = Literal["inside", "near", "intersects", "jurisdiction_match", "zip_match", "fallback", "none"]
 ExposureLevel = Literal["low", "medium", "high", "unknown"]
 ConfidenceLabel = Literal["source_backed", "mixed_support", "needs_review"]
-ReviewStatus = Literal["reviewed", "draft", "insufficient_source_support"]
+ReviewStatus = Literal["reviewed", "draft_reviewed", "draft", "needs_source_review", "insufficient_source_support"]
 
 
 class LocationResult(BaseModel):
@@ -72,6 +72,14 @@ class RecoveryQuestion(BaseModel):
     source_id: str = ""
 
 
+class SpecializedGuidance(BaseModel):
+    city_context: List[str] = Field(default_factory=list)
+    household_factors: List[str] = Field(default_factory=list)
+    access_functional_needs: List[str] = Field(default_factory=list)
+    recovery_needs: List[str] = Field(default_factory=list)
+    source_ids: List[str] = Field(default_factory=list)
+
+
 class HazardResult(BaseModel):
     hazard_id: str
     hazard_type: str
@@ -92,6 +100,8 @@ class HazardResult(BaseModel):
     recommended_actions: List[PreparednessAction] = Field(default_factory=list)
     recovery_questions: List[RecoveryQuestion] = Field(default_factory=list)
     sources: List[SourceRecord] = Field(default_factory=list)
+    local_plan_match: Optional[Dict[str, Any]] = None
+    specialized_guidance: SpecializedGuidance = Field(default_factory=SpecializedGuidance)
     legacy_score: Optional[float] = None
     legacy_priority_score: Optional[int] = None
 

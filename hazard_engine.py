@@ -6,8 +6,8 @@ from typing import Dict, List, Optional
 
 from shapely.geometry import Point, shape
 
-from pydantic_models import HazardResult, PreparednessAction, RecoveryQuestion
-from source_registry import get_source, get_sources_for_hazard
+from pydantic_models import HazardResult, PreparednessAction, RecoveryQuestion, SpecializedGuidance
+from source_registry import get_city_chunks, get_local_plan_for_city, get_source, get_sources_for_hazard
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -33,7 +33,35 @@ RECOVERY_QUESTIONS = [
         question="How will family members, pets, children, school, and work needs be handled during recovery?",
         source_id="ready_recovery",
     ),
+    RecoveryQuestion(
+        id="transportation",
+        question="If your normal vehicle, transit route, or rideshare option is unavailable, what is your backup transportation plan?",
+        source_id="ready_recovery",
+    ),
+    RecoveryQuestion(
+        id="financial-recovery",
+        question="How would you cover deductibles, temporary supplies, lost work time, or urgent repairs during the first month of recovery?",
+        source_id="ready_recovery",
+    ),
 ]
+
+HAZARD_RECOVERY_NEEDS = {
+    "wildfire": [
+        "Document smoke damage and evacuation expenses.",
+        "Plan for temporary housing if air quality, utilities, or access roads make home unsafe.",
+        "Keep medication, pet, child, school, and work continuity plans ready for rapid evacuation.",
+    ],
+    "flood": [
+        "Photograph damage before cleanup when it is safe.",
+        "Keep insurance, lease, title, and repair contact information accessible above floor level.",
+        "Plan where to stay if utilities, mold, or structural damage make the home unsafe.",
+    ],
+    "earthquake": [
+        "Prepare for extended utility outages and delayed building inspections.",
+        "Know how to access medications, mobility devices, and backup power if roads or elevators are disrupted.",
+        "Plan for school, work, child, pet, and family reunification if communication systems are limited.",
+    ],
+}
 
 DEFAULT_ACTIONS = {
     "wildfire": [
@@ -156,7 +184,63 @@ def _zip_explanation(zip_snapshot: Dict, hazard_type: str) -> str:
     return ((zip_snapshot or {}).get(hazard_type) or {}).get("explanation", "")
 
 
-def _jurisdiction_result(hazard: Dict, location_result, zip_snapshot: Dict) -> HazardResult:
+def _local_plan_match(location_result, hazard_type: str) -> Optional[Dict]:
+    plan = get_local_plan_for_city(location_result.city)
+    if not plan:
+        return None
+    hazard_key = (hazard_type or "").strip().lower()
+    plan_hazards = {item.lower() for item in plan.get("hazards", [])}
+    return {
+        "jurisdiction_id": plan.get("jurisdiction_id"),
+        "name": plan.get("name"),
+        "plan_name": plan.get("plan_name"),
+        "plan_group": plan.get("plan_group"),
+        "review_status": plan.get("review_status"),
+        "url": plan.get("url"),
+        "hazard_supported": hazard_key in plan_hazards or "all" in plan_hazards,
+        "notes": plan.get("notes", ""),
+    }
+
+
+def _specialized_guidance(location_result, hazard_type: str, user_context: Optional[Dict] = None) -> SpecializedGuidance:
+    user_context = user_context or {}
+    city_chunks = get_city_chunks(location_result.city, hazard_type)
+    city_context = [chunk.get("text", "") for chunk in city_chunks if chunk.get("text")]
+    source_ids = list(dict.fromkeys(chunk.get("source_id") for chunk in city_chunks if chunk.get("source_id")))
+    household_factors = []
+    access_functional_needs = []
+
+    household = str(user_context.get("household") or "").strip()
+    preparedness = str(user_context.get("preparedness") or "").strip()
+    special_needs = str(user_context.get("special_needs") or "").strip()
+
+    if household:
+        household_factors.append(f"Plan supplies, evacuation, and recovery around a household size of {household}.")
+    if preparedness and preparedness not in {"", "Unknown"}:
+        household_factors.append(f"Current preparedness was marked as {preparedness}; keep next steps practical and staged.")
+    if special_needs:
+        access_functional_needs.append(f"Account for reported medical or access needs: {special_needs}.")
+    else:
+        access_functional_needs.append("Check whether anyone depends on medications, mobility equipment, powered medical devices, caregivers, or accessible transportation.")
+
+    recovery_needs = HAZARD_RECOVERY_NEEDS.get(hazard_type, [
+        "Keep documents, insurance, housing, medications, transportation, and family continuity plans accessible.",
+    ])
+    if not city_context and location_result.city:
+        city_context.append(
+            f"No reviewed {location_result.city} hazard chunk is available for this hazard yet, so city-specific claims remain limited."
+        )
+
+    return SpecializedGuidance(
+        city_context=city_context,
+        household_factors=household_factors,
+        access_functional_needs=access_functional_needs,
+        recovery_needs=recovery_needs,
+        source_ids=source_ids,
+    )
+
+
+def _jurisdiction_result(hazard: Dict, location_result, zip_snapshot: Dict, user_context: Optional[Dict] = None) -> HazardResult:
     hazard_type = hazard.get("slug") or hazard.get("name", "").lower()
     city = location_result.city or "Alameda County"
     score = _legacy_score(zip_snapshot, hazard_type)
@@ -166,6 +250,11 @@ def _jurisdiction_result(hazard: Dict, location_result, zip_snapshot: Dict) -> H
     ]
     if score is not None:
         limitations.append("ZIP score is included only as supporting fallback context, not as the primary location system.")
+
+    local_plan_match = _local_plan_match(location_result, hazard_type)
+    specialized_guidance = _specialized_guidance(location_result, hazard_type, user_context)
+    if local_plan_match and local_plan_match.get("hazard_supported") and local_plan_match.get("review_status") in {"reviewed", "draft_reviewed"}:
+        limitations.append("City plan context is included as reviewed planning context, not as address-level GIS membership.")
 
     return HazardResult(
         hazard_id=hazard_type,
@@ -190,12 +279,14 @@ def _jurisdiction_result(hazard: Dict, location_result, zip_snapshot: Dict) -> H
         recommended_actions=DEFAULT_ACTIONS.get(hazard_type, DEFAULT_ACTIONS["earthquake"]),
         recovery_questions=RECOVERY_QUESTIONS,
         sources=_source_payload(hazard_type, ["alameda_county_emergency", "ready_recovery"]),
+        local_plan_match=local_plan_match,
+        specialized_guidance=specialized_guidance,
         legacy_score=score,
         legacy_priority_score=hazard.get("priority_score"),
     )
 
 
-def _zip_result(hazard: Dict, location_result, zip_snapshot: Dict) -> HazardResult:
+def _zip_result(hazard: Dict, location_result, zip_snapshot: Dict, user_context: Optional[Dict] = None) -> HazardResult:
     hazard_type = hazard.get("slug") or hazard.get("name", "").lower()
     score = _legacy_score(zip_snapshot, hazard_type)
     exposure = exposure_from_score(score)
@@ -228,6 +319,8 @@ def _zip_result(hazard: Dict, location_result, zip_snapshot: Dict) -> HazardResu
         recommended_actions=DEFAULT_ACTIONS.get(hazard_type, DEFAULT_ACTIONS["earthquake"]),
         recovery_questions=RECOVERY_QUESTIONS,
         sources=_source_payload(hazard_type, ["alameda_county_emergency", "ready_recovery"]),
+        local_plan_match=_local_plan_match(location_result, hazard_type),
+        specialized_guidance=_specialized_guidance(location_result, hazard_type, user_context),
         legacy_score=score,
         legacy_priority_score=hazard.get("priority_score"),
     )
@@ -261,7 +354,7 @@ def _county_result(hazard: Dict) -> HazardResult:
     )
 
 
-def _flood_address_result(hazard: Dict, location_result, flood_check: Dict, zip_snapshot: Dict) -> HazardResult:
+def _flood_address_result(hazard: Dict, location_result, flood_check: Dict, zip_snapshot: Dict, user_context: Optional[Dict] = None) -> HazardResult:
     hazard_type = "flood"
     score = _legacy_score(zip_snapshot, hazard_type)
     inside = bool(flood_check.get("inside"))
@@ -300,12 +393,14 @@ def _flood_address_result(hazard: Dict, location_result, flood_check: Dict, zip_
         recommended_actions=DEFAULT_ACTIONS["flood"],
         recovery_questions=RECOVERY_QUESTIONS,
         sources=_source_payload(hazard_type, ["fema_nfhl", "ready_floods", "ready_recovery"]),
+        local_plan_match=_local_plan_match(location_result, hazard_type),
+        specialized_guidance=_specialized_guidance(location_result, hazard_type, user_context),
         legacy_score=score,
         legacy_priority_score=hazard.get("priority_score"),
     )
 
 
-def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dict) -> List[HazardResult]:
+def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dict, user_context: Optional[Dict] = None) -> List[HazardResult]:
     results = []
     flood_check = {"checked": False, "inside": None, "layers": []}
     if location_result.lat is not None and location_result.lon is not None and location_result.formatted_address:
@@ -316,9 +411,9 @@ def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dic
         hazard_type = hazard.get("slug") or hazard.get("name", "").strip().lower()
 
         if hazard_type == "flood" and flood_check.get("checked"):
-            result = _flood_address_result(hazard, location_result, flood_check, zip_snapshot)
+            result = _flood_address_result(hazard, location_result, flood_check, zip_snapshot, user_context)
         elif location_result.city or location_result.county:
-            result = _jurisdiction_result(hazard, location_result, zip_snapshot)
+            result = _jurisdiction_result(hazard, location_result, zip_snapshot, user_context)
             if hazard_type in {"wildfire", "earthquake"} and location_result.formatted_address:
                 result.data_status = "not_checked"
                 result.limitations.insert(0, "Address-level GIS membership has not been checked for this hazard yet.")
@@ -327,7 +422,7 @@ def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dic
                     "The app has not completed an address-level GIS check for this hazard yet."
                 )
         elif location_result.zip_code and zip_snapshot:
-            result = _zip_result(hazard, location_result, zip_snapshot)
+            result = _zip_result(hazard, location_result, zip_snapshot, user_context)
         else:
             result = _county_result(hazard)
 
@@ -360,6 +455,8 @@ def merge_structured_result(hazard: Dict, result: HazardResult) -> Dict:
     merged["recommended_actions"] = [item.model_dump() for item in result.recommended_actions]
     merged["recovery_questions"] = [item.model_dump() for item in result.recovery_questions]
     merged["sources"] = [item.model_dump() for item in result.sources]
+    merged["local_plan_match"] = result.local_plan_match
+    merged["specialized_guidance"] = result.specialized_guidance.model_dump()
     merged["matched_layers"] = result.matched_layers
     merged["is_in_hazard_zone"] = result.is_in_hazard_zone
     merged["data_status"] = result.data_status

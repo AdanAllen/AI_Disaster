@@ -355,6 +355,74 @@
         background: linear-gradient(180deg, #ffffff 0%, #f5f8fb 100%);
     }
 
+    .evidence-path {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-top: -1rem;
+        margin-bottom: 2rem;
+    }
+
+    .evidence-step {
+        background: #ffffff;
+        border: 1px solid #d8e4ec;
+        border-radius: 16px;
+        padding: 0.95rem;
+        box-shadow: 0 10px 24px rgba(16, 37, 61, 0.06);
+    }
+
+    .evidence-step-number {
+        width: 1.7rem;
+        height: 1.7rem;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #173552;
+        color: white;
+        font-size: 0.8rem;
+        font-weight: 800;
+        margin-bottom: 0.55rem;
+    }
+
+    .hub-detail-card {
+        border-top: 1px solid #e2eaf0;
+        margin-top: 1rem;
+        padding-top: 1rem;
+    }
+
+    .hub-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.9rem;
+    }
+
+    .hub-panel {
+        background: #f7fafc;
+        border: 1px solid #dce7ef;
+        border-radius: 14px;
+        padding: 0.95rem;
+    }
+
+    .hub-panel h4 {
+        font-size: 0.88rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #173552;
+        margin-bottom: 0.55rem;
+    }
+
+    .hub-panel ul {
+        margin: 0;
+        padding-left: 1.1rem;
+        color: #4f6274;
+    }
+
+    .hub-panel li + li {
+        margin-top: 0.35rem;
+    }
+
     .action-buttons {
         background: linear-gradient(180deg, #eff4f8 0%, #f7fafc 100%);
         padding: 60px 0;
@@ -644,6 +712,8 @@
         .preparedness-header { flex-direction: column; }
         .preparedness-progress-text { white-space: normal; }
         .location-check-grid { grid-template-columns: 1fr; }
+        .evidence-path,
+        .hub-grid { grid-template-columns: 1fr; }
     }
 </style>
 {% endblock %}
@@ -704,6 +774,38 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="pb-3">
+    <div class="container">
+        <div class="evidence-path" aria-label="StayReady evidence path">
+            <div class="evidence-step">
+                <span class="evidence-step-number">1</span>
+                <strong>Location checked</strong>
+                <p class="text-muted mb-0 small">{{ location_context.precision_label }}</p>
+            </div>
+            <div class="evidence-step">
+                <span class="evidence-step-number">2</span>
+                <strong>Official layers/context</strong>
+                <p class="text-muted mb-0 small">{{ location_context.gis_status }}</p>
+            </div>
+            <div class="evidence-step">
+                <span class="evidence-step-number">3</span>
+                <strong>Top hazards</strong>
+                <p class="text-muted mb-0 small">Only the clearest 2-3 hazards are shown first.</p>
+            </div>
+            <div class="evidence-step">
+                <span class="evidence-step-number">4</span>
+                <strong>Recovery plan</strong>
+                <p class="text-muted mb-0 small">Documents, housing, medical, pets, family, work.</p>
+            </div>
+            <div class="evidence-step">
+                <span class="evidence-step-number">5</span>
+                <strong>Sources</strong>
+                <p class="text-muted mb-0 small">Reviewed sources and plan status are linked.</p>
             </div>
         </div>
     </div>
@@ -804,9 +906,71 @@
                         </ul>
                     </div>
 
-                    <a href="{{ url_for('hazard_detail', name=hazard.slug) }}" class="btn btn-primary w-100">
-                        <i class="fas fa-arrow-up-right-from-square me-2"></i>Open {{ hazard.name }} Detail
-                    </a>
+                    <details class="hub-detail-card">
+                        <summary class="fw-bold text-primary">Open connected view for this hazard</summary>
+                        <div class="hub-grid mt-3">
+                            <div class="hub-panel">
+                                <h4>Map preview</h4>
+                                <p class="text-muted mb-2">
+                                    {{ hazard.scope_label }} · {{ hazard.data_status_label }} · {{ hazard.location_precision_label }}
+                                </p>
+                                {% if hazard.matched_layers %}
+                                <ul>
+                                    {% for layer in hazard.matched_layers[:2] %}
+                                    <li>{{ layer.name }}{% if layer.zone %} zone {{ layer.zone }}{% endif %}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% else %}
+                                <p class="text-muted mb-0">No address-level matched map layer is available for this hazard result.</p>
+                                {% endif %}
+                            </div>
+                            <div class="hub-panel">
+                                <h4>Local plan context</h4>
+                                {% if hazard.local_plan_match and hazard.local_plan_match.review_status in ["reviewed", "draft_reviewed"] %}
+                                <p class="text-muted mb-2">{{ hazard.local_plan_match.plan_name }}</p>
+                                {% else %}
+                                <p class="text-muted mb-0">No reviewed city-specific plan claim is attached yet. County and official fallback sources are still shown.</p>
+                                {% endif %}
+                                {% if hazard.specialized_guidance.city_context %}
+                                <ul>
+                                    {% for item in hazard.specialized_guidance.city_context[:2] %}
+                                    <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                            </div>
+                            <div class="hub-panel">
+                                <h4>Specialized factors</h4>
+                                <ul>
+                                    {% for item in hazard.specialized_guidance.household_factors[:2] %}
+                                    <li>{{ item }}</li>
+                                    {% endfor %}
+                                    {% for item in hazard.specialized_guidance.access_functional_needs[:1] %}
+                                    <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <div class="hub-panel">
+                                <h4>Recovery needs</h4>
+                                <ul>
+                                    {% for item in hazard.specialized_guidance.recovery_needs[:3] %}
+                                    <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <a href="{{ url_for('map') }}" class="btn btn-outline-dark btn-sm">
+                                <i class="fas fa-layer-group me-2"></i>Open supporting map
+                            </a>
+                            <a href="{{ url_for('hazard_detail', name=hazard.slug) }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-arrow-up-right-from-square me-2"></i>Full hazard detail
+                            </a>
+                            <a href="{{ url_for('sources') }}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-database me-2"></i>Source registry
+                            </a>
+                        </div>
+                    </details>
                 </article>
             </div>
             {% endfor %}
@@ -838,8 +1002,8 @@
             <div class="col-lg-6">
                 <div class="action-card h-100">
                     <i class="fas fa-layer-group action-icon text-primary"></i>
-                    <h5 class="fw-bold mb-3">Explore the map next</h5>
-                    <p class="mb-4">See how your selected location sits inside wildfire, flood, fault-line, and live-earthquake layers.</p>
+                    <h5 class="fw-bold mb-3">Supporting map view</h5>
+                    <p class="mb-4">Use this only when you want the full layer view. The main evidence, limits, recovery, and sources are now connected above.</p>
                     <a href="{{ url_for('map') }}" class="btn btn-outline-dark btn-lg">
                         <i class="fas fa-layer-group me-2"></i>Open Unified Hazard Map
                     </a>
@@ -848,12 +1012,12 @@
             <div class="col-lg-6">
                 <div class="action-card h-100">
                     <i class="fas fa-triangle-exclamation action-icon text-warning"></i>
-                    <h5 class="fw-bold mb-3">Compare Oakland hazard priorities</h5>
+                    <h5 class="fw-bold mb-3">Source-backed hazard detail</h5>
                     <p class="mb-4">
                         {% if oakland_hazard_ready %}
-                        Open the ranked hazard dashboard to compare LHMP-backed hazards, see what is most important, and personalize the guidance.
+                        Open the supporting dashboard when you want to compare the older ranked hazard list and personalize extra guidance.
                         {% else %}
-                        The ranked hazard dashboard uses Oakland-specific planning data. Your current location is outside that Oakland-only layer, but you can still use the map and county resources.
+                        The supporting dashboard includes planning-data context, but the connected summary above is the main flow for this location.
                         {% endif %}
                     </p>
                     <a href="{{ url_for('hazards_dashboard') }}" class="btn btn-outline-primary btn-lg {% if not oakland_hazard_ready %}disabled{% endif %}" {% if not oakland_hazard_ready %}aria-disabled="true"{% endif %}>
@@ -869,7 +1033,7 @@
     <div class="container">
         <div class="text-center mb-5">
             <h2 class="fw-bold mb-3">Take Action Now</h2>
-            <p class="lead">Additional resources to keep you and your family safe</p>
+            <p class="lead">Supporting views are available, but the connected summary above is the main advisor demo path.</p>
         </div>
         
         <div class="row g-4">
