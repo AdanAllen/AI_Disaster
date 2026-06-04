@@ -51,7 +51,7 @@
     .hero {
         background:
             var(--hero-overlay),
-            url("{{ url_for('static', filename='oakland-skyline.svg') }}") center bottom / cover no-repeat;
+            url("{{ url_for('static', filename='oakland-skyline-real.jpg') }}") center bottom / cover no-repeat;
         min-height: 920px;
         display: flex;
         align-items: center;
@@ -65,8 +65,8 @@
         position: absolute;
         inset: 0;
         background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 18%),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08) 38%, rgba(255, 255, 255, 0.28) 100%);
+            linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 20%),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.12) 40%, rgba(255, 255, 255, 0.3) 100%);
         pointer-events: none;
     }
 

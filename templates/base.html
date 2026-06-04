@@ -300,6 +300,22 @@
             gap: 0.6rem;
         }
 
+        .footer-credit {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            font-size: 0.88rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .footer-credit a {
+            color: white;
+            opacity: 0.92;
+            text-decoration: underline;
+            text-underline-offset: 0.16em;
+        }
+
         .data-info-link {
             display: inline-flex;
             align-items: center;
@@ -513,6 +529,17 @@
                     </div>
                 </div>
             </div>
+            {% if request.endpoint == 'home' %}
+            <div class="footer-credit">
+                Photo:
+                <a href="https://commons.wikimedia.org/wiki/File:Oakland_Skyline_and_Lake_Merritt.jpg" target="_blank" rel="noopener noreferrer">"Oakland Skyline and Lake Merritt"</a>
+                by
+                <a href="https://www.flickr.com/people/danramarch/" target="_blank" rel="noopener noreferrer">Daniel Ramirez</a>,
+                via Wikimedia Commons, licensed under
+                <a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</a>.
+                Displayed with responsive cropping for website layout.
+            </div>
+            {% endif %}
         </div>
     </footer>
 </div>
