@@ -16,6 +16,7 @@ from hazard_engine import build_hazard_results, merge_structured_result
 from location_service import location_from_session
 from rag_service import retrieve_chunks
 from source_registry import load_hazard_registry, load_jurisdictions, load_local_plans, load_resident_guidance_chunks, source_records_payload
+from supabase_repository import supabase_health as get_supabase_health
 
 try:
     from openai import OpenAI
@@ -23,6 +24,7 @@ except Exception:
     OpenAI = None
 
 # --- Load env vars and setup ---
+load_dotenv(".env")
 load_dotenv("secret.env")
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "super-secret-key")
@@ -1391,6 +1393,11 @@ def api_health():
         "local_plan_count": len(load_local_plans()),
         "resident_guidance_count": len(load_resident_guidance_chunks()),
     })
+
+
+@app.route("/api/supabase-health")
+def api_supabase_health():
+    return jsonify(get_supabase_health())
 
 
 @app.route("/api/sources")

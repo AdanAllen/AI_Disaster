@@ -143,4 +143,52 @@ def get_sources_for_hazard(hazard_type: str) -> List[SourceRecord]:
 
 
 def source_records_payload() -> List[Dict]:
-    return [source.model_dump() for source in load_source_records()]
+    local_sources = [source.model_dump() for source in load_source_records()]
+    supabase_sources = _supabase_source_records_payload()
+    if not supabase_sources:
+        return local_sources
+
+    existing_keys = {
+        ((item.get("url") or "").strip().lower(), (item.get("name") or "").strip().lower())
+        for item in local_sources
+    }
+    merged = list(local_sources)
+    for item in supabase_sources:
+        key = ((item.get("url") or "").strip().lower(), (item.get("name") or "").strip().lower())
+        if key not in existing_keys:
+            merged.append(item)
+            existing_keys.add(key)
+    return merged
+
+
+def _supabase_source_records_payload() -> List[Dict]:
+    try:
+        from supabase_repository import fetch_sources
+    except Exception:
+        return []
+
+    records = []
+    for item in fetch_sources():
+        source_id = item.get("id")
+        title = item.get("title")
+        if not source_id or not title:
+            continue
+        hazard_type = item.get("hazard_type") or "all"
+        scope = ", ".join(part for part in [item.get("city"), item.get("county")] if part)
+        trust_level = (item.get("trust_level") or "").strip().lower()
+        records.append(SourceRecord(
+            source_id=source_id,
+            name=title,
+            agency=item.get("agency") or "",
+            source_type="official source",
+            hazards=[hazard_type],
+            geographic_scope=scope,
+            claim_type="official_source",
+            use_in_app="Supabase official source registry.",
+            confidence="source_backed" if trust_level == "official" else "mixed_support",
+            review_status="reviewed" if trust_level == "official" else "draft_reviewed",
+            url=item.get("url") or "",
+            notes="Loaded from Supabase Phase 1 official data table.",
+            last_verified="",
+        ).model_dump())
+    return records
