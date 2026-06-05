@@ -18,8 +18,8 @@
     "plan_group": "Berkeley LHMP",
     "review_status": "draft_reviewed",
     "url": "https://berkeleyca.gov/Mitigation/",
-    "hazards": ["earthquake", "flood", "wildfire", "landslide", "severe_weather"],
-    "notes": "Official city LHMP page confirmed; city-specific hazard claims should use reviewed chunks only."
+    "hazards": ["earthquake", "flood", "wildfire", "landslide", "severe_weather", "tsunami", "extreme_heat", "utility_disruption", "sea_level_rise", "high_wind", "poor_air_quality", "drought"],
+    "notes": "Official city LHMP page and user-provided 2024 PDF confirm these hazards are in scope; city-specific hazard claims should use reviewed chunks or clearly labeled plan context."
   },
   {
     "jurisdiction_id": "fremont",
@@ -62,7 +62,7 @@
     "plan_group": "Alameda CAHMP",
     "review_status": "draft_reviewed",
     "url": "https://www.alamedaca.gov/Departments/Planning-Building-and-Transportation/Sustainability-and-Resilience/Climate-Adaptation-and-Hazard-Mitigation-Plan",
-    "hazards": ["flood", "sea_level_rise", "earthquake", "severe_weather"],
+    "hazards": ["flood", "sea_level_rise", "earthquake", "severe_weather", "tsunami", "dam_failure", "extreme_heat", "poor_air_quality", "drought"],
     "notes": "Official city plan page confirmed; use reviewed chunks before making specific exposure claims."
   },
   {
@@ -73,7 +73,7 @@
     "plan_group": "Hayward LRP",
     "review_status": "draft_reviewed",
     "url": "https://hayward-ca.gov/your-government/documents/local-resilience-plan",
-    "hazards": ["earthquake", "flood", "wildfire", "landslide", "severe_weather"],
+    "hazards": ["earthquake", "flood", "wildfire", "landslide", "sea_level_rise", "severe_weather"],
     "notes": "Official Hayward LRP page confirmed; source chunks should be expanded from the plan PDF."
   },
   {
@@ -84,7 +84,7 @@
     "plan_group": "Tri-Valley LHMP",
     "review_status": "draft_reviewed",
     "url": "https://www.livermoreca.gov/departments/community-development/planning/hazard-mitigation",
-    "hazards": ["earthquake", "flood", "wildfire", "severe_weather"],
+    "hazards": ["earthquake", "flood", "wildfire", "severe_weather", "landslide", "dam_failure", "drought"],
     "notes": "Tri-Valley plan covers Dublin, Livermore, Pleasanton, and Dublin San Ramon Services District."
   },
   {
@@ -95,7 +95,7 @@
     "plan_group": "Tri-Valley LHMP",
     "review_status": "draft_reviewed",
     "url": "https://www.livermoreca.gov/departments/community-development/planning/hazard-mitigation",
-    "hazards": ["earthquake", "flood", "wildfire", "severe_weather"],
+    "hazards": ["earthquake", "flood", "wildfire", "severe_weather", "landslide", "dam_failure", "drought"],
     "notes": "Tri-Valley plan covers Dublin, Livermore, Pleasanton, and Dublin San Ramon Services District."
   },
   {
@@ -106,7 +106,7 @@
     "plan_group": "Tri-Valley LHMP",
     "review_status": "draft_reviewed",
     "url": "https://www.livermoreca.gov/departments/community-development/planning/hazard-mitigation",
-    "hazards": ["earthquake", "flood", "wildfire", "severe_weather"],
+    "hazards": ["earthquake", "flood", "wildfire", "severe_weather", "landslide", "dam_failure", "drought"],
     "notes": "Tri-Valley plan covers Dublin, Livermore, Pleasanton, and Dublin San Ramon Services District."
   },
   {

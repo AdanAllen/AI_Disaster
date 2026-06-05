@@ -382,7 +382,17 @@
                         </div>
                         {% endif %}
 
+                        {% if hazard.specialized_guidance.location_specific_context %}
+                        <h3 class="h6 fw-bold">Address / area cues</h3>
+                        <ul class="detail-list mb-3">
+                            {% for item in hazard.specialized_guidance.location_specific_context[:3] %}
+                            <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+
                         {% if hazard.specialized_guidance.city_context %}
+                        <h3 class="h6 fw-bold">City plan context</h3>
                         <ul class="detail-list mb-3">
                             {% for item in hazard.specialized_guidance.city_context[:3] %}
                             <li>{{ item }}</li>

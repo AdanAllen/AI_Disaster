@@ -81,6 +81,44 @@ OAKLAND_HAZARD_GUIDANCE_ZIPS = {
     "94609", "94610", "94611", "94612", "94613", "94618",
     "94619", "94621",
 }
+CORE_DEMO_HAZARDS = {"flood", "wildfire", "earthquake"}
+ADDITIONAL_HAZARD_LABELS = {
+    "landslide": "Landslide",
+    "sea_level_rise": "Sea level rise",
+    "severe_weather": "Severe weather",
+    "tsunami": "Tsunami",
+    "dam_failure": "Dam failure",
+    "drought": "Drought",
+    "extreme_heat": "Extreme heat",
+    "poor_air_quality": "Poor air quality",
+    "utility_disruption": "Utility disruption",
+    "high_wind": "High wind",
+}
+ADDITIONAL_HAZARD_CONTEXT = {
+    "landslide": "Local plans may identify hillside, creek-bank, post-fire, or rain-triggered slope hazards. This is plan context until an official landslide GIS layer is checked.",
+    "sea_level_rise": "Local plans may identify shoreline, groundwater, storm-surge, or coastal flooding concerns. This is long-term local context, not an address flood-zone match.",
+    "severe_weather": "Local plans may identify heavy rain, storms, wind, drainage, and service-disruption issues that can affect recovery even outside mapped hazard zones.",
+    "tsunami": "Local plans may identify shoreline or marina evacuation zones. This should be checked with official tsunami evacuation maps before making address-level claims.",
+    "dam_failure": "Local plans may identify dam-inundation scenarios. This is important for evacuation planning but needs official inundation mapping for address-level precision.",
+    "drought": "Local plans may identify water-supply, vegetation, fire-weather, or agricultural impacts. This is generally regional context rather than address-point exposure.",
+    "extreme_heat": "Local plans may identify heat exposure, nighttime heat, public-health risk, and power/cooling needs. Household vulnerability can matter more than property location.",
+    "poor_air_quality": "Local plans may identify wildfire smoke and air-quality impacts. This is often regional and health-specific rather than parcel-specific.",
+    "utility_disruption": "Local plans may identify power, water, communication, fuel, or lifeline disruptions that shape preparedness and recovery after major hazards.",
+    "high_wind": "Local plans may identify wind impacts, treefall, power outages, and wildfire spread conditions. This is generally weather/context guidance.",
+}
+ADDITIONAL_HAZARD_PRIORITY = {
+    "Berkeley": ["landslide", "poor_air_quality", "extreme_heat", "utility_disruption", "tsunami", "sea_level_rise", "high_wind", "drought"],
+    "Alameda": ["sea_level_rise", "tsunami", "dam_failure", "poor_air_quality", "extreme_heat"],
+    "Oakland": ["landslide", "sea_level_rise", "severe_weather", "tsunami", "dam_failure", "drought"],
+    "Fremont": ["landslide", "sea_level_rise", "tsunami", "severe_weather"],
+    "Newark": ["sea_level_rise", "tsunami", "landslide", "severe_weather"],
+    "Union City": ["landslide", "sea_level_rise", "tsunami", "severe_weather"],
+    "Hayward": ["landslide", "sea_level_rise", "severe_weather"],
+    "San Leandro": ["sea_level_rise", "landslide", "severe_weather"],
+    "Dublin": ["landslide", "severe_weather", "dam_failure", "drought"],
+    "Livermore": ["severe_weather", "landslide", "dam_failure", "drought"],
+    "Pleasanton": ["severe_weather", "landslide", "dam_failure", "drought"],
+}
 
 
 def slugify_hazard_name(name):
@@ -409,6 +447,59 @@ def get_hazard_by_name(name, user=None, location_context=None):
 
 def get_top_hazards_sorted_by_priority(user=None, location_context=None):
     return get_all_hazards(user, location_context)[:3]
+
+
+def normalize_plan_name(value):
+    return (value or "").strip().lower().replace(" ", "_").replace("-", "_")
+
+
+def get_local_plan_for_context(location_context):
+    city = (location_context or {}).get("city") or ""
+    city_key = normalize_plan_name(city)
+    if not city_key:
+        return {}
+    for plan in load_local_plans():
+        if normalize_plan_name(plan.get("name")) == city_key:
+            return plan
+    return {}
+
+
+def get_additional_local_hazards(location_context, shown_hazards=None, limit=6):
+    plan = get_local_plan_for_context(location_context)
+    if not plan or plan.get("review_status") not in {"reviewed", "draft_reviewed"}:
+        return []
+
+    shown_hazards = {
+        slugify_hazard_name(item.get("slug") or item.get("hazard_id") or item.get("name"))
+        for item in shown_hazards or []
+    }
+    excluded = CORE_DEMO_HAZARDS | shown_hazards
+    city = plan.get("name") or (location_context or {}).get("city") or "this jurisdiction"
+    priority_order = ADDITIONAL_HAZARD_PRIORITY.get(city, [])
+    priority_index = {hazard: index for index, hazard in enumerate(priority_order)}
+
+    candidates = []
+    for hazard_id in plan.get("hazards", []):
+        normalized = slugify_hazard_name(hazard_id).replace("-", "_")
+        if normalized in excluded or normalized == "all":
+            continue
+        label = ADDITIONAL_HAZARD_LABELS.get(normalized, hazard_id.replace("_", " ").title())
+        candidates.append({
+            "hazard_id": normalized,
+            "label": label,
+            "scope_label": "Local plan context",
+            "data_status_label": "Not checked by GIS",
+            "review_status": plan.get("review_status", "draft"),
+            "plan_name": plan.get("plan_name"),
+            "plan_url": plan.get("url"),
+            "why_shown": f"{label} is included because {city}'s reviewed local plan lists it as a hazard or planning concern.",
+            "limitations": "This is not one of the current address-level GIS checks. It should be treated as local source context until an official layer or reviewed location rule is added.",
+            "next_step": ADDITIONAL_HAZARD_CONTEXT.get(normalized, "Review the local plan source and official guidance before making address-level claims."),
+            "priority_rank": priority_index.get(normalized, 999),
+        })
+
+    candidates.sort(key=lambda item: (item["priority_rank"], item["label"]))
+    return candidates[:limit]
 
 
 def get_data_sources_context():
@@ -1123,6 +1214,7 @@ def risk_summary():
         if hazard.get("slug") in {"flood", "wildfire", "earthquake"}
     ]
     structured_hazards = core_hazards[:3] if core_hazards else all_structured_hazards[:3]
+    additional_local_hazards = get_additional_local_hazards(location_context, structured_hazards)
 
     try:
         data = zip_risk_data.get(zip_code, {})
@@ -1176,6 +1268,7 @@ def risk_summary():
         zip_code=zip_code,
         location_context=location_context,
         structured_hazards=structured_hazards,
+        additional_local_hazards=additional_local_hazards,
         hazards=hazards_sorted,
         recommended_actions=recommended_actions,
         start_here_steps=start_here_steps,
@@ -1328,6 +1421,7 @@ def api_hazards():
     return jsonify({
         "location": location_context.get("location_result"),
         "hazards": [hazard.get("structured_result", hazard) for hazard in hazards],
+        "additional_local_hazards": get_additional_local_hazards(location_context, hazards),
     })
 
 
@@ -1349,6 +1443,7 @@ def api_top_risks():
     return jsonify({
         "location": location_context.get("location_result"),
         "hazards": [hazard.get("structured_result", hazard) for hazard in hazards],
+        "additional_local_hazards": get_additional_local_hazards(location_context, hazards),
     })
 
 

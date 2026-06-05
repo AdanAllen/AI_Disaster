@@ -152,6 +152,15 @@ def _dedupe_text(items: List[str]) -> List[str]:
     return deduped
 
 
+def _float_or_none(value) -> Optional[float]:
+    try:
+        if value is None:
+            return None
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def _resident_guidance_items(result: HazardResult, *phases: str) -> List:
     items = []
     guidance = result.specialized_guidance.resident_guidance or {}
@@ -169,6 +178,9 @@ def _resident_actions(result: HazardResult) -> List[str]:
 
 
 def _local_summary(result: HazardResult) -> str:
+    location_context = _dedupe_text(result.specialized_guidance.location_specific_context)
+    if location_context:
+        return location_context[0]
     context = _dedupe_text(result.specialized_guidance.city_context)
     if context:
         return context[0]
@@ -368,11 +380,93 @@ def _local_plan_match(location_result, hazard_type: str) -> Optional[Dict]:
     }
 
 
+def _berkeley_area_context(location_result, hazard_type: str) -> List[str]:
+    city = (location_result.city or "").strip().lower()
+    formatted = (location_result.formatted_address or location_result.input_address or "").lower()
+    if city != "berkeley" and "berkeley" not in formatted:
+        return []
+
+    lat = _float_or_none(location_result.lat)
+    lon = _float_or_none(location_result.lon)
+    neighborhood = (location_result.neighborhood or "").strip()
+    address_area = neighborhood or ""
+    if not address_area:
+        for candidate in [
+            "Panoramic Hill", "Northbrae", "Berkeley Hills", "Claremont", "La Loma Park",
+            "Southside", "Berkeley Marina", "West Berkeley", "Central Berkeley",
+            "Northwest Berkeley", "Southwest Berkeley", "Thousand Oaks",
+        ]:
+            if candidate.lower() in formatted:
+                address_area = candidate
+                break
+
+    area_label = f" This address geocodes to {address_area}." if address_area else ""
+    contexts = []
+
+    if hazard_type == "earthquake":
+        contexts.append(
+            f"Berkeley LHMP area cue:{area_label} The app checked the address point against loaded mapped fault lines; Berkeley's LHMP identifies the Hayward Fault crossing eastern Berkeley and the surface rupture zone along the base of the Berkeley hills."
+        )
+        if lon is not None:
+            if lon <= -122.295 or "marina" in formatted or "eastshore" in formatted:
+                contexts.append(
+                    "Coarse LHMP liquefaction cue: this address appears in Berkeley's western/shoreline side of the city, where the LHMP names the Marina, Eastshore State Park, and west Berkeley bands as liquefaction concern areas. This still needs the official liquefaction polygon before being treated as an address-level layer match."
+                )
+            else:
+                contexts.append(
+                    "Coarse LHMP liquefaction cue: this address does not fall in the broad west Berkeley/Marina bands named in the LHMP text by this simple rule, but official liquefaction polygons have not been checked yet."
+                )
+
+    if hazard_type == "wildfire":
+        in_panoramic = "panoramic" in formatted or (lat is not None and lon is not None and 37.864 <= lat <= 37.875 and lon >= -122.252)
+        likely_hills = in_panoramic or "berkeley hills" in formatted or "claremont" in formatted or "la loma" in formatted or (lon is not None and lon >= -122.265)
+        north_transition = "northbrae" in formatted or "thousand oaks" in formatted or "94707" in formatted
+        if in_panoramic:
+            contexts.append(
+                "Berkeley LHMP area cue: this address appears near Panoramic Hill, which the LHMP identifies as Fire Zone 3 and the city's greatest WUI fire vulnerability because of limited access/egress, dense fuels, and fault/landslide context."
+            )
+        elif likely_hills:
+            contexts.append(
+                f"Berkeley LHMP area cue:{area_label} This address appears in or near the Berkeley hills by coarse coordinate/neighborhood rules. The LHMP identifies Fire Zones 2 and 3 in the eastern hills as the main WUI fire concern, with narrow roads and evacuation constraints."
+            )
+        elif north_transition:
+            contexts.append(
+                f"Berkeley LHMP area cue:{area_label} This address appears in north Berkeley/Northbrae rather than the named Panoramic Hill or eastern-hills Fire Zone 2/3 context by this coarse rule. Wildfire guidance should still cover smoke, alerts, and evacuation readiness, but official Berkeley parcel/fire-zone lookup is needed before claiming Zone 2 or 3."
+            )
+        else:
+            contexts.append(
+                f"Berkeley LHMP area cue:{area_label} This address does not match the simple Panoramic Hill/eastern-hills rule used here. The LHMP still notes wind-driven fire can affect the flatlands, but official Fire Zone polygons are needed for stronger property-specific wording."
+            )
+
+    if hazard_type == "flood":
+        west_or_marina = lon is not None and lon <= -122.295
+        named_flood_area = any(term in formatted for term in ["marina", "eastshore", "west berkeley", "san pablo", "mcgee", "codornices", "strawberry creek"])
+        if west_or_marina or named_flood_area:
+            contexts.append(
+                f"Berkeley LHMP area cue:{area_label} This address appears near Berkeley's western/shoreline or named creek/flood context by coarse rules. The LHMP discusses Berkeley floodplains, creek flooding, storm drain overflow, and older storm-drain infrastructure."
+            )
+        else:
+            contexts.append(
+                f"Berkeley LHMP area cue:{area_label} This address does not match the broad west Berkeley/Marina/creek flood bands in this simple rule. FEMA flood status remains the stronger address check, while storm-drain flooding can still occur outside mapped FEMA zones."
+            )
+
+    contexts.append(
+        "Precision limit: these LHMP area cues are rule-based from the geocoded point and named LHMP geography; they are not a substitute for official Berkeley parcel conditions, Fire Zone, liquefaction, landslide, creek, or evacuation-zone polygons."
+    )
+    return _dedupe_text(contexts)
+
+
+def _location_specific_context(location_result, hazard_type: str) -> List[str]:
+    contexts = _berkeley_area_context(location_result, hazard_type)
+    return _dedupe_text(contexts)
+
+
 def _specialized_guidance(location_result, hazard_type: str, user_context: Optional[Dict] = None) -> SpecializedGuidance:
     user_context = user_context or {}
     city_chunks = get_city_chunks(location_result.city, hazard_type)
     guidance_chunks = get_resident_guidance(location_result.city, hazard_type)
     plan = get_local_plan_for_city(location_result.city)
+    location_specific_context = _location_specific_context(location_result, hazard_type)
     grouped_guidance = {
         "hazard_priority": [],
         "local_context": [],
@@ -384,6 +478,10 @@ def _specialized_guidance(location_result, hazard_type: str, user_context: Optio
     }
     guidance_source_status = "county_fallback"
     source_ids = list(dict.fromkeys(chunk.get("source_id") for chunk in city_chunks if chunk.get("source_id")))
+    if location_specific_context and (location_result.city or "").strip().lower() == "berkeley":
+        source_ids.append("berkeley_lhmp")
+        if hazard_type == "wildfire":
+            source_ids.append("berkeley_fire_evacuation")
 
     for chunk in guidance_chunks:
         try:
@@ -446,6 +544,7 @@ def _specialized_guidance(location_result, hazard_type: str, user_context: Optio
             )
 
     return SpecializedGuidance(
+        location_specific_context=location_specific_context,
         city_context=city_context,
         household_factors=household_factors,
         access_functional_needs=access_functional_needs,

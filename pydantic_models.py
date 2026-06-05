@@ -88,6 +88,7 @@ class ResidentGuidanceItem(BaseModel):
 
 
 class SpecializedGuidance(BaseModel):
+    location_specific_context: List[str] = Field(default_factory=list)
     city_context: List[str] = Field(default_factory=list)
     household_factors: List[str] = Field(default_factory=list)
     access_functional_needs: List[str] = Field(default_factory=list)

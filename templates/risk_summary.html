@@ -938,7 +938,16 @@
                                 {% else %}
                                 <p class="text-muted mb-2 mt-2">No reviewed city-specific plan claim is attached for this hazard. County and official fallback sources are shown.</p>
                                 {% endif %}
+                                {% if hazard.specialized_guidance.location_specific_context %}
+                                <p class="fw-bold mb-1 mt-3">Address / area cues</p>
+                                <ul>
+                                    {% for item in hazard.specialized_guidance.location_specific_context[:2] %}
+                                    <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
                                 {% if hazard.specialized_guidance.city_context %}
+                                <p class="fw-bold mb-1 mt-3">City plan context</p>
                                 <ul>
                                     {% for item in hazard.specialized_guidance.city_context[:2] %}
                                     <li>{{ item }}</li>
@@ -1031,6 +1040,42 @@
             </div>
             {% endfor %}
         </div>
+
+        {% if additional_local_hazards %}
+        <div class="mt-5">
+            <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
+                <div>
+                    <span class="section-eyebrow">Other Local Hazards</span>
+                    <h3 class="h4 fw-bold mb-1">Also worth keeping on your radar</h3>
+                    <p class="text-muted mb-0">These are listed by the reviewed local plan for this jurisdiction, but they are not yet address-level GIS checks in StayReady.</p>
+                </div>
+                <a href="{{ url_for('sources') }}" class="data-info-link">
+                    <i class="fas fa-database"></i> Review local plan sources
+                </a>
+            </div>
+            <div class="row g-3">
+                {% for hazard in additional_local_hazards %}
+                <div class="col-md-6 col-xl-4">
+                    <article class="hub-panel h-100">
+                        <div class="evidence-badges mb-2">
+                            <span class="evidence-badge source">{{ hazard.scope_label }}</span>
+                            <span class="evidence-badge status">{{ hazard.data_status_label }}</span>
+                        </div>
+                        <h4 class="h5 fw-bold mb-2">{{ hazard.label }}</h4>
+                        <p class="text-muted mb-2">{{ hazard.why_shown }}</p>
+                        <p class="small mb-2"><strong>Why it matters:</strong> {{ hazard.next_step }}</p>
+                        <p class="small text-muted mb-3">{{ hazard.limitations }}</p>
+                        {% if hazard.plan_url %}
+                        <a href="{{ hazard.plan_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-up-right-from-square me-2"></i>{{ hazard.plan_name }}
+                        </a>
+                        {% endif %}
+                    </article>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
 
         {% if primary_hazard %}
         <div class="recovery-readiness-card mt-4">
