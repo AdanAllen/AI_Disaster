@@ -1,14 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}Stay Ready Now – Alameda County Fire, Flood & Earthquake Risk Map{% endblock %}
+{% block title %}Stay Ready Now - Alameda County Disaster Preparedness Guidance{% endblock %}
 
-{% block meta_description %}Interactive disaster risk map for Alameda County. Check fire zones, flood zones, and earthquake risk instantly. Built by a 2025 Congressional App Challenge winner.{% endblock %}
+{% block meta_description %}StayReady helps Alameda County residents enter an address and get simple, source-backed disaster preparedness and recovery guidance using official public information.{% endblock %}
 
 {% block canonical %}
 <link rel="canonical" href="https://stayreadynow.org/" />
 {% endblock %}
 
 {% block head %}
+<link href="{{ url_for('static', filename='css/stayready.css') }}" rel="stylesheet" />
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -16,1096 +17,308 @@
   "name": "Stay Ready Now",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Web",
-  "description": "Interactive disaster risk map for Alameda County including fire, flood, and earthquake data.",
+  "description": "Address-first disaster preparedness and recovery guidance for Alameda County residents using official public information.",
   "areaServed": {
     "@type": "Place",
     "name": "Alameda County, California"
   }
 }
 </script>
-<style>
-    :root {
-        --primary-orange: #173f5f;
-        --secondary-blue: #6d97b8;
-        --accent-red: #c86948;
-        --text-dark: #1f3242;
-        --bg-light: #f3f7fa;
-        --surface-muted: #edf3f7;
-        --border-soft: #d7e2ed;
-        --hero-overlay: linear-gradient(180deg, rgba(247, 251, 255, 0.78) 0%, rgba(240, 246, 251, 0.82) 46%, rgba(228, 238, 247, 0.94) 100%);
-    }
-
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    body {
-        font-family: 'Manrope', sans-serif;
-        line-height: 1.6;
-        color: var(--text-dark);
-        overflow-x: hidden;
-    }
-
-    .hero {
-        background: linear-gradient(180deg, #f7fbff 0%, #eef4f8 100%);
-        min-height: 820px;
-        display: flex;
-        align-items: center;
-        position: relative;
-        overflow: hidden;
-        border-bottom: 1px solid rgba(215, 226, 237, 0.85);
-    }
-
-    .hero::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 20%),
-            radial-gradient(circle at top center, rgba(173, 201, 224, 0.28), rgba(173, 201, 224, 0) 58%);
-        pointer-events: none;
-    }
-
-    .hero::after {
-        content: '';
-        position: absolute;
-        inset: auto 0 0;
-        height: 260px;
-        background: linear-gradient(180deg, rgba(240, 246, 251, 0) 0%, rgba(240, 246, 251, 0.75) 48%, rgba(242, 247, 251, 0.98) 100%);
-        pointer-events: none;
-    }
-
-    .hero-content {
-        position: relative;
-        z-index: 2;
-        color: var(--text-dark);
-        text-align: center;
-        max-width: 880px;
-        margin: 0 auto;
-        padding: 5rem 0 13rem;
-    }
-
-    .hero-photo-wrap {
-        position: absolute;
-        left: 50%;
-        bottom: 0;
-        transform: translateX(-50%);
-        width: min(1280px, calc(100% - 48px));
-        z-index: 1;
-        border-radius: 28px 28px 0 0;
-        overflow: hidden;
-        box-shadow: 0 22px 48px rgba(17, 40, 61, 0.12);
-        border: 1px solid rgba(205, 217, 227, 0.96);
-        border-bottom: 0;
-        background: #dfeaf3;
-    }
-
-    .hero-photo {
-        display: block;
-        width: 100%;
-        height: 255px;
-        object-fit: cover;
-        object-position: center center;
-        filter: saturate(0.98) contrast(1.01);
-    }
-
-    .hero h1 {
-        font-size: clamp(3rem, 5.2vw, 5rem);
-        font-weight: 800;
-        margin-bottom: 1.15rem;
-        letter-spacing: -0.05em;
-        line-height: 0.98;
-        color: #13273c;
-    }
-
-    .hero p {
-        font-size: clamp(1.1rem, 1.7vw, 1.35rem);
-        margin-bottom: 2.25rem;
-        color: #415a6d;
-        max-width: 720px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .credibility-badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        padding: 0.72rem 1.1rem;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.88);
-        border: 1px solid rgba(195, 210, 222, 0.95);
-        font-weight: 700;
-        margin-bottom: 1.5rem;
-        letter-spacing: 0.01em;
-        box-shadow: 0 12px 30px rgba(17, 40, 61, 0.08);
-        color: #28465f;
-    }
-
-    .cta-button {
-        background: rgba(255, 255, 255, 0.82);
-        color: var(--primary-orange);
-        padding: 14px 26px;
-        font-size: 1rem;
-        font-weight: 800;
-        border: 1px solid rgba(194, 210, 222, 0.95);
-        border-radius: 14px;
-        box-shadow: 0 18px 34px rgba(17, 40, 61, 0.08);
-        transition: all 0.25s ease;
-        text-decoration: none;
-        display: inline-block;
-    }
-
-    .cta-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 24px 40px rgba(17, 40, 61, 0.12);
-        color: #102d46;
-    }
-
-    .quick-start-form {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(18px);
-        border-radius: 24px;
-        padding: 2rem;
-        box-shadow: 0 28px 60px rgba(18, 44, 67, 0.13);
-        border: 1px solid rgba(196, 211, 223, 0.95);
-        margin-top: 2.5rem;
-        text-align: left;
-    }
-
-    .quick-start-form h3 {
-        color: var(--text-dark);
-        margin-bottom: 1.35rem;
-        font-weight: 700;
-        font-size: 1.2rem;
-    }
-
-    .form-control {
-        border-radius: 14px;
-        border: 2px solid var(--border-soft);
-        padding: 14px 16px;
-        transition: all 0.3s ease;
-        background: #fbfdff;
-        min-height: 52px;
-    }
-
-    .form-control:focus {
-        border-color: var(--primary-orange);
-        box-shadow: 0 0 0 0.22rem rgba(45, 95, 134, 0.15);
-    }
-
-    .btn-get-started {
-        background: linear-gradient(145deg, #153a59, #2a648c);
-        border: none;
-        border-radius: 14px;
-        padding: 14px 30px;
-        font-weight: 700;
-        color: white;
-        transition: all 0.3s ease;
-        min-height: 56px;
-    }
-
-    .btn-get-started:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 18px 34px rgba(21, 58, 89, 0.22);
-        color: white;
-    }
-
-    .features {
-        padding: 88px 0;
-        background: linear-gradient(180deg, #f4f8fb 0%, #f9fbfd 100%);
-    }
-
-    .feature-card {
-        background: white;
-        border-radius: 24px;
-        padding: 2rem;
-        box-shadow: 0 18px 38px rgba(17, 34, 51, 0.07);
-        transition: all 0.3s ease;
-        height: 100%;
-        border: 1px solid var(--border-soft);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .feature-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #1d4f76, #7ea3c3);
-    }
-
-    .feature-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 26px 48px rgba(17, 34, 51, 0.1);
-    }
-
-    .feature-icon {
-        font-size: 2.7rem;
-        margin-bottom: 1.2rem;
-        display: block;
-    }
-
-    .feature-card .card-body {
-        text-align: left !important;
-    }
-
-    .wildfire-icon { color: var(--accent-red); }
-    .earthquake-icon { color: #8d6e63; }
-    .flood-icon { color: var(--secondary-blue); }
-
-    .stats {
-        background: linear-gradient(135deg, #183a58, #285b80);
-        color: white;
-        padding: 84px 0;
-    }
-
-    .stat-item {
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-
-    .stat-number {
-        font-size: 3rem;
-        font-weight: 800;
-        color: var(--primary-orange);
-        display: block;
-    }
-
-    .stat-label {
-        font-size: 1.1rem;
-        opacity: 0.9;
-    }
-
-    .coverage-map-section {
-        padding: 88px 0;
-        background: linear-gradient(180deg, #ffffff 0%, #f5f8fc 100%);
-    }
-
-    .coverage-map-card {
-        background: #fff;
-        border: 1px solid var(--border-soft);
-        border-radius: 28px;
-        padding: 2.25rem;
-        box-shadow: 0 20px 42px rgba(17, 34, 51, 0.07);
-    }
-
-    .coverage-map-copy .eyebrow {
-        display: inline-block;
-        font-size: 0.82rem;
-        font-weight: 800;
-        letter-spacing: 0.08em;
-        color: var(--secondary-blue);
-        text-transform: uppercase;
-        margin-bottom: 0.9rem;
-    }
-
-    .coverage-map-copy h2 {
-        font-weight: 800;
-        margin-bottom: 1rem;
-    }
-
-    .coverage-points {
-        display: grid;
-        gap: 0.85rem;
-        margin-top: 1.25rem;
-    }
-
-    .coverage-point {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.75rem;
-        padding: 1rem 1.05rem;
-        background: linear-gradient(180deg, #f6f9fc 0%, #f0f5f9 100%);
-        border: 1px solid var(--border-soft);
-        border-radius: 18px;
-    }
-
-    .coverage-point i {
-        margin-top: 0.15rem;
-        color: var(--primary-orange);
-    }
-
-    .coverage-map-visual {
-        background: linear-gradient(160deg, #f7fbff 0%, #ebf3f9 100%);
-        border: 1px solid var(--border-soft);
-        border-radius: 24px;
-        min-height: 100%;
-        padding: 1.1rem;
-    }
-
-    .coverage-map-svg {
-        width: 100%;
-        height: auto;
-        display: block;
-    }
-
-    .coverage-map-caption {
-        margin-top: 0.9rem;
-        font-size: 0.95rem;
-        color: #536579;
-        text-align: center;
-    }
-
-    .about {
-        padding: 92px 0;
-        background: linear-gradient(180deg, #ffffff 0%, #f6f9fc 100%);
-    }
-
-    .about-content {
-        display: flex;
-        align-items: center;
-        gap: 3.5rem;
-    }
-
-    .about-text {
-        flex: 1;
-    }
-
-    .about-image {
-        flex: 1;
-        position: relative;
-    }
-
-    .about-image::before {
-        content: '';
-        position: absolute;
-        top: 24px;
-        left: 24px;
-        right: -24px;
-        bottom: -24px;
-        background: linear-gradient(145deg, #dbe8f2, #b6ccde);
-        border-radius: 28px;
-        z-index: -1;
-    }
-
-    .about-image img {
-        width: 100%;
-        border-radius: 24px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-    }
-
-    .seo-content {
-        padding: 88px 0;
-        background: #fff;
-    }
-
-    .seo-card {
-        background: #fff;
-        border: 1px solid var(--border-soft);
-        border-radius: 22px;
-        padding: 1.65rem;
-        height: 100%;
-        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.05);
-    }
-
-    .seo-card h2 {
-        font-size: 1.1rem;
-        font-weight: 800;
-        margin-bottom: 0.85rem;
-    }
-
-    .search-type-toggle .btn-check:checked + .btn {
-        background: linear-gradient(145deg, #173d5d, #2f698f);
-        border-color: var(--primary-orange);
-        color: white;
-    }
-
-    .search-type-toggle .btn {
-        min-height: 52px;
-        border-radius: 14px !important;
-    }
-
-    .search-container {
-        transition: all 0.3s ease;
-    }
-
-    .address-suggestion {
-        cursor: pointer;
-        padding: 0.5rem 1rem;
-        border: none;
-        background: white;
-        transition: background-color 0.2s ease;
-    }
-
-    .address-suggestion:hover {
-        background: #f8f9fa;
-    }
-
-    .form-messages {
-        padding: 0.75rem 1rem;
-        border-radius: 8px;
-        margin-bottom: 1rem;
-    }
-
-    .form-messages.error {
-        background: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-    }
-
-    .form-messages.success {
-        background: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-
-    .form-messages.info {
-        background: #cce7ff;
-        color: #004085;
-        border: 1px solid #b3d7ff;
-    }
-
-    #locate-me-btn {
-        transition: all 0.3s ease;
-    }
-
-    #locate-me-btn:hover {
-        background: var(--primary-orange);
-        border-color: var(--primary-orange);
-        color: white;
-    }
-
-    .hero-trust-strip {
-        position: relative;
-        z-index: 2;
-        margin-top: -86px;
-        margin-bottom: 2rem;
-    }
-
-    .hero-trust-card {
-        background: rgba(255, 255, 255, 0.94);
-        border: 1px solid rgba(199, 212, 224, 0.95);
-        border-radius: 26px;
-        box-shadow: 0 24px 48px rgba(17, 40, 61, 0.1);
-        overflow: hidden;
-    }
-
-    .trust-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-    }
-
-    .trust-item {
-        padding: 1.6rem 1.4rem;
-        display: flex;
-        gap: 1rem;
-        align-items: flex-start;
-    }
-
-    .trust-item + .trust-item {
-        border-left: 1px solid var(--border-soft);
-    }
-
-    .trust-icon {
-        width: 3rem;
-        height: 3rem;
-        border-radius: 18px;
-        background: linear-gradient(145deg, #edf4f9, #f8fbfd);
-        border: 1px solid var(--border-soft);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        font-size: 1.2rem;
-    }
-
-    .trust-item h3 {
-        font-size: 1rem;
-        font-weight: 800;
-        margin-bottom: 0.35rem;
-        color: #173149;
-    }
-
-    .trust-item p {
-        margin: 0;
-        font-size: 0.95rem;
-        color: #597083;
-    }
-
-    .trust-item a {
-        text-decoration: none;
-        font-weight: 800;
-    }
-
-    .trust-banner {
-        border-top: 1px solid var(--border-soft);
-        background: linear-gradient(180deg, #edf5fb 0%, #e7f0f8 100%);
-        padding: 1rem 1.35rem;
-        text-align: center;
-        font-weight: 800;
-        color: #2e4b63;
-    }
-
-    .section-panel {
-        padding: 0 0 1.25rem;
-    }
-
-    .section-panel .surface-card {
-        padding: 2rem;
-    }
-
-    .about-panel {
-        background: linear-gradient(180deg, #ffffff 0%, #f5f8fb 100%);
-        border: 1px solid var(--border-soft);
-        border-radius: 28px;
-        padding: 2.35rem;
-        box-shadow: 0 20px 42px rgba(17, 34, 51, 0.07);
-    }
-
-    .about-image .bg-primary {
-        background: linear-gradient(160deg, #173d5d, #6d97b8) !important;
-        border-radius: 26px !important;
-        box-shadow: 0 24px 44px rgba(23, 61, 93, 0.16);
-    }
-
-    .home-cta-section {
-        background: linear-gradient(135deg, #183a58, #285b80);
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    @media (max-width: 768px) {
-        .hero {
-            min-height: auto;
-        }
-
-        .hero-content {
-            padding: 4rem 0 9rem;
-        }
-
-        .hero-photo-wrap {
-            width: calc(100% - 24px);
-        }
-
-        .hero-photo {
-            height: 180px;
-        }
-
-        .hero h1 { font-size: 2.7rem; }
-        .hero p { font-size: 1.05rem; }
-        .about-content { flex-direction: column; }
-        .feature-card { margin-bottom: 2rem; }
-        .quick-start-form { margin-top: 2rem; padding: 1.5rem; }
-        .trust-grid { grid-template-columns: 1fr; }
-        .trust-item + .trust-item { border-left: 0; border-top: 1px solid var(--border-soft); }
-        .hero-trust-strip { margin-top: -52px; }
-        .section-panel .surface-card,
-        .about-panel,
-        .coverage-map-card { padding: 1.5rem; }
-    }
-
-    @media (max-width: 576px) {
-        .credibility-badge {
-            width: 100%;
-        }
-
-        .cta-button {
-            width: 100%;
-        }
-
-        .hero-content {
-            padding-bottom: 8rem;
-        }
-    }
-</style>
 {% endblock %}
 
 {% block content %}
-<section class="hero">
-    <div class="container">
-        <div class="hero-content">
-            <div class="credibility-badge">
-                <span aria-hidden="true">🏆</span>
-                <span>2025 Congressional App Challenge Winner (CA-12)</span>
-            </div>
-            <h1>Professional disaster readiness for Alameda County households</h1>
-            <p class="lead">Enter an address, see what official layers and local context can actually support, then move from hazards to practical preparedness and recovery planning.</p>
+<div class="sr-home">
+    <section class="sr-hero" aria-labelledby="home-hero-title">
+        <div class="container">
+            <div class="sr-hero-grid">
+                <div class="sr-hero-copy">
+                    <h1 id="home-hero-title">Know your local disaster risks before disaster hits.</h1>
+                    <p class="sr-hero-lead">
+                        StayReady helps Alameda County residents enter an address and get simple, specific disaster preparedness and recovery guidance using official public information.
+                    </p>
 
-            <div class="quick-start-form mx-auto" style="max-width: 500px;">
-                <h3 class="text-center">Start Your Readiness Check</h3>
+                    <div class="sr-disclaimer" role="note">
+                        <i class="fas fa-circle-info" aria-hidden="true"></i>
+                        <span>Educational and source-backed. Not a replacement for official emergency alerts, evacuation orders, or 911.</span>
+                    </div>
 
-                <div class="search-type-toggle mb-4">
-                    <div class="btn-group w-100" role="group">
-                        <input type="radio" class="btn-check" name="search_type" id="zip_search" autocomplete="off" checked>
-                        <label class="btn btn-outline-primary" for="zip_search">
-                            <i class="fas fa-map-marker-alt me-2" style="color: black;"></i>ZIP Code
-                        </label>
-
-                        <input type="radio" class="btn-check" name="search_type" id="address_search" autocomplete="off">
-                        <label class="btn btn-outline-primary" for="address_search">
-                            <i class="fas fa-home me-2"></i>Street Address
-                        </label>
+                    <div class="sr-trust-row" aria-label="StayReady credibility markers">
+                        <span class="sr-badge"><i class="fas fa-database" aria-hidden="true"></i> Official public sources</span>
+                        <span class="sr-badge"><i class="fas fa-location-dot" aria-hidden="true"></i> Address-first when available</span>
+                        <span class="sr-badge"><i class="fas fa-shield-heart" aria-hidden="true"></i> Recovery planning included</span>
                     </div>
                 </div>
 
-                <form action="{{ url_for('process_form') }}" method="POST" id="emergency-form">
-                    {% if error %}
-                    <div class="form-messages error mb-3">
-                        <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+                <aside class="sr-start-card" aria-label="Start your local guidance">
+                    <div class="sr-start-card-header">
+                        <h2>Start with your address</h2>
+                        <p>Address checks are preferred. ZIP is still available as a fallback estimate.</p>
                     </div>
-                    {% endif %}
 
-                    <div class="search-container" id="zip-search-container">
-                        <div class="mb-3">
-                            <label for="zip_code" class="form-label" style="color: black;">ZIP Code</label>
-                            <input
-                                type="text"
-                                class="form-control"
-                                id="zip_code"
-                                name="zip_code"
-                                placeholder="e.g. 94601"
-                                maxlength="5"
-                                value="{{ form_data.zip_code if form_data else '' }}"
-                            >
-                            <div class="form-text">
-                                <i class="fas fa-info-circle me-1"></i>
-                                ZIP is available as a fallback estimate when address checks are unavailable
+                    <form action="{{ url_for('process_form') }}" method="POST" id="emergency-form" class="sr-form">
+                        {% if error %}
+                        <div class="form-messages error mb-3">
+                            <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>{{ error }}
+                        </div>
+                        {% endif %}
+
+                        <div class="search-type-toggle sr-toggle mb-3">
+                            <div class="btn-group w-100" role="group" aria-label="Choose location search type">
+                                <input type="radio" class="btn-check" name="search_type" id="address_search" autocomplete="off" checked>
+                                <label class="btn btn-outline-primary" for="address_search">
+                                    <i class="fas fa-house me-2" aria-hidden="true"></i>Street Address
+                                </label>
+
+                                <input type="radio" class="btn-check" name="search_type" id="zip_search" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="zip_search">
+                                    <i class="fas fa-map-marker-alt me-2" aria-hidden="true"></i>ZIP Fallback
+                                </label>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="search-container" id="address-search-container" style="display: none;">
-                        <div class="mb-3">
-                            <label for="address" class="form-label" style="color: black;">Street Address</label>
-                            <div class="input-group">
+                        <div class="search-container" id="address-search-container">
+                            <div class="mb-3">
+                                <label for="address" class="form-label">Alameda County address</label>
+                                <div class="input-group sr-address-group">
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        id="address"
+                                        name="address"
+                                        placeholder="e.g. 1020 Sierra St, Berkeley, CA"
+                                        autocomplete="street-address"
+                                        value="{{ form_data.address if form_data else '' }}"
+                                    >
+                                    <button class="btn btn-outline-secondary" type="button" id="locate-me-btn" aria-label="Use my current location">
+                                        <i class="fas fa-location-arrow" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text">Use a street address for the most specific checks StayReady can support.</div>
+                                <div id="address-suggestions" class="list-group mt-2" style="display: none;"></div>
+                            </div>
+                        </div>
+
+                        <div class="search-container" id="zip-search-container" style="display: none;">
+                            <div class="mb-3">
+                                <label for="zip_code" class="form-label">ZIP Code</label>
                                 <input
                                     type="text"
                                     class="form-control"
-                                    id="address"
-                                    name="address"
-                                    placeholder="e.g. 1234 Main Street, Alameda County, CA"
-                                    autocomplete="street-address"
-                                    value="{{ form_data.address if form_data else '' }}"
+                                    id="zip_code"
+                                    name="zip_code"
+                                    placeholder="e.g. 94601"
+                                    maxlength="5"
+                                    value="{{ form_data.zip_code if form_data else '' }}"
                                 >
-                                <button class="btn btn-outline-secondary" type="button" id="locate-me-btn">
-                                    <i class="fas fa-location-arrow"></i>
-                                </button>
+                                <div class="form-text">ZIP results are labeled as fallback estimates, not address-level checks.</div>
                             </div>
-                            <div class="form-text">
-                                <i class="fas fa-info-circle me-1"></i>
-                                Enter any address in Alameda County
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="household" class="form-label">Household size</label>
+                                <select class="form-control" id="household" name="household" required>
+                                    <option value="">Select...</option>
+                                    <option value="1" {% if form_data and form_data.household == '1' %}selected{% endif %}>1 person</option>
+                                    <option value="2" {% if form_data and form_data.household == '2' %}selected{% endif %}>2 people</option>
+                                    <option value="3" {% if form_data and form_data.household == '3' %}selected{% endif %}>3 people</option>
+                                    <option value="4" {% if form_data and form_data.household == '4' %}selected{% endif %}>4 people</option>
+                                    <option value="5+" {% if form_data and form_data.household == '5+' %}selected{% endif %}>5+ people</option>
+                                </select>
                             </div>
-                            <div id="address-suggestions" class="list-group mt-2" style="display: none;"></div>
+                            <div class="col-md-6">
+                                <label for="preparedness" class="form-label">Preparedness</label>
+                                <select class="form-control" id="preparedness" name="preparedness" required>
+                                    <option value="">Select...</option>
+                                    <option value="none" {% if form_data and form_data.preparedness == 'none' %}selected{% endif %}>Not prepared</option>
+                                    <option value="basic" {% if form_data and form_data.preparedness == 'basic' %}selected{% endif %}>Basic supplies</option>
+                                    <option value="moderate" {% if form_data and form_data.preparedness == 'moderate' %}selected{% endif %}>Moderate prep</option>
+                                    <option value="well-prepared" {% if form_data and form_data.preparedness == 'well-prepared' %}selected{% endif %}>Well prepared</option>
+                                </select>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="household" class="form-label" style="color: black;">Household Size</label>
-                            <select class="form-control" id="household" name="household" required>
-                                <option value="">Select...</option>
-                                <option value="1" {% if form_data and form_data.household == '1' %}selected{% endif %}>1 person</option>
-                                <option value="2" {% if form_data and form_data.household == '2' %}selected{% endif %}>2 people</option>
-                                <option value="3" {% if form_data and form_data.household == '3' %}selected{% endif %}>3 people</option>
-                                <option value="4" {% if form_data and form_data.household == '4' %}selected{% endif %}>4 people</option>
-                                <option value="5+" {% if form_data and form_data.household == '5+' %}selected{% endif %}>5+ people</option>
-                            </select>
+                        <div class="mt-3">
+                            <label for="special_needs" class="form-label">Medical, access, or household needs <span class="text-muted">(optional)</span></label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="special_needs"
+                                name="special_needs"
+                                placeholder="e.g. medications, mobility device, pets, children"
+                                value="{{ form_data.special_needs if form_data else '' }}"
+                            >
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="preparedness" class="form-label" style="color: black;">Current Preparedness</label>
-                            <select class="form-control" id="preparedness" name="preparedness" required>
-                                <option value="">Select...</option>
-                                <option value="none" {% if form_data and form_data.preparedness == 'none' %}selected{% endif %}>Not prepared</option>
-                                <option value="basic" {% if form_data and form_data.preparedness == 'basic' %}selected{% endif %}>Basic supplies</option>
-                                <option value="moderate" {% if form_data and form_data.preparedness == 'moderate' %}selected{% endif %}>Moderate prep</option>
-                                <option value="well-prepared" {% if form_data and form_data.preparedness == 'well-prepared' %}selected{% endif %}>Well prepared</option>
-                            </select>
-                        </div>
-                    </div>
 
-                    <div class="mb-3">
-                        <label for="special_needs" class="form-label" style="color: black;">Special Medical Needs (Optional)</label>
-                        <input
-                            type="text"
-                            class="form-control"
-                            id="special_needs"
-                            name="special_needs"
-                            placeholder="e.g. Asthma, wheelchair access, medications"
-                            value="{{ form_data.special_needs if form_data else '' }}"
-                        >
-                    </div>
+                        <div id="form-messages" class="mt-3" style="display: none;"></div>
 
-                    <div id="form-messages" class="mb-3" style="display: none;"></div>
-
-                    <button type="submit" class="btn btn-get-started w-100">
-                        <i class="fas fa-rocket me-2"></i>Build My Readiness Plan
-                    </button>
-                </form>
-
-                <div class="text-center mt-3">
-                    <small class="text-muted">
-                        <i class="fas fa-shield-alt me-1"></i>
-                        Your data is private and only used to personalize your emergency plan
-                    </small>
-                </div>
-            </div>
-
-            <a href="#features" class="cta-button mt-4">See How It Works</a>
-        </div>
-    </div>
-    <div class="hero-photo-wrap" aria-hidden="true">
-        <img class="hero-photo" src="{{ url_for('static', filename='oakland-skyline-real.jpg') }}" alt="Oakland skyline and Lake Merritt">
-    </div>
-</section>
-
-<section class="hero-trust-strip">
-    <div class="container">
-        <div class="hero-trust-card">
-            <div class="trust-grid">
-                <article class="trust-item">
-                    <span class="trust-icon text-danger"><i class="fas fa-triangle-exclamation"></i></span>
-                    <div>
-                        <h3>Wildfire Protection</h3>
-                        <p>See whether wildfire is address-checked, jurisdiction-backed, or fallback guidance before choosing home actions.</p>
-                        <a href="{{ url_for('hazard_detail', name='wildfire') }}">Review Wildfire Guidance</a>
-                    </div>
-                </article>
-                <article class="trust-item">
-                    <span class="trust-icon text-success"><i class="fas fa-shield-heart"></i></span>
-                    <div>
-                        <h3>Earthquake Readiness</h3>
-                        <p>Move from seismic context to practical readiness with clear limitations and local source labels.</p>
-                        <a href="{{ url_for('hazard_detail', name='earthquake') }}">Review Earthquake Guidance</a>
-                    </div>
-                </article>
-                <article class="trust-item">
-                    <span class="trust-icon text-primary"><i class="fas fa-clipboard-list"></i></span>
-                    <div>
-                        <h3>Flood Safety</h3>
-                        <p>Use the address-first flood check when available, with fallback labels for anything less precise.</p>
-                        <a href="{{ url_for('hazard_detail', name='flood') }}">Review Flood Guidance</a>
-                    </div>
-                </article>
-            </div>
-            <div class="trust-banner">
-                Built for Alameda County. Backed by official sources. Here for our community.
+                        <button type="submit" class="btn sr-primary-action w-100 mt-4">
+                            Get My Local Guidance
+                        </button>
+                    </form>
+                </aside>
             </div>
         </div>
-    </div>
-</section>
 
-<section id="features" class="features">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="display-4 fw-bold mb-3">A clearer path from evidence to action</h2>
-            <p class="lead">Every section is designed to show what was checked, what was not checked, and what residents can do next.</p>
+        <div class="sr-skyline-frame" aria-hidden="true">
+            <img src="{{ url_for('static', filename='oakland-skyline-real.jpg') }}" alt="">
         </div>
+    </section>
 
-        <div class="row g-4">
-            <div class="col-lg-4 col-md-6">
-                <div class="card feature-card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-fire feature-icon wildfire-icon"></i>
-                        <h3 class="fw-bold mb-3">Official Source Labels</h3>
-                        <p>Hazard cards identify the source, review status, and whether the result is address-level, jurisdiction-level, ZIP estimate, or county fallback.</p>
-                        <a href="{{ url_for('hazard_detail', name='wildfire') }}" class="btn btn-outline-danger btn-sm">Review Wildfire Guidance</a>
-                    </div>
-                </div>
+    <section class="sr-section" aria-labelledby="what-you-get-title">
+        <div class="container">
+            <div class="sr-section-heading">
+                <h2 id="what-you-get-title">What you get</h2>
+                <p>One practical flow that moves from local risk context to household action.</p>
             </div>
 
-            <div class="col-lg-4 col-md-6">
-                <div class="card feature-card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-mountain feature-icon earthquake-icon"></i>
-                        <h3 class="fw-bold mb-3">Address-First When Available</h3>
-                        <p>The strongest result comes from a resolved address point and official GIS layer checks. ZIP estimates are kept as fallback.</p>
-                        <a href="{{ url_for('hazard_detail', name='earthquake') }}" class="btn btn-outline-secondary btn-sm">Review Earthquake Guidance</a>
-                    </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <article class="sr-card sr-feature-card">
+                        <span class="sr-icon sr-icon-blue"><i class="fas fa-map-location-dot" aria-hidden="true"></i></span>
+                        <h3>Understand your risks</h3>
+                        <p>See top hazards with clear labels for address-level checks, local plan context, ZIP fallback, and county guidance.</p>
+                    </article>
                 </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6">
-                <div class="card feature-card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-water feature-icon flood-icon"></i>
-                        <h3 class="fw-bold mb-3">Recovery Planning Included</h3>
-                        <p>Preparedness cards include recovery questions for documents, insurance, housing, medications, pets, children, school, and work continuity.</p>
-                        <a href="{{ url_for('hazard_detail', name='flood') }}" class="btn btn-outline-primary btn-sm">Review Flood Guidance</a>
-                    </div>
+                <div class="col-md-4">
+                    <article class="sr-card sr-feature-card">
+                        <span class="sr-icon sr-icon-green"><i class="fas fa-house-chimney-user" aria-hidden="true"></i></span>
+                        <h3>Prepare your household</h3>
+                        <p>Turn hazard information into direct steps for supplies, communication, evacuation, medication, pets, and family needs.</p>
+                    </article>
+                </div>
+                <div class="col-md-4">
+                    <article class="sr-card sr-feature-card">
+                        <span class="sr-icon sr-icon-gold"><i class="fas fa-folder-open" aria-hidden="true"></i></span>
+                        <h3>Plan for recovery</h3>
+                        <p>Review recovery questions about insurance, documents, temporary housing, transportation, school, work, and finances.</p>
+                    </article>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<section class="section-panel py-5">
-    <div class="container">
-        <div class="surface-card p-4 p-lg-5">
+    <section class="sr-section sr-section-muted" aria-labelledby="preview-title">
+        <div class="container">
             <div class="row g-4 align-items-center">
                 <div class="col-lg-5">
-                    <span class="section-eyebrow">How StayReady Works</span>
-                    <h2 class="display-6 fw-bold mb-3">Serious guidance starts with honest precision</h2>
-                    <p class="lead mb-3">The demo flow makes the source-backed logic visible instead of hiding it behind a generic score.</p>
-                    <p class="mb-0 text-muted">Start with a location, check official layers and local context, review the top hazards and limitations, then plan preparedness and recovery steps.</p>
-                </div>
-                <div class="col-lg-7">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="coverage-point h-100">
-                                <i class="fas fa-location-dot"></i>
-                                <div>
-                                    <strong>1. Enter an address</strong>
-                                    <div>Address input is preferred. ZIP remains available only as a fallback estimate.</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="coverage-point h-100">
-                                <i class="fas fa-chart-line"></i>
-                                <div>
-                                    <strong>2. Check official layers</strong>
-                                    <div>StayReady checks official GIS data where available and labels every fallback clearly.</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="coverage-point h-100">
-                                <i class="fas fa-map"></i>
-                                <div>
-                                    <strong>3. See hazards and limitations</strong>
-                                    <div>Top cards explain why each hazard is shown, what matched, and what has not been checked yet.</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="coverage-point h-100">
-                                <i class="fas fa-triangle-exclamation"></i>
-                                <div>
-                                    <strong>4. Prepare and plan recovery</strong>
-                                    <div>Move into actions and recovery questions before documents, housing, medication, or continuity needs become urgent.</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="coverage-map-section">
-    <div class="container">
-        <div class="coverage-map-card">
-            <div class="row g-4 align-items-center">
-                <div class="col-lg-5">
-                    <div class="coverage-map-copy">
-                        <span class="eyebrow">County Coverage</span>
-                        <h2>Alameda County Hazard Coverage at a Glance</h2>
-                        <p class="lead mb-3">Stay Ready Now is built for Alameda County residents who need a clear, fast way to review wildfire, flood, and earthquake exposure before an emergency happens.</p>
-                        <p class="mb-0">This overview reinforces the site’s county-wide focus while keeping the experience lightweight and fast to load.</p>
-                        <div class="coverage-points">
-                            <div class="coverage-point">
-                                <i class="fas fa-fire"></i>
-                                <div><strong>Fire:</strong> wildfire context and preparedness guidance for higher-risk areas.</div>
-                            </div>
-                            <div class="coverage-point">
-                                <i class="fas fa-water"></i>
-                                <div><strong>Flood:</strong> county flood-zone awareness for addresses and ZIP codes.</div>
-                            </div>
-                            <div class="coverage-point">
-                                <i class="fas fa-mountain"></i>
-                                <div><strong>Earthquake:</strong> seismic risk information for communities across Alameda County.</div>
-                            </div>
-                        </div>
+                    <div class="sr-section-heading sr-section-heading-left">
+                        <h2 id="preview-title">A simple summary, not a black box.</h2>
+                        <p>StayReady is designed to show what was checked, why a hazard appears, what is uncertain, and what to do next.</p>
                     </div>
                 </div>
                 <div class="col-lg-7">
-                    <div class="coverage-map-visual" aria-label="Alameda County coverage map graphic">
-                        <svg class="coverage-map-svg" viewBox="0 0 760 460" role="img" aria-labelledby="coverage-map-title">
-                            <title id="coverage-map-title">Alameda County coverage map with hazard indicators</title>
-                            <defs>
-                                <linearGradient id="countyBg" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" stop-color="#f7fbff"/>
-                                    <stop offset="100%" stop-color="#e5eff7"/>
-                                </linearGradient>
-                                <linearGradient id="countyShape" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" stop-color="#2f6f98"/>
-                                    <stop offset="100%" stop-color="#154c79"/>
-                                </linearGradient>
-                            </defs>
-                            <rect x="0" y="0" width="760" height="460" rx="22" fill="url(#countyBg)"/>
-                            <g opacity="0.35" stroke="#b9cad8" stroke-width="2">
-                                <path d="M70 80H690"/>
-                                <path d="M70 150H690"/>
-                                <path d="M70 220H690"/>
-                                <path d="M70 290H690"/>
-                                <path d="M70 360H690"/>
-                                <path d="M130 45V415"/>
-                                <path d="M250 45V415"/>
-                                <path d="M370 45V415"/>
-                                <path d="M490 45V415"/>
-                                <path d="M610 45V415"/>
-                            </g>
-                            <g transform="translate(88 36)">
-                                <path d="M174 8L226 28L257 67L278 114L285 151L305 188L320 233L317 279L297 319L268 341L244 389L214 412L188 402L173 366L156 335L131 315L112 279L91 236L89 194L100 150L125 116L142 78L160 42L174 8Z" fill="url(#countyShape)" stroke="#0f3859" stroke-width="6"/>
-                                <path d="M181 40L207 63L223 101L232 140L247 184L256 225L248 269L231 313L212 360" fill="none" stroke="rgba(255,255,255,0.34)" stroke-width="9" stroke-linecap="round"/>
-                                <path d="M145 300L109 315L82 338L62 366" fill="none" stroke="#7da5c5" stroke-width="6" stroke-linecap="round"/>
-                                <text x="20" y="390" fill="#536579" font-size="16" font-family="Segoe UI, Arial, sans-serif">Bay shoreline</text>
-
-                                <g>
-                                    <circle cx="180" cy="112" r="14" fill="#d96c3f"/>
-                                    <circle cx="221" cy="215" r="14" fill="#2e88c7"/>
-                                    <circle cx="197" cy="328" r="14" fill="#ffd166"/>
-                                    <g fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700">
-                                        <text x="204" y="117">Fire</text>
-                                        <text x="245" y="220">Flood</text>
-                                        <text x="221" y="333">Quake</text>
-                                    </g>
-                                </g>
-
-                                <g transform="translate(372 58)">
-                                    <rect x="0" y="0" width="220" height="196" rx="18" fill="#ffffff" stroke="#d7e2ed" stroke-width="2"/>
-                                    <text x="28" y="46" fill="#173552" font-size="31" font-weight="800" font-family="Segoe UI, Arial, sans-serif">Alameda County</text>
-                                    <text x="28" y="82" fill="#4d6276" font-size="18" font-family="Segoe UI, Arial, sans-serif">Countywide hazard coverage</text>
-                                    <g fill="#173552" font-size="17" font-family="Segoe UI, Arial, sans-serif">
-                                        <text x="28" y="122">• Fire risk awareness</text>
-                                        <text x="28" y="151">• Flood zone context</text>
-                                        <text x="28" y="180">• Earthquake preparedness</text>
-                                    </g>
-                                </g>
-                            </g>
-                        </svg>
-                        <div class="coverage-map-caption">County-focused visual summary for fire, flood, and earthquake preparedness.</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section id="stats" class="stats">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="display-4 fw-bold mb-3">Built for practical public use</h2>
-            <p class="lead">The product is designed to feel trustworthy, local, and useful before an emergency happens.</p>
-        </div>
-
-        <div class="row">
-            <div class="col-lg-3 col-md-6">
-                <div class="stat-item">
-                    <span class="stat-number">3</span>
-                    <span class="stat-label">Major Disaster Types Covered</span>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="stat-item">
-                    <span class="stat-number">1.7M+</span>
-                    <span class="stat-label">Residents in Alameda County</span>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="stat-item">
-                    <span class="stat-number">24/7</span>
-                    <span class="stat-label">Live Monitoring Layer</span>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="stat-item">
-                    <span class="stat-number">Guided</span>
-                    <span class="stat-label">Personalized Planning</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section id="about" class="about">
-    <div class="container">
-        <div class="about-panel">
-            <div class="about-content">
-            <div class="about-text">
-                <h2 class="display-4 fw-bold mb-4">Built by the Community, For the Community</h2>
-                <p class="lead mb-4">Created by <strong>Adan J Allen</strong> through the Hidden Genius Project, this platform bridges the gap between technology and emergency preparedness.</p>
-                <p class="mb-4">Grounded in Alameda County, this project was built to make fire, flood, and earthquake information easier to understand and act on.</p>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-check-circle text-success me-3"></i>
-                            <span>Personalized preparedness guidance</span>
+                    <article class="sr-card sr-preview-card" aria-label="Mock risk summary preview">
+                        <div class="sr-preview-header">
+                            <div>
+                                <span class="sr-badge">Example result</span>
+                                <h3>Local readiness summary</h3>
+                            </div>
+                            <span class="sr-status-dot">Source-backed</span>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-check-circle text-success me-3"></i>
-                            <span>Hazard data integration</span>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-check-circle text-success me-3"></i>
-                            <span>Mobile-first design</span>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-check-circle text-success me-3"></i>
-                            <span>Community-focused approach</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <a href="{{ url_for('about') }}" class="btn btn-outline-primary me-3">Learn More About the Project</a>
-                    <a href="{{ url_for('resources') }}" class="btn btn-outline-secondary">View Resources</a>
-                </div>
-            </div>
-            <div class="about-image">
-                <div class="bg-primary rounded-3 p-5 text-center text-white">
-                    <i class="fas fa-user-graduate fa-5x mb-3 opacity-75"></i>
-                    <h3>Hidden Genius Project</h3>
-                    <p class="mb-0">Empowering young Black men with technology skills to create positive change in their communities.</p>
-                </div>
-            </div>
-        </div>
-        </div>
-    </div>
-</section>
 
-<section class="home-cta-section text-white text-center py-5">
-    <div class="container">
-        <h2 class="display-5 fw-bold mb-3">Ready to understand your risk and act on it?</h2>
-        <p class="lead mb-4">Use one connected experience to check risk, explore the map, and move into practical preparedness steps.</p>
-        <a href="#" onclick="document.getElementById('zip_code').scrollIntoView({behavior: 'smooth'}); document.getElementById('zip_code').focus();" class="btn btn-light btn-lg px-5 py-3 fw-bold">
-            <i class="fas fa-shield-alt me-2"></i>Start Your Emergency Plan Now
-        </a>
-    </div>
-</section>
+                        <div class="sr-preview-location">
+                            <i class="fas fa-location-dot" aria-hidden="true"></i>
+                            <div>
+                                <strong>Location checked</strong>
+                                <span>Address point when available, then local context or fallback</span>
+                            </div>
+                        </div>
 
-<section class="seo-content">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="display-6 fw-bold mb-3">Alameda County Disaster Risk Information</h2>
-            <p class="lead mb-0">Clear, crawlable content to help visitors and search engines understand what Stay Ready Now covers.</p>
-        </div>
-        <div class="row g-4">
-            <div class="col-lg-4">
-                <div class="seo-card">
-                    <h2>ALAMEDA COUNTY FIRE HAZARD MAP</h2>
-                    <p class="mb-0">Stay Ready Now helps Alameda County residents understand local fire hazard conditions by combining mapped wildfire context with easy-to-follow preparedness guidance for neighborhoods and households.</p>
-                </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="seo-card">
-                    <h2>ALAMEDA COUNTY FLOOD ZONES</h2>
-                    <p class="mb-0">The flood section highlights Alameda County flood zone information so people can quickly check whether an address may face water-related risk and plan safer evacuation and response steps.</p>
-                </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="seo-card">
-                    <h2>EARTHQUAKE RISK IN ALAMEDA COUNTY</h2>
-                    <p class="mb-0">The earthquake experience explains seismic risk in Alameda County using practical language, helping residents review likely hazards and prepare before, during, and after major shaking events.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+                        <div class="sr-hazard-list">
+                            <div class="sr-hazard-row">
+                                <div>
+                                    <strong>Flood</strong>
+                                    <span>Address-level if official flood layer can be checked</span>
+                                </div>
+                                <span class="sr-mini-badge">Why shown</span>
+                            </div>
+                            <div class="sr-hazard-row">
+                                <div>
+                                    <strong>Earthquake</strong>
+                                    <span>Local fault and plan context with limitations</span>
+                                </div>
+                                <span class="sr-mini-badge">Prepare</span>
+                            </div>
+                            <div class="sr-hazard-row">
+                                <div>
+                                    <strong>Wildfire</strong>
+                                    <span>Official fire zone checks where supported</span>
+                                </div>
+                                <span class="sr-mini-badge">Recover</span>
+                            </div>
+                        </div>
 
+                        <div class="sr-preview-actions">
+                            <div>
+                                <span>Action steps</span>
+                                <strong>Build a go-bag, alert plan, and utility safety plan.</strong>
+                            </div>
+                            <div>
+                                <span>Recovery prep</span>
+                                <strong>Save documents, insurance info, medications, and housing options.</strong>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="sr-section" aria-labelledby="how-it-works-title">
+        <div class="container">
+            <div class="sr-section-heading">
+                <h2 id="how-it-works-title">How it works</h2>
+                <p>The product keeps precision visible, so residents can tell the difference between checked data and fallback guidance.</p>
+            </div>
+
+            <div class="sr-steps">
+                <article class="sr-step">
+                    <span>1</span>
+                    <h3>Enter your address</h3>
+                    <p>Start with a street address in Alameda County. ZIP entry remains available when address checks are unavailable.</p>
+                </article>
+                <article class="sr-step">
+                    <span>2</span>
+                    <h3>Check official maps and local plans</h3>
+                    <p>StayReady uses official public layers and reviewed local hazard plan context where the app can support it.</p>
+                </article>
+                <article class="sr-step">
+                    <span>3</span>
+                    <h3>Get clear guidance</h3>
+                    <p>Read the top hazards, limitations, next steps, recovery questions, and source labels in plain language.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="sr-section sr-trust-section" aria-labelledby="trust-title">
+        <div class="container">
+            <div class="sr-card sr-trust-card">
+                <div>
+                    <h2 id="trust-title">Built around official public information.</h2>
+                    <p>
+                        StayReady references sources such as FEMA flood information, CAL FIRE fire hazard severity zones, USGS and CGS earthquake context, and local hazard mitigation plans. The app should help you understand and prepare; official agencies remain the authority during emergencies.
+                    </p>
+                </div>
+                <div class="sr-source-links">
+                    <a class="btn btn-outline-primary" href="{{ url_for('sources') }}">View Source Registry</a>
+                    <a class="btn btn-outline-secondary" href="{{ url_for('about') }}">About StayReady</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="sr-final-cta" aria-labelledby="final-cta-title">
+        <div class="container">
+            <div class="sr-final-cta-inner">
+                <h2 id="final-cta-title">Start with your address.</h2>
+                <p>Get a clearer view of local hazards, preparedness steps, recovery questions, and source-backed limitations.</p>
+                <a href="#emergency-form" class="btn sr-primary-action">Enter Address</a>
+            </div>
+        </div>
+    </section>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -1125,48 +338,6 @@
             });
         });
     });
-
-    window.addEventListener('scroll', function() {
-        const navbar = document.querySelector('.navbar');
-        if (!navbar) {
-            return;
-        }
-
-        navbar.style.background = window.scrollY > 50
-            ? 'rgba(255, 255, 255, 0.98)'
-            : 'rgba(255, 255, 255, 0.95)';
-    });
-
-    const animateStats = () => {
-        const stats = document.querySelectorAll('.stat-number');
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (!entry.isIntersecting) {
-                    return;
-                }
-
-                const target = entry.target;
-                const text = target.textContent;
-                if (!isNaN(text.replace(/[^\d]/g, ''))) {
-                    const finalValue = parseInt(text.replace(/[^\d]/g, ''), 10);
-                    let currentValue = 0;
-                    const increment = finalValue / 50;
-                    const timer = setInterval(() => {
-                        currentValue += increment;
-                        if (currentValue >= finalValue) {
-                            target.textContent = text;
-                            clearInterval(timer);
-                        } else {
-                            target.textContent = Math.floor(currentValue).toLocaleString();
-                        }
-                    }, 30);
-                }
-                observer.unobserve(target);
-            });
-        });
-
-        stats.forEach(stat => observer.observe(stat));
-    };
 
     document.addEventListener('DOMContentLoaded', function() {
         const zipRadio = document.getElementById('zip_search');
@@ -1206,8 +377,12 @@
             document.getElementById('form-messages').style.display = 'none';
         }
 
+        const hasZipValue = Boolean(zipInput.value.trim());
         const hasAddressValue = Boolean(addressInput.value.trim());
-        if (hasAddressValue) {
+        if (hasZipValue && !hasAddressValue) {
+            zipRadio.checked = true;
+            addressRadio.checked = false;
+        } else {
             addressRadio.checked = true;
             zipRadio.checked = false;
         }
@@ -1228,17 +403,18 @@
 
             suggestTimeout = setTimeout(() => {
                 const commonAddresses = [
-                    'Alameda County, CA',
                     'Berkeley, CA',
-                    'Fremont, CA',
+                    'Oakland, CA',
                     'Hayward, CA',
-                    'San Leandro, CA',
                     'Alameda, CA',
+                    'Fremont, CA',
+                    'San Leandro, CA',
                     'Union City, CA',
                     'Newark, CA',
                     'Dublin, CA',
                     'Pleasanton, CA',
-                    'Livermore, CA'
+                    'Livermore, CA',
+                    'Alameda County, CA'
                 ];
 
                 const matches = commonAddresses.filter(addr =>
@@ -1279,7 +455,7 @@
             const originalContent = btn.innerHTML;
 
             if (!navigator.geolocation) {
-                showMessage('Geolocation is not supported by your browser', 'error');
+                showMessage('Geolocation is not supported by your browser.', 'error');
                 return;
             }
 
@@ -1294,11 +470,11 @@
                     reverseGeocode(lat, lon)
                         .then(address => {
                             addressInput.value = address;
-                            showMessage('Location detected and converted to address!', 'success');
+                            showMessage('Location detected and converted to an address. Please review it before submitting.', 'success');
                         })
                         .catch(() => {
                             addressInput.value = `${lat.toFixed(4)}, ${lon.toFixed(4)}, Alameda County, CA`;
-                            showMessage('Location detected! Address approximated. Please refine if needed.', 'info');
+                            showMessage('Location detected. Address approximated, so please refine it if you can.', 'info');
                         })
                         .finally(() => {
                             btn.innerHTML = originalContent;
@@ -1312,11 +488,13 @@
                             message += 'Please allow location access.';
                             break;
                         case error.POSITION_UNAVAILABLE:
-                            message += 'Location information unavailable.';
+                            message += 'Location information is unavailable.';
                             break;
                         case error.TIMEOUT:
                             message += 'Location request timed out.';
                             break;
+                        default:
+                            message += 'Please enter your address manually.';
                     }
                     showMessage(message, 'error');
                     btn.innerHTML = originalContent;
@@ -1335,7 +513,7 @@
                 `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`,
                 {
                     headers: {
-                        'User-Agent': 'DisasterPrepApp/1.0'
+                        'User-Agent': 'StayReadyNow/1.0'
                     }
                 }
             );
@@ -1389,17 +567,16 @@
 
             if (!household || !preparedness) {
                 e.preventDefault();
-                showMessage('Please fill in all required fields.', 'error');
+                showMessage('Please fill in household size and preparedness.', 'error');
                 return;
             }
 
             const submitBtn = this.querySelector('button[type="submit"]');
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Checking location...';
             submitBtn.disabled = true;
         });
 
-        animateStats();
-        zipInput.focus();
+        addressInput.focus();
     });
 </script>
 {% endblock %}
