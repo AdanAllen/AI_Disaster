@@ -459,6 +459,11 @@
                             Precision: <strong>{{ hazard.location_precision_label }}</strong>.
                             Data status: <strong>{{ hazard.data_status_label }}</strong>.
                         </p>
+                        {% if hazard.match_type in ["near_fault", "fault_proximity_context"] %}
+                        <p class="detail-copy mb-2">
+                            Fault proximity is contextual distance information. It is not official hazard-zone membership.
+                        </p>
+                        {% endif %}
                         {% if hazard.matched_layers %}
                         <ul class="detail-list">
                             {% for layer in hazard.matched_layers %}

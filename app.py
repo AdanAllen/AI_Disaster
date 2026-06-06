@@ -1009,6 +1009,24 @@ def load_geojson_file(filename):
         return None
 
 
+def usable_geojson_layer(data):
+    if (
+        not isinstance(data, dict)
+        or data.get("type") != "FeatureCollection"
+        or not isinstance(data.get("features"), list)
+        or not data.get("features")
+    ):
+        return False
+    for feature in data["features"]:
+        try:
+            geometry = shape(feature.get("geometry", {}))
+        except Exception:
+            continue
+        if not geometry.is_empty and geometry.is_valid:
+            return True
+    return False
+
+
 def geojson_feature_bounds(feature):
     try:
         return shape(feature.get("geometry", {})).bounds
@@ -1570,12 +1588,13 @@ def api_live_earthquakes():
 def api_wildfire_zones():
     """API endpoint for wildfire hazard zones"""
     data = load_geojson_file("FireHaz.geojson")
-    if data:
+    if usable_geojson_layer(data):
         return jsonify(data)
     return jsonify({
         "type": "FeatureCollection",
         "features": [],
-        "message": "Map data temporarily unavailable. You can still view your risk and preparedness steps below."
+        "data_status": "data_unavailable",
+        "message": "Official layer unavailable — not checked."
     })
 
 # Flood zones API
@@ -1583,7 +1602,7 @@ def api_wildfire_zones():
 def api_flood_zones():
     """API endpoint for filtered flood hazard zones."""
     data = load_geojson_file("FldHaz.geojson")
-    if data:
+    if usable_geojson_layer(data):
         zip_code = request.args.get("zip") or session.get("zip_code")
         lat = request.args.get("lat") or session.get("lat")
         lon = request.args.get("lon") or session.get("lon")
@@ -1608,8 +1627,8 @@ def api_flood_zones():
         "source": "FEMA National Flood Hazard Layer",
         "feature_count": 0,
         "filtered": True,
-        "data_status": "unavailable",
-        "message": "Flood map data is temporarily unavailable. You can still view your risk and preparedness steps below."
+        "data_status": "data_unavailable",
+        "message": "Official layer unavailable — not checked."
     })
 
 # Fault lines API
@@ -1617,12 +1636,13 @@ def api_flood_zones():
 def api_fault_lines():
     """API endpoint for earthquake fault lines"""
     data = load_geojson_file("Fault_lines.Geojson")
-    if data:
+    if usable_geojson_layer(data):
         return jsonify(data)
     return jsonify({
         "type": "FeatureCollection",
         "features": [],
-        "message": "Map data temporarily unavailable. You can still view your risk and preparedness steps below."
+        "data_status": "data_unavailable",
+        "message": "Official layer unavailable — not checked."
     })
 
 # ZIP boundary API

@@ -1,10 +1,12 @@
 import json
+import math
 import os
 from copy import deepcopy
 from functools import lru_cache
 from typing import Dict, List, Optional
 
 from shapely.geometry import Point, shape
+from shapely.ops import nearest_points
 
 from pydantic_models import HazardResult, PreparednessAction, RecoveryQuestion, ResidentGuidanceItem, SpecializedGuidance
 from source_registry import get_city_chunks, get_local_plan_for_city, get_resident_guidance, get_source, get_sources_for_hazard
@@ -130,6 +132,7 @@ def display_data_status(status: str) -> str:
     labels = {
         "checked": "Checked",
         "not_checked": "Not checked yet",
+        "data_unavailable": "Official layer unavailable — not checked",
         "not_in_layer": "Checked, not in layer",
         "fallback_used": "Fallback used",
         "needs_review": "Needs review",
@@ -150,15 +153,6 @@ def _dedupe_text(items: List[str]) -> List[str]:
         seen.add(key)
         deduped.append(text)
     return deduped
-
-
-def _float_or_none(value) -> Optional[float]:
-    try:
-        if value is None:
-            return None
-        return float(value)
-    except (TypeError, ValueError):
-        return None
 
 
 def _resident_guidance_items(result: HazardResult, *phases: str) -> List:
@@ -228,18 +222,67 @@ def _local_locations(result: HazardResult) -> List[str]:
 def load_geojson(filename: str) -> Dict:
     path = os.path.join(BASE_DIR, "static", filename)
     if not os.path.exists(path):
-        return {"type": "FeatureCollection", "features": []}
-    with open(path, "r", encoding="utf-8") as source:
-        return json.load(source)
+        return {
+            "available": False,
+            "data": None,
+            "message": "Official layer unavailable — not checked.",
+        }
+    try:
+        with open(path, "r", encoding="utf-8") as source:
+            data = json.load(source)
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return {
+            "available": False,
+            "data": None,
+            "message": "Official layer unavailable — not checked.",
+        }
+    if (
+        not isinstance(data, dict)
+        or data.get("type") != "FeatureCollection"
+        or not isinstance(data.get("features"), list)
+        or not data.get("features")
+    ):
+        return {
+            "available": False,
+            "data": None,
+            "message": "Official layer unavailable — not checked.",
+        }
+    return {"available": True, "data": data, "message": ""}
+
+
+def _not_checked_result(message: str = "Location coordinates were unavailable.") -> Dict:
+    return {
+        "checked": False,
+        "data_status": "not_checked",
+        "message": message,
+        "inside": None,
+        "near": None,
+        "layers": [],
+    }
+
+
+def _unavailable_result() -> Dict:
+    return {
+        "checked": False,
+        "data_status": "data_unavailable",
+        "message": "Official layer unavailable — not checked.",
+        "inside": None,
+        "near": None,
+        "layers": [],
+    }
 
 
 def check_flood_layer(lat: Optional[float], lon: Optional[float]) -> Dict:
     if lat is None or lon is None:
-        return {"checked": False, "inside": None, "layers": []}
+        return _not_checked_result()
 
     point = Point(float(lon), float(lat))
-    data = load_geojson("FldHaz.geojson")
+    loaded = load_geojson("FldHaz.geojson")
+    if not loaded["available"]:
+        return _unavailable_result()
+    data = loaded["data"]
     layers = []
+    valid_features = 0
     for feature in data.get("features", []):
         geometry = feature.get("geometry")
         if not geometry:
@@ -248,6 +291,9 @@ def check_flood_layer(lat: Optional[float], lon: Optional[float]) -> Dict:
             polygon = shape(geometry)
         except Exception:
             continue
+        if polygon.is_empty or not polygon.is_valid:
+            continue
+        valid_features += 1
         if polygon.contains(point) or polygon.touches(point):
             props = feature.get("properties", {})
             layers.append({
@@ -258,16 +304,28 @@ def check_flood_layer(lat: Optional[float], lon: Optional[float]) -> Dict:
                 "sfha": props.get("SFHA_TF", ""),
             })
 
-    return {"checked": True, "inside": bool(layers), "layers": layers}
+    if valid_features == 0:
+        return _unavailable_result()
+    return {
+        "checked": True,
+        "data_status": "checked" if layers else "not_in_layer",
+        "message": "",
+        "inside": bool(layers),
+        "layers": layers,
+    }
 
 
 def check_wildfire_layer(lat: Optional[float], lon: Optional[float]) -> Dict:
     if lat is None or lon is None:
-        return {"checked": False, "inside": None, "layers": []}
+        return _not_checked_result()
 
     point = Point(float(lon), float(lat))
-    data = load_geojson("FireHaz.geojson")
+    loaded = load_geojson("FireHaz.geojson")
+    if not loaded["available"]:
+        return _unavailable_result()
+    data = loaded["data"]
     layers = []
+    valid_features = 0
     for feature in data.get("features", []):
         geometry = feature.get("geometry")
         if not geometry:
@@ -276,6 +334,9 @@ def check_wildfire_layer(lat: Optional[float], lon: Optional[float]) -> Dict:
             polygon = shape(geometry)
         except Exception:
             continue
+        if polygon.is_empty or not polygon.is_valid:
+            continue
+        valid_features += 1
         if polygon.contains(point) or polygon.touches(point):
             props = feature.get("properties", {})
             hazard_class = props.get("HAZ_CLASS") or props.get("VH_REC") or "Unknown"
@@ -287,17 +348,43 @@ def check_wildfire_layer(lat: Optional[float], lon: Optional[float]) -> Dict:
                 "incorporated": props.get("INCORP", ""),
             })
 
-    return {"checked": True, "inside": bool(layers), "layers": layers}
+    if valid_features == 0:
+        return _unavailable_result()
+    return {
+        "checked": True,
+        "data_status": "checked" if layers else "not_in_layer",
+        "message": "",
+        "inside": bool(layers),
+        "layers": layers,
+    }
+
+
+def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    radius_km = 6371.0088
+    lat1_rad, lon1_rad = math.radians(lat1), math.radians(lon1)
+    lat2_rad, lon2_rad = math.radians(lat2), math.radians(lon2)
+    delta_lat = lat2_rad - lat1_rad
+    delta_lon = lon2_rad - lon1_rad
+    value = (
+        math.sin(delta_lat / 2) ** 2
+        + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lon / 2) ** 2
+    )
+    value = min(1.0, max(0.0, value))
+    return radius_km * 2 * math.atan2(math.sqrt(value), math.sqrt(1 - value))
 
 
 def check_fault_layer(lat: Optional[float], lon: Optional[float], threshold_km: float = 2.0) -> Dict:
     if lat is None or lon is None:
-        return {"checked": False, "near": None, "layers": []}
+        return _not_checked_result()
 
     point = Point(float(lon), float(lat))
-    data = load_geojson("Fault_lines.Geojson")
+    loaded = load_geojson("Fault_lines.Geojson")
+    if not loaded["available"]:
+        return _unavailable_result()
+    data = loaded["data"]
     nearest = None
     nearest_km = None
+    valid_features = 0
     for feature in data.get("features", []):
         geometry = feature.get("geometry")
         if not geometry:
@@ -306,8 +393,16 @@ def check_fault_layer(lat: Optional[float], lon: Optional[float], threshold_km: 
             line = shape(geometry)
         except Exception:
             continue
-        # Local approximation: latitude/longitude degrees to kilometers.
-        distance_km = point.distance(line) * 111.0
+        if line.is_empty or not line.is_valid:
+            continue
+        valid_features += 1
+        nearest_point = nearest_points(point, line)[1]
+        distance_km = _haversine_km(
+            float(lat),
+            float(lon),
+            nearest_point.y,
+            nearest_point.x,
+        )
         if nearest_km is None or distance_km < nearest_km:
             props = feature.get("properties", {})
             nearest_km = distance_km
@@ -320,8 +415,17 @@ def check_fault_layer(lat: Optional[float], lon: Optional[float], threshold_km: 
                 "source_url": props.get("fault_url", ""),
             }
 
+    if valid_features == 0:
+        return _unavailable_result()
     near = nearest_km is not None and nearest_km <= threshold_km
-    return {"checked": True, "near": near, "layers": [nearest] if near and nearest else [], "nearest_layer": nearest}
+    return {
+        "checked": True,
+        "data_status": "checked",
+        "message": "",
+        "near": near,
+        "layers": [nearest] if near and nearest else [],
+        "nearest_layer": nearest,
+    }
 
 
 def _fema_layer_is_sfha(layer: Dict) -> bool:
@@ -380,85 +484,11 @@ def _local_plan_match(location_result, hazard_type: str) -> Optional[Dict]:
     }
 
 
-def _berkeley_area_context(location_result, hazard_type: str) -> List[str]:
-    city = (location_result.city or "").strip().lower()
-    formatted = (location_result.formatted_address or location_result.input_address or "").lower()
-    if city != "berkeley" and "berkeley" not in formatted:
-        return []
-
-    lat = _float_or_none(location_result.lat)
-    lon = _float_or_none(location_result.lon)
-    neighborhood = (location_result.neighborhood or "").strip()
-    address_area = neighborhood or ""
-    if not address_area:
-        for candidate in [
-            "Panoramic Hill", "Northbrae", "Berkeley Hills", "Claremont", "La Loma Park",
-            "Southside", "Berkeley Marina", "West Berkeley", "Central Berkeley",
-            "Northwest Berkeley", "Southwest Berkeley", "Thousand Oaks",
-        ]:
-            if candidate.lower() in formatted:
-                address_area = candidate
-                break
-
-    area_label = f" This address geocodes to {address_area}." if address_area else ""
-    contexts = []
-
-    if hazard_type == "earthquake":
-        contexts.append(
-            f"Berkeley LHMP area cue:{area_label} The app checked the address point against loaded mapped fault lines; Berkeley's LHMP identifies the Hayward Fault crossing eastern Berkeley and the surface rupture zone along the base of the Berkeley hills."
-        )
-        if lon is not None:
-            if lon <= -122.295 or "marina" in formatted or "eastshore" in formatted:
-                contexts.append(
-                    "Coarse LHMP liquefaction cue: this address appears in Berkeley's western/shoreline side of the city, where the LHMP names the Marina, Eastshore State Park, and west Berkeley bands as liquefaction concern areas. This still needs the official liquefaction polygon before being treated as an address-level layer match."
-                )
-            else:
-                contexts.append(
-                    "Coarse LHMP liquefaction cue: this address does not fall in the broad west Berkeley/Marina bands named in the LHMP text by this simple rule, but official liquefaction polygons have not been checked yet."
-                )
-
-    if hazard_type == "wildfire":
-        in_panoramic = "panoramic" in formatted or (lat is not None and lon is not None and 37.864 <= lat <= 37.875 and lon >= -122.252)
-        likely_hills = in_panoramic or "berkeley hills" in formatted or "claremont" in formatted or "la loma" in formatted or (lon is not None and lon >= -122.265)
-        north_transition = "northbrae" in formatted or "thousand oaks" in formatted or "94707" in formatted
-        if in_panoramic:
-            contexts.append(
-                "Berkeley LHMP area cue: this address appears near Panoramic Hill, which the LHMP identifies as Fire Zone 3 and the city's greatest WUI fire vulnerability because of limited access/egress, dense fuels, and fault/landslide context."
-            )
-        elif likely_hills:
-            contexts.append(
-                f"Berkeley LHMP area cue:{area_label} This address appears in or near the Berkeley hills by coarse coordinate/neighborhood rules. The LHMP identifies Fire Zones 2 and 3 in the eastern hills as the main WUI fire concern, with narrow roads and evacuation constraints."
-            )
-        elif north_transition:
-            contexts.append(
-                f"Berkeley LHMP area cue:{area_label} This address appears in north Berkeley/Northbrae rather than the named Panoramic Hill or eastern-hills Fire Zone 2/3 context by this coarse rule. Wildfire guidance should still cover smoke, alerts, and evacuation readiness, but official Berkeley parcel/fire-zone lookup is needed before claiming Zone 2 or 3."
-            )
-        else:
-            contexts.append(
-                f"Berkeley LHMP area cue:{area_label} This address does not match the simple Panoramic Hill/eastern-hills rule used here. The LHMP still notes wind-driven fire can affect the flatlands, but official Fire Zone polygons are needed for stronger property-specific wording."
-            )
-
-    if hazard_type == "flood":
-        west_or_marina = lon is not None and lon <= -122.295
-        named_flood_area = any(term in formatted for term in ["marina", "eastshore", "west berkeley", "san pablo", "mcgee", "codornices", "strawberry creek"])
-        if west_or_marina or named_flood_area:
-            contexts.append(
-                f"Berkeley LHMP area cue:{area_label} This address appears near Berkeley's western/shoreline or named creek/flood context by coarse rules. The LHMP discusses Berkeley floodplains, creek flooding, storm drain overflow, and older storm-drain infrastructure."
-            )
-        else:
-            contexts.append(
-                f"Berkeley LHMP area cue:{area_label} This address does not match the broad west Berkeley/Marina/creek flood bands in this simple rule. FEMA flood status remains the stronger address check, while storm-drain flooding can still occur outside mapped FEMA zones."
-            )
-
-    contexts.append(
-        "Precision limit: these LHMP area cues are rule-based from the geocoded point and named LHMP geography; they are not a substitute for official Berkeley parcel conditions, Fire Zone, liquefaction, landslide, creek, or evacuation-zone polygons."
-    )
-    return _dedupe_text(contexts)
-
-
 def _location_specific_context(location_result, hazard_type: str) -> List[str]:
-    contexts = _berkeley_area_context(location_result, hazard_type)
-    return _dedupe_text(contexts)
+    # Automatic LHMP area claims are handled only by validated location facts.
+    # Keeping this empty prevents legacy coordinate heuristics from bypassing
+    # the reviewed alias and bounded-geography matching rules.
+    return []
 
 
 def _specialized_guidance(location_result, hazard_type: str, user_context: Optional[Dict] = None) -> SpecializedGuidance:
@@ -804,18 +834,18 @@ def _earthquake_address_result(hazard: Dict, location_result, fault_check: Dict,
         scope="address_level",
         basis="gis_overlay",
         location_precision="address_point",
-        data_status="checked" if near else "not_in_layer",
-        exposure_level="high" if near else "unknown",
-        is_in_hazard_zone=near,
-        match_type="near" if near else "none",
+        data_status="checked",
+        exposure_level="unknown",
+        is_in_hazard_zone=None,
+        match_type="near_fault" if near else "fault_proximity_context",
         matched_layers=layers,
         source_url=get_source("usgs_faults").url,
         confidence="mixed_support",
         review_status="draft_reviewed",
         why_shown=(
-            f"Earthquake is shown because the saved address point is within about 2 km of a loaded mapped fault line: {layers[0].get('name')}."
+            f"Earthquake is shown because the saved address point is within about 2 km of a loaded mapped fault line: {layers[0].get('name')}. This is proximity context, not hazard-zone membership."
             if near and layers else
-            "Earthquake is shown because the saved address point was checked against loaded mapped fault lines; this point check did not find a nearby loaded fault trace, but citywide seismic risk still requires preparedness."
+            "Earthquake is shown because fault proximity was checked for the saved address point. No loaded fault trace was found within about 2 km, but this is not a hazard-zone clearance and citywide seismic risk still requires preparedness."
         ),
         limitations=limitations,
         recommended_actions=DEFAULT_ACTIONS["earthquake"],
@@ -833,9 +863,9 @@ def _earthquake_address_result(hazard: Dict, location_result, fault_check: Dict,
 
 def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dict, user_context: Optional[Dict] = None) -> List[HazardResult]:
     results = []
-    flood_check = {"checked": False, "inside": None, "layers": []}
-    wildfire_check = {"checked": False, "inside": None, "layers": []}
-    fault_check = {"checked": False, "near": None, "layers": []}
+    flood_check = _not_checked_result()
+    wildfire_check = _not_checked_result()
+    fault_check = _not_checked_result()
     if location_result.lat is not None and location_result.lon is not None and location_result.formatted_address:
         flood_check = check_flood_layer(location_result.lat, location_result.lon)
         wildfire_check = check_wildfire_layer(location_result.lat, location_result.lon)
@@ -853,12 +883,32 @@ def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dic
             result = _earthquake_address_result(hazard, location_result, fault_check, zip_snapshot, user_context)
         elif location_result.city or location_result.county:
             result = _jurisdiction_result(hazard, location_result, zip_snapshot, user_context)
-            if hazard_type in {"wildfire", "earthquake"} and location_result.formatted_address:
-                result.data_status = "not_checked"
-                result.limitations.insert(0, "Address-level GIS membership has not been checked for this hazard yet.")
+            check = {
+                "flood": flood_check,
+                "wildfire": wildfire_check,
+                "earthquake": fault_check,
+            }.get(hazard_type)
+            if check and location_result.formatted_address:
+                result.data_status = check.get("data_status", "not_checked")
+                unavailable = result.data_status == "data_unavailable"
+                if unavailable:
+                    result.exposure_level = "unknown"
+                    result.is_in_hazard_zone = None
+                    result.match_type = "none"
+                    result.confidence = "needs_review"
+                result.limitations.insert(
+                    0,
+                    "Official layer unavailable — not checked."
+                    if unavailable else
+                    "Address-level GIS membership has not been checked for this hazard yet.",
+                )
                 result.why_shown = (
                     f"{result.label} is shown from jurisdiction-level source context. "
-                    "The app has not completed an address-level GIS check for this hazard yet."
+                    + (
+                        "The official GIS layer was unavailable, so no address-level check was completed."
+                        if unavailable else
+                        "The app has not completed an address-level GIS check for this hazard yet."
+                    )
                 )
         elif location_result.zip_code and zip_snapshot:
             result = _zip_result(hazard, location_result, zip_snapshot, user_context)
@@ -926,6 +976,7 @@ def merge_structured_result(hazard: Dict, result: HazardResult) -> Dict:
     merged["specialized_guidance"] = result.specialized_guidance.model_dump()
     merged["matched_layers"] = result.matched_layers
     merged["is_in_hazard_zone"] = result.is_in_hazard_zone
+    merged["match_type"] = result.match_type
     merged["data_status"] = result.data_status
     merged["scope"] = result.scope
     merged["basis"] = result.basis

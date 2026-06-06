@@ -186,7 +186,8 @@ def household_guidance(household_context: Dict) -> List[Dict]:
 
 
 def _coordinate_rule_matches(rule: Dict, location_context: Dict) -> bool:
-    if not rule:
+    required = {"min_lat", "max_lat", "min_lon", "max_lon"}
+    if not rule or set(rule) != required:
         return False
     try:
         lat = float(location_context.get("location_result", {}).get("lat"))
@@ -194,41 +195,83 @@ def _coordinate_rule_matches(rule: Dict, location_context: Dict) -> bool:
     except (TypeError, ValueError):
         return False
 
-    checks = (
-        ("min_lat", lat >= rule.get("min_lat", lat)),
-        ("max_lat", lat <= rule.get("max_lat", lat)),
-        ("min_lon", lon >= rule.get("min_lon", lon)),
-        ("max_lon", lon <= rule.get("max_lon", lon)),
+    return (
+        rule["min_lat"] <= lat <= rule["max_lat"]
+        and rule["min_lon"] <= lon <= rule["max_lon"]
     )
-    return all(passed for key, passed in checks if key in rule)
+
+
+def _normalized_place(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", value.lower()).strip()
+
+
+def _named_area_match(alias: str, location_context: Dict) -> Optional[Dict]:
+    normalized_alias = _normalized_place(alias)
+    if not normalized_alias:
+        return None
+
+    location_result = location_context.get("location_result") or {}
+    structured_values = [
+        location_result.get("neighborhood"),
+        location_result.get("suburb"),
+        location_result.get("district"),
+    ]
+    for value in structured_values:
+        if value and _normalized_place(str(value)) == normalized_alias:
+            return {
+                "method": "structured_named_area",
+                "reason": f"The geocoder identified the address area as “{alias}”.",
+                "rank": 3,
+            }
+
+    formatted_values = [
+        location_context.get("address"),
+        location_context.get("display_name"),
+        location_result.get("formatted_address"),
+    ]
+    components = {
+        _normalized_place(component)
+        for value in formatted_values
+        for component in str(value or "").split(",")
+        if _normalized_place(component)
+    }
+    if normalized_alias in components:
+        return {
+            "method": "resolved_address_component",
+            "reason": f"The resolved address contains the reviewed named area “{alias}”.",
+            "rank": 2,
+        }
+
+    # Multi-word street, corridor, park, and district names may appear inside a
+    # resolved address component. Single generic words require an exact component.
+    if len(normalized_alias.split()) >= 2:
+        pattern = rf"(?<![a-z0-9]){re.escape(normalized_alias)}(?![a-z0-9])"
+        if any(re.search(pattern, _normalized_place(str(value or ""))) for value in formatted_values):
+            return {
+                "method": "reviewed_address_phrase",
+                "reason": f"The resolved address includes the reviewed place name “{alias}”.",
+                "rank": 1,
+            }
+    return None
 
 
 def _fact_location_match(fact: Dict, location_context: Dict) -> Optional[Dict]:
     if fact.get("evidence_tier") != "area_based":
         return None
 
-    location_result = location_context.get("location_result") or {}
-    searchable = " ".join([
-        str(location_context.get("address") or ""),
-        str(location_context.get("display_name") or ""),
-        str(location_result.get("formatted_address") or ""),
-        str(location_result.get("neighborhood") or ""),
-        str(location_context.get("zip_code") or ""),
-    ]).lower()
     for alias in fact.get("location_aliases") or []:
-        if alias.lower() in searchable:
-            return {
-                "method": "named_area",
-                "reason": f"The resolved address text matched the LHMP-named area “{alias}”.",
-            }
+        match = _named_area_match(alias, location_context)
+        if match:
+            return match
 
     if _coordinate_rule_matches(fact.get("coordinate_rule") or {}, location_context):
         return {
-            "method": "conservative_coordinate_rule",
+            "method": "reviewed_coordinate_bounds",
             "reason": (
-                f"The geocoded point falls within a conservative directional rule for "
+                f"The geocoded point falls within reviewed bounded geography for "
                 f"{fact.get('location_cue') or 'the named LHMP area'}."
             ),
+            "rank": 2,
         }
     return None
 
@@ -254,7 +297,12 @@ def _match_facts(city: str, hazard: str, location_context: Optional[Dict] = None
             if fact.get("evidence_tier") == "area_based":
                 match = _fact_location_match(fact, location_context)
                 if match:
-                    area.append({**fact, "location_match_method": match["method"], "location_match_reason": match["reason"]})
+                    area.append({
+                        **fact,
+                        "location_match_method": match["method"],
+                        "location_match_reason": match["reason"],
+                        "location_match_rank": match["rank"],
+                    })
             else:
                 citywide.append(fact)
         elif is_local:
@@ -262,7 +310,23 @@ def _match_facts(city: str, hazard: str, location_context: Optional[Dict] = None
         elif jurisdiction_key in {"alameda_county", "unincorporated_alameda_county"} and review_status in REVIEWED_STATUSES:
             county.append(fact)
 
-    return {"area": area, "citywide": citywide, "county": county, "needs_review": needs_review}
+    ambiguous_area_matches = []
+    if len(area) > 1:
+        best_rank = max(item.get("location_match_rank", 0) for item in area)
+        best_matches = [item for item in area if item.get("location_match_rank", 0) == best_rank]
+        if len(best_matches) == 1:
+            area = best_matches
+        else:
+            ambiguous_area_matches = area
+            area = []
+
+    return {
+        "area": area,
+        "ambiguous_area_matches": ambiguous_area_matches,
+        "citywide": citywide,
+        "county": county,
+        "needs_review": needs_review,
+    }
 
 
 def _guidance_from_chunks(hazard: Dict, phase: str) -> List[str]:
@@ -327,10 +391,12 @@ def _what_was_checked(hazard: Dict) -> Dict:
         elif slug == "wildfire":
             checked.append("Saved address point checked against the loaded CAL FIRE fire hazard layer.")
         elif slug == "earthquake":
-            checked.append("Saved address point checked for approximate proximity to loaded mapped fault lines.")
+            checked.append("Saved address point checked for proximity to loaded mapped fault lines; this is not hazard-zone membership.")
     else:
         checked.append(f"{scope_label} used for this result.")
 
+    if data_status == "data_unavailable":
+        not_checked.append("Official layer unavailable — not checked.")
     if data_status == "not_in_layer":
         checked.append("The checked layer did not match the address as a hazard-zone membership result; this does not mean no risk.")
     if slug == "flood" and hazard.get("scope") != "address_level":
@@ -406,8 +472,14 @@ def _hazard_plan(hazard: Dict, location_context: Dict, household_notes: List[Dic
         evidence_tier = "citywide"
     else:
         evidence_tier = "general"
+    if hazard.get("match_type") in {"near_fault", "fault_proximity_context"}:
+        primary_evidence_badge = "Fault proximity context"
+    elif hazard.get("scope") == "address_level":
+        primary_evidence_badge = "Address point checked"
+    else:
+        primary_evidence_badge = hazard.get("scope_label") or "County fallback"
     evidence_badges = [
-        "Address-specific source" if hazard.get("scope") == "address_level" else hazard.get("scope_label") or "County fallback",
+        primary_evidence_badge,
         hazard.get("data_status_label") or "Needs review",
         EVIDENCE_TIER_LABELS[evidence_tier],
     ]
@@ -425,6 +497,10 @@ def _hazard_plan(hazard: Dict, location_context: Dict, household_notes: List[Dic
         for fact in fact_matches["area"]
     ]
     fact_limitations = _guidance_from_facts(selected_facts, "precision_limitations")
+    if fact_matches["ambiguous_area_matches"]:
+        fact_limitations.append(
+            "Multiple local-plan areas matched with equal confidence, so StayReady did not apply any area-specific claim automatically."
+        )
 
     return {
         "hazard": hazard.get("name") or hazard.get("label") or slug.title(),

@@ -1,13 +1,23 @@
-from typing import Any, Dict, List, Literal, Optional
+from typing import Annotated, Any, Dict, List, Literal, Optional, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StrictInt, StringConstraints, field_validator, model_validator
 
 
 Scope = Literal["address_level", "jurisdiction_level", "zip_estimate", "county_fallback"]
 Basis = Literal["gis_overlay", "official_registry", "zip_csv_heuristic", "county_guidance"]
 LocationPrecision = Literal["address_point", "city", "neighborhood", "census_tract", "zip", "county", "unknown"]
-DataStatus = Literal["checked", "not_checked", "not_in_layer", "fallback_used", "needs_review"]
-MatchType = Literal["inside", "near", "intersects", "jurisdiction_match", "zip_match", "fallback", "none"]
+DataStatus = Literal["checked", "not_checked", "data_unavailable", "not_in_layer", "fallback_used", "needs_review"]
+MatchType = Literal[
+    "inside",
+    "near",
+    "near_fault",
+    "fault_proximity_context",
+    "intersects",
+    "jurisdiction_match",
+    "zip_match",
+    "fallback",
+    "none",
+]
 ExposureLevel = Literal["low", "medium", "high", "unknown"]
 ConfidenceLabel = Literal["source_backed", "mixed_support", "needs_review"]
 ReviewStatus = Literal["reviewed", "draft_reviewed", "draft", "needs_source_review", "insufficient_source_support"]
@@ -87,33 +97,81 @@ class ResidentGuidanceItem(BaseModel):
     review_status: ReviewStatus = "draft"
 
 
+NonEmptyText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+PageReference = Union[
+    Annotated[StrictInt, Field(gt=0)],
+    Annotated[
+        str,
+        StringConstraints(
+            strict=True,
+            strip_whitespace=True,
+            min_length=1,
+            pattern=r"^\d+(?:\s*[-,;]\s*\d+)*$",
+        ),
+    ],
+]
+
+
 class LHMPLocationFact(BaseModel):
-    id: str
-    jurisdiction: str
+    id: NonEmptyText
+    jurisdiction: NonEmptyText
     applies_to_jurisdictions: List[str] = Field(default_factory=list)
-    hazard: str
+    hazard: NonEmptyText
     evidence_tier: Literal["area_based", "citywide", "general"]
-    geography_type: str
-    named_areas: List[str] = Field(default_factory=list)
+    geography_type: NonEmptyText
+    named_areas: List[NonEmptyText] = Field(min_length=1)
     location_aliases: List[str] = Field(default_factory=list)
     coordinate_rule: Dict[str, float] = Field(default_factory=dict)
-    location_cue: str
-    resident_meaning: str
-    before_actions: List[str] = Field(default_factory=list)
-    during_actions: List[str] = Field(default_factory=list)
-    after_actions: List[str] = Field(default_factory=list)
-    recovery_steps: List[str] = Field(default_factory=list)
-    resident_impacts: List[str] = Field(default_factory=list)
+    location_cue: NonEmptyText
+    resident_meaning: NonEmptyText
+    before_actions: List[NonEmptyText] = Field(min_length=1)
+    during_actions: List[NonEmptyText] = Field(min_length=1)
+    after_actions: List[NonEmptyText] = Field(min_length=1)
+    recovery_steps: List[NonEmptyText] = Field(min_length=1)
+    resident_impacts: List[NonEmptyText] = Field(min_length=1)
     household_factors: List[str] = Field(default_factory=list)
-    infrastructure_dependencies: List[str] = Field(default_factory=list)
+    infrastructure_dependencies: List[NonEmptyText] = Field(min_length=1)
     requires_gis_confirmation: bool = True
-    precision_limitations: List[str] = Field(default_factory=list)
-    source_document: str
-    source_page: Any
-    source_excerpt_summary: str
-    source_name: str
-    source_url: str
-    review_status: ReviewStatus = "draft"
+    precision_limitations: List[NonEmptyText] = Field(min_length=1)
+    source_document: NonEmptyText
+    source_page: PageReference
+    source_excerpt_summary: NonEmptyText
+    source_name: NonEmptyText
+    source_url: NonEmptyText
+    review_status: ReviewStatus
+
+    @field_validator("applies_to_jurisdictions", "location_aliases", "household_factors")
+    @classmethod
+    def clean_optional_lists(cls, values: List[str]) -> List[str]:
+        cleaned = []
+        seen = set()
+        for value in values:
+            text = str(value).strip()
+            if not text or text.lower() in seen:
+                continue
+            seen.add(text.lower())
+            cleaned.append(text)
+        return cleaned
+
+    @field_validator("coordinate_rule")
+    @classmethod
+    def validate_coordinate_rule(cls, rule: Dict[str, float]) -> Dict[str, float]:
+        if not rule:
+            return {}
+        required = {"min_lat", "max_lat", "min_lon", "max_lon"}
+        if set(rule) != required:
+            raise ValueError("coordinate_rule must be empty or contain a complete reviewed bounding box")
+        if not (-90 <= rule["min_lat"] < rule["max_lat"] <= 90):
+            raise ValueError("coordinate_rule latitude bounds are invalid")
+        if not (-180 <= rule["min_lon"] < rule["max_lon"] <= 180):
+            raise ValueError("coordinate_rule longitude bounds are invalid")
+        return rule
+
+    @model_validator(mode="after")
+    def validate_matchability(self):
+        if self.evidence_tier == "area_based" and not self.location_aliases and not self.coordinate_rule:
+            raise ValueError("area_based facts require reviewed aliases or a complete coordinate bound")
+        return self
 
 
 class SpecializedGuidance(BaseModel):

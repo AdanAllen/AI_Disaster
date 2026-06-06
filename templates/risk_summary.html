@@ -82,11 +82,22 @@
                         <p>{{ plan.why_it_matters }}</p>
                     </section>
 
+                    {% if plan.limitations %}
+                    <section class="sr-visible-limitations" aria-label="Important limitations">
+                        <h4>Important limits</h4>
+                        <ul class="sr-action-list">
+                            {% for limitation in plan.limitations[:3] %}
+                            <li>{{ limitation }}</li>
+                            {% endfor %}
+                        </ul>
+                    </section>
+                    {% endif %}
+
                     {% if plan.location_matches %}
                     <section class="sr-local-evidence" aria-label="Matched local plan evidence">
                         <div class="sr-local-evidence-heading">
                             <span class="sr-badge sr-badge-warning">Area-based source</span>
-                            <h4>Local area match</h4>
+                            <h4>Reviewed named-area context</h4>
                         </div>
                         {% for match in plan.location_matches %}
                         <div class="sr-local-evidence-row">

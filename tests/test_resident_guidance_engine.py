@@ -62,7 +62,7 @@ class ResidentGuidanceEngineTests(unittest.TestCase):
         plan = build_resident_plan(
             location_context(
                 "Hayward",
-                "777 B Street, Hayward, California, 94541",
+                "777 Mission Boulevard, Hayward, California, 94541",
                 37.672,
                 -122.083,
                 "94541",
@@ -78,7 +78,7 @@ class ResidentGuidanceEngineTests(unittest.TestCase):
         plan = build_resident_plan(
             location_context(
                 "Alameda",
-                "Example shoreline address, Alameda, California, 94501",
+                "Example address, Bay Farm Island, Alameda, California, 94501",
                 37.768,
                 -122.276,
                 "94501",
@@ -86,7 +86,7 @@ class ResidentGuidanceEngineTests(unittest.TestCase):
             [hazard("flood", "The address matched an official FEMA flood polygon.")],
         )
         result = plan["hazards"][0]
-        self.assertIn("Address-specific source", result["evidence_badges"])
+        self.assertIn("Address point checked", result["evidence_badges"])
         self.assertIn("Area-based source", result["evidence_badges"])
         self.assertTrue(result["why_it_matters"].startswith("The address matched an official FEMA"))
 
@@ -94,7 +94,7 @@ class ResidentGuidanceEngineTests(unittest.TestCase):
         plan = build_resident_plan(
             location_context(
                 "Oakland",
-                "Example address, Oakland, California, 94619",
+                "Example address, Oakland Hills, Oakland, California, 94619",
                 37.81,
                 -122.18,
                 "94619",
@@ -124,7 +124,7 @@ class ResidentGuidanceEngineTests(unittest.TestCase):
         hills = build_resident_plan(
             location_context(
                 "Fremont",
-                "Example address, Fremont, California, 94539",
+                "Example address, Mission Peak, Fremont, California, 94539",
                 37.53,
                 -121.91,
                 "94539",
@@ -134,7 +134,7 @@ class ResidentGuidanceEngineTests(unittest.TestCase):
         baylands = build_resident_plan(
             location_context(
                 "Fremont",
-                "Example address, Fremont, California, 94538",
+                "Example address, Fremont Baylands, Fremont, California, 94538",
                 37.52,
                 -122.04,
                 "94538",
@@ -146,11 +146,11 @@ class ResidentGuidanceEngineTests(unittest.TestCase):
 
     def test_oakland_hills_and_shoreline_produce_different_context(self):
         hills = build_resident_plan(
-            location_context("Oakland", "Hills example, Oakland, California, 94619", 37.81, -122.18, "94619"),
+            location_context("Oakland", "Example address, Oakland Hills, Oakland, California, 94619", 37.81, -122.18, "94619"),
             [hazard("wildfire")],
         )["hazards"][0]
         shoreline = build_resident_plan(
-            location_context("Oakland", "Shoreline example, Oakland, California, 94607", 37.78, -122.29, "94607"),
+            location_context("Oakland", "Example address, Jack London Square, Oakland, California, 94607", 37.78, -122.29, "94607"),
             [hazard("flood")],
         )["hazards"][0]
         self.assertIn("oakland hills", hills["location_matches"][0]["label"].lower())
@@ -158,7 +158,7 @@ class ResidentGuidanceEngineTests(unittest.TestCase):
 
     def test_berkeley_hills_and_west_berkeley_produce_different_context(self):
         hills = build_resident_plan(
-            location_context("Berkeley", "Sierra Street, Berkeley, California, 94707", 37.89, -122.255, "94707"),
+            location_context("Berkeley", "Example address, Berkeley Hills, Berkeley, California, 94707", 37.89, -122.255, "94707"),
             [hazard("wildfire")],
         )["hazards"][0]
         west = build_resident_plan(
@@ -170,7 +170,7 @@ class ResidentGuidanceEngineTests(unittest.TestCase):
 
     def test_area_match_contains_page_citation(self):
         plan = build_resident_plan(
-            location_context("Alameda", "Shoreline, Alameda, California, 94501", 37.77, -122.28, "94501"),
+            location_context("Alameda", "Example address, Bay Farm Island, Alameda, California, 94501", 37.77, -122.28, "94501"),
             [hazard("flood")],
         )
         match = plan["hazards"][0]["location_matches"][0]
@@ -180,7 +180,7 @@ class ResidentGuidanceEngineTests(unittest.TestCase):
     def test_household_tags_change_actions_not_evidence(self):
         base_location = location_context(
             "Hayward",
-            "777 B Street, Hayward, California, 94541",
+            "777 Mission Boulevard, Hayward, California, 94541",
             37.672,
             -122.083,
             "94541",

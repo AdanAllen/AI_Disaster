@@ -921,6 +921,12 @@ Ask about supplies, evacuation planning, documents, insurance, medications, pets
         fetch('/api/wildfire-zones')
             .then(response => response.json())
             .then(data => {
+                if (data.error || ['unavailable', 'data_unavailable'].includes(data.data_status)) {
+                    setLoadingState('wildfire', false);
+                    showLayerMessage(data.message || 'Official layer unavailable — not checked.');
+                    updateActiveLayers();
+                    return;
+                }
                 if (data.error || !data.features || data.features.length === 0) {
                     showError('wildfire');
                     return;
@@ -963,8 +969,10 @@ Ask about supplies, evacuation planning, documents, insurance, medications, pets
         fetch(`/api/flood-zones?${params.toString()}`)
             .then(response => response.json())
             .then(data => {
-                if (data.error || data.data_status === 'unavailable') {
-                    showError('flood');
+                if (data.error || ['unavailable', 'data_unavailable'].includes(data.data_status)) {
+                    setLoadingState('flood', false);
+                    showLayerMessage(data.message || 'Official layer unavailable — not checked.');
+                    updateActiveLayers();
                     return;
                 }
                 if (!data.features || data.features.length === 0) {
@@ -1009,7 +1017,13 @@ Ask about supplies, evacuation planning, documents, insurance, medications, pets
         fetch('/api/fault-lines')
             .then(response => response.json())
             .then(data => {
-                if (data.error || !data.features || data.features.length === 0) {
+                if (data.error || ['unavailable', 'data_unavailable'].includes(data.data_status)) {
+                    setLoadingState('earthquake', false);
+                    showLayerMessage(data.message || 'Official layer unavailable — not checked.');
+                    updateActiveLayers();
+                    return;
+                }
+                if (!data.features || data.features.length === 0) {
                     showError('earthquake');
                     return;
                 }

@@ -1139,6 +1139,23 @@
     background: #fbfcfa;
 }
 
+.sr-visible-limitations {
+    margin: 0 1.35rem;
+    padding: 0.95rem 1rem;
+    border: 1px solid #ecd8aa;
+    border-radius: 0.85rem;
+    background: #fffaf0;
+}
+
+.sr-visible-limitations h4 {
+    margin: 0 0 0.6rem;
+    color: #6f4b10;
+}
+
+.sr-visible-limitations .sr-action-list li {
+    color: #665a45;
+}
+
 .sr-local-evidence-heading {
     display: flex;
     align-items: center;

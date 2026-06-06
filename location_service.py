@@ -41,7 +41,8 @@ def location_from_session(session_data: Dict) -> LocationResult:
         for candidate in (
             "Oakland", "Berkeley", "Fremont", "Hayward", "Alameda", "San Leandro",
             "Union City", "Newark", "Dublin", "Pleasanton", "Livermore",
-            "Castro Valley", "San Lorenzo", "Emeryville", "Piedmont", "Albany",
+            "Castro Valley", "San Lorenzo", "Ashland", "Cherryland", "Fairview",
+            "Sunol", "Hayward Acres", "Emeryville", "Piedmont", "Albany",
         ):
             if candidate.lower() in address_components:
                 city = candidate
