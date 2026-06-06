@@ -61,6 +61,15 @@ def fetch_document_chunks(
     return _execute_select("document_chunks", filters)
 
 
+def fetch_hazard_facts(city: Optional[str] = None, hazard: Optional[str] = None) -> List[Dict]:
+    filters = {}
+    if city:
+        filters["jurisdiction"] = city
+    if hazard:
+        filters["hazard"] = hazard
+    return _execute_select("hazard_facts", filters)
+
+
 def _safe_count(table: str) -> Dict:
     client = get_supabase_client()
     if client is None:

@@ -15,6 +15,7 @@ from copy import deepcopy
 from hazard_engine import build_hazard_results, merge_structured_result
 from location_service import location_from_session
 from rag_service import retrieve_chunks
+from resident_guidance_engine import build_resident_plan
 from source_registry import load_hazard_registry, load_jurisdictions, load_local_plans, load_resident_guidance_chunks, source_records_payload
 from supabase_repository import supabase_health as get_supabase_health
 
@@ -414,6 +415,7 @@ def get_all_hazards(user=None, location_context=None):
         "household": session.get("household"),
         "preparedness": session.get("preparedness"),
         "special_needs": session.get("special_needs"),
+        "household_tags": session.get("household_tags", []),
     }
     structured_results = build_hazard_results(
         hazards,
@@ -774,6 +776,7 @@ def process_form():
         household = request.form.get("household")
         preparedness = request.form.get("preparedness")
         special_needs = request.form.get("special_needs", "")
+        household_tags = request.form.getlist("household_tags")
 
         if not household or not preparedness:
             return safe_render(
@@ -796,6 +799,7 @@ def process_form():
         session["household"] = household
         session["special_needs"] = special_needs
         session["preparedness"] = preparedness
+        session["household_tags"] = household_tags
 
         for hazard in ["wildfire", "flood", "earthquake"]:
             session.pop(f"chat_{hazard}", None)
@@ -1217,6 +1221,17 @@ def risk_summary():
     ]
     structured_hazards = core_hazards[:3] if core_hazards else all_structured_hazards[:3]
     additional_local_hazards = get_additional_local_hazards(location_context, structured_hazards)
+    resident_plan = build_resident_plan(
+        location_context,
+        structured_hazards,
+        additional_local_hazards,
+        session_data={
+            "household": session.get("household"),
+            "preparedness": session.get("preparedness"),
+            "special_needs": session.get("special_needs"),
+            "household_tags": session.get("household_tags", []),
+        },
+    )
 
     try:
         data = zip_risk_data.get(zip_code, {})
@@ -1270,6 +1285,7 @@ def risk_summary():
         zip_code=zip_code,
         location_context=location_context,
         structured_hazards=structured_hazards,
+        resident_plan=resident_plan,
         additional_local_hazards=additional_local_hazards,
         hazards=hazards_sorted,
         recommended_actions=recommended_actions,

@@ -32,14 +32,14 @@
         <div class="container">
             <div class="sr-hero-grid">
                 <div class="sr-hero-copy">
-                    <h1 id="home-hero-title">Know your local disaster risks before disaster hits.</h1>
+                    <h1 id="home-hero-title">Turn your address into a local preparedness and recovery plan.</h1>
                     <p class="sr-hero-lead">
-                        StayReady helps Alameda County residents enter an address and get simple, specific disaster preparedness and recovery guidance using official public information.
+                        StayReady helps Alameda County residents understand nearby hazards, prepare their household, and plan for recovery using official public information.
                     </p>
 
                     <div class="sr-disclaimer" role="note">
                         <i class="fas fa-circle-info" aria-hidden="true"></i>
-                        <span>Educational and source-backed. Not a replacement for official emergency alerts, evacuation orders, or 911.</span>
+                        <span>Educational, source-backed guidance. Not a replacement for official emergency alerts.</span>
                     </div>
 
                     <div class="sr-trust-row" aria-label="StayReady credibility markers">
@@ -150,10 +150,24 @@
                             >
                         </div>
 
+                        <fieldset class="sr-household-options mt-3">
+                            <legend>Optional planning factors</legend>
+                            <div class="sr-option-grid">
+                                <label><input type="checkbox" name="household_tags" value="medical"> Medical / medication needs</label>
+                                <label><input type="checkbox" name="household_tags" value="pets"> Pets</label>
+                                <label><input type="checkbox" name="household_tags" value="no_car"> No reliable car access</label>
+                                <label><input type="checkbox" name="household_tags" value="renter"> Renter</label>
+                                <label><input type="checkbox" name="household_tags" value="homeowner"> Homeowner</label>
+                                <label><input type="checkbox" name="household_tags" value="children"> Children / school needs</label>
+                                <label><input type="checkbox" name="household_tags" value="older_adults"> Older adults</label>
+                                <label><input type="checkbox" name="household_tags" value="access_needs"> Disability / access needs</label>
+                            </div>
+                        </fieldset>
+
                         <div id="form-messages" class="mt-3" style="display: none;"></div>
 
                         <button type="submit" class="btn sr-primary-action w-100 mt-4">
-                            Get My Local Guidance
+                            Build My Local Plan
                         </button>
                     </form>
                 </aside>
@@ -313,7 +327,7 @@
         <div class="container">
             <div class="sr-final-cta-inner">
                 <h2 id="final-cta-title">Start with your address.</h2>
-                <p>Get a clearer view of local hazards, preparedness steps, recovery questions, and source-backed limitations.</p>
+                <p>Get nearby hazard context, practical household actions, recovery preparation, and source-backed limitations.</p>
                 <a href="#emergency-form" class="btn sr-primary-action">Enter Address</a>
             </div>
         </div>

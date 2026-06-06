@@ -1,1363 +1,320 @@
 {% extends "base.html" %}
-{% block title %}Risk Summary - Stay Ready Now{% endblock %}
+{% block title %}Your Local Preparedness Plan - Stay Ready Now{% endblock %}
 
 {% block head %}
-<style>
-    :root {
-        --primary-orange: #163b5d;
-        --secondary-blue: #2a6f97;
-        --accent-red: #d96c3f;
-        --text-dark: #203244;
-        --bg-light: #f5f8fb;
-        --success-green: #2f8f5b;
-        --warning-yellow: #f1b555;
-    }
-
-    .hero-section {
-        background: linear-gradient(135deg, #14324f, #2a6f97);
-        color: white;
-        padding: 80px 0;
-        margin-top: -2rem;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .hero-section::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
-        animation: float 20s infinite linear;
-    }
-
-    .hero-content {
-        position: relative;
-        z-index: 2;
-    }
-
-    .hero-section h1 {
-        font-size: 3rem;
-        font-weight: 800;
-        margin-bottom: 1rem;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    }
-
-    .hero-section .lead {
-        font-size: 1.2rem;
-        opacity: 0.95;
-        margin-bottom: 2rem;
-    }
-
-    .zip-badge {
-        background: rgba(255, 255, 255, 0.14);
-        backdrop-filter: blur(10px);
-        border-radius: 50px;
-        padding: 10px 25px;
-        font-size: 1.1rem;
-        font-weight: 700;
-        display: inline-block;
-        margin-bottom: 1rem;
-    }
-
-    .overall-risk-summary {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        padding: 2rem;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        margin-top: -50px;
-        position: relative;
-        z-index: 3;
-    }
-
-    .risk-meter {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        font-weight: 800;
-        color: white;
-        margin: 0 auto 1rem;
-        position: relative;
-    }
-
-    .risk-meter.high { background: linear-gradient(135deg, #cb5941, #9e3024); }
-    .risk-meter.moderate { background: linear-gradient(135deg, #f1b555, #c8881f); }
-    .risk-meter.low { background: linear-gradient(135deg, #2f8f5b, #256544); }
-
-    .risk-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-        transition: all 0.3s ease;
-        height: 100%;
-        border: 0;
-        overflow: hidden;
-        position: relative;
-    }
-
-    .risk-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 25px 50px rgba(0,0,0,0.15);
-    }
-
-    .risk-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 6px;
-    }
-
-    .risk-card.wildfire::before { background: linear-gradient(90deg, #f44336, #ff7043); }
-    .risk-card.flood::before { background: linear-gradient(90deg, #0288d1, #03a9f4); }
-    .risk-card.earthquake::before { background: linear-gradient(90deg, #795548, #8d6e63); }
-
-    .hazard-icon {
-        font-size: 4rem;
-        margin-bottom: 1rem;
-        display: block;
-        opacity: 0.9;
-    }
-
-    .wildfire-icon { color: #f44336; }
-    .flood-icon { color: #0288d1; }
-    .earthquake-icon { color: #795548; }
-
-    .progress-ring {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto 1rem;
-        position: relative;
-    }
-
-    .progress-ring svg {
-        width: 100%;
-        height: 100%;
-        transform: rotate(-90deg);
-    }
-
-    .progress-ring circle {
-        fill: none;
-        stroke-width: 8;
-        r: 32;
-        cx: 40;
-        cy: 40;
-    }
-
-    .progress-ring .background {
-        stroke: #e9ecef;
-    }
-
-    .progress-ring .progress {
-        stroke-linecap: round;
-        transition: stroke-dashoffset 1s ease-in-out;
-    }
-
-    .risk-score {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 1.5rem;
-        font-weight: 800;
-        color: var(--text-dark);
-    }
-
-    .btn-hazard {
-        border-radius: 25px;
-        padding: 12px 30px;
-        font-weight: 700;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        display: inline-block;
-        width: 100%;
-        text-align: center;
-    }
-
-    .btn-wildfire { 
-        background: linear-gradient(45deg, #f44336, #ff7043);
-        color: white;
-        border: none;
-    }
-    .btn-wildfire:hover { 
-        background: linear-gradient(45deg, #d32f2f, #f44336);
-        color: white;
-        transform: translateY(-2px);
-    }
-
-    .btn-flood { 
-        background: linear-gradient(45deg, #0288d1, #03a9f4);
-        color: white;
-        border: none;
-    }
-    .btn-flood:hover { 
-        background: linear-gradient(45deg, #0277bd, #0288d1);
-        color: white;
-        transform: translateY(-2px);
-    }
-
-    .btn-earthquake { 
-        background: linear-gradient(45deg, #795548, #8d6e63);
-        color: white;
-        border: none;
-    }
-    .btn-earthquake:hover { 
-        background: linear-gradient(45deg, #6d4c41, #795548);
-        color: white;
-        transform: translateY(-2px);
-    }
-
-    .priority-alert {
-        background: linear-gradient(135deg, #cb5941, #d96c3f);
-        color: white;
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        text-align: center;
-        box-shadow: 0 10px 30px rgba(244, 67, 54, 0.3);
-    }
-
-    .priority-alert h4 {
-        margin-bottom: 1rem;
-        font-weight: 800;
-    }
-
-    .priority-alert .btn {
-        background: rgba(255, 255, 255, 0.2);
-        border: 2px solid white;
-        color: white;
-        font-weight: 700;
-        border-radius: 25px;
-        padding: 10px 25px;
-        transition: all 0.3s ease;
-    }
-
-    .priority-alert .btn:hover {
-        background: white;
-        color: var(--accent-red);
-    }
-
-    .location-check-panel,
-    .structured-risk-card,
-    .recovery-readiness-card {
-        background: white;
-        border: 1px solid #d8e4ec;
-        border-radius: 18px;
-        box-shadow: 0 14px 32px rgba(16, 37, 61, 0.08);
-    }
-
-    .location-check-panel {
-        margin-top: -48px;
-        position: relative;
-        z-index: 3;
-        padding: 1.5rem;
-    }
-
-    .location-check-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 0.9rem;
-    }
-
-    .location-check-item {
-        border: 1px solid #d8e4ec;
-        border-radius: 14px;
-        padding: 0.9rem 1rem;
-        background: #f7fafc;
-    }
-
-    .location-check-label {
-        display: block;
-        color: #5d6f80;
-        font-size: 0.78rem;
-        font-weight: 800;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-        margin-bottom: 0.25rem;
-    }
-
-    .location-check-value {
-        color: #18324a;
-        font-weight: 800;
-        line-height: 1.35;
-    }
-
-    .structured-risk-card {
-        height: 100%;
-        padding: 1.35rem;
-    }
-
-    .structured-risk-card h3 {
-        color: #18324a;
-        font-weight: 800;
-    }
-
-    .evidence-badges {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.45rem;
-        margin-bottom: 1rem;
-    }
-
-    .evidence-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        border-radius: 999px;
-        padding: 0.38rem 0.66rem;
-        background: #edf4f8;
-        color: #28465f;
-        font-size: 0.78rem;
-        font-weight: 800;
-    }
-
-    .evidence-badge.address { background: #e8f4ee; color: #236345; }
-    .evidence-badge.status { background: #fff4db; color: #8d5b08; }
-    .evidence-badge.source { background: #e9f1fb; color: #244d73; }
-
-    .evidence-section-title {
-        color: #173552;
-        font-size: 0.82rem;
-        font-weight: 800;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-        margin-bottom: 0.35rem;
-    }
-
-    .evidence-copy {
-        color: #4f6274;
-        line-height: 1.58;
-    }
-
-    .limitation-list,
-    .recovery-list,
-    .source-list {
-        margin: 0;
-        padding-left: 1.1rem;
-        color: #4f6274;
-    }
-
-    .source-list a {
-        font-weight: 800;
-        text-decoration: none;
-    }
-
-    .recovery-readiness-card {
-        padding: 1.5rem;
-        background: linear-gradient(180deg, #ffffff 0%, #f5f8fb 100%);
-    }
-
-    .evidence-path {
-        display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 0.75rem;
-        margin-top: -1rem;
-        margin-bottom: 2rem;
-    }
-
-    .evidence-step {
-        background: #ffffff;
-        border: 1px solid #d8e4ec;
-        border-radius: 16px;
-        padding: 0.95rem;
-        box-shadow: 0 10px 24px rgba(16, 37, 61, 0.06);
-    }
-
-    .evidence-step-number {
-        width: 1.7rem;
-        height: 1.7rem;
-        border-radius: 999px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: #173552;
-        color: white;
-        font-size: 0.8rem;
-        font-weight: 800;
-        margin-bottom: 0.55rem;
-    }
-
-    .hub-detail-card {
-        border-top: 1px solid #e2eaf0;
-        margin-top: 1rem;
-        padding-top: 1rem;
-    }
-
-    .hub-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.9rem;
-    }
-
-    .hub-panel {
-        background: #f7fafc;
-        border: 1px solid #dce7ef;
-        border-radius: 14px;
-        padding: 0.95rem;
-    }
-
-    .hub-panel h4 {
-        font-size: 0.88rem;
-        font-weight: 800;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        color: #173552;
-        margin-bottom: 0.55rem;
-    }
-
-    .hub-panel ul {
-        margin: 0;
-        padding-left: 1.1rem;
-        color: #4f6274;
-    }
-
-    .hub-panel li + li {
-        margin-top: 0.35rem;
-    }
-
-    .action-buttons {
-        background: linear-gradient(180deg, #eff4f8 0%, #f7fafc 100%);
-        padding: 60px 0;
-    }
-
-    .action-card {
-        background: white;
-        border-radius: 15px;
-        padding: 2rem;
-        text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        height: 100%;
-        transition: all 0.3s ease;
-    }
-
-    .action-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 40px rgba(0,0,0,0.12);
-    }
-
-    .start-here-section {
-        padding: 1rem 0 2rem;
-    }
-
-    .start-here-card {
-        background: linear-gradient(135deg, #fff7f2, #ffffff);
-        border: 1px solid #ffd8c8;
-        border-radius: 20px;
-        box-shadow: 0 14px 34px rgba(255, 112, 67, 0.12);
-        padding: 2rem;
-    }
-
-    .start-here-eyebrow {
-        color: var(--accent-red);
-        font-size: 0.85rem;
-        font-weight: 800;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        margin-bottom: 0.45rem;
-    }
-
-    .start-here-title {
-        font-size: 2rem;
-        font-weight: 800;
-        color: var(--text-dark);
-        margin-bottom: 0.65rem;
-    }
-
-    .start-here-subtitle,
-    .start-here-meta {
-        color: #546e7a;
-    }
-
-    .start-here-meta {
-        font-weight: 700;
-        margin-bottom: 1rem;
-    }
-
-    .start-here-intro {
-        color: #546e7a;
-        margin-bottom: 1rem;
-        max-width: 56rem;
-    }
-
-    .next-step-banner {
-        background: rgba(255, 112, 67, 0.12);
-        border: 1px solid rgba(255, 112, 67, 0.22);
-        border-radius: 14px;
-        padding: 0.9rem 1rem;
-        margin-bottom: 1rem;
-        color: var(--text-dark);
-        font-weight: 700;
-    }
-
-    .start-here-list {
-        display: grid;
-        gap: 0.85rem;
-        margin-bottom: 0.75rem;
-    }
-
-    .task-item {
-        position: relative;
-        display: flex;
-        align-items: center;
-        gap: 0.85rem;
-        border-radius: 14px;
-        padding: 0.95rem 1rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .task-item:hover {
-        box-shadow: 0 6px 18px rgba(0,0,0,0.05);
-    }
-
-    .task-item.is-incomplete {
-        background: #ffffff;
-        border: 1px solid #d8e2e8;
-    }
-
-    .task-item.is-complete {
-        background: #f1fbf3;
-        border: 1px solid #9ad0a3;
-        box-shadow: 0 8px 22px rgba(76, 175, 80, 0.1);
-    }
-
-    .task-checkbox {
-        position: absolute;
-        inset: 0;
-        opacity: 0;
-        cursor: pointer;
-        margin: 0;
-    }
-
-    .task-checkmark {
-        width: 1.35rem;
-        height: 1.35rem;
-        border-radius: 6px;
-        border: 2px solid #b0bec5;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        background: white;
-        flex-shrink: 0;
-        transition: all 0.2s ease;
-        pointer-events: none;
-    }
-
-    .task-checkmark i {
-        font-size: 0.75rem;
-        opacity: 0;
-        transform: scale(0.8);
-        transition: all 0.2s ease;
-    }
-
-    .task-item.is-complete .task-checkmark {
-        background: var(--success-green);
-        border-color: var(--success-green);
-    }
-
-    .task-item.is-complete .task-checkmark i {
-        opacity: 1;
-        transform: scale(1);
-    }
-
-    .task-label {
-        color: var(--text-dark);
-        font-weight: 600;
-        line-height: 1.45;
-    }
-
-    .start-here-item.is-incomplete {
-        border-color: #f0d8ce;
-        box-shadow: none;
-    }
-
-    .start-here-item.is-incomplete:hover {
-        border-color: #e6c3b2;
-        box-shadow: 0 8px 22px rgba(255, 112, 67, 0.08);
-    }
-
-    .start-here-item .task-label {
-        font-weight: 700;
-    }
-
-    .preparedness-item.is-incomplete {
-        background: #fbfcfd;
-    }
-
-    .preparedness-item.is-incomplete:hover {
-        border-color: #cfd8dc;
-    }
-
-    .preparedness-section {
-        padding: 0 0 3rem;
-    }
-
-    .preparedness-card {
-        background: white;
-        border-radius: 20px;
-        padding: 2rem;
-        border: 1px solid #e3ebf0;
-        box-shadow: 0 12px 30px rgba(0,0,0,0.08);
-    }
-
-    .preparedness-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 1rem;
-        margin-bottom: 1rem;
-    }
-
-    .preparedness-eyebrow {
-        color: var(--primary-orange);
-        font-size: 0.85rem;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        margin-bottom: 0.4rem;
-    }
-
-    .preparedness-title {
-        margin-bottom: 0.5rem;
-        font-size: 1.9rem;
-        font-weight: 800;
-        color: var(--text-dark);
-    }
-
-    .preparedness-note,
-    .preparedness-progress-text {
-        color: #546e7a;
-    }
-
-    .preparedness-progress-text {
-        font-weight: 700;
-        white-space: nowrap;
-    }
-
-    .preparedness-progress {
-        height: 10px;
-        border-radius: 999px;
-        background: #eaf0f4;
-        overflow: hidden;
-        margin-bottom: 1.25rem;
-    }
-
-    .preparedness-progress-bar {
-        width: 0;
-        height: 100%;
-        border-radius: 999px;
-        background: linear-gradient(90deg, var(--success-green), #81c784);
-        transition: width 0.25s ease;
-    }
-
-    .preparedness-list {
-        display: grid;
-        gap: 0.85rem;
-    }
-
-    .preparedness-empty-state {
-        background: #f7fafc;
-        border: 1px dashed #c6d3dc;
-        border-radius: 14px;
-        color: #546e7a;
-        padding: 1rem 1.1rem;
-    }
-
-    .action-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-        display: block;
-    }
-
-    .stats-overview {
-        background: linear-gradient(135deg, #112b44, #1e4f72);
-        color: white;
-        padding: 60px 0;
-    }
-
-    .stat-item {
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-
-    .stat-number {
-        font-size: 2.5rem;
-        font-weight: 800;
-        color: var(--primary-orange);
-        display: block;
-        margin-bottom: 0.5rem;
-    }
-
-    @keyframes float {
-        0%, 100% { transform: translateY(0px) translateX(0px); }
-        50% { transform: translateY(-20px) translateX(-10px); }
-    }
-
-    @media (max-width: 768px) {
-        .hero-section h1 { font-size: 2.5rem; }
-        .hero-section { padding: 60px 0 40px; }
-        .overall-risk-summary { margin-top: -30px; padding: 1.5rem; }
-        .risk-card { margin-bottom: 2rem; }
-        .preparedness-card,
-        .start-here-card { padding: 1.5rem; }
-        .preparedness-header { flex-direction: column; }
-        .preparedness-progress-text { white-space: normal; }
-        .location-check-grid { grid-template-columns: 1fr; }
-        .evidence-path,
-        .hub-grid { grid-template-columns: 1fr; }
-    }
-</style>
+<link href="{{ url_for('static', filename='css/stayready.css') }}" rel="stylesheet" />
 {% endblock %}
 
 {% block content %}
-{% set primary_hazard = structured_hazards[0] if structured_hazards else none %}
-{% if warning_message %}
-<div class="container mt-4">
-    <div class="alert alert-warning" role="alert">
-        {{ warning_message }}
+<div class="sr-page sr-results-page">
+    {% if warning_message %}
+    <div class="container pt-4">
+        <div class="sr-alert sr-alert-warning">{{ warning_message }}</div>
     </div>
-</div>
-{% endif %}
-<!-- Hero Section -->
-<section class="hero-section">
-    <div class="container">
-        <div class="hero-content text-center">
-            <div class="zip-badge">
-                <i class="fas fa-map-marker-alt me-2"></i>
-                {% if location_context.address %}
-                    {{ location_context.address }}
-                {% else %}
-                    ZIP Code {{ zip_code }}
-                {% endif %}
-            </div>
-            <h1><i class="fas fa-shield-alt me-3"></i>Your Disaster Risk Summary</h1>
-            <p class="lead">A clean starting point for understanding what deserves attention first and where to go next in the app.</p>
-        </div>
-    </div>
-</section>
+    {% endif %}
 
-<section class="py-5">
-    <div class="container">
-        <div class="location-check-panel">
-            <div class="row g-4 align-items-start">
-                <div class="col-lg-4">
-                    <span class="section-eyebrow">Location Check</span>
-                    <h2 class="h3 fw-bold mb-2">What StayReady checked</h2>
-                    <p class="text-muted mb-0">This page separates address-level checks from jurisdiction context and ZIP fallback estimates.</p>
-                </div>
-                <div class="col-lg-8">
-                    <div class="location-check-grid">
-                        <div class="location-check-item">
-                            <span class="location-check-label">Resolved Location</span>
-                            <div class="location-check-value">{{ location_context.display_name }}</div>
-                        </div>
-                        <div class="location-check-item">
-                            <span class="location-check-label">City / County</span>
-                            <div class="location-check-value">{{ location_context.city or "City not verified" }}{% if location_context.county %}, {{ location_context.county }}{% endif %}</div>
-                        </div>
-                        <div class="location-check-item">
-                            <span class="location-check-label">Precision</span>
-                            <div class="location-check-value">{{ location_context.precision_label }}</div>
-                        </div>
-                        <div class="location-check-item">
-                            <span class="location-check-label">GIS Status</span>
-                            <div class="location-check-value">{{ location_context.gis_status }}</div>
-                        </div>
+    <section class="sr-results-hero">
+        <div class="container">
+            <div class="sr-results-hero-grid">
+                <div>
+                    <span class="sr-badge sr-badge-muted">Resident guidance plan</span>
+                    <h1>Your local preparedness and recovery plan</h1>
+                    <p>{{ resident_plan.address_summary.summary }}</p>
+                    <div class="sr-results-actions">
+                        <a class="btn sr-button sr-button-primary" href="#top-concerns">Review top concerns</a>
+                        <a class="btn sr-button sr-button-secondary" href="{{ url_for('map') }}">Open supporting map</a>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="pb-3">
-    <div class="container">
-        <div class="evidence-path" aria-label="StayReady evidence path">
-            <div class="evidence-step">
-                <span class="evidence-step-number">1</span>
-                <strong>Location checked</strong>
-                <p class="text-muted mb-0 small">{{ location_context.precision_label }}</p>
-            </div>
-            <div class="evidence-step">
-                <span class="evidence-step-number">2</span>
-                <strong>Official layers/context</strong>
-                <p class="text-muted mb-0 small">{{ location_context.gis_status }}</p>
-            </div>
-            <div class="evidence-step">
-                <span class="evidence-step-number">3</span>
-                <strong>Top hazards</strong>
-                <p class="text-muted mb-0 small">Only the clearest 2-3 hazards are shown first.</p>
-            </div>
-            <div class="evidence-step">
-                <span class="evidence-step-number">4</span>
-                <strong>Recovery plan</strong>
-                <p class="text-muted mb-0 small">Documents, housing, medical, pets, family, work.</p>
-            </div>
-            <div class="evidence-step">
-                <span class="evidence-step-number">5</span>
-                <strong>Sources</strong>
-                <p class="text-muted mb-0 small">Reviewed sources and plan status are linked.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="start-here-section">
-    <div class="container">
-        <div class="start-here-card">
-            <div class="start-here-eyebrow">Start Here</div>
-            <h2 class="start-here-title">Start Here — Based on Your Risk</h2>
-            <p class="start-here-subtitle mb-2">
-                Your top risk: <strong>{{ recommended_actions.hazard_name }}</strong> ({{ recommended_actions.risk_level }})
-            </p>
-            <p class="start-here-meta">Takes ~10–15 minutes</p>
-            <p class="start-here-intro">
-                Focus on these first. They are the highest-impact actions for your current risk profile, and all begin unchecked unless you have real saved progress.
-            </p>
-
-            <div class="next-step-banner">
-                Next Step: <span id="next-step-text">{{ start_here_steps[0].label if start_here_steps else "Review your preparedness checklist." }}</span>
-            </div>
-
-            <div class="start-here-list" data-start-here-list>
-                {% for step in start_here_steps %}
-                <label class="task-item start-here-item" data-item-id="{{ step.id }}">
-                    <input type="checkbox" class="task-checkbox preparedness-checkbox" data-item-id="{{ step.id }}">
-                    <span class="task-checkmark preparedness-checkmark" aria-hidden="true">
-                        <i class="fas fa-check"></i>
-                    </span>
-                    <span class="task-label start-here-label">{{ step.label }}</span>
-                </label>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-</section>
-
-<div class="container">
-    {% include "_preparedness_checklist.html" %}
-</div>
-
-{% if primary_hazard and (primary_hazard.exposure_level | lower) == 'high' %}
-<section class="py-3">
-    <div class="container">
-        <div class="priority-alert">
-            <h4><i class="fas fa-exclamation-triangle me-2"></i>High Priority Alert</h4>
-            <p class="mb-3">{{ primary_hazard.name }} is currently labeled high exposure. Review the evidence, limitations, and next steps before treating this as a complete risk determination.</p>
-            <a href="{{ url_for('map') }}" class="btn btn-lg">
-                <i class="fas fa-arrow-right me-2"></i>Explore Unified Hazard Map
-            </a>
-        </div>
-    </div>
-</section>
-{% endif %}
-
-<section class="py-5">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold mb-3">Top hazards and evidence</h2>
-            <p class="lead">These cards show the best available evidence first, then clearly label fallbacks and limitations.</p>
-            <a href="{{ url_for('sources') }}" class="data-info-link">
-                <i class="fas fa-circle-info"></i> Source Registry
-            </a>
-        </div>
-
-        <div class="row g-4">
-            {% for hazard in structured_hazards %}
-            <div class="col-lg-4">
-                <article class="structured-risk-card">
-                    <div class="evidence-badges">
-                        <span class="evidence-badge address">{{ hazard.scope_label }}</span>
-                        <span class="evidence-badge status">{{ hazard.data_status_label }}</span>
-                        <span class="evidence-badge source">{{ hazard.structured_result.confidence | replace('_', ' ') | title }}</span>
+                <aside class="sr-card sr-address-card" aria-label="Address summary">
+                    <div class="sr-card-header">
+                        <span class="sr-card-kicker">Address Summary</span>
+                        <h2 class="sr-card-title">{{ resident_plan.address_summary.display_name }}</h2>
                     </div>
-                    <h3 class="h4 mb-2">{{ hazard.name }}</h3>
-                    <p class="text-muted mb-3">{{ hazard.exposure_level }} exposure · {{ hazard.location_precision_label }}</p>
-
-                    <div class="mb-3">
-                        <div class="evidence-section-title">Why am I seeing this?</div>
-                        <p class="evidence-copy mb-0">{{ hazard.why_shown }}</p>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="evidence-section-title">Limitations</div>
-                        <ul class="limitation-list">
-                            {% for limitation in hazard.limitations[:2] %}
-                            <li>{{ limitation }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="evidence-section-title">Sources</div>
-                        <ul class="source-list">
-                            {% for source in hazard.sources[:2] %}
-                            <li><a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.name }}</a></li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-
-                    <details class="hub-detail-card">
-                        <summary class="fw-bold text-primary">Open connected view for this hazard</summary>
-                        <div class="hub-grid mt-3">
-                            <div class="hub-panel">
-                                <h4>Map preview</h4>
-                                <p class="text-muted mb-2">
-                                    {{ hazard.scope_label }} · {{ hazard.data_status_label }} · {{ hazard.location_precision_label }}
-                                </p>
-                                {% if hazard.matched_layers %}
-                                <ul>
-                                    {% for layer in hazard.matched_layers[:2] %}
-                                    <li>{{ layer.name }}{% if layer.zone %} zone {{ layer.zone }}{% endif %}</li>
-                                    {% endfor %}
-                                </ul>
-                                {% else %}
-                                <p class="text-muted mb-0">No address-level matched map layer is available for this hazard result.</p>
-                                {% endif %}
-                            </div>
-                            <div class="hub-panel">
-                                <h4>Local source status</h4>
-                                {% if hazard.specialized_guidance.guidance_source_status == "local_reviewed" %}
-                                <span class="evidence-badge source mb-2">Local source reviewed</span>
-                                {% elif hazard.specialized_guidance.guidance_source_status == "needs_source_review" %}
-                                <span class="evidence-badge status mb-2">Needs source review</span>
-                                {% else %}
-                                <span class="evidence-badge status mb-2">County fallback guidance</span>
-                                {% endif %}
-                                {% if hazard.local_plan_match and hazard.local_plan_match.review_status in ["reviewed", "draft_reviewed"] %}
-                                <p class="text-muted mb-2 mt-2">{{ hazard.local_plan_match.plan_name }}</p>
-                                {% else %}
-                                <p class="text-muted mb-2 mt-2">No reviewed city-specific plan claim is attached for this hazard. County and official fallback sources are shown.</p>
-                                {% endif %}
-                                {% if hazard.specialized_guidance.location_specific_context %}
-                                <p class="fw-bold mb-1 mt-3">Address / area cues</p>
-                                <ul>
-                                    {% for item in hazard.specialized_guidance.location_specific_context[:2] %}
-                                    <li>{{ item }}</li>
-                                    {% endfor %}
-                                </ul>
-                                {% endif %}
-                                {% if hazard.specialized_guidance.city_context %}
-                                <p class="fw-bold mb-1 mt-3">City plan context</p>
-                                <ul>
-                                    {% for item in hazard.specialized_guidance.city_context[:2] %}
-                                    <li>{{ item }}</li>
-                                    {% endfor %}
-                                </ul>
-                                {% endif %}
-                            </div>
-                            <div class="hub-panel">
-                                <h4>What to do before</h4>
-                                {% set before_items = hazard.specialized_guidance.resident_guidance.before if hazard.specialized_guidance.resident_guidance else [] %}
-                                {% if before_items %}
-                                <ul>
-                                    {% for item in before_items[:2] %}
-                                    <li>
-                                        {{ item.recommended_action or item.plain_language }}
-                                        {% if item.source_detail %}<span class="d-block small text-muted mt-1">{{ item.source_detail }}</span>{% endif %}
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                                {% else %}
-                                <ul>
-                                    {% for item in hazard.specialized_guidance.household_factors[:2] %}
-                                    <li>{{ item }}</li>
-                                    {% endfor %}
-                                    {% for item in hazard.specialized_guidance.access_functional_needs[:1] %}
-                                    <li>{{ item }}</li>
-                                    {% endfor %}
-                                </ul>
-                                {% endif %}
-                            </div>
-                            <div class="hub-panel">
-                                <h4>During and after</h4>
-                                {% set during_items = hazard.specialized_guidance.resident_guidance.during if hazard.specialized_guidance.resident_guidance else [] %}
-                                {% set after_items = hazard.specialized_guidance.resident_guidance.after if hazard.specialized_guidance.resident_guidance else [] %}
-                                {% set limitation_items = hazard.specialized_guidance.resident_guidance.limitations if hazard.specialized_guidance.resident_guidance else [] %}
-                                {% if during_items or after_items or limitation_items %}
-                                <ul>
-                                    {% for item in (during_items + after_items + limitation_items)[:3] %}
-                                    <li>
-                                        {{ item.recommended_action or item.plain_language }}
-                                        {% if item.source_detail %}<span class="d-block small text-muted mt-1">{{ item.source_detail }}</span>{% endif %}
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                                {% else %}
-                                <ul>
-                                    {% for item in hazard.specialized_guidance.access_functional_needs[:1] %}
-                                    <li>{{ item }}</li>
-                                    {% endfor %}
-                                    {% for item in hazard.limitations[:1] %}
-                                    <li>{{ item }}</li>
-                                    {% endfor %}
-                                </ul>
-                                {% endif %}
-                            </div>
-                            <div class="hub-panel">
-                                <h4>Recovery needs</h4>
-                                {% set recovery_items = hazard.specialized_guidance.resident_guidance.recovery if hazard.specialized_guidance.resident_guidance else [] %}
-                                {% if recovery_items %}
-                                <ul>
-                                    {% for item in recovery_items[:3] %}
-                                    <li>
-                                        {{ item.recovery_question or item.recommended_action or item.plain_language }}
-                                        {% if item.source_detail %}<span class="d-block small text-muted mt-1">{{ item.source_detail }}</span>{% endif %}
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                                {% else %}
-                                <ul>
-                                    {% for item in hazard.specialized_guidance.recovery_needs[:3] %}
-                                    <li>{{ item }}</li>
-                                    {% endfor %}
-                                </ul>
-                                {% endif %}
-                            </div>
+                    <div class="sr-check-grid">
+                        <div>
+                            <span>City / County</span>
+                            <strong>{{ resident_plan.address_summary.city }}{% if resident_plan.address_summary.county %}, {{ resident_plan.address_summary.county }}{% endif %}</strong>
                         </div>
-                        <div class="d-flex flex-wrap gap-2 mt-3">
-                            <a href="{{ url_for('map') }}" class="btn btn-outline-dark btn-sm">
-                                <i class="fas fa-layer-group me-2"></i>Open supporting map
-                            </a>
-                            <a href="{{ url_for('hazard_detail', name=hazard.slug) }}" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-arrow-up-right-from-square me-2"></i>Full hazard detail
-                            </a>
-                            <a href="{{ url_for('sources') }}" class="btn btn-outline-secondary btn-sm">
-                                <i class="fas fa-database me-2"></i>Source registry
-                            </a>
+                        <div>
+                            <span>ZIP</span>
+                            <strong>{{ resident_plan.address_summary.zip_code or "Not verified" }}</strong>
+                        </div>
+                        <div>
+                            <span>Precision</span>
+                            <strong>{{ resident_plan.address_summary.precision_label }}</strong>
+                        </div>
+                        <div>
+                            <span>GIS status</span>
+                            <strong>{{ resident_plan.address_summary.gis_status }}</strong>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </section>
+
+    <section id="top-concerns" class="sr-section">
+        <div class="container">
+            <div class="sr-section-heading sr-section-heading-left">
+                <h2>Top local concerns</h2>
+                <p>These are the hazards StayReady can explain most clearly for this location right now. Each card separates checked evidence from local-plan or fallback guidance.</p>
+            </div>
+
+            <div class="sr-hazard-plan-grid">
+                {% for plan in resident_plan.hazards %}
+                <article class="sr-card sr-hazard-plan-card">
+                    <div class="sr-hazard-plan-top">
+                        <div>
+                            <span class="sr-card-kicker">Priority {{ plan.priority }}</span>
+                            <h3>{{ plan.hazard }}</h3>
+                        </div>
+                        <span class="sr-badge sr-badge-muted">{{ plan.exposure_level }} exposure</span>
+                    </div>
+
+                    <div class="sr-badge-row">
+                        {% for badge in plan.evidence_badges %}
+                        <span class="sr-badge {% if 'Address' in badge %}sr-badge-success{% elif 'fallback' in badge|lower or 'not' in badge|lower %}sr-badge-warning{% else %}sr-badge-muted{% endif %}">{{ badge }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <section class="sr-card-body">
+                        <h4>Why it matters here</h4>
+                        <p>{{ plan.why_it_matters }}</p>
+                    </section>
+
+                    <div class="sr-plan-columns">
+                        <section>
+                            <h4>Before</h4>
+                            <ul class="sr-action-list">
+                                {% for item in plan.before_actions[:4] %}
+                                <li>{{ item }}</li>
+                                {% endfor %}
+                            </ul>
+                        </section>
+                        <section>
+                            <h4>During</h4>
+                            <ul class="sr-action-list">
+                                {% for item in plan.during_actions[:3] %}
+                                <li>{{ item }}</li>
+                                {% else %}
+                                <li>Follow official alerts and emergency instructions for this hazard.</li>
+                                {% endfor %}
+                            </ul>
+                        </section>
+                        <section>
+                            <h4>After</h4>
+                            <ul class="sr-action-list">
+                                {% for item in plan.after_actions[:3] %}
+                                <li>{{ item }}</li>
+                                {% else %}
+                                <li>Document damage, avoid unsafe conditions, and contact official help or insurance when safe.</li>
+                                {% endfor %}
+                            </ul>
+                        </section>
+                    </div>
+
+                    <details class="sr-details">
+                        <summary>Recovery, checks, and sources</summary>
+                        <div class="sr-details-grid">
+                            <section>
+                                <h4>Recovery prep</h4>
+                                <ul class="sr-action-list">
+                                    {% for item in plan.recovery_steps[:5] %}
+                                    <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </section>
+                            <section>
+                                <h4>What was checked</h4>
+                                <ul class="sr-action-list">
+                                    {% for item in plan['checked'] %}
+                                    <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </section>
+                            <section>
+                                <h4>Not checked yet</h4>
+                                <ul class="sr-action-list">
+                                    {% for item in plan.not_checked %}
+                                    <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </section>
+                            <section>
+                                <h4>Sources</h4>
+                                <div class="sr-source-list">
+                                    {% for source in plan.sources[:4] %}
+                                    <div class="sr-source-row">
+                                        {% if source.url %}
+                                        <a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.name }}</a>
+                                        {% else %}
+                                        <span>{{ source.name }}</span>
+                                        {% endif %}
+                                        <small>{{ source.basis }} · {{ source.review_status }}</small>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </section>
                         </div>
                     </details>
                 </article>
-            </div>
-            {% endfor %}
-        </div>
-
-        {% if additional_local_hazards %}
-        <div class="mt-5">
-            <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
-                <div>
-                    <span class="section-eyebrow">Other Local Hazards</span>
-                    <h3 class="h4 fw-bold mb-1">Also worth keeping on your radar</h3>
-                    <p class="text-muted mb-0">These are listed by the reviewed local plan for this jurisdiction, but they are not yet address-level GIS checks in StayReady.</p>
-                </div>
-                <a href="{{ url_for('sources') }}" class="data-info-link">
-                    <i class="fas fa-database"></i> Review local plan sources
-                </a>
-            </div>
-            <div class="row g-3">
-                {% for hazard in additional_local_hazards %}
-                <div class="col-md-6 col-xl-4">
-                    <article class="hub-panel h-100">
-                        <div class="evidence-badges mb-2">
-                            <span class="evidence-badge source">{{ hazard.scope_label }}</span>
-                            <span class="evidence-badge status">{{ hazard.data_status_label }}</span>
-                        </div>
-                        <h4 class="h5 fw-bold mb-2">{{ hazard.label }}</h4>
-                        <p class="text-muted mb-2">{{ hazard.why_shown }}</p>
-                        <p class="small mb-2"><strong>Why it matters:</strong> {{ hazard.next_step }}</p>
-                        <p class="small text-muted mb-3">{{ hazard.limitations }}</p>
-                        {% if hazard.plan_url %}
-                        <a href="{{ hazard.plan_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-secondary btn-sm">
-                            <i class="fas fa-arrow-up-right-from-square me-2"></i>{{ hazard.plan_name }}
-                        </a>
-                        {% endif %}
-                    </article>
-                </div>
                 {% endfor %}
             </div>
         </div>
-        {% endif %}
+    </section>
 
-        {% if primary_hazard %}
-        <div class="recovery-readiness-card mt-4">
-            <div class="row g-4 align-items-start">
-                <div class="col-lg-4">
-                    <span class="section-eyebrow">Recovery Readiness</span>
-                    <h3 class="h4 fw-bold mb-2">Plan for the long part too</h3>
-                    <p class="text-muted mb-0">Recovery can last longer than the emergency itself. Start these questions before you need them.</p>
+    {% if resident_plan.household_context.has_context %}
+    <section class="sr-section sr-section-muted">
+        <div class="container">
+            <div class="sr-section-heading sr-section-heading-left">
+                <h2>Your household priorities</h2>
+                <p>These notes are based only on the information you entered in this session. They are not stored as a user account.</p>
+            </div>
+            <div class="sr-priority-grid">
+                {% for note in resident_plan.household_priorities %}
+                <article class="sr-card sr-priority-card">
+                    <h3>{{ note.label }}</h3>
+                    <p>{{ note.text }}</p>
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="sr-section">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-5">
+                    <div class="sr-card sr-next-card h-100">
+                        <span class="sr-card-kicker">What To Do Now</span>
+                        <h2>Start with the highest-value actions.</h2>
+                        <ul class="sr-check-list">
+                            {% for item in resident_plan.what_to_do_now %}
+                            <li>
+                                <span>{{ loop.index }}</span>
+                                <div>
+                                    <strong>{{ item.hazard }}</strong>
+                                    <p>{{ item.action }}</p>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                 </div>
-                <div class="col-lg-8">
-                    <ul class="recovery-list">
-                        {% for item in primary_hazard.recovery_questions %}
-                        <li>{{ item.question }}</li>
-                        {% endfor %}
-                    </ul>
+                <div class="col-lg-7">
+                    <div class="sr-card sr-recovery-card h-100">
+                        <span class="sr-card-kicker">Recovery Preparation</span>
+                        <h2>Prepare for the long part before it starts.</h2>
+                        <div class="sr-recovery-grid">
+                            {% for group in resident_plan.recovery_plan %}
+                            <section>
+                                <h3>{{ group.category }}</h3>
+                                <ul class="sr-action-list">
+                                    {% for item in group['items'] %}
+                                    <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </section>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        {% endif %}
-    </div>
-</section>
-<section class="pb-4">
-    <div class="container">
-        <div class="row g-4">
-            <div class="col-lg-6">
-                <div class="action-card h-100">
-                    <i class="fas fa-layer-group action-icon text-primary"></i>
-                    <h5 class="fw-bold mb-3">Supporting map view</h5>
-                    <p class="mb-4">Use this only when you want the full layer view. The main evidence, limits, recovery, and sources are now connected above.</p>
-                    <a href="{{ url_for('map') }}" class="btn btn-outline-dark btn-lg">
-                        <i class="fas fa-layer-group me-2"></i>Open Unified Hazard Map
-                    </a>
+    </section>
+
+    <section class="sr-section sr-section-muted">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="sr-card sr-evidence-card h-100">
+                        <span class="sr-card-kicker">What StayReady Checked</span>
+                        <h2>Evidence used for this result</h2>
+                        <ul class="sr-action-list">
+                            {% for item in resident_plan.checks['checked'] %}
+                            <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="sr-card sr-evidence-card h-100">
+                        <span class="sr-card-kicker">What Is Not Checked Yet</span>
+                        <h2>Important limits</h2>
+                        <ul class="sr-action-list">
+                            {% for item in resident_plan.checks.not_checked %}
+                            <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                 </div>
             </div>
-            <div class="col-lg-6">
-                <div class="action-card h-100">
-                    <i class="fas fa-triangle-exclamation action-icon text-warning"></i>
-                    <h5 class="fw-bold mb-3">Source-backed hazard detail</h5>
-                    <p class="mb-4">
-                        {% if oakland_hazard_ready %}
-                        Open the supporting dashboard when you want to compare the older ranked hazard list and personalize extra guidance.
-                        {% else %}
-                        The supporting dashboard includes planning-data context, but the connected summary above is the main flow for this location.
+
+            {% if resident_plan.additional_local_hazards %}
+            <div class="sr-card sr-other-hazards mt-4">
+                <div class="sr-card-header">
+                    <span class="sr-card-kicker">Other Local Hazards</span>
+                    <h2 class="sr-card-title">Also worth keeping on your radar</h2>
+                    <p>These are listed by the reviewed or draft-reviewed local plan for this jurisdiction, but StayReady has not turned them into address-level checks yet.</p>
+                </div>
+                <div class="sr-other-hazard-grid">
+                    {% for hazard in resident_plan.additional_local_hazards %}
+                    <article>
+                        <span class="sr-badge sr-badge-warning">{{ hazard.data_status_label }}</span>
+                        <h3>{{ hazard.label }}</h3>
+                        <p>{{ hazard.why_shown }}</p>
+                        {% if hazard.plan_url %}
+                        <a href="{{ hazard.plan_url }}" target="_blank" rel="noopener noreferrer">Review source</a>
                         {% endif %}
-                    </p>
-                    <a href="{{ url_for('hazards_dashboard') }}" class="btn btn-outline-primary btn-lg {% if not oakland_hazard_ready %}disabled{% endif %}" {% if not oakland_hazard_ready %}aria-disabled="true"{% endif %}>
-                        <i class="fas fa-arrow-up-right-from-square me-2"></i>Open Hazard Dashboard
-                    </a>
+                    </article>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="sr-section">
+        <div class="container">
+            <div class="sr-card sr-sources-limits-card">
+                <div>
+                    <span class="sr-card-kicker">Sources and Limits</span>
+                    <h2>Source-backed, but not a safety guarantee.</h2>
+                    <p>StayReady translates public information into resident guidance. Official agencies remain the authority during emergencies.</p>
+                </div>
+                <div class="sr-sources-limits-grid">
+                    <section>
+                        <h3>Sources used</h3>
+                        <div class="sr-source-list">
+                            {% for source in resident_plan.sources %}
+                            <div class="sr-source-row">
+                                {% if source.url %}
+                                <a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.name }}</a>
+                                {% else %}
+                                <span>{{ source.name }}</span>
+                                {% endif %}
+                                <small>{{ source.basis }} · {{ source.review_status }}</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </section>
+                    <section>
+                        <h3>Limits</h3>
+                        <ul class="sr-action-list">
+                            {% for limit in resident_plan.limits %}
+                            <li>{{ limit }}</li>
+                            {% endfor %}
+                        </ul>
+                    </section>
+                </div>
+                <div class="sr-results-actions mt-4">
+                    <a class="btn sr-button sr-button-secondary" href="{{ url_for('sources') }}">View source registry</a>
+                    <a class="btn sr-button sr-button-secondary" href="{{ url_for('resources') }}">Preparedness resources</a>
+                    <a class="btn sr-button sr-button-primary" href="{{ url_for('home') }}">Check another address</a>
                 </div>
             </div>
         </div>
-    </div>
-</section>
-<!-- Action Buttons -->
-<section class="action-buttons">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="fw-bold mb-3">Take Action Now</h2>
-            <p class="lead">Supporting views are available, but the connected summary above is the main advisor demo path.</p>
-        </div>
-        
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="action-card">
-                    <i class="fas fa-book-open action-icon text-primary"></i>
-                    <h5 class="fw-bold mb-3">Emergency Resources</h5>
-                    <p class="mb-4">Access comprehensive emergency preparedness guides and local resources.</p>
-                    <a href="{{ url_for('resources') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-external-link-alt me-2"></i>View Resources
-                    </a>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="action-card">
-                    <i class="fas fa-map-marked-alt action-icon text-success"></i>
-                    <h5 class="fw-bold mb-3">Live Earthquake Map</h5>
-                    <p class="mb-4">Monitor real-time earthquake activity in your area with our interactive map.</p>
-                    <a href="{{ url_for('live_earthquake_map') }}" class="btn btn-outline-success">
-                        <i class="fas fa-map me-2"></i>View Live Map
-                    </a>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="action-card">
-                    <i class="fas fa-user-graduate action-icon text-warning"></i>
-                    <h5 class="fw-bold mb-3">About This Project</h5>
-                    <p class="mb-4">Learn about the technology and community impact behind this disaster preparedness tool.</p>
-                    <a href="{{ url_for('about') }}" class="btn btn-outline-warning">
-                        <i class="fas fa-info-circle me-2"></i>Learn More
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Stats Overview -->
-<section class="stats-overview">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="fw-bold mb-3">Your Location At A Glance</h2>
-            <p class="lead">Evidence status for {{ location_context.display_name }}</p>
-        </div>
-        
-        <div class="row">
-            <div class="col-md-3 col-sm-6">
-                <div class="stat-item">
-                    <span class="stat-number">{{ zip_code }}</span>
-                    <span class="stat-label">ZIP Fallback Area</span>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="stat-item">
-                    <span class="stat-number">{{ structured_hazards | length }}</span>
-                    <span class="stat-label">Top Hazards Shown</span>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="stat-item">
-                    <span class="stat-number">{{ primary_hazard.scope_label if primary_hazard else "Fallback" }}</span>
-                    <span class="stat-label">Best Precision Shown</span>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="stat-item">
-                    <span class="stat-number">{{ primary_hazard.data_status_label if primary_hazard else "Needs review" }}</span>
-                    <span class="stat-label">Primary Data Status</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Call to Action -->
-<section class="bg-primary text-white text-center py-5">
-    <div class="container">
-        <h2 class="fw-bold mb-3">Ready to Create Your Emergency Plan?</h2>
-        <p class="lead mb-4">Use source-labeled hazard pages to prepare for the risks and recovery needs shown for your location.</p>
-        <div class="d-flex justify-content-center gap-3 flex-wrap">
-            {% for hazard in structured_hazards %}
-            <a href="{{ url_for('hazard_detail', name=hazard.slug) }}" class="btn btn-light btn-lg px-4 py-3 fw-bold">
-                <i class="fas fa-{% if hazard.slug == 'wildfire' %}fire{% elif hazard.slug == 'flood' %}water{% else %}mountain{% endif %} me-2"></i>{{ hazard.name }} Plan
-            </a>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-
-<section class="py-4">
-    <div class="container">
-        {% include "_data_sources.html" %}
-    </div>
-</section>
-
-<script>
-// Animate progress rings on scroll
-document.addEventListener('DOMContentLoaded', function() {
-    const checklistContainer = document.querySelector('.preparedness-list');
-    if (checklistContainer) {
-        const storageKey = checklistContainer.dataset.checklistStorageKey || 'preparednessChecklist';
-        const checkboxes = Array.from(document.querySelectorAll('.preparedness-checkbox'));
-        const completedCount = document.getElementById('preparedness-complete-count');
-        const progressBar = document.getElementById('preparedness-progress-bar');
-        const nextStepText = document.getElementById('next-step-text');
-        const orderedItems = [];
-        const seenItemIds = new Set();
-
-        checkboxes.forEach((checkbox) => {
-            const itemId = checkbox.dataset.itemId;
-            if (!itemId || seenItemIds.has(itemId)) {
-                return;
-            }
-
-            const label = checkbox.closest('[data-item-id]')?.querySelector('.task-label')?.textContent.trim() || '';
-            orderedItems.push({ id: itemId, label });
-            seenItemIds.add(itemId);
-        });
-
-        const loadChecklistState = () => {
-            try {
-                return JSON.parse(localStorage.getItem(storageKey)) || {};
-            } catch (error) {
-                return {};
-            }
-        };
-
-        const saveChecklistState = (state) => {
-            localStorage.setItem(storageKey, JSON.stringify(state));
-        };
-
-        const updateChecklistUI = () => {
-            const state = loadChecklistState();
-            let completeTotal = 0;
-            let firstUncheckedLabel = null;
-
-            checkboxes.forEach((checkbox) => {
-                const itemId = checkbox.dataset.itemId;
-                const isChecked = Boolean(state[itemId]);
-                const item = checkbox.closest('.task-item');
-
-                checkbox.checked = isChecked;
-                if (item) {
-                    item.classList.toggle('is-complete', isChecked);
-                    item.classList.toggle('is-incomplete', !isChecked);
-                }
-            });
-
-            orderedItems.forEach((item) => {
-                const isChecked = Boolean(state[item.id]);
-                if (isChecked) {
-                    completeTotal += 1;
-                    return;
-                }
-
-                if (!firstUncheckedLabel) {
-                    firstUncheckedLabel = item.label;
-                }
-            });
-
-            const total = orderedItems.length;
-            const percent = total ? (completeTotal / total) * 100 : 0;
-            if (completedCount) {
-                completedCount.textContent = completeTotal;
-            }
-            if (progressBar) {
-                progressBar.style.width = `${percent}%`;
-            }
-            if (nextStepText) {
-                nextStepText.textContent = firstUncheckedLabel || 'You are caught up. Review your plan and stay alert.';
-            }
-        };
-
-        updateChecklistUI();
-
-        checkboxes.forEach((checkbox) => {
-            checkbox.addEventListener('change', () => {
-                const state = loadChecklistState();
-                state[checkbox.dataset.itemId] = checkbox.checked;
-                saveChecklistState(state);
-                updateChecklistUI();
-            });
-        });
-    }
-
-    const observerOptions = {
-        threshold: 0.5,
-        rootMargin: '0px 0px -100px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const progressRing = entry.target;
-                const progressCircle = progressRing.querySelector('.progress');
-                if (progressCircle && !progressCircle.style.strokeDashoffset) {
-                    // Animation is already set via CSS, just trigger it
-                    progressCircle.style.transition = 'stroke-dashoffset 2s ease-in-out';
-                }
-                observer.unobserve(entry.target);
-            }
-        });
-    }, observerOptions);
-
-    document.querySelectorAll('.progress-ring').forEach(ring => {
-        observer.observe(ring);
-    });
-
-    // Add smooth scrolling to anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    });
-});
-</script>
+    </section>
+</div>
 {% endblock %}

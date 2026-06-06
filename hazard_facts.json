@@ -1,0 +1,185 @@
+[
+  {
+    "id": "county_earthquake_foundation",
+    "jurisdiction": "Alameda County",
+    "county": "Alameda County",
+    "hazard": "earthquake",
+    "location_cue": "Countywide Bay Area earthquake context",
+    "resident_meaning": "Earthquake preparedness matters across Alameda County because shaking can damage buildings, disrupt utilities, close roads, and separate households from normal support.",
+    "before_actions": [
+      "Secure tall furniture, televisions, shelves, and heavy objects that could fall.",
+      "Practice Drop, Cover, and Hold On with everyone in the household.",
+      "Keep water, food, flashlights, batteries, chargers, medications, and copies of documents ready for several days without normal services."
+    ],
+    "during_actions": [
+      "Drop, cover, and hold on during shaking.",
+      "Stay away from windows and heavy objects that could fall.",
+      "If outside, move away from buildings, trees, streetlights, and utility wires."
+    ],
+    "after_actions": [
+      "Check for injuries, gas smells, fire, structural damage, and unsafe utilities before re-entering or staying inside.",
+      "Expect aftershocks and avoid damaged buildings until they are inspected.",
+      "Use text messages or agreed contacts if phone networks are overloaded."
+    ],
+    "recovery_steps": [
+      "Prepare copies of IDs, insurance, lease or mortgage papers, medical records, and emergency contacts.",
+      "Identify where your household could stay if your building cannot be occupied.",
+      "Plan how to replace medications, medical devices, mobility equipment, and chargers if services are disrupted."
+    ],
+    "household_considerations": [
+      "Households with medical devices, mobility needs, children, older adults, pets, or no car should make backup support and transportation plans before shaking occurs."
+    ],
+    "source_name": "Alameda County Hazard Mitigation",
+    "source_url": "https://acgov.org/government/reports/mitigationplan.htm",
+    "evidence_type": "county_fallback",
+    "review_status": "reviewed",
+    "specificity_level": "county",
+    "last_updated": "2026-06-05"
+  },
+  {
+    "id": "county_flood_foundation",
+    "jurisdiction": "Alameda County",
+    "county": "Alameda County",
+    "hazard": "flood",
+    "location_cue": "Countywide flood preparedness context; address status should come from FEMA layer checks when available",
+    "resident_meaning": "Flooding can damage property, contaminate belongings, affect utilities, and force temporary relocation even when a single map layer does not show the full local drainage picture.",
+    "before_actions": [
+      "Keep documents, medications, electronics, and valuables above floor level.",
+      "Know a route to higher ground and avoid relying on one road.",
+      "Review insurance, landlord, or property contacts before heavy rain."
+    ],
+    "during_actions": [
+      "Do not walk or drive through floodwater.",
+      "Move to higher ground if water rises or official alerts tell you to leave.",
+      "Avoid downed wires, storm drains, and contaminated water."
+    ],
+    "after_actions": [
+      "Photograph damage before cleanup when it is safe.",
+      "Avoid wet electrical systems and contaminated materials.",
+      "Contact insurance, landlord, or local assistance resources early."
+    ],
+    "recovery_steps": [
+      "Prepare a damage-documentation plan with photos of belongings and property.",
+      "Know where your household could stay if mold, utilities, or structural damage make home unsafe.",
+      "Keep renter, homeowner, flood, or property insurance information easy to access."
+    ],
+    "household_considerations": [
+      "Renters should know landlord contacts and document belongings. Households without cars should plan higher-ground transportation before storms."
+    ],
+    "source_name": "Alameda County Hazard Mitigation",
+    "source_url": "https://acgov.org/government/reports/mitigationplan.htm",
+    "evidence_type": "county_fallback",
+    "review_status": "reviewed",
+    "specificity_level": "county",
+    "last_updated": "2026-06-05"
+  },
+  {
+    "id": "county_wildfire_foundation",
+    "jurisdiction": "Alameda County",
+    "county": "Alameda County",
+    "hazard": "wildfire",
+    "location_cue": "Countywide wildfire, smoke, evacuation, and alert-planning context",
+    "resident_meaning": "Wildfire can affect residents through nearby fire, smoke, power disruption, evacuation orders, road closures, and recovery costs even outside mapped high fire hazard zones.",
+    "before_actions": [
+      "Sign up for official alerts and keep phones charged.",
+      "Prepare a go-bag with medications, documents, chargers, water, masks, and pet supplies.",
+      "Identify more than one way to leave your area and one place your household could stay."
+    ],
+    "during_actions": [
+      "Follow official evacuation instructions and leave early if told to go.",
+      "Keep windows closed during smoke events and reduce outdoor exposure when air quality is poor.",
+      "Bring medications, documents, pets, chargers, and essential assistive devices."
+    ],
+    "after_actions": [
+      "Do not return until officials say it is safe.",
+      "Document damage, evacuation costs, smoke impacts, and replacement needs.",
+      "Check utilities, air quality, food safety, and access roads before resuming normal routines."
+    ],
+    "recovery_steps": [
+      "Prepare temporary housing options and pet-friendly alternatives.",
+      "Keep insurance, lease, medication, school, work, and financial records accessible.",
+      "Plan for smoke cleanup, utility outages, transportation disruption, and replacement of essential supplies."
+    ],
+    "household_considerations": [
+      "Pets, medical needs, mobility needs, children, older adults, and no-car households require earlier evacuation planning."
+    ],
+    "source_name": "Alameda County Hazard Mitigation",
+    "source_url": "https://acgov.org/government/reports/mitigationplan.htm",
+    "evidence_type": "county_fallback",
+    "review_status": "reviewed",
+    "specificity_level": "county",
+    "last_updated": "2026-06-05"
+  },
+  {
+    "id": "berkeley_wildfire_hills",
+    "jurisdiction": "Berkeley",
+    "county": "Alameda County",
+    "hazard": "wildfire",
+    "location_cue": "Berkeley hills / Fire Zones 2 and 3 / Panoramic Hill context from reviewed draft LHMP extraction",
+    "resident_meaning": "Berkeley's local plan context identifies the hills and Panoramic Hill as important WUI fire and evacuation-constrained areas. StayReady should still label any address cue as plan context unless official fire-zone polygons are checked.",
+    "before_actions": [
+      "Know two evacuation routes before Red Flag or extreme fire weather conditions.",
+      "Prepare a go-bag that includes medications, documents, masks, chargers, and pet supplies.",
+      "Make a communication plan for family, school, work, caregivers, and neighbors."
+    ],
+    "during_actions": [
+      "Leave early when officials issue evacuation instructions.",
+      "Avoid waiting for visible flames if smoke, road closures, or alerts indicate danger.",
+      "Use official alert and city fire information rather than unofficial social media."
+    ],
+    "after_actions": [
+      "Wait for official re-entry instructions.",
+      "Document evacuation expenses, smoke damage, utility disruption, and property damage.",
+      "Check air quality and utilities before returning to normal routines."
+    ],
+    "recovery_steps": [
+      "Prepare temporary housing and pet-friendly options outside the immediate hills area.",
+      "Keep insurance, renter/homeowner documents, photos of belongings, and medication lists ready."
+    ],
+    "household_considerations": [
+      "No-car households, people with mobility needs, pets, children, and older adults should plan earlier evacuation help."
+    ],
+    "source_name": "City of Berkeley 2024 Local Hazard Mitigation Plan",
+    "source_url": "https://berkeleyca.gov/Mitigation/",
+    "evidence_type": "local_plan_context",
+    "review_status": "draft_reviewed",
+    "specificity_level": "neighborhood",
+    "last_updated": "2026-06-05"
+  },
+  {
+    "id": "berkeley_earthquake_fault_liquefaction",
+    "jurisdiction": "Berkeley",
+    "county": "Alameda County",
+    "hazard": "earthquake",
+    "location_cue": "Hayward Fault and west Berkeley liquefaction context from reviewed draft LHMP extraction",
+    "resident_meaning": "Berkeley's local plan context identifies earthquake as likely and catastrophic, including Hayward Fault rupture and liquefaction concerns in western/shoreline and creek-related areas. StayReady's fault check is only one part of this.",
+    "before_actions": [
+      "Secure furniture and heavy items.",
+      "Know safe spots in each room and practice Drop, Cover, and Hold On.",
+      "Prepare for utilities, roads, elevators, and communications to be disrupted."
+    ],
+    "during_actions": [
+      "Drop, cover, and hold on.",
+      "Stay away from windows and falling hazards.",
+      "If outside, move away from buildings and utility lines."
+    ],
+    "after_actions": [
+      "Check injuries and utility hazards before re-entering or staying inside.",
+      "Expect aftershocks.",
+      "Use official information for shelter, inspection, and re-entry decisions."
+    ],
+    "recovery_steps": [
+      "Plan where to stay if your building is damaged.",
+      "Keep insurance, lease, medical, medication, and emergency contact records accessible."
+    ],
+    "household_considerations": [
+      "Households with medical devices, mobility needs, children, older adults, or pets should plan backup support."
+    ],
+    "source_name": "City of Berkeley 2024 Local Hazard Mitigation Plan",
+    "source_url": "https://berkeleyca.gov/Mitigation/",
+    "evidence_type": "local_plan_context",
+    "review_status": "draft_reviewed",
+    "specificity_level": "city",
+    "last_updated": "2026-06-05"
+  }
+]
