@@ -156,7 +156,7 @@
 
     .level-high { background: #f44336; }
     .level-moderate { background: #ff9800; }
-    .level-low { background: #4caf50; }
+    .level-unknown { background: #66727d; }
 
     .layer-controls {
         display: grid;
@@ -614,7 +614,7 @@
                 <div class="risk-overview">
                     {% for hazard in structured_hazards %}
                     {% set exposure_key = hazard.exposure_level | lower %}
-                    {% set level_class = 'level-high' if exposure_key == 'high' else 'level-moderate' if exposure_key == 'medium' else 'level-low' %}
+                    {% set level_class = 'level-high' if exposure_key == 'high' else 'level-moderate' if exposure_key == 'medium' else 'level-unknown' %}
                     <div class="risk-card {{ hazard.slug }}" data-hazard="{{ hazard.slug }}" onclick="toggleRiskFocus('{{ hazard.slug }}')">
                         <div class="risk-score">{{ hazard.scope_label }}</div>
                         <div class="risk-label">{{ hazard.name }}</div>
@@ -953,22 +953,23 @@ Use the links below for sourced actions and limitations.</div>
 
                 layers.flood = L.geoJSON(data, {
                     style: function(feature) {
-                        const risk = getFloodRiskLevel(feature);
+                        const category = getFloodZoneCategory(feature);
                         return {
-                            color: getFloodColor(risk),
-                            fillColor: getFloodColor(risk),
+                            color: getFloodColor(category),
+                            fillColor: getFloodColor(category),
                             weight: 1,
                             fillOpacity: 0.6
                         };
                     },
                     onEachFeature: (feature, layer) => {
-                        const risk = getFloodRiskLevel(feature);
+                        const category = getFloodZoneCategory(feature);
                         let popup = '<strong>Flood Control Zone</strong><br>';
                         for (const key in feature.properties) {
                             const val = feature.properties[key];
                             if (val) popup += `<strong>${key}:</strong> ${val}<br>`;
                         }
-                        popup += `<strong>Risk Level:</strong> ${risk}`;
+                        popup += `<strong>Mapped zone category:</strong> ${category}<br>`;
+                        popup += '<small>This polygon label is informational and is not a property safety determination.</small>';
                         layer.bindPopup(popup);
                     }
                 }).addTo(map);
@@ -1083,23 +1084,20 @@ Use the links below for sourced actions and limitations.</div>
         }
     }
 
-    function getFloodRiskLevel(feature) {
+    function getFloodZoneCategory(feature) {
         const zone = (feature.properties.FLD_ZONE || '').toUpperCase();
-        if (zone === 'VE') return 'Very High';
-        if (zone === 'AE' || zone === 'A') return 'High';
-        if (zone === 'AO' || zone === 'AH') return 'Moderate';
-        if (zone === 'X') return 'Low';
-        return 'Unknown';
+        if (zone === 'VE') return 'Coastal high-hazard area (VE)';
+        if (zone === 'AE' || zone === 'A') return `Special Flood Hazard Area (${zone})`;
+        if (zone === 'AO' || zone === 'AH') return `Special Flood Hazard Area (${zone})`;
+        if (zone === 'X') return 'Zone X mapped category';
+        return zone ? `Mapped category ${zone}` : 'Category unavailable';
     }
 
-    function getFloodColor(risk) {
-        switch (risk) {
-            case 'Very High': return '#d32f2f';
-            case 'High': return '#f57c00';
-            case 'Moderate': return '#fbc02d';
-            case 'Low': return '#388e3c';
-            default: return '#9e9e9e';
-        }
+    function getFloodColor(category) {
+        if (category.startsWith('Coastal high-hazard')) return '#d32f2f';
+        if (category.startsWith('Special Flood Hazard')) return '#f57c00';
+        if (category.startsWith('Zone X')) return '#5f6b76';
+        return '#9e9e9e';
     }
 
     function getEarthquakeColor(magnitude) {
@@ -1224,7 +1222,7 @@ Use the links below for sourced actions and limitations.</div>
             }
         });
         
-        // Only auto-focus if the highest risk is significant (>= 4)
+        // Use legacy ZIP values only to choose an initial map focus.
         if (highestScore >= 4) {
             setTimeout(() => {
                 toggleRiskFocus(highestRisk);

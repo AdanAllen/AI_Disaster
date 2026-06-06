@@ -57,10 +57,13 @@ class GISAvailabilityTests(unittest.TestCase):
         Path(self.temp_dir.name, "static").mkdir()
         self.base_patch = patch.object(hazard_engine, "BASE_DIR", self.temp_dir.name)
         self.base_patch.start()
+        self.cgs_patch = patch.object(hazard_engine, "check_cgs_layers", return_value=[])
+        self.cgs_patch.start()
         hazard_engine.load_geojson.cache_clear()
 
     def tearDown(self):
         hazard_engine.load_geojson.cache_clear()
+        self.cgs_patch.stop()
         self.base_patch.stop()
         self.temp_dir.cleanup()
 

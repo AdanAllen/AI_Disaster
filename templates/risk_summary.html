@@ -94,6 +94,34 @@
                     </section>
                     {% endif %}
 
+                    {% if plan.official_mapped_evidence %}
+                    <section class="sr-local-evidence" aria-label="Official CGS mapped evidence">
+                        <div class="sr-local-evidence-heading">
+                            <span class="sr-badge sr-badge-muted">Official mapped data</span>
+                            <h4>California Geological Survey checks</h4>
+                        </div>
+                        {% for evidence in plan.official_mapped_evidence %}
+                        <div class="sr-local-evidence-row">
+                            <strong>{{ evidence.result_label }}</strong>
+                            {% if evidence.source_summary %}
+                            <p>{{ evidence.source_summary }}</p>
+                            {% endif %}
+                            {% for limitation in evidence.limitations[:2] %}
+                            <small>{{ limitation }}</small>
+                            {% endfor %}
+                            <div class="sr-local-evidence-citation">
+                                {% if evidence.source_url %}
+                                <a href="{{ evidence.source_url }}" target="_blank" rel="noopener noreferrer">{{ evidence.source_agency }}</a>
+                                {% else %}
+                                <span>{{ evidence.source_agency }}</span>
+                                {% endif %}
+                                <span>{{ evidence.public_claim_status | replace('_', ' ') | title }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </section>
+                    {% endif %}
+
                     {% if plan.location_matches %}
                     <section class="sr-local-evidence" aria-label="Matched local plan evidence">
                         <div class="sr-local-evidence-heading">

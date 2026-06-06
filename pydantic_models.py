@@ -287,6 +287,7 @@ class HazardResult(BaseModel):
     match_type: MatchType = "none"
     matched_layers: List[Dict[str, Any]] = Field(default_factory=list)
     geospatial_evidence: Optional[Dict[str, Any]] = None
+    additional_geospatial_evidence: List[Dict[str, Any]] = Field(default_factory=list)
     claim_type: str = ""
     checked_at: str = ""
     effective_date: str = ""

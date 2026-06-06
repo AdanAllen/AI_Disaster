@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Optional
 
 from geospatial.adapters.local_geojson import LocalGeoJSONAdapter
+from geospatial.adapters.arcgis_feature_service import ArcGISFeatureServiceAdapter
 from geospatial.models import (
     DatasetProvenance,
     DatasetValidation,
@@ -22,6 +23,7 @@ class GeospatialEvidenceService:
         self.project_root = Path(project_root)
         self.registry = registry or get_default_registry()
         self.local_adapter = LocalGeoJSONAdapter(self.project_root)
+        self.arcgis_adapter = ArcGISFeatureServiceAdapter()
 
     def check_point(self, dataset_id: str, lat: float, lon: float) -> GeospatialEvidence:
         dataset = self.registry.get(dataset_id)
@@ -30,12 +32,11 @@ class GeospatialEvidenceService:
         point = GeoPoint(lat=lat, lon=lon)
         if dataset.coverage_bbox and not self._inside_coverage(point, dataset.coverage_bbox):
             return self._not_covered(dataset)
-        if dataset.source_type != "local_snapshot":
-            return self._not_checked(
-                dataset,
-                "This registered remote dataset has not been enabled for automated checks.",
-            )
-        return self.local_adapter.check_point(dataset, point)
+        if dataset.source_type == "local_snapshot":
+            return self.local_adapter.check_point(dataset, point)
+        if dataset.source_type == "remote_service":
+            return self.arcgis_adapter.check_point(dataset, point)
+        return self._not_checked(dataset, "This registered data source cannot perform point checks.")
 
     @staticmethod
     def _inside_coverage(point: GeoPoint, bounds) -> bool:

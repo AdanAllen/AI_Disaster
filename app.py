@@ -35,6 +35,10 @@ COVERAGE_BOUNDS = {
     "max_lon": -121.0,
 }
 RISK_DATA_WARNING = "Risk data is temporarily unavailable, but general preparedness guidance is still shown."
+ZIP_FALLBACK_LIMITATION = (
+    "Legacy ZIP values are used only to order fallback context. They do not determine "
+    "address exposure or safety."
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -303,8 +307,9 @@ def get_zip_risk_snapshot(zip_code):
             score = 0.0
         snapshot[slug] = {
             "score": score,
-            "level": get_risk_level(score),
+            "level": get_fallback_priority_band(score),
             "explanation": data.get(explanation_key, RISK_DATA_WARNING),
+            "limitation": ZIP_FALLBACK_LIMITATION,
         }
 
     return snapshot
@@ -333,12 +338,14 @@ def personalize_hazard(hazard, user, location_context=None):
         if local_risk["score"] >= 7:
             personalized["priority_score"] = min(personalized["priority_score"] + 2, 10)
             personalized["personalization_notes"].append(
-                f"Your current Oakland location has a high local {personalized['name'].lower()} score ({local_risk['score']:.1f}/10), so this hazard is ranked higher for you."
+                f"A legacy ZIP fallback signal placed {personalized['name'].lower()} higher in the list. "
+                "This ranking does not determine exposure or safety for the address."
             )
         elif local_risk["score"] >= 4:
             personalized["priority_score"] = min(personalized["priority_score"] + 1, 10)
             personalized["personalization_notes"].append(
-                f"Your current Oakland location has a moderate local {personalized['name'].lower()} score ({local_risk['score']:.1f}/10), which raises its priority."
+                f"A legacy ZIP fallback signal raised {personalized['name'].lower()} in the list. "
+                "This ranking does not determine exposure or safety for the address."
             )
 
     if not any(user.values()):
@@ -924,13 +931,22 @@ def address_suggestions():
     
     return jsonify(suggestions[:5])
 def get_risk_level(score):
-    """Convert numeric risk score to text level"""
+    """Legacy action-selection band; never use this as a public exposure claim."""
     if score >= 7:
         return "High"
     elif score >= 4:
         return "Moderate"
     else:
         return "Low"
+
+
+def get_fallback_priority_band(score):
+    """Describe a legacy numeric value without presenting it as hazard exposure."""
+    if score >= 7:
+        return "Higher fallback priority"
+    if score >= 4:
+        return "Middle fallback priority"
+    return "Lower fallback priority"
 
 
 GENERAL_CHECKLIST_IDS = [
@@ -1335,7 +1351,7 @@ def map():
     if request.method == "POST":
         return jsonify({
             "ok": True,
-            "message": "Interactive assistant is temporarily limited. You can still use the map and risk summary safely."
+            "message": "The interactive assistant is disabled. Use the cited risk summary and official-source map context."
         })
 
     try:
@@ -1369,7 +1385,7 @@ def map():
             'earthquake': {'score': 0.0, 'explanation': RISK_DATA_WARNING},
             'flood': {'score': 0.0, 'explanation': RISK_DATA_WARNING}
         }
-        map_notice = "Map data temporarily unavailable. You can still view your risk and preparedness steps below."
+        map_notice = "Map data temporarily unavailable. No map-based exposure determination was completed."
 
     return safe_render(
         "map.html",
@@ -1621,7 +1637,8 @@ def api_flood_zones():
             "message": (
                 f"Showing {feature_count} nearby flood polygons from the FEMA flood layer."
                 if feature_count else
-                "No FEMA flood polygons were returned for the selected map area. This does not prove there is no flood risk."
+                "No matching mapped flood polygons were returned for the selected map area in this dataset. "
+                "This does not mean the location is safe or unaffected by flooding."
             ),
         })
         return jsonify(filtered)
@@ -1659,7 +1676,7 @@ def api_zip_boundary(zip_code):
     return jsonify({
         "type": "FeatureCollection",
         "features": [],
-        "message": "Map data temporarily unavailable. You can still view your risk and preparedness steps below."
+        "message": "ZIP boundary data is temporarily unavailable. No ZIP-boundary determination was completed."
     })
 
 # County boundary API
@@ -1678,42 +1695,46 @@ def api_county_boundary():
 # Risk assessment API
 @app.route("/api/risk-assessment/<zip_code>")
 def api_risk_assessment(zip_code):
-    """API endpoint for comprehensive risk assessment"""
+    """Compatibility endpoint exposing non-authoritative ZIP fallback rankings."""
     data = zip_risk_data.get(zip_code)
     if not data:
         return jsonify({
             "zip_code": zip_code,
+            "result_type": "legacy_zip_fallback",
             "risks": {
-                "wildfire": {"score": 0, "level": "Unknown", "explanation": RISK_DATA_WARNING},
-                "earthquake": {"score": 0, "level": "Unknown", "explanation": RISK_DATA_WARNING},
-                "flood": {"score": 0, "level": "Unknown", "explanation": RISK_DATA_WARNING}
+                "wildfire": {"ranking_score": 0, "priority_band": "Unknown", "explanation": RISK_DATA_WARNING},
+                "earthquake": {"ranking_score": 0, "priority_band": "Unknown", "explanation": RISK_DATA_WARNING},
+                "flood": {"ranking_score": 0, "priority_band": "Unknown", "explanation": RISK_DATA_WARNING}
             },
-            "overall_risk": 0,
+            "highest_fallback_ranking_score": 0,
+            "limitation": ZIP_FALLBACK_LIMITATION,
             "message": RISK_DATA_WARNING
         })
     try:
         assessment = {
             "zip_code": zip_code,
+            "result_type": "legacy_zip_fallback",
+            "limitation": ZIP_FALLBACK_LIMITATION,
             "risks": {
                 "wildfire": {
-                    "score": float(data.get("Wildfire_Risk_Score", 0)),
-                    "level": get_risk_level(float(data.get("Wildfire_Risk_Score", 0))),
+                    "ranking_score": float(data.get("Wildfire_Risk_Score", 0)),
+                    "priority_band": get_fallback_priority_band(float(data.get("Wildfire_Risk_Score", 0))),
                     "explanation": data.get("Wildfire_Risk_Explanation", ""),
-                    "hazard_level": data.get("Wildfire_Hazard_Level", "Unknown")
+                    "mapped_category": data.get("Wildfire_Hazard_Level", "Unknown")
                 },
                 "earthquake": {
-                    "score": float(data.get("Earthquake_Risk_Score", 0)),
-                    "level": get_risk_level(float(data.get("Earthquake_Risk_Score", 0))),
+                    "ranking_score": float(data.get("Earthquake_Risk_Score", 0)),
+                    "priority_band": get_fallback_priority_band(float(data.get("Earthquake_Risk_Score", 0))),
                     "explanation": data.get("Earthquake_Risk_Explanation", "")
                 },
                 "flood": {
-                    "score": float(data.get("Flood_Risk_Score", 0)),
-                    "level": get_risk_level(float(data.get("Flood_Risk_Score", 0))),
+                    "ranking_score": float(data.get("Flood_Risk_Score", 0)),
+                    "priority_band": get_fallback_priority_band(float(data.get("Flood_Risk_Score", 0))),
                     "explanation": data.get("Flood_Risk_Explanation", ""),
-                    "control_district": data.get("Flood_Control_District", "Unknown")
+                    "mapped_category": data.get("Flood_Control_District", "Unknown")
                 }
             },
-            "overall_risk": max(
+            "highest_fallback_ranking_score": max(
                 float(data.get("Wildfire_Risk_Score", 0)),
                 float(data.get("Earthquake_Risk_Score", 0)),
                 float(data.get("Flood_Risk_Score", 0))
@@ -1724,12 +1745,14 @@ def api_risk_assessment(zip_code):
         logger.exception("Risk assessment API failed for ZIP %s", zip_code)
         return jsonify({
             "zip_code": zip_code,
+            "result_type": "legacy_zip_fallback",
             "risks": {
-                "wildfire": {"score": 0, "level": "Unknown", "explanation": RISK_DATA_WARNING},
-                "earthquake": {"score": 0, "level": "Unknown", "explanation": RISK_DATA_WARNING},
-                "flood": {"score": 0, "level": "Unknown", "explanation": RISK_DATA_WARNING}
+                "wildfire": {"ranking_score": 0, "priority_band": "Unknown", "explanation": RISK_DATA_WARNING},
+                "earthquake": {"ranking_score": 0, "priority_band": "Unknown", "explanation": RISK_DATA_WARNING},
+                "flood": {"ranking_score": 0, "priority_band": "Unknown", "explanation": RISK_DATA_WARNING}
             },
-            "overall_risk": 0,
+            "highest_fallback_ranking_score": 0,
+            "limitation": ZIP_FALLBACK_LIMITATION,
             "message": RISK_DATA_WARNING
         })
 

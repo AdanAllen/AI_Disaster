@@ -57,6 +57,10 @@ class DatasetProvenance(BaseModel):
     human_reviewer: str = ""
     human_reviewed_at: Optional[date] = None
     official_viewer_url: str = ""
+    match_field: str = ""
+    match_values: List[str] = Field(default_factory=list)
+    result_label: str = ""
+    source_summary: str = ""
     notes: str = ""
 
     @field_validator("sha256")

@@ -354,16 +354,19 @@ def _what_was_checked(hazard: Dict) -> Dict:
     if data_status == "data_unavailable":
         not_checked.append("Official layer unavailable — not checked.")
     if data_status == "not_in_layer":
-        checked.append("The checked layer did not match the address as a hazard-zone membership result; this does not mean no risk.")
+        checked.append(
+            "No matching mapped exposure was found for the address point in the checked layer. "
+            "This is informational and does not mean the location is safe."
+        )
     if slug == "flood" and hazard.get("scope") != "address_level":
         not_checked.append("FEMA address-point flood overlay was not completed for this result.")
     if slug == "wildfire" and hazard.get("scope") != "address_level":
         not_checked.append("Address-level fire hazard zone membership is not available for this result.")
     if slug == "earthquake":
-        not_checked.extend([
-            "Liquefaction polygons were not checked.",
-            "Building retrofit, structural condition, and parcel-level seismic risk were not checked.",
-        ])
+        cgs_checks = hazard.get("additional_geospatial_evidence") or []
+        if not cgs_checks:
+            not_checked.append("CGS regulatory-zone layers were not checked.")
+        not_checked.append("Building retrofit, structural condition, and parcel-level seismic risk were not checked.")
     if slug in {"flood", "wildfire"}:
         not_checked.append("Parcel-level property conditions and building-specific vulnerability were not checked.")
 
@@ -476,6 +479,7 @@ def _hazard_plan(hazard: Dict, location_context: Dict, household_context: Dict, 
         "evidence_tier_label": EVIDENCE_TIER_LABELS[evidence_tier],
         "location_cues": fact_cues,
         "location_matches": location_matches,
+        "official_mapped_evidence": hazard.get("additional_geospatial_evidence") or [],
         "checked": checked_payload["checked"],
         "not_checked": checked_payload["not_checked"],
         "before_actions": before,

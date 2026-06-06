@@ -17,6 +17,25 @@ from source_registry import get_city_chunks, get_local_plan_for_city, get_reside
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+CGS_DATASETS = {
+    "cgs_alquist_priolo_remote": {
+        "source_id": "cgs_alquist_priolo",
+        "match_label": "Inside a CGS mapped Alquist-Priolo fault rupture zone.",
+    },
+    "cgs_liquefaction_remote": {
+        "source_id": "cgs_liquefaction",
+        "match_label": "Inside a CGS mapped liquefaction zone.",
+    },
+    "cgs_earthquake_landslide_remote": {
+        "source_id": "cgs_earthquake_landslide",
+        "match_label": "Inside a CGS mapped earthquake-induced landslide zone.",
+    },
+    "cgs_tsunami_hazard_area_remote": {
+        "source_id": "cgs_tsunami_hazard_area",
+        "match_label": "Inside a CGS mapped tsunami hazard area.",
+    },
+}
+
 RECOVERY_CITATION = {
     "source_id": "ready_recovery",
     "source_name": "Ready.gov Recovering from Disaster",
@@ -57,27 +76,6 @@ RECOVERY_QUESTIONS = [
     ),
 ]
 
-def normalize_exposure(level: str) -> str:
-    value = (level or "").strip().lower()
-    if value in {"high", "very high"}:
-        return "high"
-    if value in {"medium", "moderate"}:
-        return "medium"
-    if value == "low":
-        return "low"
-    return "unknown"
-
-
-def exposure_from_score(score: Optional[float]) -> str:
-    if score is None:
-        return "unknown"
-    if score >= 7:
-        return "high"
-    if score >= 4:
-        return "medium"
-    return "low"
-
-
 def _hazard_type(hazard: Dict) -> str:
     return (
         hazard.get("hazard_id")
@@ -106,7 +104,7 @@ def display_data_status(status: str) -> str:
         "checked": "Checked",
         "not_checked": "Not checked yet",
         "data_unavailable": "Official layer unavailable — not checked",
-        "not_in_layer": "Checked, not in layer",
+        "not_in_layer": "Checked, no match in loaded layer",
         "fallback_used": "Fallback used",
         "needs_review": "Needs review",
     }
@@ -394,6 +392,136 @@ def check_fault_layer(lat: Optional[float], lon: Optional[float], threshold_km: 
     }
 
 
+def _cgs_public_evidence(dataset_id: str, evidence) -> Dict:
+    payload = evidence.model_dump(mode="json")
+    config = CGS_DATASETS[dataset_id]
+    checked = evidence.evidence_status == "checked"
+    available = evidence.evidence_status not in {"data_unavailable", "not_checked"}
+    matched = evidence.matched if checked else None
+    if not available:
+        exposure = "data_unavailable"
+        result_label = "Official CGS layer unavailable — not checked."
+    elif not checked:
+        exposure = "unknown"
+        result_label = "This address was not evaluated by the registered CGS dataset."
+    elif matched:
+        exposure = "mapped_match"
+        result_label = config["match_label"]
+    else:
+        exposure = "no_mapped_match"
+        result_label = (
+            "No matching mapped exposure was found in the checked CGS dataset. "
+            "This does not mean the location is safe."
+        )
+    provenance = payload.get("provenance") or {}
+    return {
+        "dataset_id": dataset_id,
+        "dataset_name": provenance.get("dataset_name", ""),
+        "checked": checked,
+        "data_available": available,
+        "matched": matched,
+        "exposure": exposure,
+        "result_label": result_label,
+        "priority_band": "Mapped evidence" if matched else "Unknown",
+        "ranking_score": None,
+        "evidence_tier": "official_mapped_data",
+        "claim_type": payload.get("claim_type", ""),
+        "precision": payload.get("precision", "address_point"),
+        "source_summary": provenance.get("source_summary") or provenance.get("intended_claim", ""),
+        "source_id": config["source_id"],
+        "source_agency": payload.get("source_agency", ""),
+        "source_url": payload.get("source_url", ""),
+        "effective_date": payload.get("effective_date"),
+        "checked_at": payload.get("checked_at"),
+        "public_claim_status": payload.get("public_claim_status", ""),
+        "matched_features": payload.get("matched_features") or [],
+        "limitations": payload.get("limitations") or [],
+    }
+
+
+def check_cgs_layers(
+    lat: Optional[float],
+    lon: Optional[float],
+    dataset_ids: Optional[List[str]] = None,
+) -> List[Dict]:
+    selected = dataset_ids or list(CGS_DATASETS)
+    if lat is None or lon is None:
+        return []
+    service = GeospatialEvidenceService(project_root=BASE_DIR)
+    results = []
+    for dataset_id in selected:
+        try:
+            evidence = service.check_point(dataset_id, float(lat), float(lon))
+        except (DatasetRegistryError, TypeError, ValueError):
+            results.append({
+                "dataset_id": dataset_id,
+                "dataset_name": "",
+                "checked": False,
+                "data_available": False,
+                "matched": None,
+                "exposure": "data_unavailable",
+                "result_label": "Official CGS layer unavailable — not checked.",
+                "priority_band": "Unknown",
+                "ranking_score": None,
+                "evidence_tier": "official_mapped_data",
+                "claim_type": "regulatory_zone",
+                "precision": "address_point",
+                "source_summary": "",
+                "source_id": CGS_DATASETS[dataset_id]["source_id"],
+                "source_agency": "California Geological Survey",
+                "source_url": "",
+                "effective_date": None,
+                "checked_at": None,
+                "public_claim_status": "official_unavailable",
+                "matched_features": [],
+                "limitations": [
+                    "Official CGS layer unavailable — not checked.",
+                    "Missing or failed data does not lower exposure or establish safety.",
+                ],
+            })
+            continue
+        results.append(_cgs_public_evidence(dataset_id, evidence))
+    return results
+
+
+def _apply_cgs_evidence(result: HazardResult, checks: List[Dict]) -> HazardResult:
+    if not checks:
+        return result
+    result.additional_geospatial_evidence = checks
+    checked = [item for item in checks if item.get("checked")]
+    matched = [item for item in checked if item.get("matched")]
+    unavailable = [item for item in checks if not item.get("data_available")]
+    result.exposure_level = "unknown"
+    result.is_in_hazard_zone = None
+    result.scope = "address_level" if checked else result.scope
+    result.basis = "gis_overlay" if checked else result.basis
+    result.location_precision = "address_point" if checked else result.location_precision
+    if checked:
+        result.data_status = "checked" if matched else "not_in_layer"
+        result.match_type = "inside" if matched else "none"
+        if matched:
+            labels = " ".join(item["result_label"] for item in matched)
+            result.why_shown = f"{result.why_shown} CGS address-point evidence: {labels}".strip()
+        else:
+            result.why_shown = (
+                f"{result.why_shown} No matching mapped exposure was found in the checked CGS datasets. "
+                "This does not mean the location is safe."
+            ).strip()
+    elif unavailable:
+        result.limitations.insert(0, "Official CGS layers were unavailable — not checked.")
+    result.limitations = _dedupe_text(
+        result.limitations
+        + [limitation for item in checks for limitation in item.get("limitations", [])]
+    )
+    source_ids = [item.get("source_id") for item in checks if item.get("source_id")]
+    result.sources = _source_payload(result.hazard_type, [
+        *result.specialized_guidance.source_ids,
+        *source_ids,
+        "ready_recovery",
+    ])
+    return result
+
+
 def _fema_layer_is_sfha(layer: Dict) -> bool:
     zone = str(layer.get("zone") or "").upper()
     sfha = str(layer.get("sfha") or "").upper()
@@ -544,9 +672,9 @@ def _jurisdiction_result(hazard: Dict, location_result, zip_snapshot: Dict, user
     label = _hazard_label(hazard, hazard_type)
     city = location_result.city or "Alameda County"
     score = _legacy_score(zip_snapshot, hazard_type)
-    exposure = exposure_from_score(score) if score is not None else normalize_exposure(hazard.get("risk_level"))
     limitations = [
         "This result uses official planning/source context for the jurisdiction, not a point-in-polygon address check.",
+        "Jurisdiction and ZIP context do not determine exposure for an individual address.",
     ]
     if score is not None:
         limitations.append("ZIP score is included only as supporting fallback context, not as the primary location system.")
@@ -564,7 +692,7 @@ def _jurisdiction_result(hazard: Dict, location_result, zip_snapshot: Dict, user
         basis="official_registry",
         location_precision="city" if location_result.city else "county",
         data_status="fallback_used",
-        exposure_level=exposure,
+        exposure_level="unknown",
         is_in_hazard_zone=None,
         match_type="jurisdiction_match",
         matched_layers=[],
@@ -593,7 +721,6 @@ def _zip_result(hazard: Dict, location_result, zip_snapshot: Dict, user_context:
     hazard_type = _hazard_type(hazard)
     label = _hazard_label(hazard, hazard_type)
     score = _legacy_score(zip_snapshot, hazard_type)
-    exposure = exposure_from_score(score)
     explanation = _zip_explanation(zip_snapshot, hazard_type)
     zip_code = location_result.zip_code or "the selected ZIP"
     specialized_guidance = _specialized_guidance(location_result, hazard_type, user_context)
@@ -606,7 +733,7 @@ def _zip_result(hazard: Dict, location_result, zip_snapshot: Dict, user_context:
         basis="zip_csv_heuristic",
         location_precision="zip",
         data_status="fallback_used",
-        exposure_level=exposure,
+        exposure_level="unknown",
         is_in_hazard_zone=None,
         match_type="zip_match",
         matched_layers=[],
@@ -618,7 +745,9 @@ def _zip_result(hazard: Dict, location_result, zip_snapshot: Dict, user_context:
             f"{explanation}".strip()
         ),
         limitations=[
-            "ZIP estimates are fallback guidance and do not prove whether an individual address is inside a hazard zone.",
+            "The numeric ZIP value is retained only as an internal fallback ranking signal; it is not an exposure or safety determination.",
+            "ZIP context does not prove whether an individual address is inside or outside a mapped hazard area.",
+            "Other hazards, indirect impacts, evacuation issues, smoke, infrastructure outages, and unmapped conditions may still apply.",
             "Use official maps and emergency instructions for final decisions.",
         ],
         recommended_actions=_actions_for(location_result, hazard_type, "before", "today", "this_week"),
@@ -645,7 +774,7 @@ def _county_result(hazard: Dict) -> HazardResult:
         basis="county_guidance",
         location_precision="county",
         data_status="fallback_used",
-        exposure_level=normalize_exposure(hazard.get("risk_level")),
+        exposure_level="unknown",
         is_in_hazard_zone=None,
         match_type="fallback",
         matched_layers=[],
@@ -655,6 +784,7 @@ def _county_result(hazard: Dict) -> HazardResult:
         why_shown=f"{label} is shown as general Alameda County preparedness guidance.",
         limitations=[
             "This is countywide guidance only. No address, city, or ZIP-specific hazard check is available for this result.",
+            "Countywide guidance does not determine exposure or safety for an individual location.",
         ],
         recommended_actions=select_actions(
             hazards=[hazard_type],
@@ -680,11 +810,14 @@ def _flood_address_result(hazard: Dict, location_result, flood_check: Dict, zip_
     status = "checked" if inside else "not_in_layer"
     exposure = "high" if inside else "unknown"
     limitations = [
-        "This checks the saved address point against the current FEMA flood polygon layer in the app.",
+        "This checks the saved address point against StayReady's provisional local FEMA flood polygon snapshot.",
         "Point checks are not parcel determinations and should be confirmed with official FEMA and local flood resources.",
     ]
     if not inside:
-        limitations.append("Not being inside the loaded layer does not mean flood impacts are impossible.")
+        limitations.append(
+            "No matching Special Flood Hazard Area exposure was found for the point in the checked snapshot. "
+            "This does not mean the location is safe from flooding or other water-related impacts."
+        )
     limitations = _dedupe_text(
         limitations + list(geospatial_evidence.get("limitations") or [])
     )
@@ -715,7 +848,7 @@ def _flood_address_result(hazard: Dict, location_result, flood_check: Dict, zip_
         why_shown=(
             f"Flood is shown because the saved address point was checked against StayReady's provisional local FEMA snapshot{zone_text}."
             if inside else
-            f"Flood is shown because the saved address point was checked against StayReady's provisional local FEMA snapshot and was not inside a loaded Special Flood Hazard Area. This is not a safety determination.{context_text}"
+            f"Flood is shown because no matching Special Flood Hazard Area exposure was found for the address point in StayReady's provisional local FEMA snapshot. This is informational, not a safety determination.{context_text}"
         ),
         limitations=limitations,
         recommended_actions=_actions_for(location_result, hazard_type, "before", "today", "this_week"),
@@ -747,7 +880,8 @@ def _wildfire_address_result(hazard: Dict, location_result, wildfire_check: Dict
     ]
     if not inside:
         limitations.append(
-            "Not matching the checked provisional snapshot does not mean there is no wildfire, smoke, ember, evacuation, or regional fire impact."
+            "No matching moderate, high, or very-high Fire Hazard Severity Zone exposure was found for the point in the checked snapshot. "
+            "This does not mean the location is safe from wildfire, smoke, ember, evacuation, or regional fire impacts."
         )
     limitations = _dedupe_text(
         limitations + list(geospatial_evidence.get("limitations") or [])
@@ -779,7 +913,7 @@ def _wildfire_address_result(hazard: Dict, location_result, wildfire_check: Dict
         why_shown=(
             f"Wildfire is shown because the saved address point was checked against StayReady's provisional local CAL FIRE snapshot{zone_text}."
             if inside else
-            f"Wildfire is shown because the saved address point did not match a loaded moderate, high, or very-high fire hazard polygon in StayReady's provisional local CAL FIRE snapshot. This is not a safety determination.{context_text}"
+            f"Wildfire is shown because no matching moderate, high, or very-high Fire Hazard Severity Zone exposure was found for the address point in StayReady's provisional local CAL FIRE snapshot. This is informational, not a safety determination.{context_text}"
         ),
         limitations=limitations,
         recommended_actions=_actions_for(location_result, hazard_type, "before", "today", "this_week"),
@@ -848,10 +982,26 @@ def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dic
     flood_check = _not_checked_result()
     wildfire_check = _not_checked_result()
     fault_check = _not_checked_result()
+    earthquake_cgs_checks = []
+    tsunami_cgs_checks = []
     if location_result.lat is not None and location_result.lon is not None and location_result.formatted_address:
         flood_check = check_flood_layer(location_result.lat, location_result.lon)
         wildfire_check = check_wildfire_layer(location_result.lat, location_result.lon)
         fault_check = check_fault_layer(location_result.lat, location_result.lon)
+        earthquake_cgs_checks = check_cgs_layers(
+            location_result.lat,
+            location_result.lon,
+            [
+                "cgs_alquist_priolo_remote",
+                "cgs_liquefaction_remote",
+                "cgs_earthquake_landslide_remote",
+            ],
+        )
+        tsunami_cgs_checks = check_cgs_layers(
+            location_result.lat,
+            location_result.lon,
+            ["cgs_tsunami_hazard_area_remote"],
+        )
 
     for raw_hazard in hazards:
         hazard = deepcopy(raw_hazard)
@@ -897,6 +1047,10 @@ def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dic
         else:
             result = _county_result(hazard)
 
+        if hazard_type == "earthquake":
+            result = _apply_cgs_evidence(result, earthquake_cgs_checks)
+        elif hazard_type == "tsunami":
+            result = _apply_cgs_evidence(result, tsunami_cgs_checks)
         results.append(result)
 
     def sort_key(item: HazardResult):
@@ -957,6 +1111,7 @@ def merge_structured_result(hazard: Dict, result: HazardResult) -> Dict:
     merged["specialized_guidance"] = result.specialized_guidance.model_dump()
     merged["matched_layers"] = result.matched_layers
     merged["geospatial_evidence"] = result.geospatial_evidence
+    merged["additional_geospatial_evidence"] = result.additional_geospatial_evidence
     merged["claim_type"] = result.claim_type
     merged["checked_at"] = result.checked_at
     merged["effective_date"] = result.effective_date

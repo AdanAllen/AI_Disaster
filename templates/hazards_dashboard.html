@@ -111,6 +111,11 @@
         color: #1e7a38;
     }
 
+    .risk-pill.neutral {
+        background: #eef2f5;
+        color: #52606d;
+    }
+
     .evidence-pill {
         display: inline-flex;
         align-items: center;
@@ -274,8 +279,14 @@
             <div class="col-lg-4">
                 <article class="hazard-highlight-card">
                     <div class="hazard-rank">{{ loop.index }}</div>
-                    {% set risk_class = 'high' if hazard.risk_level == 'High' else 'medium' if hazard.risk_level == 'Medium' else 'low' %}
-                    <div class="risk-pill {{ risk_class }}">{{ hazard.risk_level }} risk</div>
+                    {% set risk_class = 'high' if hazard.exposure_level == 'High' else 'medium' if hazard.exposure_level == 'Medium' else 'neutral' %}
+                    <div class="risk-pill {{ risk_class }}">
+                        {% if hazard.scope == "address_level" and hazard.is_in_hazard_zone %}
+                        {{ hazard.exposure_level }} mapped-zone exposure
+                        {% else %}
+                        Exposure not determined
+                        {% endif %}
+                    </div>
                     <h3>{{ hazard.name }}</h3>
                     <p class="hazard-summary">{{ hazard.summary }}</p>
                     <div class="mb-2">
@@ -302,7 +313,7 @@
                     <h3 class="h5 mb-3">How this page fits the app</h3>
                     <ul>
                         <li>Use the risk summary to understand what is most urgent.</li>
-                        <li>Use the map to see where your location sits inside hazard layers.</li>
+                        <li>Use the map to review loaded official-layer context and each layer's limitations.</li>
                         <li>Use these hazard pages to read why a hazard is shown, where precision is limited, and what to do next.</li>
                     </ul>
                 </div>
@@ -359,8 +370,14 @@
                     <small>{{ hazard.scope_label or "County fallback" }} · {{ hazard.data_status_label or "Needs review" }}</small>
                 </div>
                 <div>
-                    <small class="text-uppercase fw-semibold">Exposure</small>
-                    <div>{{ hazard.exposure_level | title if hazard.exposure_level else hazard.risk_level }}</div>
+                    <small class="text-uppercase fw-semibold">Exposure evidence</small>
+                    <div>
+                        {% if hazard.scope == "address_level" and hazard.is_in_hazard_zone %}
+                        {{ hazard.exposure_level | title }} mapped-zone exposure
+                        {% else %}
+                        Not determined
+                        {% endif %}
+                    </div>
                 </div>
                 <div>
                     <small class="text-uppercase fw-semibold">Precision</small>

@@ -112,6 +112,11 @@
         color: #1e7a38;
     }
 
+    .risk-pill.neutral {
+        background: #eef2f5;
+        color: #52606d;
+    }
+
     .evidence-badges {
         display: flex;
         flex-wrap: wrap;
@@ -319,7 +324,7 @@
         <span class="section-eyebrow text-white-50">Source-Backed Hazard Detail</span>
         <h1>{{ hazard.name }}</h1>
         <p class="mb-0">{{ hazard.summary }}</p>
-        {% set risk_class = 'high' if hazard.risk_level == 'High' else 'medium' if hazard.risk_level == 'Medium' else 'low' %}
+        {% set risk_class = 'high' if hazard.exposure_level == 'High' else 'medium' if hazard.exposure_level == 'Medium' else 'neutral' %}
         <div class="hero-meta">
             <span class="meta-pill">{{ hazard.scope_label }}</span>
             <span class="meta-pill">{{ hazard.data_status_label }}</span>
@@ -449,6 +454,21 @@
                             No address-level matched layer is available for this result.
                         </p>
                         {% endif %}
+
+                        {% if hazard.additional_geospatial_evidence %}
+                        <h3 class="h6 mt-4">California Geological Survey checks</h3>
+                        {% for evidence in hazard.additional_geospatial_evidence %}
+                        <div class="border rounded-3 p-3 mb-3">
+                            <strong>{{ evidence.result_label }}</strong>
+                            {% if evidence.source_summary %}
+                            <p class="mb-2 mt-2">{{ evidence.source_summary }}</p>
+                            {% endif %}
+                            {% for limitation in evidence.limitations[:2] %}
+                            <small class="d-block text-muted">{{ limitation }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                        {% endif %}
                     </article>
 
                     <article class="detail-card">
@@ -476,7 +496,13 @@
                                 {{ hazard.name }} Preparedness:
                                 <span id="checklist-complete-count">0</span>/{{ hazard.action_steps | length }} complete
                             </p>
-                            <span class="risk-pill {{ risk_class }}">{{ hazard.risk_level }} risk</span>
+                            <span class="risk-pill {{ risk_class }}">
+                                {% if hazard.scope == "address_level" and hazard.is_in_hazard_zone %}
+                                {{ hazard.exposure_level }} mapped-zone exposure
+                                {% else %}
+                                Exposure not determined
+                                {% endif %}
+                            </span>
                         </div>
                         <div class="progress-track" aria-hidden="true">
                             <div id="checklist-progress-fill" class="progress-fill"></div>
