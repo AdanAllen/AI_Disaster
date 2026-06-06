@@ -87,6 +87,35 @@ class ResidentGuidanceItem(BaseModel):
     review_status: ReviewStatus = "draft"
 
 
+class LHMPLocationFact(BaseModel):
+    id: str
+    jurisdiction: str
+    applies_to_jurisdictions: List[str] = Field(default_factory=list)
+    hazard: str
+    evidence_tier: Literal["area_based", "citywide", "general"]
+    geography_type: str
+    named_areas: List[str] = Field(default_factory=list)
+    location_aliases: List[str] = Field(default_factory=list)
+    coordinate_rule: Dict[str, float] = Field(default_factory=dict)
+    location_cue: str
+    resident_meaning: str
+    before_actions: List[str] = Field(default_factory=list)
+    during_actions: List[str] = Field(default_factory=list)
+    after_actions: List[str] = Field(default_factory=list)
+    recovery_steps: List[str] = Field(default_factory=list)
+    resident_impacts: List[str] = Field(default_factory=list)
+    household_factors: List[str] = Field(default_factory=list)
+    infrastructure_dependencies: List[str] = Field(default_factory=list)
+    requires_gis_confirmation: bool = True
+    precision_limitations: List[str] = Field(default_factory=list)
+    source_document: str
+    source_page: Any
+    source_excerpt_summary: str
+    source_name: str
+    source_url: str
+    review_status: ReviewStatus = "draft"
+
+
 class SpecializedGuidance(BaseModel):
     location_specific_context: List[str] = Field(default_factory=list)
     city_context: List[str] = Field(default_factory=list)

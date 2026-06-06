@@ -1,11 +1,20 @@
 import json
 import os
+import re
 from functools import lru_cache
 from typing import Dict, List, Optional
+
+from pydantic_models import LHMPLocationFact
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 REVIEWED_STATUSES = {"reviewed", "draft_reviewed"}
+EVIDENCE_TIER_LABELS = {
+    "address_specific": "Address-specific source",
+    "area_based": "Area-based source",
+    "citywide": "Citywide source",
+    "general": "General guidance",
+}
 
 
 def _load_json(filename: str, default):
@@ -45,7 +54,11 @@ def _listify(value) -> List[str]:
 
 @lru_cache(maxsize=1)
 def load_local_hazard_facts() -> List[Dict]:
-    return _load_json("hazard_facts.json", [])
+    location_facts = [
+        LHMPLocationFact(**item).model_dump()
+        for item in _load_json("lhmp_location_facts.json", [])
+    ]
+    return _load_json("hazard_facts.json", []) + location_facts
 
 
 def load_supabase_hazard_facts(city: Optional[str] = None, hazard: Optional[str] = None) -> List[Dict]:
@@ -87,11 +100,8 @@ def get_household_context(session_data: Dict) -> Dict:
         "no_car": ("no car", "transit", "bus", "bart", "ride"),
     }
     for tag, keywords in inferred_keywords.items():
-        if any(keyword in special_lower for keyword in keywords):
+        if any(re.search(rf"\b{re.escape(keyword)}\b", special_lower) for keyword in keywords):
             tags.add(tag)
-
-    if special_needs:
-        tags.add("medical")
 
     household = (session_data.get("household") or "").strip()
     preparedness = (session_data.get("preparedness") or "").strip()
@@ -175,12 +185,62 @@ def household_guidance(household_context: Dict) -> List[Dict]:
     return notes
 
 
-def _match_facts(city: str, hazard: str) -> Dict[str, List[Dict]]:
+def _coordinate_rule_matches(rule: Dict, location_context: Dict) -> bool:
+    if not rule:
+        return False
+    try:
+        lat = float(location_context.get("location_result", {}).get("lat"))
+        lon = float(location_context.get("location_result", {}).get("lon"))
+    except (TypeError, ValueError):
+        return False
+
+    checks = (
+        ("min_lat", lat >= rule.get("min_lat", lat)),
+        ("max_lat", lat <= rule.get("max_lat", lat)),
+        ("min_lon", lon >= rule.get("min_lon", lon)),
+        ("max_lon", lon <= rule.get("max_lon", lon)),
+    )
+    return all(passed for key, passed in checks if key in rule)
+
+
+def _fact_location_match(fact: Dict, location_context: Dict) -> Optional[Dict]:
+    if fact.get("evidence_tier") != "area_based":
+        return None
+
+    location_result = location_context.get("location_result") or {}
+    searchable = " ".join([
+        str(location_context.get("address") or ""),
+        str(location_context.get("display_name") or ""),
+        str(location_result.get("formatted_address") or ""),
+        str(location_result.get("neighborhood") or ""),
+        str(location_context.get("zip_code") or ""),
+    ]).lower()
+    for alias in fact.get("location_aliases") or []:
+        if alias.lower() in searchable:
+            return {
+                "method": "named_area",
+                "reason": f"The resolved address text matched the LHMP-named area “{alias}”.",
+            }
+
+    if _coordinate_rule_matches(fact.get("coordinate_rule") or {}, location_context):
+        return {
+            "method": "conservative_coordinate_rule",
+            "reason": (
+                f"The geocoded point falls within a conservative directional rule for "
+                f"{fact.get('location_cue') or 'the named LHMP area'}."
+            ),
+        }
+    return None
+
+
+def _match_facts(city: str, hazard: str, location_context: Optional[Dict] = None) -> Dict[str, List[Dict]]:
     city_key = _norm(city)
     hazard_key = _norm(hazard)
-    local = []
+    area = []
+    citywide = []
     county = []
     needs_review = False
+    location_context = location_context or {}
 
     for fact in load_hazard_facts(city=city, hazard=hazard):
         fact_hazard = _norm(fact.get("hazard"))
@@ -188,14 +248,21 @@ def _match_facts(city: str, hazard: str) -> Dict[str, List[Dict]]:
             continue
         review_status = fact.get("review_status", "")
         jurisdiction_key = _norm(fact.get("jurisdiction"))
-        if jurisdiction_key == city_key and review_status in REVIEWED_STATUSES:
-            local.append(fact)
-        elif jurisdiction_key == city_key:
+        applies_to = {_norm(value) for value in fact.get("applies_to_jurisdictions") or []}
+        is_local = jurisdiction_key == city_key or city_key in applies_to
+        if is_local and review_status in REVIEWED_STATUSES:
+            if fact.get("evidence_tier") == "area_based":
+                match = _fact_location_match(fact, location_context)
+                if match:
+                    area.append({**fact, "location_match_method": match["method"], "location_match_reason": match["reason"]})
+            else:
+                citywide.append(fact)
+        elif is_local:
             needs_review = True
         elif jurisdiction_key in {"alameda_county", "unincorporated_alameda_county"} and review_status in REVIEWED_STATUSES:
             county.append(fact)
 
-    return {"local": local, "county": county, "needs_review": needs_review}
+    return {"area": area, "citywide": citywide, "county": county, "needs_review": needs_review}
 
 
 def _guidance_from_chunks(hazard: Dict, phase: str) -> List[str]:
@@ -221,8 +288,10 @@ def _source_rows(hazard: Dict, facts: List[Dict]) -> List[Dict]:
             rows.append({
                 "name": fact.get("source_name") or "Source",
                 "url": fact.get("source_url") or "",
-                "basis": fact.get("evidence_type", "").replace("_", " ").title(),
+                "basis": (fact.get("evidence_tier") or fact.get("evidence_type", "")).replace("_", " ").title(),
                 "review_status": fact.get("review_status", "").replace("_", " ").title(),
+                "page": fact.get("source_page"),
+                "document": fact.get("source_document", ""),
             })
     for source in hazard.get("sources", [])[:4]:
         rows.append({
@@ -230,6 +299,8 @@ def _source_rows(hazard: Dict, facts: List[Dict]) -> List[Dict]:
             "url": source.get("url") or "",
             "basis": source.get("claim_type", source.get("source_type", "")).replace("_", " ").title(),
             "review_status": source.get("review_status", "").replace("_", " ").title(),
+            "page": None,
+            "document": "",
         })
 
     deduped = []
@@ -280,13 +351,15 @@ def _what_was_checked(hazard: Dict) -> Dict:
 def _hazard_plan(hazard: Dict, location_context: Dict, household_notes: List[Dict], order: int) -> Dict:
     city = location_context.get("city") or ""
     slug = hazard.get("slug") or hazard.get("hazard_id")
-    fact_matches = _match_facts(city, slug)
-    selected_facts = fact_matches["local"] or fact_matches["county"]
+    fact_matches = _match_facts(city, slug, location_context)
+    local_facts = fact_matches["area"] + fact_matches["citywide"]
+    selected_facts = local_facts or fact_matches["county"]
+    fallback_facts = fact_matches["county"] if local_facts else []
     specialized = hazard.get("specialized_guidance") or {}
     guidance_source_status = specialized.get("guidance_source_status")
     has_local_guidance = guidance_source_status == "local_reviewed"
-    local_status = "local_reviewed" if fact_matches["local"] or has_local_guidance else "county_fallback"
-    if not fact_matches["local"] and city and not has_local_guidance:
+    local_status = "local_reviewed" if local_facts or has_local_guidance else "county_fallback"
+    if not local_facts and city and not has_local_guidance:
         local_status = "local_not_reviewed"
 
     fact_meaning = _dedupe([fact.get("resident_meaning", "") for fact in selected_facts])
@@ -296,40 +369,62 @@ def _hazard_plan(hazard: Dict, location_context: Dict, household_notes: List[Dic
     before = _dedupe(
         _guidance_from_chunks(hazard, "before")
         + _guidance_from_facts(selected_facts, "before_actions")
+        + _guidance_from_facts(fallback_facts, "before_actions")
         + [item.get("label") for item in hazard.get("recommended_actions", [])]
     )[:5]
     during = _dedupe(
         _guidance_from_chunks(hazard, "during")
         + _guidance_from_facts(selected_facts, "during_actions")
+        + _guidance_from_facts(fallback_facts, "during_actions")
     )[:4]
     after = _dedupe(
         _guidance_from_chunks(hazard, "after")
         + _guidance_from_facts(selected_facts, "after_actions")
+        + _guidance_from_facts(fallback_facts, "after_actions")
     )[:4]
     recovery = _dedupe(
         _guidance_from_chunks(hazard, "recovery")
         + _guidance_from_facts(selected_facts, "recovery_steps")
+        + _guidance_from_facts(fallback_facts, "recovery_steps")
         + ((hazard.get("specialized_guidance") or {}).get("recovery_needs") or [])
     )[:6]
 
-    why_parts = _dedupe([
-        hazard.get("why_shown", ""),
-        *(fact_meaning[:1]),
-        *(fact_cues[:1]),
-    ])
-    why = " ".join(why_parts)
     city_context = specialized.get("city_context") or []
     location_specific_context = specialized.get("location_specific_context") or []
-    if has_local_guidance and not fact_matches["local"]:
+    why_parts = [hazard.get("why_shown", "")]
+    why_parts.extend(fact_meaning[:1])
+    why_parts.extend(fact_cues[:1])
+    if has_local_guidance and not local_facts:
         why_parts.extend(_dedupe(location_specific_context + city_context)[:2])
-    if not fact_matches["local"] and city and not has_local_guidance:
+    why = " ".join(_dedupe(why_parts))
+    if not local_facts and city and not has_local_guidance:
         why += f" Local plan facts for {city} are not fully reviewed in the structured facts layer yet, so county-level guidance is included."
 
+    if fact_matches["area"]:
+        evidence_tier = "area_based"
+    elif local_facts or has_local_guidance:
+        evidence_tier = "citywide"
+    else:
+        evidence_tier = "general"
     evidence_badges = [
-        hazard.get("scope_label") or "County fallback",
+        "Address-specific source" if hazard.get("scope") == "address_level" else hazard.get("scope_label") or "County fallback",
         hazard.get("data_status_label") or "Needs review",
-        "Local plan context" if local_status == "local_reviewed" else "County fallback",
+        EVIDENCE_TIER_LABELS[evidence_tier],
     ]
+    location_matches = [
+        {
+            "label": fact.get("location_cue") or ", ".join(fact.get("named_areas") or []),
+            "method": fact.get("location_match_method"),
+            "reason": fact.get("location_match_reason"),
+            "precision_limitations": fact.get("precision_limitations") or [],
+            "source_name": fact.get("source_name"),
+            "source_document": fact.get("source_document"),
+            "source_page": fact.get("source_page"),
+            "source_url": fact.get("source_url"),
+        }
+        for fact in fact_matches["area"]
+    ]
+    fact_limitations = _guidance_from_facts(selected_facts, "precision_limitations")
 
     return {
         "hazard": hazard.get("name") or hazard.get("label") or slug.title(),
@@ -339,7 +434,10 @@ def _hazard_plan(hazard: Dict, location_context: Dict, household_notes: List[Dic
         "why_it_matters": why,
         "evidence_badges": _dedupe(evidence_badges),
         "local_guidance_status": local_status,
+        "evidence_tier": evidence_tier,
+        "evidence_tier_label": EVIDENCE_TIER_LABELS[evidence_tier],
         "location_cues": fact_cues,
+        "location_matches": location_matches,
         "checked": checked_payload["checked"],
         "not_checked": checked_payload["not_checked"],
         "before_actions": before,
@@ -348,7 +446,7 @@ def _hazard_plan(hazard: Dict, location_context: Dict, household_notes: List[Dic
         "recovery_steps": recovery,
         "household_notes": household_notes[:4],
         "sources": _source_rows(hazard, selected_facts),
-        "limitations": _dedupe(hazard.get("limitations", []))[:5],
+        "limitations": _dedupe(hazard.get("limitations", []) + fact_limitations)[:6],
     }
 
 

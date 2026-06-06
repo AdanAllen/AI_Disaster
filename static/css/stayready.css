@@ -1130,3 +1130,44 @@
         grid-template-columns: 1fr;
     }
 }
+.sr-local-evidence {
+    margin: 0 1.35rem 1.25rem;
+    padding: 1rem;
+    border: 1px solid #d7e1e8;
+    border-left: 4px solid #b7791f;
+    border-radius: 0.85rem;
+    background: #fbfcfa;
+}
+
+.sr-local-evidence-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin-bottom: 0.75rem;
+}
+
+.sr-local-evidence-heading h4,
+.sr-local-evidence-row p {
+    margin: 0;
+}
+
+.sr-local-evidence-row + .sr-local-evidence-row {
+    margin-top: 0.85rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid #e4e9ec;
+}
+
+.sr-local-evidence-row small {
+    display: block;
+    margin-top: 0.4rem;
+    color: #596973;
+}
+
+.sr-local-evidence-citation {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.65rem;
+    margin-top: 0.55rem;
+    font-size: 0.82rem;
+    color: #596973;
+}

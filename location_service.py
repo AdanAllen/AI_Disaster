@@ -33,13 +33,17 @@ def location_from_session(session_data: Dict) -> LocationResult:
     city = session_data.get("city") or ""
     county = session_data.get("county") or ""
     if not city and address:
-        lower_address = address.lower()
+        address_components = {
+            component.strip().lower()
+            for component in address.split(",")
+            if component.strip()
+        }
         for candidate in (
             "Oakland", "Berkeley", "Fremont", "Hayward", "Alameda", "San Leandro",
             "Union City", "Newark", "Dublin", "Pleasanton", "Livermore",
-            "Castro Valley", "San Lorenzo", "Emeryville", "Piedmont",
+            "Castro Valley", "San Lorenzo", "Emeryville", "Piedmont", "Albany",
         ):
-            if candidate.lower() in lower_address:
+            if candidate.lower() in address_components:
                 city = candidate
                 break
     if not county and (zip_code or address):

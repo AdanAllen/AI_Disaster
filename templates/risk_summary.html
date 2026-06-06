@@ -82,6 +82,32 @@
                         <p>{{ plan.why_it_matters }}</p>
                     </section>
 
+                    {% if plan.location_matches %}
+                    <section class="sr-local-evidence" aria-label="Matched local plan evidence">
+                        <div class="sr-local-evidence-heading">
+                            <span class="sr-badge sr-badge-warning">Area-based source</span>
+                            <h4>Local area match</h4>
+                        </div>
+                        {% for match in plan.location_matches %}
+                        <div class="sr-local-evidence-row">
+                            <strong>{{ match.label }}</strong>
+                            <p>{{ match.reason }}</p>
+                            {% for limitation in match.precision_limitations %}
+                            <small>{{ limitation }}</small>
+                            {% endfor %}
+                            <div class="sr-local-evidence-citation">
+                                {% if match.source_url %}
+                                <a href="{{ match.source_url }}" target="_blank" rel="noopener noreferrer">{{ match.source_name }}</a>
+                                {% else %}
+                                <span>{{ match.source_name }}</span>
+                                {% endif %}
+                                <span>{{ match.source_document }} · page {{ match.source_page }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </section>
+                    {% endif %}
+
                     <div class="sr-plan-columns">
                         <section>
                             <h4>Before</h4>
@@ -150,7 +176,10 @@
                                         {% else %}
                                         <span>{{ source.name }}</span>
                                         {% endif %}
-                                        <small>{{ source.basis }} · {{ source.review_status }}</small>
+                                        <small>
+                                            {{ source.basis }} · {{ source.review_status }}
+                                            {% if source.page %} · page {{ source.page }}{% endif %}
+                                        </small>
                                     </div>
                                     {% endfor %}
                                 </div>
@@ -294,7 +323,10 @@
                                 {% else %}
                                 <span>{{ source.name }}</span>
                                 {% endif %}
-                                <small>{{ source.basis }} · {{ source.review_status }}</small>
+                                <small>
+                                    {{ source.basis }} · {{ source.review_status }}
+                                    {% if source.page %} · page {{ source.page }}{% endif %}
+                                </small>
                             </div>
                             {% endfor %}
                         </div>
