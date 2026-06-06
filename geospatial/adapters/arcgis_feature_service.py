@@ -188,3 +188,53 @@ class ArcGISFeatureServiceAdapter(GeospatialAdapter):
             provenance=dataset,
             validation=validation,
         )
+
+    def query_geojson(
+        self,
+        dataset: DatasetProvenance,
+        *,
+        min_lat: float,
+        max_lat: float,
+        min_lon: float,
+        max_lon: float,
+    ) -> dict:
+        if dataset.status in {"invalid", "retired", "data_unavailable"}:
+            raise ValueError("The registered CGS dataset is unavailable.")
+        if not dataset.exact_service_or_download_url:
+            raise ValueError("The registered CGS service URL is missing.")
+
+        params = {
+            "f": "geojson",
+            "where": "1=1",
+            "geometry": f"{min_lon},{min_lat},{max_lon},{max_lat}",
+            "geometryType": "esriGeometryEnvelope",
+            "inSR": "4326",
+            "outSR": "4326",
+            "spatialRel": "esriSpatialRelIntersects",
+            "outFields": "*",
+            "returnGeometry": "true",
+        }
+        response = requests.get(
+            f"{dataset.exact_service_or_download_url.rstrip('/')}/query",
+            params=params,
+            timeout=self.timeout_seconds,
+        )
+        response.raise_for_status()
+        payload = response.json()
+        if (
+            not isinstance(payload, dict)
+            or payload.get("type") != "FeatureCollection"
+            or not isinstance(payload.get("features"), list)
+        ):
+            raise ValueError("The official CGS map service returned invalid GeoJSON.")
+
+        accepted_values = {value.casefold() for value in dataset.match_values}
+        if dataset.match_field and accepted_values:
+            payload["features"] = [
+                feature
+                for feature in payload["features"]
+                if str(
+                    (feature.get("properties") or {}).get(dataset.match_field, "")
+                ).casefold() in accepted_values
+            ]
+        return payload

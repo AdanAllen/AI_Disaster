@@ -160,7 +160,7 @@
 
     .layer-controls {
         display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 0.8rem;
         align-items: stretch;
     }
@@ -197,6 +197,70 @@
     .layer-toggle.earthquake.active { border-color: var(--earthquake-color); color: var(--earthquake-color); }
     .layer-toggle.zip.active { border-color: #6c757d; color: #6c757d; }
     .layer-toggle.live.active { border-color: #dc3545; color: #dc3545; }
+    .layer-toggle.cgs.active { border-color: #426b78; color: #294e5a; }
+
+    .cgs-layer-panel {
+        border-top: 1px solid #dfe7ec;
+        margin-top: 1.25rem;
+        padding-top: 1.25rem;
+    }
+
+    .cgs-layer-panel h3 {
+        color: var(--text-dark);
+        font-size: 1rem;
+        font-weight: 800;
+        margin-bottom: 0.35rem;
+    }
+
+    .cgs-layer-panel > p {
+        color: #5b6d7c;
+        font-size: 0.88rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .cgs-legend-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-top: 0.9rem;
+    }
+
+    .cgs-legend-card {
+        background: #f7fafb;
+        border: 1px solid #d8e3e8;
+        border-radius: 14px;
+        padding: 0.85rem;
+        font-size: 0.82rem;
+        line-height: 1.45;
+    }
+
+    .cgs-legend-card strong,
+    .cgs-legend-card small {
+        display: block;
+    }
+
+    .cgs-legend-card small {
+        color: #5a6d7b;
+        margin-top: 0.35rem;
+    }
+
+    .cgs-legend-swatch {
+        border-radius: 3px;
+        display: inline-block;
+        height: 12px;
+        margin-right: 0.45rem;
+        vertical-align: -1px;
+        width: 22px;
+    }
+
+    .cgs-status {
+        color: #526675;
+        font-size: 0.74rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        margin-top: 0.45rem;
+        text-transform: uppercase;
+    }
 
     .layer-icon {
         font-size: 1rem;
@@ -517,6 +581,10 @@
             grid-template-columns: 1fr;
         }
 
+        .cgs-legend-grid {
+            grid-template-columns: 1fr;
+        }
+
         .layer-toggle {
             justify-content: center;
         }
@@ -657,6 +725,41 @@
                         <span>Recent Bay Area Earthquakes</span>
                     </div>
                 </div>
+
+                <div class="cgs-layer-panel">
+                    <h3>California Geological Survey mapped zones</h3>
+                    <p>Optional official overlays show mapped zone boundaries. They are separate from the address-point match shown in your evidence cards.</p>
+                    <div class="layer-controls">
+                        {% for layer_key, layer in cgs_map_layers.items() %}
+                        <div class="layer-toggle cgs{% if cgs_map_evidence | selectattr('map_layer_key', 'equalto', layer_key) | selectattr('matched', 'equalto', true) | list %} active{% endif %}"
+                             id="cgs-{{ layer_key }}-toggle"
+                             data-cgs-layer="{{ layer_key }}"
+                             onclick="toggleLayer('cgs-{{ layer_key }}')">
+                            <i class="fas fa-layer-group layer-icon"></i>
+                            <span>{{ layer.label }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="cgs-legend-grid">
+                        {% for evidence in cgs_map_evidence %}
+                        <div class="cgs-legend-card" data-cgs-legend="{{ evidence.map_layer_key }}">
+                            <strong>
+                                <span class="cgs-legend-swatch" style="background: {{ cgs_map_layers[evidence.map_layer_key].color }}"></span>
+                                {{ evidence.dataset_name }}
+                            </strong>
+                            <small>{{ evidence.source_summary }}</small>
+                            {% for limitation in evidence.limitations[:2] %}
+                            <small>{{ limitation }}</small>
+                            {% endfor %}
+                            <div class="cgs-status">California Geological Survey · Official Provisional</div>
+                            {% if evidence.source_url %}
+                            <a class="small d-inline-block mt-2" href="{{ evidence.source_url }}" target="_blank" rel="noopener noreferrer">Open official CGS source</a>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
 
             <!-- Interactive Map -->
@@ -716,7 +819,17 @@ Use the links below for sourced actions and limitations.</div>
         wildfire: null,
         flood: null,
         earthquake: null,
-        live: null
+        live: null,
+        'cgs-alquist-priolo': null,
+        'cgs-liquefaction': null,
+        'cgs-earthquake-landslide': null,
+        'cgs-tsunami': null
+    };
+    const matchedCGSLayers = {{ cgs_map_evidence | selectattr('matched', 'equalto', true) | map(attribute='map_layer_key') | list | tojson }};
+    const cgsLayerColors = {
+        {% for layer_key, layer in cgs_map_layers.items() %}
+        '{{ layer_key }}': '{{ layer.color }}'{% if not loop.last %},{% endif %}
+        {% endfor %}
     };
     let activeHazard = null;
 
@@ -732,6 +845,7 @@ Use the links below for sourced actions and limitations.</div>
         
         // Load ZIP boundary first
         loadZipBoundary();
+        matchedCGSLayers.forEach(layerKey => loadCGSLayer(layerKey));
     }
 
     // Load ZIP code boundary
@@ -852,7 +966,11 @@ Use the links below for sourced actions and limitations.</div>
             flood: 'fas fa-water',
             earthquake: 'fas fa-mountain',
             live: 'fas fa-broadcast-tower',
-            zip: 'fas fa-map-marker-alt'
+            zip: 'fas fa-map-marker-alt',
+            'cgs-alquist-priolo': 'fas fa-layer-group',
+            'cgs-liquefaction': 'fas fa-layer-group',
+            'cgs-earthquake-landslide': 'fas fa-layer-group',
+            'cgs-tsunami': 'fas fa-layer-group'
         };
         
         const labels = {
@@ -860,7 +978,11 @@ Use the links below for sourced actions and limitations.</div>
             flood: 'Flood Zones', 
             earthquake: 'Fault Lines',
             live: 'Recent Bay Area Earthquakes',
-            zip: `ZIP Boundary ({{ zip_code }})`
+            zip: `ZIP Boundary ({{ zip_code }})`,
+            'cgs-alquist-priolo': 'CGS Alquist-Priolo Fault Zones',
+            'cgs-liquefaction': 'CGS Liquefaction Zones',
+            'cgs-earthquake-landslide': 'CGS Earthquake-Induced Landslide Zones',
+            'cgs-tsunami': 'CGS Tsunami Hazard Areas'
         };
         
         iconElement.className = `${icons[layerType]} layer-icon`;
@@ -882,7 +1004,65 @@ Use the links below for sourced actions and limitations.</div>
             case 'live':
                 loadLiveEarthquakes();
                 break;
+            default:
+                if (layerType.startsWith('cgs-')) {
+                    loadCGSLayer(layerType.replace('cgs-', ''));
+                }
         }
+    }
+
+    function loadCGSLayer(layerKey) {
+        const layerType = `cgs-${layerKey}`;
+        const params = new URLSearchParams({
+            lat: "{{ user_lat }}",
+            lon: "{{ user_lon }}"
+        });
+        fetch(`/api/cgs-map-layer/${layerKey}?${params.toString()}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.data_status === 'data_unavailable') {
+                    setLoadingState(layerType, false);
+                    document.getElementById(`${layerType}-toggle`).classList.remove('active');
+                    showLayerMessage(data.message || 'Official CGS map layer unavailable — not displayed.');
+                    updateActiveLayers();
+                    return;
+                }
+                if (!data.features || data.features.length === 0) {
+                    setLoadingState(layerType, false);
+                    document.getElementById(`${layerType}-toggle`).classList.remove('active');
+                    showLayerMessage(data.message || 'No CGS polygons were returned for this map window. This is not a safety determination.');
+                    updateActiveLayers();
+                    return;
+                }
+
+                const color = cgsLayerColors[layerKey] || '#426b78';
+                layers[layerType] = L.geoJSON(data, {
+                    style: {
+                        color: color,
+                        fillColor: color,
+                        fillOpacity: 0.24,
+                        weight: 2
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const popup = `
+                            <strong>${data.source || 'California Geological Survey'}</strong><br>
+                            ${data.source_summary || 'Official mapped-zone context.'}<br>
+                            <small>Official Provisional. This overlay is informational and is not a site-specific engineering, legal, insurance, evacuation, or emergency determination.</small>
+                        `;
+                        layer.bindPopup(popup);
+                    }
+                }).addTo(map);
+                setLoadingState(layerType, false);
+                document.getElementById(`${layerType}-toggle`).classList.add('active');
+                showLayerMessage(data.message || 'CGS mapped zones displayed.');
+                updateActiveLayers();
+            })
+            .catch(() => {
+                setLoadingState(layerType, false);
+                document.getElementById(`${layerType}-toggle`).classList.remove('active');
+                showLayerMessage('Official CGS map layer unavailable — not displayed.');
+                updateActiveLayers();
+            });
     }
 
     // Load wildfire hazard zones

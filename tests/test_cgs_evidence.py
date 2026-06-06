@@ -3,11 +3,13 @@ import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
 
+from app import app
 from geospatial.models import DatasetProvenance
 from geospatial.adapters.arcgis_feature_service import ArcGISFeatureServiceAdapter
 from geospatial.adapters.arcgis_feature_service import _remote_record_count
 from geospatial.models import GeoPoint
-from hazard_engine import _cgs_public_evidence
+from hazard_engine import _cgs_public_evidence, build_hazard_results, merge_structured_result
+from pydantic_models import LocationResult
 
 
 BASE_DIR = Path(__file__).resolve().parents[1]
@@ -144,6 +146,160 @@ class CGSEvidenceTests(unittest.TestCase):
             "evacuation and response planning",
             registry["cgs_tsunami_hazard_area_remote"]["intended_claim"],
         )
+
+    @patch("hazard_engine.check_cgs_layers")
+    def test_tsunami_seiche_receives_tsunami_evidence(self, check_cgs):
+        def checks(_lat, _lon, dataset_ids=None):
+            if dataset_ids == ["cgs_tsunami_hazard_area_remote"]:
+                return [{
+                    "dataset_id": "cgs_tsunami_hazard_area_remote",
+                    "map_layer_key": "tsunami",
+                    "dataset_name": "California Tsunami Hazard Areas",
+                    "checked": True,
+                    "data_available": True,
+                    "matched": True,
+                    "exposure": "mapped_match",
+                    "result_label": "Inside a CGS mapped tsunami hazard area.",
+                    "priority_band": "Mapped evidence",
+                    "ranking_score": None,
+                    "evidence_tier": "official_mapped_data",
+                    "claim_type": "hazard_zone",
+                    "precision": "address_point",
+                    "source_summary": "CGS tsunami hazard areas support evacuation and response planning.",
+                    "source_id": "cgs_tsunami_hazard_area",
+                    "source_agency": "California Geological Survey",
+                    "source_url": "https://www.conservation.ca.gov/cgs/tsunami/maps",
+                    "effective_date": None,
+                    "checked_at": "2026-06-06T12:00:00Z",
+                    "public_claim_status": "official_provisional",
+                    "matched_features": [{"name": "Inside a CGS mapped tsunami hazard area."}],
+                    "limitations": [
+                        "This result is for evacuation and response planning.",
+                        "This is not a site-specific legal or property determination.",
+                    ],
+                }]
+            return []
+
+        check_cgs.side_effect = checks
+        location = LocationResult(
+            input_address="2301 Shore Line Drive",
+            formatted_address="2301 Shore Line Drive, Alameda, California",
+            lat=37.754029,
+            lon=-122.24918,
+            city="Alameda",
+            county="Alameda County",
+            zip_code="94501",
+        )
+        result = build_hazard_results(
+            [{"name": "Tsunami/Seiche", "slug": "tsunami-seiche"}],
+            location,
+            {},
+        )[0]
+        self.assertEqual(result.hazard_id, "tsunami-seiche")
+        self.assertEqual(len(result.additional_geospatial_evidence), 1)
+        self.assertEqual(
+            result.additional_geospatial_evidence[0]["result_label"],
+            "Inside a CGS mapped tsunami hazard area.",
+        )
+
+
+class CGSPublicRenderingTests(unittest.TestCase):
+    def setUp(self):
+        self.client = app.test_client()
+        with self.client.session_transaction() as session:
+            session.update(
+                zip_code="94501",
+                lat=37.754029,
+                lon=-122.24918,
+                address="2301 Shore Line Drive, Alameda, Alameda County, California, 94501, United States",
+                input_address="2301 Shore Line Drive, Alameda, CA 94501",
+                county="Alameda County",
+                city="Alameda",
+                location_mode="address",
+                household="adults",
+                preparedness="starting",
+                special_needs="",
+                household_tags=[],
+            )
+
+    def test_summary_and_hazard_pages_render_cgs_evidence(self):
+        summary = self.client.get("/risk_summary").get_data(as_text=True)
+        earthquake = self.client.get("/hazards/earthquake").get_data(as_text=True)
+        tsunami = self.client.get("/hazards/tsunami-seiche").get_data(as_text=True)
+
+        self.assertIn("Inside a CGS mapped liquefaction zone.", summary)
+        self.assertIn("Inside a CGS mapped tsunami hazard area.", summary)
+        for expected in (
+            "CGS Alquist-Priolo Earthquake Fault Zones",
+            "CGS Liquefaction Zones",
+            "CGS Earthquake-Induced Landslide Zones",
+        ):
+            self.assertIn(expected, earthquake)
+        self.assertIn("Inside a CGS mapped tsunami hazard area.", tsunami)
+        for page in (summary, earthquake, tsunami):
+            self.assertIn("California Geological Survey", page)
+            self.assertIn("Official Provisional", page)
+            self.assertIn("This official remote dataset is provisional", page)
+
+    def test_map_has_all_cgs_controls_and_provenance_legends(self):
+        page = self.client.get("/map").get_data(as_text=True)
+        for layer_key in (
+            "alquist-priolo",
+            "liquefaction",
+            "earthquake-landslide",
+            "tsunami",
+        ):
+            self.assertIn(f'id="cgs-{layer_key}-toggle"', page)
+            self.assertIn(f'data-cgs-legend="{layer_key}"', page)
+        self.assertIn("California Geological Survey · Official Provisional", page)
+        self.assertIn("Open official CGS source", page)
+        self.assertIn("California Geological Survey. It is not officially endorsed", page)
+        self.assertIn("source_summary", page)
+        self.assertIn("Official CGS map layer unavailable — not displayed.", page)
+
+    @patch("app.GeospatialEvidenceService.map_geojson")
+    def test_cgs_map_api_returns_polygon_metadata(self, map_geojson):
+        map_geojson.return_value = {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "properties": {"ZONE": "test"},
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[
+                        [-122.26, 37.74],
+                        [-122.24, 37.74],
+                        [-122.24, 37.76],
+                        [-122.26, 37.76],
+                        [-122.26, 37.74],
+                    ]],
+                },
+            }],
+        }
+        response = self.client.get(
+            "/api/cgs-map-layer/liquefaction?lat=37.754029&lon=-122.24918"
+        )
+        payload = response.get_json()
+        self.assertEqual(payload["data_status"], "checked")
+        self.assertEqual(payload["feature_count"], 1)
+        self.assertEqual(payload["source"], "California Geological Survey")
+        self.assertEqual(payload["public_claim_status"], "official_provisional")
+        self.assertTrue(payload["source_summary"])
+        self.assertTrue(payload["limitations"])
+
+    @patch("app.GeospatialEvidenceService.map_geojson")
+    def test_cgs_map_api_unavailable_state_is_non_reassuring(self, map_geojson):
+        map_geojson.side_effect = ValueError("service unavailable")
+        payload = self.client.get(
+            "/api/cgs-map-layer/liquefaction?lat=37.754029&lon=-122.24918"
+        ).get_json()
+        self.assertEqual(payload["data_status"], "data_unavailable")
+        self.assertEqual(
+            payload["message"],
+            "Official CGS map layer unavailable — not displayed.",
+        )
+        self.assertNotIn("low risk", payload["message"].lower())
+        self.assertNotIn("no risk", payload["message"].lower())
 
 
 if __name__ == "__main__":

@@ -13,6 +13,8 @@ import re
 from copy import deepcopy
 
 from action_library_service import select_action_ids
+from geospatial.registry import DatasetRegistryError, get_default_registry
+from geospatial.service import GeospatialEvidenceService
 from hazard_engine import build_hazard_results, merge_structured_result
 from location_service import location_from_session
 from rag_service import retrieve_chunks
@@ -64,6 +66,13 @@ DATA_SOURCES = [
         "name": "CAL FIRE",
         "full_name": "California Department of Forestry and Fire Protection",
         "icon": "fa-fire",
+    },
+    {
+        "key": "cgs",
+        "label": "Mapped geologic zones",
+        "name": "CGS",
+        "full_name": "California Geological Survey",
+        "icon": "fa-layer-group",
     },
 ]
 
@@ -118,6 +127,29 @@ ADDITIONAL_HAZARD_PRIORITY = {
     "Dublin": ["landslide", "severe_weather", "dam_failure", "drought"],
     "Livermore": ["severe_weather", "landslide", "dam_failure", "drought"],
     "Pleasanton": ["severe_weather", "landslide", "dam_failure", "drought"],
+}
+
+CGS_MAP_LAYERS = {
+    "alquist-priolo": {
+        "dataset_id": "cgs_alquist_priolo_remote",
+        "label": "CGS Alquist-Priolo Fault Zones",
+        "color": "#c66a2b",
+    },
+    "liquefaction": {
+        "dataset_id": "cgs_liquefaction_remote",
+        "label": "CGS Liquefaction Zones",
+        "color": "#2f7f9f",
+    },
+    "earthquake-landslide": {
+        "dataset_id": "cgs_earthquake_landslide_remote",
+        "label": "CGS Earthquake-Induced Landslide Zones",
+        "color": "#8a6d3b",
+    },
+    "tsunami": {
+        "dataset_id": "cgs_tsunami_hazard_area_remote",
+        "label": "CGS Tsunami Hazard Areas",
+        "color": "#2675a8",
+    },
 }
 
 
@@ -1254,6 +1286,12 @@ def risk_summary():
         if hazard.get("slug") in {"flood", "wildfire", "earthquake"}
     ]
     structured_hazards = core_hazards[:3] if core_hazards else all_structured_hazards[:3]
+    for hazard in all_structured_hazards:
+        if (
+            hazard.get("slug") not in {item.get("slug") for item in structured_hazards}
+            and hazard.get("additional_geospatial_evidence")
+        ):
+            structured_hazards.append(hazard)
     additional_local_hazards = get_additional_local_hazards(location_context, structured_hazards)
     resident_plan = build_resident_plan(
         location_context,
@@ -1342,9 +1380,15 @@ def map():
     address = session.get("address")
     location_context = get_session_location_context()
     location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
+    all_map_hazards = get_all_hazards(get_saved_hazard_profile(), location_context)
     map_hazards = [
-        hazard for hazard in get_all_hazards(get_saved_hazard_profile(), location_context)
+        hazard for hazard in all_map_hazards
         if hazard.get("slug") in {"wildfire", "flood", "earthquake"}
+    ]
+    cgs_map_evidence = [
+        evidence
+        for hazard in all_map_hazards
+        for evidence in hazard.get("additional_geospatial_evidence", [])
     ]
     map_notice = None
 
@@ -1399,6 +1443,8 @@ def map():
         location_mode=location_context.get("location_mode", "zip"),
         location_context=location_context,
         structured_hazards=map_hazards,
+        cgs_map_evidence=cgs_map_evidence,
+        cgs_map_layers=CGS_MAP_LAYERS,
         oakland_hazard_ready=is_oakland_hazard_context(zip_code, address),
     )
 # ---  Page ---
@@ -1665,6 +1711,59 @@ def api_fault_lines():
         "data_status": "data_unavailable",
         "message": "Official layer unavailable — not checked."
     })
+
+
+@app.route("/api/cgs-map-layer/<layer_key>")
+def api_cgs_map_layer(layer_key):
+    layer = CGS_MAP_LAYERS.get(layer_key)
+    if not layer:
+        return jsonify({
+            "type": "FeatureCollection",
+            "features": [],
+            "data_status": "data_unavailable",
+            "message": "Official CGS map layer unavailable — not displayed.",
+        }), 404
+
+    try:
+        lat = float(request.args.get("lat") or session.get("lat"))
+        lon = float(request.args.get("lon") or session.get("lon"))
+        if not is_valid_coordinate(lat, lon):
+            raise ValueError("Coordinates are unavailable.")
+        service = GeospatialEvidenceService(project_root=BASE_DIR)
+        payload = service.map_geojson(
+            layer["dataset_id"],
+            lat=lat,
+            lon=lon,
+        )
+        dataset = get_default_registry().get(layer["dataset_id"])
+        if dataset is None:
+            raise DatasetRegistryError("CGS dataset is not registered.")
+        payload.update({
+            "source": "California Geological Survey",
+            "source_url": dataset.authoritative_landing_url,
+            "source_summary": dataset.source_summary or dataset.intended_claim,
+            "limitations": dataset.prohibited_claims,
+            "public_claim_status": "official_provisional",
+            "feature_count": len(payload.get("features", [])),
+            "filtered": True,
+            "data_status": "checked",
+            "message": (
+                f"Showing {len(payload.get('features', []))} nearby polygons from the official CGS map service."
+                if payload.get("features") else
+                "No CGS polygons were returned for this map window. This is not a safety determination."
+            ),
+        })
+        return jsonify(payload)
+    except (DatasetRegistryError, TypeError, ValueError, requests.RequestException):
+        return jsonify({
+            "type": "FeatureCollection",
+            "features": [],
+            "source": "California Geological Survey",
+            "feature_count": 0,
+            "filtered": True,
+            "data_status": "data_unavailable",
+            "message": "Official CGS map layer unavailable — not displayed.",
+        })
 
 # ZIP boundary API
 @app.route("/api/zip-boundary/<zip_code>")

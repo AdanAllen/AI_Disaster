@@ -38,6 +38,30 @@ class GeospatialEvidenceService:
             return self.arcgis_adapter.check_point(dataset, point)
         return self._not_checked(dataset, "This registered data source cannot perform point checks.")
 
+    def map_geojson(
+        self,
+        dataset_id: str,
+        *,
+        lat: float,
+        lon: float,
+        radius_degrees: float = 0.12,
+    ) -> dict:
+        dataset = self.registry.get(dataset_id)
+        if dataset is None:
+            raise DatasetRegistryError(f"Dataset is not registered: {dataset_id}")
+        if dataset.source_type != "remote_service":
+            raise DatasetRegistryError("Map GeoJSON is only supported for remote services.")
+        point = GeoPoint(lat=lat, lon=lon)
+        if dataset.coverage_bbox and not self._inside_coverage(point, dataset.coverage_bbox):
+            raise DatasetRegistryError("The point is outside the registered dataset coverage.")
+        return self.arcgis_adapter.query_geojson(
+            dataset,
+            min_lat=point.lat - radius_degrees,
+            max_lat=point.lat + radius_degrees,
+            min_lon=point.lon - radius_degrees,
+            max_lon=point.lon + radius_degrees,
+        )
+
     @staticmethod
     def _inside_coverage(point: GeoPoint, bounds) -> bool:
         return (

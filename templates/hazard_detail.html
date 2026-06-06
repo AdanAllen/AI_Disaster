@@ -459,6 +459,7 @@
                         <h3 class="h6 mt-4">California Geological Survey checks</h3>
                         {% for evidence in hazard.additional_geospatial_evidence %}
                         <div class="border rounded-3 p-3 mb-3">
+                            <span class="d-block small fw-semibold text-uppercase text-muted mb-1">{{ evidence.dataset_name }}</span>
                             <strong>{{ evidence.result_label }}</strong>
                             {% if evidence.source_summary %}
                             <p class="mb-2 mt-2">{{ evidence.source_summary }}</p>
@@ -466,6 +467,14 @@
                             {% for limitation in evidence.limitations[:2] %}
                             <small class="d-block text-muted">{{ limitation }}</small>
                             {% endfor %}
+                            <div class="small mt-2">
+                                {% if evidence.source_url %}
+                                <a href="{{ evidence.source_url }}" target="_blank" rel="noopener noreferrer">{{ evidence.source_agency }}</a>
+                                {% else %}
+                                <span>{{ evidence.source_agency }}</span>
+                                {% endif %}
+                                <span> · {{ evidence.public_claim_status | replace('_', ' ') | title }}</span>
+                            </div>
                         </div>
                         {% endfor %}
                         {% endif %}

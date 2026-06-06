@@ -20,20 +20,30 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CGS_DATASETS = {
     "cgs_alquist_priolo_remote": {
         "source_id": "cgs_alquist_priolo",
+        "map_layer_key": "alquist-priolo",
         "match_label": "Inside a CGS mapped Alquist-Priolo fault rupture zone.",
     },
     "cgs_liquefaction_remote": {
         "source_id": "cgs_liquefaction",
+        "map_layer_key": "liquefaction",
         "match_label": "Inside a CGS mapped liquefaction zone.",
     },
     "cgs_earthquake_landslide_remote": {
         "source_id": "cgs_earthquake_landslide",
+        "map_layer_key": "earthquake-landslide",
         "match_label": "Inside a CGS mapped earthquake-induced landslide zone.",
     },
     "cgs_tsunami_hazard_area_remote": {
         "source_id": "cgs_tsunami_hazard_area",
+        "map_layer_key": "tsunami",
         "match_label": "Inside a CGS mapped tsunami hazard area.",
     },
+}
+
+CGS_HAZARD_ALIASES = {
+    "earthquake": "earthquake",
+    "tsunami": "tsunami",
+    "tsunami-seiche": "tsunami",
 }
 
 RECOVERY_CITATION = {
@@ -416,6 +426,7 @@ def _cgs_public_evidence(dataset_id: str, evidence) -> Dict:
     provenance = payload.get("provenance") or {}
     return {
         "dataset_id": dataset_id,
+        "map_layer_key": config["map_layer_key"],
         "dataset_name": provenance.get("dataset_name", ""),
         "checked": checked,
         "data_available": available,
@@ -455,6 +466,7 @@ def check_cgs_layers(
         except (DatasetRegistryError, TypeError, ValueError):
             results.append({
                 "dataset_id": dataset_id,
+                "map_layer_key": CGS_DATASETS[dataset_id]["map_layer_key"],
                 "dataset_name": "",
                 "checked": False,
                 "data_available": False,
@@ -1047,9 +1059,10 @@ def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dic
         else:
             result = _county_result(hazard)
 
-        if hazard_type == "earthquake":
+        cgs_hazard_type = CGS_HAZARD_ALIASES.get(hazard_type)
+        if cgs_hazard_type == "earthquake":
             result = _apply_cgs_evidence(result, earthquake_cgs_checks)
-        elif hazard_type == "tsunami":
+        elif cgs_hazard_type == "tsunami":
             result = _apply_cgs_evidence(result, tsunami_cgs_checks)
         results.append(result)
 
