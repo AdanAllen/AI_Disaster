@@ -20,11 +20,6 @@ from resident_guidance_engine import build_resident_plan
 from source_registry import load_hazard_registry, load_jurisdictions, load_local_plans, load_resident_guidance_chunks, source_records_payload
 from supabase_repository import supabase_health as get_supabase_health
 
-try:
-    from openai import OpenAI
-except Exception:
-    OpenAI = None
-
 # --- Load env vars and setup ---
 load_dotenv(".env")
 load_dotenv("secret.env")
@@ -43,9 +38,6 @@ RISK_DATA_WARNING = "Risk data is temporarily unavailable, but general preparedn
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-client = None
-logger.warning("AI hazard responses are disabled in production-hardening mode; deterministic fallback guidance will be used.")
 
 DATA_SOURCES = [
     {
@@ -196,10 +188,6 @@ def load_hazard_dataset():
     }
 
 
-def get_system_insights():
-    return deepcopy(hazard_dataset.get("system_insights", {}))
-
-
 def normalize_user_profile(payload=None):
     payload = payload or {}
     housing = (payload.get("housing") or "").strip().lower()
@@ -322,18 +310,15 @@ def get_zip_risk_snapshot(zip_code):
     return snapshot
 
 
-def step_priority(step, keywords):
-    text = (step or "").lower()
-    return 0 if any(keyword in text for keyword in keywords) else 1
-
-
 def personalize_hazard(hazard, user, location_context=None):
     # Apply lightweight profile rules without mutating the canonical JSON dataset in memory.
     personalized = deepcopy(hazard)
     personalized["base_priority_score"] = coerce_priority_score(hazard.get("priority_score"))
     personalized["priority_score"] = personalized["base_priority_score"]
     personalized["personalization_notes"] = []
-    personalized["action_steps"] = dedupe_steps(personalized.get("action_steps"))
+    # Raw JSON action strings are not publishable. Structured results replace
+    # this field with validated Action Library records.
+    personalized["action_steps"] = []
 
     user = normalize_user_profile(user)
     location_context = location_context or {}
@@ -359,29 +344,6 @@ def personalize_hazard(hazard, user, location_context=None):
     if not any(user.values()):
         personalized["personalized_what_this_means_for_you"] = personalized.get("what_this_means_for_you", "")
         return personalized
-
-    if user.get("housing") == "renter":
-        personalized["action_steps"] = sorted(
-            personalized["action_steps"],
-            key=lambda step: step_priority(step, ("evacuation", "route", "leave", "bag", "shelter"))
-        )
-        personalized["action_steps"] = dedupe_steps([
-            "Know your building exits, meeting point, and what you can take with you quickly.",
-            *personalized["action_steps"],
-        ])
-        personalized["personalization_notes"].append(
-            "Because you selected renter, evacuation and fast-leave steps are moved to the top."
-        )
-
-    if user.get("age") is not None and user["age"] >= 65:
-        personalized["action_steps"] = dedupe_steps([
-            *personalized["action_steps"],
-            "Pack extra medications, a written medication list, and backup medical supplies.",
-            "Plan transportation and mobility support in case you need help leaving or reaching a safe site."
-        ])
-        personalized["personalization_notes"].append(
-            "Because you selected age 65+, medical and mobility planning steps were added."
-        )
 
     if user.get("location") == "hills" and personalized.get("slug") == "wildfire":
         personalized["priority_score"] = min(personalized["priority_score"] + 2, 10)
@@ -1019,19 +981,6 @@ def get_action_steps(hazard_type, risk_level):
     return get_action_items(action_ids)
 
 
-def build_hazard_fallback_response(hazard, zip_code, score, explanation):
-    try:
-        numeric_score = float(score)
-    except (TypeError, ValueError):
-        numeric_score = 0
-    risk_level = get_risk_level(numeric_score)
-    steps = get_action_steps(hazard, risk_level)
-    return (
-        f"Your {hazard.title()} risk for ZIP {zip_code} is {numeric_score:.1f}/10. "
-        f"{explanation if explanation else RISK_DATA_WARNING}\n\n"
-        "Recommended next steps:\n- " + "\n- ".join(step["label"] for step in steps)
-    )
-
 def load_geojson_file(filename):
     """Helper function to load geojson files safely"""
     filepath = os.path.join(BASE_DIR, "static", filename)
@@ -1198,7 +1147,16 @@ def home():
     error = session.pop("form_error", None)
     form_data = session.pop("form_data", None)
     location_context = get_session_location_context()
-    return safe_render("home.html", error=error, form_data=form_data, location_context=location_context)
+    return safe_render(
+        "home.html",
+        error=error,
+        form_data=form_data,
+        location_context=location_context,
+        homepage_action_examples=get_action_items([
+            "portable_go_bag",
+            "protect_critical_documents",
+        ]),
+    )
 
 
 @app.route("/hazards/profile", methods=["POST"])
@@ -1224,7 +1182,6 @@ def hazards_dashboard():
         "hazards_dashboard.html",
         hazards=hazards,
         top_hazards=top_hazards,
-        system_insights=get_system_insights(),
         user_profile=user_profile,
         location_options=HAZARD_LOCATION_OPTIONS,
         location_context=location_context,
@@ -1775,224 +1732,6 @@ def api_risk_assessment(zip_code):
             "overall_risk": 0,
             "message": RISK_DATA_WARNING
         })
-
-# --- Enhanced Shared Hazard Page Generator ---
-def hazard_page(hazard, title, color):
-    zip_code = session.get("zip_code", "94601")
-
-    try:
-        zip_geojson_data = get_zip_boundary(zip_code)
-        zip_geojson = json.dumps(zip_geojson_data) if zip_geojson_data else "{}"
-    except Exception:
-        logger.exception("Hazard page ZIP boundary failed for %s", zip_code)
-        zip_geojson = "{}"
-
-    chat_key = f"chat_{hazard}"
-    meta_key = f"meta_{hazard}"
-
-    household_size = session.get("household", "Unknown")
-    special_needs = session.get("special_needs", "None")
-    preparedness_level = session.get("preparedness", "Unknown")
-
-    inputs = (household_size, special_needs, preparedness_level)
-
-    metadata = session.get(meta_key, {})
-    chat = session.get(chat_key, [])
-
-    regen_needed = (
-        not metadata or
-        metadata.get("zip_code") != zip_code or
-        metadata.get("inputs") != inputs
-    )
-
-    if regen_needed:
-        # Get comprehensive data for this ZIP code
-        data = zip_risk_data.get(zip_code, {})
-        
-        # Extract risk scores and explanations
-        earthquake_score = data.get("Earthquake_Risk_Score", "Unknown")
-        earthquake_explanation = data.get("Earthquake_Risk_Explanation", "No data available")
-        flood_score = data.get("Flood_Risk_Score", "Unknown")
-        flood_explanation = data.get("Flood_Risk_Explanation", "No data available")
-        wildfire_score = data.get("Wildfire_Risk_Score", "Unknown")
-        wildfire_explanation = data.get("Wildfire_Risk_Explanation", "No data available")
-        
-        # Get specific hazard data
-        if hazard == "wildfire":
-            current_score = wildfire_score
-            current_explanation = wildfire_explanation
-            wildfire_hazard_level = data.get("Wildfire_Hazard_Level", "Unknown")
-            custom_prompt = data.get("Wildfire_Chatbot_Prompt", "")
-        elif hazard == "flood":
-            current_score = flood_score
-            current_explanation = flood_explanation
-            flood_control_district = data.get("Flood_Control_District", "Unknown")
-            custom_prompt = data.get("Flood_Chatbot_Prompt", "")
-        elif hazard == "earthquake":
-            current_score = earthquake_score
-            current_explanation = earthquake_explanation
-            custom_prompt = data.get("Earthquake_Chatbot_Prompt", "")
-        
-        # Build comprehensive context-aware prompt
-        prompt_text = f"""You are a disaster preparedness assistant specializing in {hazard} safety for Alameda County residents. 
-
-LOCATION CONTEXT:
-- ZIP Code: {zip_code}
-- {hazard.title()} Risk Score: {current_score}/10
-- Risk Assessment: {current_explanation}
-"""
-
-        # Add hazard-specific context
-        if hazard == "wildfire":
-            prompt_text += f"- Wildfire Hazard Level: {wildfire_hazard_level}\n"
-            prompt_text += f"- All Risk Scores - Wildfire: {wildfire_score}/10, Earthquake: {earthquake_score}/10, Flood: {flood_score}/10\n"
-        elif hazard == "flood":
-            prompt_text += f"- Flood Control District: {flood_control_district}\n"
-            prompt_text += f"- All Risk Scores - Flood: {flood_score}/10, Wildfire: {wildfire_score}/10, Earthquake: {earthquake_score}/10\n"
-        elif hazard == "earthquake":
-            prompt_text += f"- All Risk Scores - Earthquake: {earthquake_score}/10, Wildfire: {wildfire_score}/10, Flood: {flood_score}/10\n"
-
-        prompt_text += f"""
-HOUSEHOLD CONTEXT:
-- Household Size: {household_size} {"person" if household_size == "1" else "people"}
-- Special Medical Needs: {special_needs if special_needs and special_needs.strip() else "None reported"}
-- Current Preparedness Level: {preparedness_level}
-
-INSTRUCTIONS:
-1. Start with a personalized greeting that acknowledges their specific risk level and location
-2. Reference their {hazard} risk score ({current_score}/10) and explain what this means for them specifically
-3. Consider their household size, medical needs, and current preparedness level in all recommendations
-4. If they have medical needs, prioritize those considerations in your advice
-5. Give 4-6 specific, actionable steps tailored to their situation
-6. Include local resources specific to Alameda County when relevant
-7. If their risk score is high (7+), emphasize urgency and evacuation planning
-8. If their risk score is moderate (4-6), focus on preparation and monitoring
-9. If their risk score is low (1-3), focus on basic preparedness and awareness
-
-CUSTOM GUIDANCE:
-{custom_prompt if custom_prompt else f"Focus on {hazard}-specific safety measures appropriate for their risk level."}
-
-Remember: Be encouraging but realistic about their risk level. Provide specific, actionable advice they can implement immediately."""
-
-        messages = [
-            {"role": "system", "content": f"You are a knowledgeable disaster preparedness assistant specializing in {hazard} safety for Alameda County. You provide personalized advice based on specific risk data, household needs, and local conditions. Always be helpful, encouraging, and specific in your recommendations."},
-            {"role": "user", "content": prompt_text}
-        ]
-
-        if client:
-            try:
-                response = client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=messages,
-                    max_tokens=800,
-                    temperature=0.7
-                )
-                initial_response = response.choices[0].message.content
-            except Exception:
-                logger.exception("Initial AI response failed for %s", hazard)
-                initial_response = build_hazard_fallback_response(hazard, zip_code, current_score, current_explanation)
-        else:
-            initial_response = build_hazard_fallback_response(hazard, zip_code, current_score, current_explanation)
-
-        # Store comprehensive metadata for continued conversation
-        metadata = {
-            "zip_code": zip_code,
-            "inputs": inputs,
-            "initial_prompt": prompt_text,
-            "initial_response": initial_response,
-            "risk_data": {
-                "current_score": current_score,
-                "current_explanation": current_explanation,
-                "all_scores": {
-                    "earthquake": earthquake_score,
-                    "flood": flood_score,
-                    "wildfire": wildfire_score
-                },
-                "hazard_specific": data
-            }
-        }
-        session[meta_key] = metadata
-        session[chat_key] = []
-
-    # Ensure initial response is in chat
-    if not any(msg.get("content") == metadata["initial_response"] for msg in chat):
-        chat.insert(0, {"role": "assistant", "content": metadata["initial_response"]})
-
-    reply = None
-    if request.method == "POST":
-        user_input = request.form.get("message")
-        if user_input:
-            chat.append({"role": "user", "content": user_input})
-            
-            # Build context-aware conversation with all the risk data
-            context_messages = [
-                {"role": "system", "content": f"""You are a disaster preparedness assistant for {hazard} safety in Alameda County. 
-
-CONTINUE THIS CONVERSATION WITH FULL CONTEXT:
-- User Location: ZIP {zip_code}
-- {hazard.title()} Risk: {metadata['risk_data']['current_score']}/10
-- Risk Explanation: {metadata['risk_data']['current_explanation']}
-- Household: {household_size} people
-- Medical Needs: {special_needs if special_needs and special_needs.strip() else "None"}
-- Preparedness Level: {preparedness_level}
-
-Always reference their specific situation and risk level when answering questions. Be helpful and specific."""},
-                {"role": "user", "content": metadata["initial_prompt"]},
-                {"role": "assistant", "content": metadata["initial_response"]},
-            ]
-            
-            # Add recent conversation history
-            context_messages.extend(chat)
-
-            if client:
-                try:
-                    response = client.chat.completions.create(
-                        model="gpt-3.5-turbo",
-                        messages=context_messages,
-                        max_tokens=600,
-                        temperature=0.7
-                    )
-                    reply = response.choices[0].message.content
-                    chat.append({"role": "assistant", "content": reply})
-                    session[chat_key] = chat
-                except Exception:
-                    logger.exception("Follow-up AI response failed for %s", hazard)
-                    reply = build_hazard_fallback_response(
-                        hazard,
-                        zip_code,
-                        metadata['risk_data']['current_score'],
-                        metadata['risk_data']['current_explanation']
-                    )
-            else:
-                reply = build_hazard_fallback_response(
-                    hazard,
-                    zip_code,
-                    metadata['risk_data']['current_score'],
-                    metadata['risk_data']['current_explanation']
-                )
-
-    # Load fault data for earthquake pages
-    fault_geojson = None
-    if hazard == "earthquake":
-        fault_data = load_geojson_file("Fault_lines.Geojson")
-        if fault_data:
-            fault_geojson = json.dumps(fault_data)
-
-    return safe_render(
-        f"{hazard}.html",
-        zip_code=zip_code,
-        zip_geojson=zip_geojson,
-        initial_response=metadata["initial_response"],
-        chat=chat,
-        reply=reply,
-        fault_geojson=fault_geojson if hazard == "earthquake" else None,
-        # Pass risk data to template for display
-        risk_score=metadata['risk_data']['current_score'],
-        risk_explanation=metadata['risk_data']['current_explanation'],
-        household_size=household_size,
-        special_needs=special_needs,
-        preparedness_level=preparedness_level
-    )
 
 # --- Hazard Routes ---
 @app.route("/wildfire", methods=["GET", "POST"])

@@ -20,8 +20,7 @@
     }
 
     .resource-card,
-    .contact-card,
-    .tip-card {
+    .contact-card {
         background: rgba(255, 255, 255, 0.96);
         border: 1px solid #d8e4ec;
         border-radius: 24px;
@@ -29,8 +28,7 @@
     }
 
     .resource-card,
-    .contact-card,
-    .tip-card {
+    .contact-card {
         padding: 1.6rem;
         height: 100%;
     }
@@ -58,9 +56,6 @@
         margin-bottom: 0.35rem;
     }
 
-    .tip-card {
-        background: linear-gradient(180deg, #ffffff 0%, #f5f8fb 100%);
-    }
 </style>
 {% endblock %}
 
@@ -68,8 +63,8 @@
 <section class="resources-hero">
     <div class="container">
         <span class="section-eyebrow text-white-50">Preparedness Resources</span>
-        <h1 class="display-4 fw-bold mb-3">Trusted next steps beyond the map and scorecards</h1>
-        <p class="lead mb-0">Use this page when you are ready to move from understanding risk into building a household plan, gathering supplies, and connecting with official local resources.</p>
+        <h1 class="display-4 fw-bold mb-3">Official preparedness and emergency resource directory</h1>
+        <p class="lead mb-0">These links open official agency pages. This directory does not create or personalize preparedness recommendations.</p>
     </div>
 </section>
 
@@ -79,33 +74,33 @@
             <div class="col-lg-6 col-xl-3">
                 <div class="resource-card">
                     <div class="resource-icon emergency"><i class="fas fa-kit-medical"></i></div>
-                    <h2 class="h5 fw-bold mb-3">Emergency kit checklist</h2>
-                    <p class="text-muted mb-4">Review the essentials every household should keep ready for at least 72 hours, including water, food, medication, lighting, and documents.</p>
-                    <a href="https://www.ready.gov/kit" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary">Open Ready.gov Kit Guide</a>
+                    <h2 class="h5 fw-bold mb-3">Ready.gov kit guide</h2>
+                    <p class="text-muted mb-4">Federal Emergency Management Agency information about emergency supply kits.</p>
+                    <a href="https://www.ready.gov/kit" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary">Open Official Guide</a>
                 </div>
             </div>
             <div class="col-lg-6 col-xl-3">
                 <div class="resource-card">
                     <div class="resource-icon prep"><i class="fas fa-users"></i></div>
-                    <h2 class="h5 fw-bold mb-3">Family emergency plan</h2>
-                    <p class="text-muted mb-4">Build a communication plan, pick meeting points, and define roles so your household knows what to do under pressure.</p>
-                    <a href="https://www.ready.gov/plan" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary">Build A Family Plan</a>
+                    <h2 class="h5 fw-bold mb-3">Ready.gov planning guide</h2>
+                    <p class="text-muted mb-4">Federal Emergency Management Agency information about household emergency planning.</p>
+                    <a href="https://www.ready.gov/plan" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary">Open Official Guide</a>
                 </div>
             </div>
             <div class="col-lg-6 col-xl-3">
                 <div class="resource-card">
                     <div class="resource-icon local"><i class="fas fa-map-location-dot"></i></div>
                     <h2 class="h5 fw-bold mb-3">Alameda County emergency resources</h2>
-                    <p class="text-muted mb-4">Find county emergency management information, situational updates, alerts, and local preparedness resources.</p>
-                    <a href="https://www.alamedacountyca.gov/emergencysite/emergency-site.htm" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary">Open County Resources</a>
+                    <p class="text-muted mb-4">Alameda County emergency information, updates, and agency resource links.</p>
+                    <a href="https://www.alamedacountyca.gov/emergencysite/emergency-site.htm" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary">Open Official County Page</a>
                 </div>
             </div>
             <div class="col-lg-6 col-xl-3">
                 <div class="resource-card">
                     <div class="resource-icon communication"><i class="fas fa-bell"></i></div>
-                    <h2 class="h5 fw-bold mb-3">Alert and warning systems</h2>
-                    <p class="text-muted mb-4">Sign up for official emergency notifications so you can receive warnings, evacuation instructions, and local updates quickly.</p>
-                    <a href="https://member.everbridge.net/892807736729179/login" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary">Review Local Alerts</a>
+                    <h2 class="h5 fw-bold mb-3">AC Alert registration</h2>
+                    <p class="text-muted mb-4">The official Alameda County public warning-system registration page.</p>
+                    <a href="https://member.everbridge.net/892807736729179/login" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary">Open Official Registration</a>
                 </div>
             </div>
         </div>
@@ -119,49 +114,23 @@
                 <div class="contact-card">
                     <span class="section-eyebrow">Emergency Contacts</span>
                     <div class="contact-number">911</div>
-                    <p class="mb-0 text-muted">Immediate emergencies that threaten life or property.</p>
+                    <p class="mb-0 text-muted">United States emergency telephone number.</p>
                 </div>
             </div>
             <div class="col-lg-4">
                 <div class="contact-card">
-                    <span class="section-eyebrow">Utility Safety</span>
+                    <span class="section-eyebrow">Community Services</span>
                     <div class="contact-number">211</div>
-                    <p class="mb-0 text-muted">Community services, local support, and non-emergency guidance.</p>
+                    <p class="mb-3 text-muted">Official directory for local community and non-emergency support services.</p>
+                    <a href="https://www.211alamedacounty.org/" target="_blank" rel="noopener noreferrer">Open 211 Alameda County</a>
                 </div>
             </div>
             <div class="col-lg-4">
                 <div class="contact-card">
                     <span class="section-eyebrow">Power Outage</span>
                     <div class="contact-number">PG&amp;E</div>
-                    <p class="mb-0 text-muted">Check outage maps, restoration status, and utility emergency updates.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="resource-section pt-0">
-    <div class="container">
-        <div class="row g-4">
-            <div class="col-lg-4">
-                <div class="tip-card">
-                    <span class="section-eyebrow">Tip 1</span>
-                    <h3 class="h5 fw-bold mb-3">Start with one bag</h3>
-                    <p class="mb-0 text-muted">If you are feeling behind, do not try to build your whole household system at once. Start with one go-bag and one contact list.</p>
-                </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="tip-card">
-                    <span class="section-eyebrow">Tip 2</span>
-                    <h3 class="h5 fw-bold mb-3">Match supplies to your household</h3>
-                    <p class="mb-0 text-muted">Medication, mobility tools, pet needs, chargers, and backup power matter more than generic lists if they fit your real life.</p>
-                </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="tip-card">
-                    <span class="section-eyebrow">Tip 3</span>
-                    <h3 class="h5 fw-bold mb-3">Use the app flow together</h3>
-                    <p class="mb-0 text-muted">Start with the risk summary, confirm what matters most on the map, and then come back here to gather resources for that hazard.</p>
+                    <p class="mb-3 text-muted">Official utility outage and safety information.</p>
+                    <a href="https://www.pge.com/en/outages-and-safety.html" target="_blank" rel="noopener noreferrer">Open PG&amp;E Outage and Safety</a>
                 </div>
             </div>
         </div>

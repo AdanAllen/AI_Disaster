@@ -151,6 +151,41 @@ class GISAvailabilityTests(unittest.TestCase):
         self.assertEqual(result.exposure_level, "unknown")
         self.assertFalse(result.is_in_hazard_zone)
 
+    def test_provisional_wildfire_non_match_does_not_create_low_exposure(self):
+        location = LocationResult(
+            input_address="1 Test Street",
+            formatted_address="1 Test Street, Oakland, California",
+            lat=37.80,
+            lon=-122.20,
+            city="Oakland",
+            county="Alameda County",
+            zip_code="94601",
+        )
+        hazards = [{"name": "Wildfire", "slug": "wildfire", "risk_level": "low", "priority_score": 1}]
+        with patch("hazard_engine.check_wildfire_layer") as wildfire_check:
+            wildfire_check.return_value = {
+                "checked": True,
+                "data_status": "not_in_layer",
+                "message": "",
+                "inside": False,
+                "layers": [],
+                "geospatial_evidence": {
+                    "claim_type": "hazard_zone",
+                    "checked_at": "2026-06-06T12:00:00Z",
+                    "effective_date": None,
+                    "public_claim_status": "official_provisional",
+                    "source_agency": "California Department of Forestry and Fire Protection",
+                    "source_url": "https://www.fire.ca.gov/osfm/what-we-do/community-wildfire-preparedness-and-mitigation/fire-hazard-severity-zones",
+                    "limitations": ["A non-match is not a safety determination."],
+                },
+            }
+            result = build_hazard_results(hazards, location, {})[0]
+        self.assertEqual(result.data_status, "not_in_layer")
+        self.assertEqual(result.exposure_level, "unknown")
+        self.assertFalse(result.is_in_hazard_zone)
+        self.assertIn("not a safety determination", result.why_shown.lower())
+        self.assertIn("smoke", " ".join(result.limitations).lower())
+
     def test_fault_proximity_is_not_zone_membership(self):
         self.write_layer(
             "Fault_lines.Geojson",

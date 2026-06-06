@@ -147,14 +147,6 @@ def _resident_guidance_items(result: HazardResult, *phases: str) -> List:
     return items
 
 
-def _resident_actions(result: HazardResult) -> List[str]:
-    actions = []
-    for item in _resident_guidance_items(result, "before", "during", "after", "limitations"):
-        actions.append(item.recommended_action or item.plain_language)
-    actions.extend(action.label for action in result.recommended_actions)
-    return _dedupe_text(actions)
-
-
 def _local_summary(result: HazardResult) -> str:
     location_context = _dedupe_text(result.specialized_guidance.location_specific_context)
     if location_context:
@@ -746,14 +738,20 @@ def _wildfire_address_result(hazard: Dict, location_result, wildfire_check: Dict
     hazard_layers = [layer for layer in layers if _fire_layer_is_hazard_zone(layer)]
     inside = bool(hazard_layers)
     hazard_class = (hazard_layers[0].get("hazard_class", "") if hazard_layers else "").lower()
-    exposure = "high" if "very high" in hazard_class or "high" in hazard_class else "medium" if inside else "low"
+    exposure = "high" if "very high" in hazard_class or "high" in hazard_class else "medium" if inside else "unknown"
     specialized_guidance = _specialized_guidance(location_result, hazard_type, user_context)
+    geospatial_evidence = wildfire_check.get("geospatial_evidence") or {}
     limitations = [
-        "This checks the saved address point against the loaded CAL FIRE fire hazard polygon layer.",
+        "This checks the saved address point against StayReady's provisional local CAL FIRE fire hazard polygon snapshot.",
         "Fire hazard zones do not capture all wildfire smoke, evacuation, power shutoff, or ember exposure.",
     ]
     if not inside:
-        limitations.append("Not being inside the loaded fire hazard polygon does not mean smoke, evacuation, or regional wildfire impacts are impossible.")
+        limitations.append(
+            "Not matching the checked provisional snapshot does not mean there is no wildfire, smoke, ember, evacuation, or regional fire impact."
+        )
+    limitations = _dedupe_text(
+        limitations + list(geospatial_evidence.get("limitations") or [])
+    )
 
     zone_text = f" and matched {hazard_layers[0]['name']}" if hazard_layers else ""
     context_text = f" The address matched {layers[0]['name']}, which is not treated here as a moderate/high/very-high fire hazard zone." if layers and not inside else ""
@@ -769,13 +767,19 @@ def _wildfire_address_result(hazard: Dict, location_result, wildfire_check: Dict
         is_in_hazard_zone=inside,
         match_type="inside" if inside else "none",
         matched_layers=layers,
-        source_url=get_source("calfire_fhsz").url,
-        confidence="source_backed",
+        geospatial_evidence=geospatial_evidence or None,
+        claim_type=geospatial_evidence.get("claim_type", ""),
+        checked_at=geospatial_evidence.get("checked_at", ""),
+        effective_date=geospatial_evidence.get("effective_date") or "",
+        public_claim_status=geospatial_evidence.get("public_claim_status", ""),
+        source_agency=geospatial_evidence.get("source_agency", ""),
+        source_url=geospatial_evidence.get("source_url") or get_source("calfire_fhsz").url,
+        confidence="mixed_support",
         review_status="draft_reviewed",
         why_shown=(
-            f"Wildfire is shown because the saved address point was checked against a CAL FIRE fire hazard layer{zone_text}."
+            f"Wildfire is shown because the saved address point was checked against StayReady's provisional local CAL FIRE snapshot{zone_text}."
             if inside else
-            f"Wildfire is shown because the saved address point was checked against the CAL FIRE fire hazard layer and was not inside a loaded moderate, high, or very-high fire hazard zone.{context_text}"
+            f"Wildfire is shown because the saved address point did not match a loaded moderate, high, or very-high fire hazard polygon in StayReady's provisional local CAL FIRE snapshot. This is not a safety determination.{context_text}"
         ),
         limitations=limitations,
         recommended_actions=_actions_for(location_result, hazard_type, "before", "today", "this_week"),
@@ -912,7 +916,6 @@ def merge_structured_result(hazard: Dict, result: HazardResult) -> Dict:
     merged = deepcopy(hazard)
     payload = result.model_dump(mode="json")
     local_summary = _local_summary(result)
-    resident_actions = _resident_actions(result)
     merged["structured_result"] = payload
     merged["scope_label"] = display_scope(result.scope)
     merged["data_status_label"] = display_data_status(result.data_status)
@@ -933,7 +936,6 @@ def merge_structured_result(hazard: Dict, result: HazardResult) -> Dict:
     merged["real_world_impact"] = _local_impact(result)
     merged["priority_reason"] = result.why_shown
     merged["action_steps"] = [item.model_dump(mode="json") for item in result.recommended_actions]
-    merged["action_step_text"] = resident_actions
     merged["top_risks"] = _local_top_risks(result)
     merged["locations"] = _local_locations(result)
     merged["at_risk_groups"] = _dedupe_text(

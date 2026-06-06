@@ -294,15 +294,6 @@ def _match_facts(city: str, hazard: str, location_context: Optional[Dict] = None
     }
 
 
-def _guidance_from_chunks(hazard: Dict, phase: str) -> List[str]:
-    guidance = ((hazard.get("specialized_guidance") or {}).get("resident_guidance") or {})
-    items = guidance.get(phase) or []
-    values = []
-    for item in items:
-        values.append(item.get("recommended_action") or item.get("recovery_question") or item.get("plain_language"))
-    return _dedupe(values)
-
-
 def _guidance_from_facts(facts: List[Dict], field: str) -> List[str]:
     values = []
     for fact in facts:

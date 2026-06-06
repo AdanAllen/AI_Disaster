@@ -191,6 +191,7 @@ class RenderedActionTests(unittest.TestCase):
         self.assertIn("Source:", rendered)
         self.assertIn(action["citation"]["source_name"], rendered)
         self.assertIn(action["why_shown"], rendered)
+        self.assertIn(action["citation"]["source_summary"], rendered)
 
 
 if __name__ == "__main__":

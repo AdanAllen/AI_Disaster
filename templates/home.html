@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_action_macros.html" import action_item %}
 
 {% block title %}Stay Ready Now - Alameda County Disaster Preparedness Guidance{% endblock %}
 
@@ -222,7 +223,7 @@
                     </div>
                 </div>
                 <div class="col-lg-7">
-                    <article class="sr-card sr-preview-card" aria-label="Mock risk summary preview">
+                    <article class="sr-card sr-preview-card" aria-label="Example risk summary preview">
                         <div class="sr-preview-header">
                             <div>
                                 <span class="sr-badge">Example result</span>
@@ -264,14 +265,12 @@
                         </div>
 
                         <div class="sr-preview-actions">
+                            {% for action in homepage_action_examples %}
                             <div>
-                                <span>Action steps</span>
-                                <strong>Build a go-bag, alert plan, and utility safety plan.</strong>
+                                <span>Reviewed example action</span>
+                                {{ action_item(action) }}
                             </div>
-                            <div>
-                                <span>Recovery prep</span>
-                                <strong>Save documents, insurance info, medications, and housing options.</strong>
-                            </div>
+                            {% endfor %}
                         </div>
                     </article>
                 </div>

@@ -13,5 +13,6 @@
         {% if action.citation.source_section %} · {{ action.citation.source_section }}{% endif %}
         {% if action.citation.source_page %} · page {{ action.citation.source_page }}{% endif %}
     </small>
+    <small class="d-block text-muted">Source note: {{ action.citation.source_summary }}</small>
 </div>
 {%- endmacro %}
