@@ -191,8 +191,11 @@ class ResidentGuidanceEngineTests(unittest.TestCase):
             session_data={"household_tags": ["pets", "no_car", "renter"]},
         )
         self.assertEqual(plan["hazards"][0]["evidence_tier"], "area_based")
-        labels = {item["label"] for item in plan["household_priorities"]}
-        self.assertEqual(labels, {"Pets", "No reliable car access", "Renter recovery"})
+        action_ids = {item["action_id"] for item in plan["household_priorities"]}
+        self.assertIn("pet_disaster_kit", action_ids)
+        self.assertIn("no_car_evacuation_plan", action_ids)
+        self.assertIn("renter_documents_insurance", action_ids)
+        self.assertTrue(all(item["citation"]["source_url"] for item in plan["household_priorities"]))
 
     def test_city_detection_does_not_confuse_alameda_county_for_alameda_city(self):
         result = location_from_session({

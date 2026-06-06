@@ -8,81 +8,52 @@ from typing import Dict, List, Optional
 from shapely.geometry import Point, shape
 from shapely.ops import nearest_points
 
+from action_library_service import select_actions
 from pydantic_models import HazardResult, PreparednessAction, RecoveryQuestion, ResidentGuidanceItem, SpecializedGuidance
 from source_registry import get_city_chunks, get_local_plan_for_city, get_resident_guidance, get_source, get_sources_for_hazard
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+RECOVERY_CITATION = {
+    "source_id": "ready_recovery",
+    "source_name": "Ready.gov Recovering from Disaster",
+    "source_url": "https://www.ready.gov/recovering-disaster",
+    "source_summary": "Ready.gov recovery guidance covers safety, documents, insurance, immediate needs, and household recovery.",
+}
+
 RECOVERY_QUESTIONS = [
     RecoveryQuestion(
         id="documents",
         question="Where are copies of your IDs, insurance papers, lease or mortgage records, and medical documents?",
-        source_id="ready_recovery",
+        **RECOVERY_CITATION,
     ),
     RecoveryQuestion(
         id="housing",
         question="Where could your household stay for the first week if your home is unsafe?",
-        source_id="ready_recovery",
+        **RECOVERY_CITATION,
     ),
     RecoveryQuestion(
         id="medical",
         question="How would you replace medications, medical devices, or backup power if services were disrupted?",
-        source_id="ready_recovery",
+        **RECOVERY_CITATION,
     ),
     RecoveryQuestion(
         id="family-continuity",
         question="How will family members, pets, children, school, and work needs be handled during recovery?",
-        source_id="ready_recovery",
+        **RECOVERY_CITATION,
     ),
     RecoveryQuestion(
         id="transportation",
         question="If your normal vehicle, transit route, or rideshare option is unavailable, what is your backup transportation plan?",
-        source_id="ready_recovery",
+        **RECOVERY_CITATION,
     ),
     RecoveryQuestion(
         id="financial-recovery",
         question="How would you cover deductibles, temporary supplies, lost work time, or urgent repairs during the first month of recovery?",
-        source_id="ready_recovery",
+        **RECOVERY_CITATION,
     ),
 ]
-
-HAZARD_RECOVERY_NEEDS = {
-    "wildfire": [
-        "Document smoke damage and evacuation expenses.",
-        "Plan for temporary housing if air quality, utilities, or access roads make home unsafe.",
-        "Keep medication, pet, child, school, and work continuity plans ready for rapid evacuation.",
-    ],
-    "flood": [
-        "Photograph damage before cleanup when it is safe.",
-        "Keep insurance, lease, title, and repair contact information accessible above floor level.",
-        "Plan where to stay if utilities, mold, or structural damage make the home unsafe.",
-    ],
-    "earthquake": [
-        "Prepare for extended utility outages and delayed building inspections.",
-        "Know how to access medications, mobility devices, and backup power if roads or elevators are disrupted.",
-        "Plan for school, work, child, pet, and family reunification if communication systems are limited.",
-    ],
-}
-
-DEFAULT_ACTIONS = {
-    "wildfire": [
-        PreparednessAction(id="alerts", label="Turn on official local emergency alerts.", source_id="alameda_county_emergency"),
-        PreparednessAction(id="go-bag", label="Pack a go-bag with medications, chargers, documents, and water.", source_id="ready_kit"),
-        PreparednessAction(id="routes", label="Identify two ways to leave your neighborhood before smoke or road closures arrive.", source_id="ready_plan"),
-    ],
-    "flood": [
-        PreparednessAction(id="higher-ground", label="Know the fastest route to higher ground.", source_id="ready_floods"),
-        PreparednessAction(id="documents", label="Store key documents and valuables above floor level.", source_id="ready_floods"),
-        PreparednessAction(id="avoid-water", label="Do not walk or drive through floodwater.", source_id="ready_floods"),
-    ],
-    "earthquake": [
-        PreparednessAction(id="secure-items", label="Secure heavy furniture, shelves, and televisions.", source_id="ready_earthquakes"),
-        PreparednessAction(id="safe-spots", label="Pick safe spots in each room away from windows.", source_id="ready_earthquakes"),
-        PreparednessAction(id="drill", label="Practice drop, cover, and hold on.", source_id="ready_earthquakes"),
-    ],
-}
-
 
 def normalize_exposure(level: str) -> str:
     value = (level or "").strip().lower()
@@ -155,6 +126,17 @@ def _dedupe_text(items: List[str]) -> List[str]:
     return deduped
 
 
+def _actions_for(location_result, hazard_type: str, *time_buckets: str, limit: int = 4) -> List[PreparednessAction]:
+    return select_actions(
+        hazards=[hazard_type],
+        time_buckets=time_buckets or ["before"],
+        city=getattr(location_result, "city", ""),
+        county=getattr(location_result, "county", ""),
+        trigger_types=["general", "hazard_result", "location"],
+        limit=limit,
+    )
+
+
 def _resident_guidance_items(result: HazardResult, *phases: str) -> List:
     items = []
     guidance = result.specialized_guidance.resident_guidance or {}
@@ -191,7 +173,7 @@ def _local_impact(result: HazardResult) -> str:
         return "Recovery planning question: " + recovery_questions[0]
     if result.specialized_guidance.recovery_needs:
         return " ".join(result.specialized_guidance.recovery_needs[:2])
-    return "Recovery planning should account for documents, insurance, housing, medications, pets, transportation, and school or work continuity."
+    return "Reviewed recovery actions are listed separately with their supporting sources."
 
 
 def _local_top_risks(result: HazardResult) -> List[str]:
@@ -545,23 +527,11 @@ def _specialized_guidance(location_result, hazard_type: str, user_context: Optio
         city_context = [chunk.get("text", "") for chunk in city_chunks if chunk.get("text")]
     household_factors = []
     access_functional_needs = []
-
-    household = str(user_context.get("household") or "").strip()
-    preparedness = str(user_context.get("preparedness") or "").strip()
     special_needs = str(user_context.get("special_needs") or "").strip()
 
-    if household:
-        household_factors.append(f"Plan supplies, evacuation, and recovery around a household size of {household}.")
-    if preparedness and preparedness not in {"", "Unknown"}:
-        household_factors.append(f"Current preparedness was marked as {preparedness}; keep next steps practical and staged.")
     if special_needs:
-        access_functional_needs.append(f"Account for reported medical or access needs: {special_needs}.")
-    else:
-        access_functional_needs.append("Check whether anyone depends on medications, mobility equipment, powered medical devices, caregivers, or accessible transportation.")
+        access_functional_needs.append(f"Reported household need: {special_needs}.")
 
-    recovery_needs = HAZARD_RECOVERY_NEEDS.get(hazard_type, [
-        "Keep documents, insurance, housing, medications, transportation, and family continuity plans accessible.",
-    ])
     if not city_context and location_result.city:
         if plan and plan.get("review_status") == "needs_source_review":
             guidance_source_status = "needs_source_review"
@@ -578,7 +548,7 @@ def _specialized_guidance(location_result, hazard_type: str, user_context: Optio
         city_context=city_context,
         household_factors=household_factors,
         access_functional_needs=access_functional_needs,
-        recovery_needs=recovery_needs,
+        recovery_needs=[],
         resident_guidance=grouped_guidance,
         guidance_source_status=guidance_source_status,
         source_ids=source_ids,
@@ -622,7 +592,7 @@ def _jurisdiction_result(hazard: Dict, location_result, zip_snapshot: Dict, user
             "identify it as relevant for local preparedness planning."
         ),
         limitations=limitations,
-        recommended_actions=DEFAULT_ACTIONS.get(hazard_type, DEFAULT_ACTIONS["earthquake"]),
+        recommended_actions=_actions_for(location_result, hazard_type, "before", "today", "this_week"),
         recovery_questions=RECOVERY_QUESTIONS,
         sources=_source_payload(
             hazard_type,
@@ -667,7 +637,7 @@ def _zip_result(hazard: Dict, location_result, zip_snapshot: Dict, user_context:
             "ZIP estimates are fallback guidance and do not prove whether an individual address is inside a hazard zone.",
             "Use official maps and emergency instructions for final decisions.",
         ],
-        recommended_actions=DEFAULT_ACTIONS.get(hazard_type, DEFAULT_ACTIONS["earthquake"]),
+        recommended_actions=_actions_for(location_result, hazard_type, "before", "today", "this_week"),
         recovery_questions=RECOVERY_QUESTIONS,
         sources=_source_payload(
             hazard_type,
@@ -702,7 +672,13 @@ def _county_result(hazard: Dict) -> HazardResult:
         limitations=[
             "This is countywide guidance only. No address, city, or ZIP-specific hazard check is available for this result.",
         ],
-        recommended_actions=DEFAULT_ACTIONS.get(hazard_type, DEFAULT_ACTIONS["earthquake"]),
+        recommended_actions=select_actions(
+            hazards=[hazard_type],
+            time_buckets=["before", "today", "this_week"],
+            county="Alameda County",
+            trigger_types=["general", "hazard_result", "location"],
+            limit=4,
+        ),
         recovery_questions=RECOVERY_QUESTIONS,
         sources=_source_payload(hazard_type, ["alameda_county_emergency", "ready_recovery"]),
         legacy_priority_score=hazard.get("priority_score"),
@@ -748,7 +724,7 @@ def _flood_address_result(hazard: Dict, location_result, flood_check: Dict, zip_
             f"Flood is shown because the saved address point was checked against the FEMA flood layer and was not inside a loaded Special Flood Hazard Area.{context_text}"
         ),
         limitations=limitations,
-        recommended_actions=DEFAULT_ACTIONS["flood"],
+        recommended_actions=_actions_for(location_result, hazard_type, "before", "today", "this_week"),
         recovery_questions=RECOVERY_QUESTIONS,
         sources=_source_payload(
             hazard_type,
@@ -800,7 +776,7 @@ def _wildfire_address_result(hazard: Dict, location_result, wildfire_check: Dict
             f"Wildfire is shown because the saved address point was checked against the CAL FIRE fire hazard layer and was not inside a loaded moderate, high, or very-high fire hazard zone.{context_text}"
         ),
         limitations=limitations,
-        recommended_actions=DEFAULT_ACTIONS["wildfire"],
+        recommended_actions=_actions_for(location_result, hazard_type, "before", "today", "this_week"),
         recovery_questions=RECOVERY_QUESTIONS,
         sources=_source_payload(
             hazard_type,
@@ -848,7 +824,7 @@ def _earthquake_address_result(hazard: Dict, location_result, fault_check: Dict,
             "Earthquake is shown because fault proximity was checked for the saved address point. No loaded fault trace was found within about 2 km, but this is not a hazard-zone clearance and citywide seismic risk still requires preparedness."
         ),
         limitations=limitations,
-        recommended_actions=DEFAULT_ACTIONS["earthquake"],
+        recommended_actions=_actions_for(location_result, hazard_type, "before", "today", "this_week"),
         recovery_questions=RECOVERY_QUESTIONS,
         sources=_source_payload(
             hazard_type,
@@ -932,7 +908,7 @@ def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dic
 
 def merge_structured_result(hazard: Dict, result: HazardResult) -> Dict:
     merged = deepcopy(hazard)
-    payload = result.model_dump()
+    payload = result.model_dump(mode="json")
     local_summary = _local_summary(result)
     resident_actions = _resident_actions(result)
     merged["structured_result"] = payload
@@ -954,7 +930,8 @@ def merge_structured_result(hazard: Dict, result: HazardResult) -> Dict:
     merged["what_could_realistically_happen"] = local_summary
     merged["real_world_impact"] = _local_impact(result)
     merged["priority_reason"] = result.why_shown
-    merged["action_steps"] = resident_actions
+    merged["action_steps"] = [item.model_dump(mode="json") for item in result.recommended_actions]
+    merged["action_step_text"] = resident_actions
     merged["top_risks"] = _local_top_risks(result)
     merged["locations"] = _local_locations(result)
     merged["at_risk_groups"] = _dedupe_text(
@@ -969,8 +946,8 @@ def merge_structured_result(hazard: Dict, result: HazardResult) -> Dict:
     ])
     merged["why_shown"] = result.why_shown
     merged["limitations"] = result.limitations
-    merged["recommended_actions"] = [item.model_dump() for item in result.recommended_actions]
-    merged["recovery_questions"] = [item.model_dump() for item in result.recovery_questions]
+    merged["recommended_actions"] = [item.model_dump(mode="json") for item in result.recommended_actions]
+    merged["recovery_questions"] = [item.model_dump(mode="json") for item in result.recovery_questions]
     merged["sources"] = [item.model_dump() for item in result.sources]
     merged["local_plan_match"] = result.local_plan_match
     merged["specialized_guidance"] = result.specialized_guidance.model_dump()

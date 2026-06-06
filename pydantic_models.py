@@ -1,6 +1,7 @@
+from datetime import date
 from typing import Annotated, Any, Dict, List, Literal, Optional, Union
 
-from pydantic import BaseModel, Field, StrictInt, StringConstraints, field_validator, model_validator
+from pydantic import AnyHttpUrl, BaseModel, Field, StrictInt, StringConstraints, field_validator, model_validator
 
 
 Scope = Literal["address_level", "jurisdiction_level", "zip_estimate", "county_fallback"]
@@ -21,6 +22,19 @@ MatchType = Literal[
 ExposureLevel = Literal["low", "medium", "high", "unknown"]
 ConfidenceLabel = Literal["source_backed", "mixed_support", "needs_review"]
 ReviewStatus = Literal["reviewed", "draft_reviewed", "draft", "needs_source_review", "insufficient_source_support"]
+NonEmptyText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+PageReference = Union[
+    Annotated[StrictInt, Field(gt=0)],
+    Annotated[
+        str,
+        StringConstraints(
+            strict=True,
+            strip_whitespace=True,
+            min_length=1,
+            pattern=r"^\d+(?:\s*[-,;]\s*\d+)*$",
+        ),
+    ],
+]
 
 
 class LocationResult(BaseModel):
@@ -70,16 +84,106 @@ class RAGChunk(BaseModel):
     review_status: ReviewStatus = "draft"
 
 
-class PreparednessAction(BaseModel):
-    id: str
-    label: str
-    source_id: str = ""
+class ActionCitation(BaseModel):
+    source_id: NonEmptyText
+    source_name: NonEmptyText
+    source_url: AnyHttpUrl
+    source_document: str = ""
+    source_page: Optional[PageReference] = None
+    source_section: str = ""
+    source_summary: NonEmptyText
+
+
+class ActionRecord(BaseModel):
+    action_id: NonEmptyText
+    title: NonEmptyText
+    instruction: NonEmptyText
+    hazards: List[NonEmptyText] = Field(min_length=1)
+    household_factors: List[str] = Field(default_factory=list)
+    time_buckets: List[
+        Literal["today", "this_week", "this_month", "before", "during", "after", "recovery"]
+    ] = Field(min_length=1)
+    citation: ActionCitation
+    confidence: Literal["official_direct", "official_paraphrase", "expert_reviewed", "needs_source"]
+    review_status: Literal["reviewed", "draft_reviewed", "draft", "needs_source", "retired"]
+    authority_scope: Literal["national", "state", "county", "city"]
+    guidance_scope: Literal["general", "hazard_specific"]
+    trigger_type: Literal["general", "hazard_result", "location", "household", "live_event"]
+    applicable_jurisdictions: List[str] = Field(default_factory=list)
+    required_household_factors: List[str] = Field(default_factory=list)
+    excluded_household_factors: List[str] = Field(default_factory=list)
+    required_evidence: Dict[str, Any] = Field(default_factory=dict)
+    priority_category: Literal[
+        "life_safety",
+        "official_alerts",
+        "evacuation",
+        "medical",
+        "communication",
+        "supplies",
+        "property",
+        "recovery",
+    ]
+    last_source_verified: date
+    notes: str = ""
+
+    @field_validator(
+        "hazards",
+        "household_factors",
+        "applicable_jurisdictions",
+        "required_household_factors",
+        "excluded_household_factors",
+    )
+    @classmethod
+    def normalize_action_lists(cls, values: List[str]) -> List[str]:
+        cleaned = []
+        seen = set()
+        for value in values:
+            text = str(value).strip().lower().replace("-", "_").replace(" ", "_")
+            if not text or text in seen:
+                continue
+            seen.add(text)
+            cleaned.append(text)
+        return cleaned
+
+    @model_validator(mode="after")
+    def validate_publishability(self):
+        if self.trigger_type == "household" and not self.required_household_factors:
+            raise ValueError("household actions require at least one required household factor")
+        if self.review_status in {"reviewed", "draft_reviewed"} and self.confidence == "needs_source":
+            raise ValueError("reviewed actions cannot have needs_source confidence")
+        return self
+
+    @property
+    def displayable(self) -> bool:
+        return (
+            self.review_status in {"reviewed", "draft_reviewed"}
+            and self.confidence != "needs_source"
+            and bool(self.citation.source_url)
+            and bool(self.citation.source_summary)
+        )
+
+
+class PreparednessAction(ActionRecord):
+    why_shown: NonEmptyText
+    matched_hazards: List[str] = Field(default_factory=list)
+    matched_household_factors: List[str] = Field(default_factory=list)
+
+    @property
+    def id(self) -> str:
+        return self.action_id
+
+    @property
+    def label(self) -> str:
+        return self.instruction
 
 
 class RecoveryQuestion(BaseModel):
     id: str
     question: str
     source_id: str = ""
+    source_name: str = ""
+    source_url: str = ""
+    source_summary: str = ""
 
 
 class ResidentGuidanceItem(BaseModel):
@@ -95,21 +199,6 @@ class ResidentGuidanceItem(BaseModel):
     source_detail: str = ""
     source_url: str = ""
     review_status: ReviewStatus = "draft"
-
-
-NonEmptyText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
-PageReference = Union[
-    Annotated[StrictInt, Field(gt=0)],
-    Annotated[
-        str,
-        StringConstraints(
-            strict=True,
-            strip_whitespace=True,
-            min_length=1,
-            pattern=r"^\d+(?:\s*[-,;]\s*\d+)*$",
-        ),
-    ],
-]
 
 
 class LHMPLocationFact(BaseModel):

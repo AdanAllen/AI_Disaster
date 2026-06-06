@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_action_macros.html" import action_item %}
 {% block title %}Your Local Preparedness Plan - Stay Ready Now{% endblock %}
 
 {% block head %}
@@ -124,7 +125,9 @@
                             <h4>Before</h4>
                             <ul class="sr-action-list">
                                 {% for item in plan.before_actions[:4] %}
-                                <li>{{ item }}</li>
+                                <li>{{ action_item(item) }}</li>
+                                {% else %}
+                                <li>No reviewed source-backed action is available for this phase yet.</li>
                                 {% endfor %}
                             </ul>
                         </section>
@@ -132,9 +135,9 @@
                             <h4>During</h4>
                             <ul class="sr-action-list">
                                 {% for item in plan.during_actions[:3] %}
-                                <li>{{ item }}</li>
+                                <li>{{ action_item(item) }}</li>
                                 {% else %}
-                                <li>Follow official alerts and emergency instructions for this hazard.</li>
+                                <li>No reviewed source-backed action is available for this phase yet.</li>
                                 {% endfor %}
                             </ul>
                         </section>
@@ -142,9 +145,9 @@
                             <h4>After</h4>
                             <ul class="sr-action-list">
                                 {% for item in plan.after_actions[:3] %}
-                                <li>{{ item }}</li>
+                                <li>{{ action_item(item) }}</li>
                                 {% else %}
-                                <li>Document damage, avoid unsafe conditions, and contact official help or insurance when safe.</li>
+                                <li>No reviewed source-backed action is available for this phase yet.</li>
                                 {% endfor %}
                             </ul>
                         </section>
@@ -157,7 +160,9 @@
                                 <h4>Recovery prep</h4>
                                 <ul class="sr-action-list">
                                     {% for item in plan.recovery_steps[:5] %}
-                                    <li>{{ item }}</li>
+                                    <li>{{ action_item(item) }}</li>
+                                    {% else %}
+                                    <li>No reviewed source-backed recovery action is available yet.</li>
                                     {% endfor %}
                                 </ul>
                             </section>
@@ -213,8 +218,7 @@
             <div class="sr-priority-grid">
                 {% for note in resident_plan.household_priorities %}
                 <article class="sr-card sr-priority-card">
-                    <h3>{{ note.label }}</h3>
-                    <p>{{ note.text }}</p>
+                    {{ action_item(note) }}
                 </article>
                 {% endfor %}
             </div>
@@ -235,7 +239,7 @@
                                 <span>{{ loop.index }}</span>
                                 <div>
                                     <strong>{{ item.hazard }}</strong>
-                                    <p>{{ item.action }}</p>
+                                    {{ action_item(item.action) }}
                                 </div>
                             </li>
                             {% endfor %}
@@ -252,7 +256,7 @@
                                 <h3>{{ group.category }}</h3>
                                 <ul class="sr-action-list">
                                     {% for item in group['items'] %}
-                                    <li>{{ item }}</li>
+                                    <li>{{ action_item(item) }}</li>
                                     {% endfor %}
                                 </ul>
                             </section>

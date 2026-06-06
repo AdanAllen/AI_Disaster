@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_action_macros.html" import action_item %}
 
 {% block title %}{{ hazard.name }} - Stay Ready Now{% endblock %}
 
@@ -400,26 +401,10 @@
                         </ul>
                         {% endif %}
 
-                        {% set before_items = hazard.specialized_guidance.resident_guidance.before if hazard.specialized_guidance.resident_guidance else [] %}
                         {% set limitation_items = hazard.specialized_guidance.resident_guidance.limitations if hazard.specialized_guidance.resident_guidance else [] %}
-                        {% set recovery_items = hazard.specialized_guidance.resident_guidance.recovery if hazard.specialized_guidance.resident_guidance else [] %}
-                        {% if before_items or limitation_items or recovery_items %}
+                        {% if limitation_items %}
                         <div class="row g-3">
-                            {% if before_items %}
-                            <div class="col-md-6">
-                                <h3 class="h6 fw-bold">Before</h3>
-                                <ul class="detail-list">
-                                    {% for item in before_items[:2] %}
-                                    <li>
-                                        {{ item.recommended_action or item.plain_language }}
-                                        {% if item.source_detail %}<span class="d-block small text-muted mt-1">{{ item.source_detail }}</span>{% endif %}
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                            {% endif %}
-                            {% if limitation_items %}
-                            <div class="col-md-6">
+                            <div class="col-12">
                                 <h3 class="h6 fw-bold">Precision limits</h3>
                                 <ul class="detail-list">
                                     {% for item in limitation_items[:2] %}
@@ -430,20 +415,6 @@
                                     {% endfor %}
                                 </ul>
                             </div>
-                            {% endif %}
-                            {% if recovery_items %}
-                            <div class="col-12">
-                                <h3 class="h6 fw-bold">Recovery prompt</h3>
-                                <ul class="detail-list">
-                                    {% for item in recovery_items[:2] %}
-                                    <li>
-                                        {{ item.recovery_question or item.recommended_action or item.plain_language }}
-                                        {% if item.source_detail %}<span class="d-block small text-muted mt-1">{{ item.source_detail }}</span>{% endif %}
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                            {% endif %}
                         </div>
                         {% endif %}
                     </article>
@@ -514,8 +485,10 @@
                                 <span class="task-checkmark" aria-hidden="true">
                                     <i class="fas fa-check"></i>
                                 </span>
-                                <span class="task-label">{{ step }}</span>
+                                <div class="task-label">{{ action_item(step) }}</div>
                             </label>
+                            {% else %}
+                            <p class="text-muted mb-0">No reviewed source-backed action is available for this hazard yet.</p>
                             {% endfor %}
                         </div>
                     </article>
@@ -525,7 +498,14 @@
                         <h2 class="h4 mb-3">Questions to answer before recovery starts</h2>
                         <ul class="detail-list">
                             {% for item in hazard.recovery_questions %}
-                            <li>{{ item.question }}</li>
+                            <li>
+                                {{ item.question }}
+                                {% if item.source_url %}
+                                <small class="d-block mt-1">
+                                    Source: <a href="{{ item.source_url }}" target="_blank" rel="noopener noreferrer">{{ item.source_name }}</a>
+                                </small>
+                                {% endif %}
+                            </li>
                             {% endfor %}
                         </ul>
                     </article>

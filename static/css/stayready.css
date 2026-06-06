@@ -1188,3 +1188,17 @@
     font-size: 0.82rem;
     color: #596973;
 }
+
+.sr-sourced-action p {
+    margin: 0.2rem 0 0.35rem;
+}
+
+.sr-sourced-action small {
+    display: block;
+    color: #596973;
+    line-height: 1.45;
+}
+
+.sr-sourced-action small + small {
+    margin-top: 0.15rem;
+}

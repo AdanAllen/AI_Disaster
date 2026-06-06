@@ -1,0 +1,17 @@
+{% macro action_item(action, show_reason=true) -%}
+<div class="sr-sourced-action" data-action-id="{{ action.action_id }}">
+    <strong>{{ action.title }}</strong>
+    <p>{{ action.instruction }}</p>
+    {% if show_reason and action.why_shown %}
+    <small>{{ action.why_shown }}</small>
+    {% endif %}
+    <small>
+        Source:
+        <a href="{{ action.citation.source_url }}" target="_blank" rel="noopener noreferrer">
+            {{ action.citation.source_name }}
+        </a>
+        {% if action.citation.source_section %} · {{ action.citation.source_section }}{% endif %}
+        {% if action.citation.source_page %} · page {{ action.citation.source_page }}{% endif %}
+    </small>
+</div>
+{%- endmacro %}

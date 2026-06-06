@@ -4,6 +4,7 @@ import re
 from functools import lru_cache
 from typing import Dict, List, Optional
 
+from action_library_service import select_actions
 from pydantic_models import LHMPLocationFact
 
 
@@ -127,62 +128,26 @@ def get_household_context(session_data: Dict) -> Dict:
     }
 
 
-def household_guidance(household_context: Dict) -> List[Dict]:
-    tags = set(household_context.get("tags") or [])
-    notes = []
+def _action_payloads(actions) -> List[Dict]:
+    return [action.model_dump(mode="json") for action in actions]
 
-    if household_context.get("household_size"):
-        notes.append({
-            "label": "Household size",
-            "text": f"Plan water, food, medications, chargers, transportation, and temporary housing around {household_context['household_size']} household member(s).",
-        })
-    if household_context.get("preparedness"):
-        notes.append({
-            "label": "Preparedness level",
-            "text": f"Because preparedness was marked as {household_context['preparedness']}, the plan emphasizes practical first steps and recovery basics.",
-        })
-    if "medical" in tags:
-        notes.append({
-            "label": "Medical and medication needs",
-            "text": "Keep prescription copies, refill timing, doctor/pharmacy contacts, medical-device instructions, and backup power or cooling plans ready.",
-        })
-    if "pets" in tags:
-        notes.append({
-            "label": "Pets",
-            "text": "Prepare pet food, water, carrier, leash, medications, vaccination records, ID, and pet-friendly evacuation or temporary housing options.",
-        })
-    if "no_car" in tags:
-        notes.append({
-            "label": "No reliable car access",
-            "text": "Plan transit, rides, neighbors, family contacts, and earlier evacuation timing. Do not wait until the last minute if officials warn of evacuation.",
-        })
-    if "renter" in tags:
-        notes.append({
-            "label": "Renter recovery",
-            "text": "Keep renter insurance details, landlord contact information, lease copies, belongings photos, and temporary housing options accessible.",
-        })
-    if "homeowner" in tags:
-        notes.append({
-            "label": "Homeowner recovery",
-            "text": "Review insurance, know utility shutoff basics, photograph property and belongings, and keep repair/documentation contacts ready.",
-        })
-    if "children" in tags:
-        notes.append({
-            "label": "Children and school continuity",
-            "text": "Keep school contacts, reunification plans, comfort items, medications, and backup caregiver arrangements ready.",
-        })
-    if "older_adults" in tags or "access_needs" in tags:
-        notes.append({
-            "label": "Access and functional needs",
-            "text": "Plan mobility support, assistive devices, caregiver contacts, backup supplies, accessible transportation, and charging needs.",
-        })
-    if household_context.get("special_needs"):
-        notes.append({
-            "label": "Reported needs",
-            "text": f"Reported household note: {household_context['special_needs']}",
-        })
 
-    return notes
+def household_guidance(
+    household_context: Dict,
+    *,
+    city: str = "",
+    county: str = "",
+    hazards: Optional[List[str]] = None,
+) -> List[Dict]:
+    return _action_payloads(select_actions(
+        hazards=hazards or ["all"],
+        household_factors=household_context.get("tags") or [],
+        time_buckets=["today", "this_week", "this_month", "before", "recovery"],
+        city=city,
+        county=county,
+        trigger_types=["household"],
+        limit=8,
+    ))
 
 
 def _coordinate_rule_matches(rule: Dict, location_context: Dict) -> bool:
@@ -414,7 +379,28 @@ def _what_was_checked(hazard: Dict) -> Dict:
     return {"checked": _dedupe(checked), "not_checked": _dedupe(not_checked)}
 
 
-def _hazard_plan(hazard: Dict, location_context: Dict, household_notes: List[Dict], order: int) -> Dict:
+def _selected_actions_for_phase(
+    hazard: str,
+    phase: str,
+    location_context: Dict,
+    household_context: Dict,
+    limit: int,
+) -> List[Dict]:
+    trigger_types = ["general", "hazard_result", "location"]
+    if phase == "recovery":
+        trigger_types.append("household")
+    return _action_payloads(select_actions(
+        hazards=[hazard],
+        household_factors=household_context.get("tags") or [],
+        time_buckets=[phase],
+        city=location_context.get("city") or "",
+        county=location_context.get("county") or "",
+        trigger_types=trigger_types,
+        limit=limit,
+    ))
+
+
+def _hazard_plan(hazard: Dict, location_context: Dict, household_context: Dict, order: int) -> Dict:
     city = location_context.get("city") or ""
     slug = hazard.get("slug") or hazard.get("hazard_id")
     fact_matches = _match_facts(city, slug, location_context)
@@ -432,28 +418,10 @@ def _hazard_plan(hazard: Dict, location_context: Dict, household_notes: List[Dic
     fact_cues = _dedupe([fact.get("location_cue", "") for fact in selected_facts])
     checked_payload = _what_was_checked(hazard)
 
-    before = _dedupe(
-        _guidance_from_chunks(hazard, "before")
-        + _guidance_from_facts(selected_facts, "before_actions")
-        + _guidance_from_facts(fallback_facts, "before_actions")
-        + [item.get("label") for item in hazard.get("recommended_actions", [])]
-    )[:5]
-    during = _dedupe(
-        _guidance_from_chunks(hazard, "during")
-        + _guidance_from_facts(selected_facts, "during_actions")
-        + _guidance_from_facts(fallback_facts, "during_actions")
-    )[:4]
-    after = _dedupe(
-        _guidance_from_chunks(hazard, "after")
-        + _guidance_from_facts(selected_facts, "after_actions")
-        + _guidance_from_facts(fallback_facts, "after_actions")
-    )[:4]
-    recovery = _dedupe(
-        _guidance_from_chunks(hazard, "recovery")
-        + _guidance_from_facts(selected_facts, "recovery_steps")
-        + _guidance_from_facts(fallback_facts, "recovery_steps")
-        + ((hazard.get("specialized_guidance") or {}).get("recovery_needs") or [])
-    )[:6]
+    before = _selected_actions_for_phase(slug, "before", location_context, household_context, 5)
+    during = _selected_actions_for_phase(slug, "during", location_context, household_context, 4)
+    after = _selected_actions_for_phase(slug, "after", location_context, household_context, 4)
+    recovery = _selected_actions_for_phase(slug, "recovery", location_context, household_context, 6)
 
     city_context = specialized.get("city_context") or []
     location_specific_context = specialized.get("location_specific_context") or []
@@ -520,47 +488,47 @@ def _hazard_plan(hazard: Dict, location_context: Dict, household_notes: List[Dic
         "during_actions": during,
         "after_actions": after,
         "recovery_steps": recovery,
-        "household_notes": household_notes[:4],
+        "household_actions": household_guidance(
+            household_context,
+            city=location_context.get("city") or "",
+            county=location_context.get("county") or "",
+            hazards=[slug],
+        )[:4],
         "sources": _source_rows(hazard, selected_facts),
         "limitations": _dedupe(hazard.get("limitations", []) + fact_limitations)[:6],
     }
 
 
-def _recovery_plan(hazard_plans: List[Dict], household_notes: List[Dict]) -> List[Dict]:
-    base = [
-        {
-            "category": "Documents",
-            "items": [
-                "Save copies of IDs, insurance, lease or mortgage documents, medical records, and emergency contacts.",
-                "Photograph important belongings before a disaster so claims and replacement are easier.",
-            ],
-        },
-        {
-            "category": "Housing",
-            "items": [
-                "Identify at least two places your household could stay if home is unsafe.",
-                "Include pet-friendly or accessible options if your household needs them.",
-            ],
-        },
-        {
-            "category": "Health and medication",
-            "items": [
-                "Keep medication lists, refill plans, doctor/pharmacy contacts, and backup charging plans accessible.",
-            ],
-        },
-        {
-            "category": "Money and continuity",
-            "items": [
-                "Plan for deductibles, lost work time, transportation disruption, school/work continuity, and urgent repairs.",
-            ],
-        },
-    ]
-    if household_notes:
-        base.append({
-            "category": "Household-specific",
-            "items": [note["text"] for note in household_notes[:4]],
-        })
-    return base
+def _recovery_plan(
+    hazard_plans: List[Dict],
+    household_context: Dict,
+    location_context: Dict,
+) -> List[Dict]:
+    hazards = [plan.get("slug") for plan in hazard_plans if plan.get("slug")]
+    actions = select_actions(
+        hazards=hazards or ["all"],
+        household_factors=household_context.get("tags") or [],
+        time_buckets=["recovery"],
+        city=location_context.get("city") or "",
+        county=location_context.get("county") or "",
+        trigger_types=["general", "hazard_result", "location", "household"],
+        limit=10,
+    )
+    category_labels = {
+        "life_safety": "Safety after the event",
+        "medical": "Health and medication",
+        "evacuation": "Temporary housing and evacuation",
+        "communication": "Household continuity",
+        "property": "Property",
+        "recovery": "Documents, insurance, and finances",
+        "supplies": "Recovery supplies",
+        "official_alerts": "Official information",
+    }
+    grouped = {}
+    for action in actions:
+        category = category_labels.get(action.priority_category, "Recovery preparation")
+        grouped.setdefault(category, []).append(action.model_dump(mode="json"))
+    return [{"category": category, "items": items} for category, items in grouped.items()]
 
 
 def _summary_text(location_context: Dict, hazard_plans: List[Dict]) -> str:
@@ -586,9 +554,19 @@ def _check_summary(hazard_plans: List[Dict]) -> Dict:
 def build_resident_plan(location_context: Dict, structured_hazards: List[Dict], additional_local_hazards: Optional[List[Dict]] = None, session_data: Optional[Dict] = None) -> Dict:
     session_data = session_data or {}
     household_context = get_household_context(session_data)
-    household_notes = household_guidance(household_context)
+    hazard_slugs = [
+        hazard.get("slug") or hazard.get("hazard_id")
+        for hazard in structured_hazards[:4]
+        if hazard.get("slug") or hazard.get("hazard_id")
+    ]
+    household_actions = household_guidance(
+        household_context,
+        city=location_context.get("city") or "",
+        county=location_context.get("county") or "",
+        hazards=hazard_slugs,
+    )
     hazard_plans = [
-        _hazard_plan(hazard, location_context, household_notes, index + 1)
+        _hazard_plan(hazard, location_context, household_context, index + 1)
         for index, hazard in enumerate(structured_hazards[:4])
     ]
     check_summary = _check_summary(hazard_plans)
@@ -600,8 +578,17 @@ def build_resident_plan(location_context: Dict, structured_hazards: List[Dict], 
                 "hazard": plan["hazard"],
                 "action": plan["before_actions"][0],
             })
-    for note in household_notes[:2]:
-        what_to_do_now.append({"hazard": note["label"], "action": note["text"]})
+    for action in household_actions[:2]:
+        what_to_do_now.append({"hazard": "Household priority", "action": action})
+
+    deduped_now = []
+    seen_action_ids = set()
+    for item in what_to_do_now:
+        action_id = item["action"].get("action_id")
+        if not action_id or action_id in seen_action_ids:
+            continue
+        seen_action_ids.add(action_id)
+        deduped_now.append(item)
 
     sources = []
     for plan in hazard_plans:
@@ -627,9 +614,9 @@ def build_resident_plan(location_context: Dict, structured_hazards: List[Dict], 
         },
         "hazards": hazard_plans,
         "household_context": household_context,
-        "household_priorities": household_notes,
-        "what_to_do_now": what_to_do_now[:7],
-        "recovery_plan": _recovery_plan(hazard_plans, household_notes),
+        "household_priorities": household_actions,
+        "what_to_do_now": deduped_now[:7],
+        "recovery_plan": _recovery_plan(hazard_plans, household_context, location_context),
         "checks": check_summary,
         "sources": source_rows[:8],
         "additional_local_hazards": additional_local_hazards or [],

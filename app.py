@@ -12,6 +12,7 @@ from flask import send_from_directory
 import re
 from copy import deepcopy
 
+from action_library_service import select_action_ids
 from hazard_engine import build_hazard_results, merge_structured_result
 from location_service import location_from_session
 from rag_service import retrieve_chunks
@@ -601,6 +602,45 @@ def get_zip_from_coordinates(lat, lon, zip_geojson_file="static/zipbound.geojson
     except Exception:
         logger.exception("ZIP boundary lookup failed for coordinates (%s, %s).", lat, lon)
     return None
+
+
+def canonicalize_geocoded_address(input_address, geocoder_address, verified_zip):
+    """Build a resident-facing address without trusting geocoder ranges or ZIP labels."""
+    components = [
+        component.strip()
+        for component in str(geocoder_address or "").split(",")
+        if component.strip()
+    ]
+    if not components:
+        return str(input_address or "").strip()
+
+    input_house = re.match(r"^\s*(\d+[A-Za-z]?)\b", str(input_address or ""))
+    raw_house = re.fullmatch(r"\d+(?:\s*[;/-]\s*\d+)*", components[0])
+    if input_house and raw_house:
+        components[0] = input_house.group(1)
+
+    # Nominatim commonly separates the house number and street into components.
+    if len(components) > 1 and re.fullmatch(r"\d+[A-Za-z]?", components[0]):
+        components[0] = f"{components[0]} {components[1]}"
+        del components[1]
+
+    zip_replaced = False
+    if verified_zip:
+        for index, component in enumerate(components):
+            if re.fullmatch(r"\d{5}(?:-\d{4})?", component):
+                components[index] = str(verified_zip)
+                zip_replaced = True
+                break
+        if not zip_replaced:
+            country_index = next(
+                (index for index, value in enumerate(components) if value.lower() in {"united states", "usa"}),
+                len(components),
+            )
+            components.insert(country_index, str(verified_zip))
+
+    return ", ".join(components)
+
+
 # --- Geocoding fallback ---
 def geocode_zip(zip_code):
     geolocator = Nominatim(user_agent="disaster_app")
@@ -635,8 +675,9 @@ def geocode_address(address_query):
             # Reverse geocode to get address and ZIP
             location = geolocator.reverse((lat, lon), exactly_one=True)
             if location:
-                zip_code = extract_zip_from_address(location.address)
-                return (lat, lon, zip_code, location.address)
+                zip_code = get_zip_from_coordinates(lat, lon) or extract_zip_from_address(location.address)
+                display_address = canonicalize_geocoded_address(address_query, location.address, zip_code)
+                return (lat, lon, zip_code, display_address)
             else:
                 return None
         
@@ -674,11 +715,16 @@ def geocode_address(address_query):
             if not zip_code:
                 zip_code = extract_zip_from_address(location.address)
 
+            display_address = canonicalize_geocoded_address(
+                address_query,
+                location.address,
+                zip_code,
+            )
             return (
                 lat,
                 lon,
                 zip_code,
-                location.address
+                display_address,
             )
     
     except (GeocoderTimedOut, GeocoderServiceError) as e:
@@ -925,44 +971,41 @@ def get_risk_level(score):
         return "Low"
 
 
-ACTION_ITEM_LIBRARY = {
-    "bag": {"id": "bag", "label": "Put water, a flashlight, and a charger in a bag."},
-    "alerts": {"id": "alerts", "label": "Turn on local emergency alerts for your area."},
-    "contacts": {"id": "contacts", "label": "Save emergency contacts on every phone."},
-    "water": {"id": "water", "label": "Store at least 3 days of water for your home."},
-    "evacuation-routes": {"id": "evacuation-routes", "label": "Plan 2 evacuation routes from your area."},
-    "defensible-space": {"id": "defensible-space", "label": "Clear dry leaves and brush near your home."},
-    "high-ground": {"id": "high-ground", "label": "Pick the fastest route to higher ground."},
-    "move-valuables": {"id": "move-valuables", "label": "Move valuables and documents above floor level."},
-    "avoid-floodwater": {"id": "avoid-floodwater", "label": "Stay out of floodwater and never drive through it."},
-    "secure-furniture": {"id": "secure-furniture", "label": "Secure heavy furniture and TVs to the wall."},
-    "safe-spots": {"id": "safe-spots", "label": "Choose a safe spot in each room away from windows."},
-    "drill": {"id": "drill", "label": "Practice drop, cover, and hold on once this week."},
-}
-
-GENERAL_CHECKLIST_IDS = ["water", "bag", "evacuation-routes", "alerts", "contacts"]
+GENERAL_CHECKLIST_IDS = [
+    "emergency_water_supply",
+    "portable_go_bag",
+    "alternate_evacuation_routes",
+    "alameda_ac_alert",
+    "family_communication_plan",
+]
 
 HAZARD_ACTION_IDS = {
     "wildfire": {
-        "high": ["bag", "evacuation-routes", "alerts", "defensible-space"],
-        "moderate": ["bag", "alerts", "evacuation-routes", "defensible-space"],
-        "low": ["bag", "alerts", "contacts", "water"],
+        "high": ["wildfire_multiple_alerts", "alternate_evacuation_routes", "portable_go_bag", "wildfire_reduce_debris"],
+        "moderate": ["wildfire_multiple_alerts", "portable_go_bag", "alternate_evacuation_routes", "wildfire_reduce_debris"],
+        "low": ["wildfire_multiple_alerts", "portable_go_bag", "family_communication_plan", "emergency_water_supply"],
     },
     "flood": {
-        "high": ["move-valuables", "high-ground", "water", "avoid-floodwater"],
-        "moderate": ["move-valuables", "high-ground", "water", "avoid-floodwater"],
-        "low": ["water", "contacts", "alerts", "high-ground"],
+        "high": ["flood_higher_ground", "flood_raise_documents", "emergency_water_supply", "flood_avoid_water"],
+        "moderate": ["flood_higher_ground", "flood_raise_documents", "emergency_water_supply", "flood_avoid_water"],
+        "low": ["emergency_water_supply", "family_communication_plan", "alameda_ac_alert", "flood_higher_ground"],
     },
     "earthquake": {
-        "high": ["secure-furniture", "safe-spots", "bag", "drill"],
-        "moderate": ["secure-furniture", "safe-spots", "bag", "drill"],
-        "low": ["bag", "safe-spots", "contacts", "drill"],
+        "high": ["earthquake_secure_heavy_items", "earthquake_safe_locations", "portable_go_bag", "earthquake_drill"],
+        "moderate": ["earthquake_secure_heavy_items", "earthquake_safe_locations", "portable_go_bag", "earthquake_drill"],
+        "low": ["portable_go_bag", "earthquake_safe_locations", "family_communication_plan", "earthquake_drill"],
     },
 }
 
 
 def get_action_items(item_ids):
-    return [ACTION_ITEM_LIBRARY[item_id] for item_id in item_ids if item_id in ACTION_ITEM_LIBRARY]
+    items = []
+    for action in select_action_ids(item_ids):
+        payload = action.model_dump(mode="json")
+        payload["id"] = action.action_id
+        payload["label"] = action.instruction
+        items.append(payload)
+    return items
 
 
 def get_action_steps(hazard_type, risk_level):
@@ -1277,7 +1320,11 @@ def risk_summary():
                     "score": primary_structured.get("structured_result", {}).get("legacy_score") or float(highest_hazard_score),
                     "explanation": primary_structured.get("why_shown", highest_hazard_explanation),
                     "steps": [
-                        {"id": item.get("id"), "label": item.get("label")}
+                        {
+                            **item,
+                            "id": item.get("action_id"),
+                            "label": item.get("instruction"),
+                        }
                         for item in primary_structured.get("recommended_actions", [])
                     ] or get_action_steps(highest_hazard_name, highest_risk_level),
                 }
