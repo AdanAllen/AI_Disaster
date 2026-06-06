@@ -451,6 +451,9 @@ def _hazard_plan(hazard: Dict, location_context: Dict, household_context: Dict, 
         hazard.get("data_status_label") or "Needs review",
         EVIDENCE_TIER_LABELS[evidence_tier],
     ]
+    public_claim_status = hazard.get("public_claim_status")
+    if public_claim_status:
+        evidence_badges.append(public_claim_status.replace("_", " ").title())
     location_matches = [
         {
             "label": fact.get("location_cue") or ", ".join(fact.get("named_areas") or []),

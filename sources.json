@@ -8,11 +8,11 @@
     "geographic_scope": "United States, including Alameda County",
     "claim_type": "address_point_overlay",
     "use_in_app": "Address point flood-zone check for the demo vertical slice.",
-    "confidence": "source_backed",
-    "review_status": "reviewed",
+    "confidence": "mixed_support",
+    "review_status": "draft_reviewed",
     "url": "https://www.fema.gov/flood-maps/national-flood-hazard-layer",
-    "notes": "The app checks the saved address point against the locally loaded flood polygon layer. This is not a parcel determination.",
-    "last_verified": "2026-06-04"
+    "notes": "The local snapshot is provisional pending named human verification against the official FEMA viewer. The app checks the saved address point against the loaded polygon layer; this is not a parcel determination.",
+    "last_verified": ""
   },
   {
     "source_id": "calfire_fhsz",
@@ -40,7 +40,7 @@
     "use_in_app": "Mapped fault proximity check, map display, and live-earthquake context.",
     "confidence": "source_backed",
     "review_status": "draft_reviewed",
-    "url": "https://earthquake.usgs.gov/",
+    "url": "https://www.usgs.gov/programs/earthquake-hazards",
     "notes": "The app checks approximate address proximity to loaded mapped fault lines. This is not a full earthquake-risk, liquefaction, shaking-intensity, building-safety, or parcel determination.",
     "last_verified": "2026-06-04"
   },

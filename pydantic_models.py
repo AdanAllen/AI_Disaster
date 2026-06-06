@@ -286,6 +286,12 @@ class HazardResult(BaseModel):
     is_in_hazard_zone: Optional[bool] = None
     match_type: MatchType = "none"
     matched_layers: List[Dict[str, Any]] = Field(default_factory=list)
+    geospatial_evidence: Optional[Dict[str, Any]] = None
+    claim_type: str = ""
+    checked_at: str = ""
+    effective_date: str = ""
+    public_claim_status: str = ""
+    source_agency: str = ""
     source_url: str = ""
     confidence: ConfidenceLabel = "needs_review"
     review_status: ReviewStatus = "draft"

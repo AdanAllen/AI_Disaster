@@ -9,6 +9,8 @@ from shapely.geometry import Point, shape
 from shapely.ops import nearest_points
 
 from action_library_service import select_actions
+from geospatial.registry import DatasetRegistryError
+from geospatial.service import GeospatialEvidenceService
 from pydantic_models import HazardResult, PreparednessAction, RecoveryQuestion, ResidentGuidanceItem, SpecializedGuidance
 from source_registry import get_city_chunks, get_local_plan_for_city, get_resident_guidance, get_source, get_sources_for_hazard
 
@@ -257,43 +259,33 @@ def _unavailable_result() -> Dict:
 def check_flood_layer(lat: Optional[float], lon: Optional[float]) -> Dict:
     if lat is None or lon is None:
         return _not_checked_result()
-
-    point = Point(float(lon), float(lat))
-    loaded = load_geojson("FldHaz.geojson")
-    if not loaded["available"]:
+    try:
+        evidence = GeospatialEvidenceService(project_root=BASE_DIR).check_point(
+            "fema_nfhl_local",
+            float(lat),
+            float(lon),
+        )
+    except (DatasetRegistryError, TypeError, ValueError):
         return _unavailable_result()
-    data = loaded["data"]
-    layers = []
-    valid_features = 0
-    for feature in data.get("features", []):
-        geometry = feature.get("geometry")
-        if not geometry:
-            continue
-        try:
-            polygon = shape(geometry)
-        except Exception:
-            continue
-        if polygon.is_empty or not polygon.is_valid:
-            continue
-        valid_features += 1
-        if polygon.contains(point) or polygon.touches(point):
-            props = feature.get("properties", {})
-            layers.append({
-                "layer_id": props.get("FLD_AR_ID") or props.get("SOURCE_CIT") or "fema_flood_layer",
-                "name": f"FEMA flood zone {props.get('FLD_ZONE', 'unknown')}",
-                "zone": props.get("FLD_ZONE", "Unknown"),
-                "source_citation": props.get("SOURCE_CIT", ""),
-                "sfha": props.get("SFHA_TF", ""),
-            })
 
-    if valid_features == 0:
-        return _unavailable_result()
+    evidence_payload = evidence.model_dump(mode="json")
+    if evidence.evidence_status != "checked":
+        result = _unavailable_result()
+        result["data_status"] = (
+            "not_checked"
+            if evidence.evidence_status == "not_checked"
+            else "data_unavailable"
+        )
+        result["message"] = evidence.limitations[0]
+        result["geospatial_evidence"] = evidence_payload
+        return result
     return {
         "checked": True,
-        "data_status": "checked" if layers else "not_in_layer",
+        "data_status": "checked" if evidence.matched else "not_in_layer",
         "message": "",
-        "inside": bool(layers),
-        "layers": layers,
+        "inside": bool(evidence.matched),
+        "layers": evidence.matched_features,
+        "geospatial_evidence": evidence_payload,
     }
 
 
@@ -692,14 +684,18 @@ def _flood_address_result(hazard: Dict, location_result, flood_check: Dict, zip_
     hazard_layers = [layer for layer in layers if _fema_layer_is_sfha(layer)]
     inside = bool(hazard_layers)
     specialized_guidance = _specialized_guidance(location_result, hazard_type, user_context)
+    geospatial_evidence = flood_check.get("geospatial_evidence") or {}
     status = "checked" if inside else "not_in_layer"
-    exposure = "high" if inside else "low"
+    exposure = "high" if inside else "unknown"
     limitations = [
         "This checks the saved address point against the current FEMA flood polygon layer in the app.",
         "Point checks are not parcel determinations and should be confirmed with official FEMA and local flood resources.",
     ]
     if not inside:
         limitations.append("Not being inside the loaded layer does not mean flood impacts are impossible.")
+    limitations = _dedupe_text(
+        limitations + list(geospatial_evidence.get("limitations") or [])
+    )
 
     zone_text = f" and matched {hazard_layers[0]['name']}" if hazard_layers else ""
     context_text = f" The address matched {layers[0]['name']}, which is not treated here as Special Flood Hazard Area membership." if layers and not inside else ""
@@ -715,13 +711,19 @@ def _flood_address_result(hazard: Dict, location_result, flood_check: Dict, zip_
         is_in_hazard_zone=inside,
         match_type="inside" if inside else "none",
         matched_layers=layers,
-        source_url=get_source("fema_nfhl").url,
-        confidence="source_backed",
-        review_status="reviewed",
+        geospatial_evidence=geospatial_evidence or None,
+        claim_type=geospatial_evidence.get("claim_type", ""),
+        checked_at=geospatial_evidence.get("checked_at", ""),
+        effective_date=geospatial_evidence.get("effective_date") or "",
+        public_claim_status=geospatial_evidence.get("public_claim_status", ""),
+        source_agency=geospatial_evidence.get("source_agency", ""),
+        source_url=geospatial_evidence.get("source_url") or get_source("fema_nfhl").url,
+        confidence="mixed_support",
+        review_status="draft_reviewed",
         why_shown=(
-            f"Flood is shown because the saved address point was checked against an official FEMA flood layer{zone_text}."
+            f"Flood is shown because the saved address point was checked against StayReady's provisional local FEMA snapshot{zone_text}."
             if inside else
-            f"Flood is shown because the saved address point was checked against the FEMA flood layer and was not inside a loaded Special Flood Hazard Area.{context_text}"
+            f"Flood is shown because the saved address point was checked against StayReady's provisional local FEMA snapshot and was not inside a loaded Special Flood Hazard Area. This is not a safety determination.{context_text}"
         ),
         limitations=limitations,
         recommended_actions=_actions_for(location_result, hazard_type, "before", "today", "this_week"),
@@ -952,6 +954,12 @@ def merge_structured_result(hazard: Dict, result: HazardResult) -> Dict:
     merged["local_plan_match"] = result.local_plan_match
     merged["specialized_guidance"] = result.specialized_guidance.model_dump()
     merged["matched_layers"] = result.matched_layers
+    merged["geospatial_evidence"] = result.geospatial_evidence
+    merged["claim_type"] = result.claim_type
+    merged["checked_at"] = result.checked_at
+    merged["effective_date"] = result.effective_date
+    merged["public_claim_status"] = result.public_claim_status
+    merged["source_agency"] = result.source_agency
     merged["is_in_hazard_zone"] = result.is_in_hazard_zone
     merged["match_type"] = result.match_type
     merged["data_status"] = result.data_status

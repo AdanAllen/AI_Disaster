@@ -4,7 +4,7 @@
     "label": "Flood",
     "supported_scopes": ["address_level", "zip_estimate", "county_fallback"],
     "primary_demo_basis": "gis_overlay",
-    "status": "reviewed"
+    "status": "draft_reviewed"
   },
   {
     "hazard_id": "wildfire",

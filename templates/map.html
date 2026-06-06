@@ -677,56 +677,26 @@
             </div>
         </div>
 
-        <!-- Preparedness Assistant Section -->
+        <!-- Source-backed guidance notice -->
         <div class="chatbot-section">
             <div class="chatbot-header">
-                <h3><i class="fas fa-comments me-2"></i>Preparedness Assistant</h3>
-                <div style="font-size: 0.8rem; opacity: 0.9;">Guidance is educational and cannot upgrade GIS status or precision labels</div>
+                <h3><i class="fas fa-shield-halved me-2"></i>Source-backed guidance</h3>
+                <div style="font-size: 0.8rem; opacity: 0.9;">The legacy quick-answer assistant is disabled</div>
             </div>
-
-            <!-- Quick Questions -->
-            <div class="quick-questions">
-                <h6>Quick Questions:</h6>
-                <div class="quick-question" onclick="askQuickQuestion('What should I do if there\'s a wildfire near my area?')">
-                    🔥 Wildfire emergency steps
-                </div>
-                <div class="quick-question" onclick="askQuickQuestion('How do I prepare an earthquake emergency kit?')">
-                    📦 Emergency kit checklist
-                </div>
-                <div class="quick-question" onclick="askQuickQuestion('What are the evacuation routes from my area?')">
-                    🛣️ Evacuation routes
-                </div>
-                <div class="quick-question" onclick="askQuickQuestion('How can I make my home more disaster-resistant?')">
-                    🏠 Home preparation
-                </div>
-            </div>
-
-            <!-- Chat Messages -->
             <div class="chatbot-messages" id="chatbot-messages">
                 <div class="chat-message bot">
                     <div class="message-avatar">SR</div>
-                    <div class="message-content">Hello. I can help explain preparedness steps for {% if has_precise_location %}your saved address{% else %}ZIP {{ zip_code }}{% endif %}, but the hazard cards and map labels are the authority for precision.
+                    <div class="message-content">Preparedness recommendations are shown on the risk summary and hazard pages only when they resolve to reviewed Action Library records with visible citations.
 
 Visible checks:
 {% for hazard in structured_hazards %}• {{ hazard.name }}: {{ hazard.scope_label }} · {{ hazard.data_status_label }}
 {% endfor %}
-Ask about supplies, evacuation planning, documents, insurance, medications, pets, or recovery planning.</div>
+Use the links below for sourced actions and limitations.</div>
                 </div>
             </div>
-
-            <!-- Chat Input -->
-            <div class="chatbot-input-container">
-                <div class="chatbot-input-group">
-                    <textarea 
-                        class="chatbot-input" 
-                        id="chatbot-input"
-                        placeholder="Ask about safety plans, emergency supplies, evacuation routes..."
-                        rows="1"
-                    ></textarea>
-                    <button class="chatbot-submit" id="chatbot-submit" onclick="sendMessage()">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </div>
+            <div class="chatbot-input-container d-flex flex-wrap gap-2">
+                <a class="btn btn-primary" href="{{ url_for('risk_summary') }}">Open sourced action plan</a>
+                <a class="btn btn-outline-secondary" href="{{ url_for('sources') }}">Review sources</a>
             </div>
         </div>
     </div>
@@ -749,7 +719,6 @@ Ask about supplies, evacuation planning, documents, insurance, medications, pets
         live: null
     };
     let activeHazard = null;
-    let chatHistory = [];
 
     // Initialize map
     function initMap() {
@@ -1237,240 +1206,6 @@ Ask about supplies, evacuation planning, documents, insurance, medications, pets
         }, 5000);
     }
 
-    // Chatbot functionality
-    function sendMessage() {
-        const input = document.getElementById('chatbot-input');
-        const message = input.value.trim();
-        
-        if (!message) return;
-        
-        // Add user message
-        addMessage('user', message);
-        
-        // Clear input
-        input.value = '';
-        input.style.height = 'auto';
-        
-        // Disable submit button
-        const submitBtn = document.getElementById('chatbot-submit');
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        
-        // Add typing indicator
-        addTypingIndicator();
-        
-        // Send request to Flask backend
-        fetch('/map', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `message=${encodeURIComponent(message)}`
-        })
-        .then(response => response.text())
-        .then(html => {
-            // Extract AI response from returned HTML (you'd need to modify the backend to return JSON)
-            // For now, use the local AI response function
-            removeTypingIndicator();
-            const response = generateAIResponse(message);
-            addMessage('bot', response);
-            
-            // Re-enable submit button
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            removeTypingIndicator();
-            const response = generateAIResponse(message);
-            addMessage('bot', response);
-            
-            // Re-enable submit button
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
-        });
-    }
-
-    function addMessage(role, content) {
-        const messagesContainer = document.getElementById('chatbot-messages');
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `chat-message ${role}`;
-        
-        messageDiv.innerHTML = `
-            <div class="message-avatar">${role === 'user' ? 'YOU' : 'AI'}</div>
-            <div class="message-content">${content}</div>
-        `;
-        
-        messagesContainer.appendChild(messageDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        
-        // Store in chat history
-        chatHistory.push({ role, content });
-    }
-
-    function addTypingIndicator() {
-        const messagesContainer = document.getElementById('chatbot-messages');
-        const typingDiv = document.createElement('div');
-        typingDiv.className = 'chat-message bot typing-indicator';
-        typingDiv.id = 'typing-indicator';
-        
-        typingDiv.innerHTML = `
-            <div class="message-avatar">AI</div>
-            <div class="message-content">
-                <div class="typing-dots">
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                </div>
-                AI is thinking...
-            </div>
-        `;
-        
-        messagesContainer.appendChild(typingDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-
-    function removeTypingIndicator() {
-        const typingIndicator = document.getElementById('typing-indicator');
-        if (typingIndicator) {
-            typingIndicator.remove();
-        }
-    }
-
-    function generateAIResponse(message) {
-        const lowerMessage = message.toLowerCase();
-        const zipCode = {{ zip_code|tojson }};
-        const wildfireScore = {{ risk_scores.wildfire.score|tojson }};
-        const earthquakeScore = {{ risk_scores.earthquake.score|tojson }};
-        const floodScore = {{ risk_scores.flood.score|tojson }};
-        
-        // Context-aware responses based on location and risk data
-        if (lowerMessage.includes('wildfire') || lowerMessage.includes('fire')) {
-            return `Given your {% if risk_scores.wildfire.score >= 7 %}high{% elif risk_scores.wildfire.score >= 4 %}moderate{% else %}low{% endif %} wildfire risk (${wildfireScore}/10) in ZIP ${zipCode}, here are key steps:
-
-• Create a 100-foot defensible space around your home
-• Prepare a go-bag with essentials (documents, medications, clothes)
-• Know multiple evacuation routes from your area
-• Sign up for AC Alert (Alameda County's emergency notification system)
-• Monitor air quality during fire season using PurpleAir or AirNow
-
-{% if risk_scores.wildfire.score >= 7 %}Your area has elevated risk - stay vigilant during red flag warnings!{% endif %}`;
-        }
-        
-        if (lowerMessage.includes('earthquake')) {
-            return `For your {% if risk_scores.earthquake.score >= 7 %}high{% elif risk_scores.earthquake.score >= 4 %}moderate{% else %}low{% endif %} earthquake risk (${earthquakeScore}/10) in ZIP ${zipCode}:
-
-• Secure heavy furniture and water heaters to walls
-• Practice Drop, Cover, and Hold On drills with your household
-• Store emergency supplies for 72+ hours (water, food, first aid)
-• Know your gas shutoff valve location and how to use it
-• Consider seismic retrofitting if you have an older home
-
-{% if risk_scores.earthquake.score >= 6 %}The Hayward Fault runs nearby - having a plan is crucial for your safety.{% endif %}`;
-        }
-        
-        if (lowerMessage.includes('flood')) {
-            return `{% if risk_scores.flood.score >= 4 %}Your flood risk is significant{% else %}Good news - your flood risk is low{% endif %} (${floodScore}/10) in ZIP ${zipCode}. {% if risk_scores.flood.score < 4 %}However:{% else %}Here's what you need to know:{% endif %}
-
-• Stay informed about dam safety during heavy rains
-• {% if risk_scores.flood.score < 4 %}Know that flash flooding can occur in urban areas{% else %}Have evacuation routes planned for flood scenarios{% endif %}
-• Avoid driving through standing water
-• Consider flood insurance {% if risk_scores.flood.score < 4 %}even in low-risk areas{% else %}given your risk level{% endif %}
-
-{% if risk_scores.flood.score < 4 %}Your elevation keeps flood risk minimal.{% endif %}`;
-        }
-        
-        if (lowerMessage.includes('evacuation') || lowerMessage.includes('route')) {
-            return `Key evacuation routes from ZIP ${zipCode}:
-
-🛣️ PRIMARY ROUTES:
-• Highway 24 West → Berkeley/San Francisco
-• Highway 13 North → Berkeley  
-• Highway 580 West → San Francisco Bay Bridge
-
-🛣️ ALTERNATE ROUTES:
-• Park Boulevard → Central Alameda County corridors
-• MacArthur Boulevard → Various directions
-
-⚠️ IMPORTANT: Have multiple planned routes as primary roads may be congested during emergencies. Practice driving these routes during different times of day.`;
-        }
-        
-        if (lowerMessage.includes('kit') || lowerMessage.includes('supplies')) {
-            return `Essential emergency kit for your household in ZIP ${zipCode}:
-
-📦 BASIC SUPPLIES (72-hour minimum):
-• Water: 1 gallon per person per day
-• Non-perishable food
-• Battery/hand-crank radio
-• Flashlight and extra batteries
-• First aid kit
-• Medications (7-day supply)
-• Cash in small bills
-• Important documents (copies)
-
-{% if risk_scores.wildfire.score >= 6 %}🔥 WILDFIRE ADDITIONS (high risk area):
-• N95 masks for smoke protection
-• Go-bag with essentials ready to grab
-• Garden hose and sprinklers{% endif %}
-
-Would you like specific recommendations for any category?`;
-        }
-        
-        if (lowerMessage.includes('home') || lowerMessage.includes('house')) {
-            return `Making your home more disaster-resistant in ZIP ${zipCode}:
-
-{% if risk_scores.wildfire.score >= 6 %}🔥 WILDFIRE PROTECTION (Priority):
-• Use fire-resistant landscaping
-• Clean gutters and roof regularly
-• Install mesh screens on vents
-• Trim tree branches away from roof
-
-{% endif %}🏠 EARTHQUAKE SAFETY:
-• Bolt house to foundation (soft-story retrofit)
-• Secure water heater with straps
-• Install safety latches on cabinets
-• Consider seismic gas shutoff valve
-
-💰 Many improvements qualify for rebates through Alameda County programs!`;
-        }
-        
-        // Default response
-        return `I'm here to help with disaster preparedness for ZIP ${zipCode}! Based on your location, you have:
-
-• {% if risk_scores.wildfire.score >= 7 %}High{% elif risk_scores.wildfire.score >= 4 %}Moderate{% else %}Low{% endif %} wildfire risk (${wildfireScore}/10){% if risk_scores.wildfire.score >= 6 %} - Priority concern{% endif %}
-• {% if risk_scores.earthquake.score >= 7 %}High{% elif risk_scores.earthquake.score >= 4 %}Moderate{% else %}Low{% endif %} earthquake risk (${earthquakeScore}/10){% if risk_scores.earthquake.score >= 6 %} - Important to prepare{% endif %}
-• {% if risk_scores.flood.score >= 7 %}High{% elif risk_scores.flood.score >= 4 %}Moderate{% else %}Low{% endif %} flood risk (${floodScore}/10){% if risk_scores.flood.score < 4 %} - Minimal concern{% endif %}
-
-I can provide specific guidance on:
-- Emergency kits and supplies
-- Evacuation planning and routes
-- Home protection measures
-- Local resources and alerts
-- Insurance and financial planning
-
-What specific aspect of emergency preparedness interests you most?`;
-    }
-
-    function askQuickQuestion(question) {
-        const input = document.getElementById('chatbot-input');
-        input.value = question;
-        sendMessage();
-    }
-
-    // Auto-expand textarea
-    document.getElementById('chatbot-input').addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 100) + 'px';
-    });
-
-    // Handle Enter key
-    document.getElementById('chatbot-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-
     // Auto-focus on highest risk
     function autoFocusHighestRisk() {
         const risks = {
@@ -1518,9 +1253,6 @@ What specific aspect of emergency preparedness interests you most?`;
         // Auto-focus on highest risk after a short delay
         setTimeout(autoFocusHighestRisk, 3000);
         
-        // Auto-scroll chat to bottom
-        const chatMessages = document.getElementById('chatbot-messages');
-        chatMessages.scrollTop = chatMessages.scrollHeight;
     });
 
     // Handle window resize
