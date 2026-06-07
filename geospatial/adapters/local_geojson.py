@@ -1,6 +1,7 @@
 import hashlib
 import json
 from datetime import datetime, timezone
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -19,6 +20,73 @@ PROVISIONAL_LIMIT = (
     "This official-source snapshot is provisional until a named human reviewer "
     "compares it with the agency's official viewer and approves this dataset version."
 )
+
+
+@lru_cache(maxsize=8)
+def _load_validated_layer(
+    path_string: str,
+    modified_ns: int,
+    file_size: int,
+    expected_sha256: str,
+    expected_record_count: int,
+    expected_crs: str,
+) -> Dict[str, Any]:
+    """Parse and validate an unchanged local snapshot once per process."""
+    del modified_ns, file_size
+    path = Path(path_string)
+    try:
+        raw_bytes = path.read_bytes()
+    except OSError:
+        return {"error": "missing"}
+
+    if hashlib.sha256(raw_bytes).hexdigest() != expected_sha256:
+        return {"error": "checksum"}
+    try:
+        payload = json.loads(raw_bytes)
+    except (UnicodeError, json.JSONDecodeError):
+        return {"error": "json"}
+
+    features = payload.get("features") if isinstance(payload, dict) else None
+    if payload.get("type") != "FeatureCollection" or not isinstance(features, list) or not features:
+        return {"error": "schema"}
+    if len(features) != expected_record_count:
+        return {"error": "record_count"}
+
+    source_crs = str(
+        ((payload.get("crs") or {}).get("properties") or {}).get("name")
+        or ""
+    )
+    if not source_crs or source_crs != expected_crs:
+        return {"error": "crs"}
+
+    prepared = []
+    invalid_geometry_count = 0
+    for feature in features:
+        geometry = feature.get("geometry")
+        if not geometry:
+            invalid_geometry_count += 1
+            continue
+        try:
+            geometry_shape = shape(geometry)
+        except Exception:
+            invalid_geometry_count += 1
+            continue
+        if (
+            geometry_shape.is_empty
+            or not geometry_shape.is_valid
+            or geometry_shape.geom_type not in {"Polygon", "MultiPolygon"}
+        ):
+            invalid_geometry_count += 1
+            continue
+        prepared.append((geometry_shape, feature))
+
+    if not prepared:
+        return {"error": "geometry"}
+    return {
+        "prepared": prepared,
+        "valid_geometry_count": len(prepared),
+        "invalid_geometry_count": invalid_geometry_count,
+    }
 
 
 class LocalGeoJSONAdapter(GeospatialAdapter):
@@ -142,7 +210,7 @@ class LocalGeoJSONAdapter(GeospatialAdapter):
 
         path = self._path(dataset)
         try:
-            raw_bytes = path.read_bytes()
+            stat = path.stat()
         except OSError:
             validation = self._validation(
                 dataset,
@@ -157,72 +225,32 @@ class LocalGeoJSONAdapter(GeospatialAdapter):
                 "Official layer unavailable — not checked.",
             )
 
-        checksum_matches = hashlib.sha256(raw_bytes).hexdigest() == dataset.sha256
-        if not checksum_matches:
+        layer = _load_validated_layer(
+            str(path),
+            stat.st_mtime_ns,
+            stat.st_size,
+            dataset.sha256,
+            dataset.record_count,
+            dataset.source_crs,
+        )
+        error = layer.get("error")
+        if error:
+            error_messages = {
+                "checksum": "Local dataset checksum does not match registered provenance.",
+                "json": "Local dataset is not valid JSON.",
+                "schema": "Local dataset is not a non-empty GeoJSON FeatureCollection.",
+                "record_count": "Feature count does not match registered provenance.",
+                "crs": "GeoJSON CRS does not match registered provenance.",
+                "geometry": "No valid polygon geometry was available.",
+            }
             validation = self._validation(
                 dataset,
                 status="invalid",
                 checked_at=checked_at,
-                checksum_matches=False,
-                errors=["Local dataset checksum does not match registered provenance."],
-            )
-            return self._unavailable(
-                dataset,
-                checked_at,
-                validation,
-                "The local layer failed provenance validation and was not checked.",
-            )
-
-        try:
-            payload = json.loads(raw_bytes)
-        except (UnicodeError, json.JSONDecodeError):
-            validation = self._validation(
-                dataset,
-                status="invalid",
-                checked_at=checked_at,
-                checksum_matches=True,
-                errors=["Local dataset is not valid JSON."],
-            )
-            return self._unavailable(
-                dataset,
-                checked_at,
-                validation,
-                "The local layer is invalid and was not checked.",
-            )
-
-        features = payload.get("features") if isinstance(payload, dict) else None
-        if payload.get("type") != "FeatureCollection" or not isinstance(features, list) or not features:
-            validation = self._validation(
-                dataset,
-                status="invalid",
-                checked_at=checked_at,
-                checksum_matches=True,
-                errors=["Local dataset is not a non-empty GeoJSON FeatureCollection."],
-            )
-            return self._unavailable(
-                dataset,
-                checked_at,
-                validation,
-                "The local layer is empty or invalid and was not checked.",
-            )
-
-        record_count_matches = len(features) == dataset.record_count
-        source_crs = self._crs_name(payload)
-        crs_matches = bool(source_crs and source_crs == dataset.source_crs)
-        if not record_count_matches or not crs_matches:
-            errors = []
-            if not record_count_matches:
-                errors.append("Feature count does not match registered provenance.")
-            if not crs_matches:
-                errors.append("GeoJSON CRS does not match registered provenance.")
-            validation = self._validation(
-                dataset,
-                status="invalid",
-                checked_at=checked_at,
-                checksum_matches=True,
-                record_count_matches=record_count_matches,
-                crs_matches=crs_matches,
-                errors=errors,
+                checksum_matches=False if error == "checksum" else True,
+                record_count_matches=False if error == "record_count" else None,
+                crs_matches=False if error == "crs" else None,
+                errors=[error_messages.get(error, "Local dataset validation failed.")],
             )
             return self._unavailable(
                 dataset,
@@ -233,48 +261,16 @@ class LocalGeoJSONAdapter(GeospatialAdapter):
 
         address_point = Point(point.lon, point.lat)
         matched_features = []
-        valid_geometry_count = 0
-        for feature in features:
-            geometry = feature.get("geometry")
-            if not geometry:
-                continue
-            try:
-                geometry_shape = shape(geometry)
-            except Exception:
-                continue
-            if (
-                geometry_shape.is_empty
-                or not geometry_shape.is_valid
-                or geometry_shape.geom_type not in {"Polygon", "MultiPolygon"}
-            ):
-                continue
-            valid_geometry_count += 1
+        for geometry_shape, feature in layer["prepared"]:
             if geometry_shape.contains(address_point) or geometry_shape.touches(address_point):
                 matched_features.append(self._feature_payload(dataset, feature))
-
-        if valid_geometry_count == 0:
-            validation = self._validation(
-                dataset,
-                status="invalid",
-                checked_at=checked_at,
-                checksum_matches=True,
-                record_count_matches=True,
-                crs_matches=True,
-                errors=["No valid polygon geometry was available."],
-            )
-            return self._unavailable(
-                dataset,
-                checked_at,
-                validation,
-                "The local layer contained no valid polygon geometry and was not checked.",
-            )
 
         warnings = []
         if dataset.status == "provisional":
             warnings.append("Dataset version requires human verification.")
-        if valid_geometry_count < len(features):
+        if layer["invalid_geometry_count"]:
             warnings.append(
-                f"{len(features) - valid_geometry_count} records did not contain valid polygon geometry."
+                f"{layer['invalid_geometry_count']} records did not contain valid polygon geometry."
             )
         validation = self._validation(
             dataset,
@@ -283,7 +279,7 @@ class LocalGeoJSONAdapter(GeospatialAdapter):
             checksum_matches=True,
             record_count_matches=True,
             crs_matches=True,
-            valid_geometry_count=valid_geometry_count,
+            valid_geometry_count=layer["valid_geometry_count"],
             warnings=warnings,
         )
         public_status = (

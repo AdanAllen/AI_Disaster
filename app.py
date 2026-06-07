@@ -12,6 +12,7 @@ from flask import send_from_directory
 import re
 import secrets
 from copy import deepcopy
+from functools import lru_cache
 
 from action_library_service import select_action_ids
 from geospatial.registry import DatasetRegistryError, get_default_registry
@@ -1076,6 +1077,7 @@ def get_action_steps(hazard_type, risk_level):
     return get_action_items(action_ids)
 
 
+@lru_cache(maxsize=8)
 def load_geojson_file(filename):
     """Helper function to load geojson files safely"""
     filepath = os.path.join(BASE_DIR, "static", filename)
@@ -1707,7 +1709,28 @@ def api_wildfire_zones():
     """API endpoint for wildfire hazard zones"""
     data = load_geojson_file("FireHaz.geojson")
     if usable_geojson_layer(data):
-        return jsonify(data)
+        zip_code = request.args.get("zip") or session.get("zip_code")
+        lat = request.args.get("lat") or session.get("lat")
+        lon = request.args.get("lon") or session.get("lon")
+        if zip_code and not valid_zip(zip_code):
+            return jsonify({"error": "Invalid ZIP code."}), 400
+        coordinates = valid_coordinate_pair(lat, lon, COVERAGE_BOUNDS) if lat is not None or lon is not None else None
+        if (lat is not None or lon is not None) and coordinates is None:
+            return jsonify({"error": "Invalid map coordinates."}), 400
+        filter_bounds = build_filter_bounds(
+            zip_code=zip_code,
+            lat=coordinates[0] if coordinates else None,
+            lon=coordinates[1] if coordinates else None,
+        )
+        filtered = filter_geojson_by_bounds(data, filter_bounds)
+        filtered.update({
+            "source": "CAL FIRE Fire Hazard Severity Zones",
+            "feature_count": len(filtered.get("features", [])),
+            "filtered": bool(filter_bounds),
+            "data_status": "checked",
+            "message": "Showing nearby wildfire hazard polygons from the loaded CAL FIRE layer.",
+        })
+        return jsonify(filtered)
     return jsonify({
         "type": "FeatureCollection",
         "features": [],

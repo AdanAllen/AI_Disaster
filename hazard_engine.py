@@ -1,6 +1,9 @@
 import json
 import math
 import os
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from functools import lru_cache
 from typing import Dict, List, Optional
@@ -61,6 +64,11 @@ CGS_HAZARD_ALIASES = {
     "tsunami": "tsunami",
     "tsunami-seiche": "tsunami",
 }
+
+_LOCATION_CHECK_CACHE = {}
+_LOCATION_CHECK_CACHE_LOCK = threading.Lock()
+_LOCATION_CHECK_CACHE_TTL_SECONDS = 300
+_LOCATION_CHECK_FAILURE_TTL_SECONDS = 30
 
 RECOVERY_CITATION = {
     "source_id": "ready_recovery",
@@ -485,12 +493,11 @@ def check_cgs_layers(
     if lat is None or lon is None:
         return []
     service = GeospatialEvidenceService(project_root=BASE_DIR)
-    results = []
-    for dataset_id in selected:
+    def check_one(dataset_id):
         try:
             evidence = service.check_point(dataset_id, float(lat), float(lon))
         except (DatasetRegistryError, TypeError, ValueError):
-            results.append({
+            return {
                 "dataset_id": dataset_id,
                 "map_layer_key": CGS_DATASETS[dataset_id]["map_layer_key"],
                 "dataset_name": "",
@@ -521,10 +528,82 @@ def check_cgs_layers(
                         "Official CGS layer unavailable — not checked.",
                     "Missing or failed data does not lower exposure or establish a location-wide risk conclusion.",
                 ],
-            })
-            continue
-        results.append(_cgs_public_evidence(dataset_id, evidence))
-    return results
+            }
+        return _cgs_public_evidence(dataset_id, evidence)
+
+    with ThreadPoolExecutor(max_workers=min(4, len(selected))) as executor:
+        futures = [executor.submit(check_one, dataset_id) for dataset_id in selected]
+        return [future.result() for future in futures]
+
+
+def clear_location_check_cache():
+    with _LOCATION_CHECK_CACHE_LOCK:
+        _LOCATION_CHECK_CACHE.clear()
+
+
+def _collect_location_checks(lat: float, lon: float) -> Dict:
+    # Coordinates are held only in short-lived process memory and rounded to
+    # roughly meter scale. Full addresses are never part of this cache key.
+    cache_key = (
+        round(float(lat), 5),
+        round(float(lon), 5),
+        id(check_flood_layer),
+        id(check_wildfire_layer),
+        id(check_fault_layer),
+        id(check_cgs_layers),
+    )
+    now = time.monotonic()
+    with _LOCATION_CHECK_CACHE_LOCK:
+        cached = _LOCATION_CHECK_CACHE.get(cache_key)
+        if cached and cached["expires_at"] > now:
+            return deepcopy(cached["payload"])
+
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        flood_future = executor.submit(check_flood_layer, lat, lon)
+        wildfire_future = executor.submit(check_wildfire_layer, lat, lon)
+        fault_future = executor.submit(check_fault_layer, lat, lon)
+        earthquake_cgs_future = executor.submit(
+            check_cgs_layers,
+            lat,
+            lon,
+            [
+                "cgs_alquist_priolo_remote",
+                "cgs_liquefaction_remote",
+                "cgs_earthquake_landslide_remote",
+            ],
+        )
+        tsunami_cgs_future = executor.submit(
+            check_cgs_layers,
+            lat,
+            lon,
+            ["cgs_tsunami_hazard_area_remote"],
+        )
+        payload = {
+            "flood": flood_future.result(),
+            "wildfire": wildfire_future.result(),
+            "fault": fault_future.result(),
+            "earthquake_cgs": earthquake_cgs_future.result(),
+            "tsunami_cgs": tsunami_cgs_future.result(),
+        }
+
+    unavailable = any(
+        check.get("data_status") == "data_unavailable"
+        for check in (payload["flood"], payload["wildfire"], payload["fault"])
+    ) or any(
+        not evidence.get("data_available")
+        for evidence in payload["earthquake_cgs"] + payload["tsunami_cgs"]
+    )
+    ttl = (
+        _LOCATION_CHECK_FAILURE_TTL_SECONDS
+        if unavailable
+        else _LOCATION_CHECK_CACHE_TTL_SECONDS
+    )
+    with _LOCATION_CHECK_CACHE_LOCK:
+        _LOCATION_CHECK_CACHE[cache_key] = {
+            "expires_at": now + ttl,
+            "payload": deepcopy(payload),
+        }
+    return payload
 
 
 def _apply_cgs_evidence(result: HazardResult, checks: List[Dict]) -> HazardResult:
@@ -1028,23 +1107,13 @@ def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dic
     earthquake_cgs_checks = []
     tsunami_cgs_checks = []
     if location_result.lat is not None and location_result.lon is not None and location_result.formatted_address:
-        flood_check = check_flood_layer(location_result.lat, location_result.lon)
-        wildfire_check = check_wildfire_layer(location_result.lat, location_result.lon)
-        fault_check = check_fault_layer(location_result.lat, location_result.lon)
-        earthquake_cgs_checks = check_cgs_layers(
-            location_result.lat,
-            location_result.lon,
-            [
-                "cgs_alquist_priolo_remote",
-                "cgs_liquefaction_remote",
-                "cgs_earthquake_landslide_remote",
-            ],
-        )
-        tsunami_cgs_checks = check_cgs_layers(
-            location_result.lat,
-            location_result.lon,
-            ["cgs_tsunami_hazard_area_remote"],
-        )
+        lat, lon = location_result.lat, location_result.lon
+        checks = _collect_location_checks(lat, lon)
+        flood_check = checks["flood"]
+        wildfire_check = checks["wildfire"]
+        fault_check = checks["fault"]
+        earthquake_cgs_checks = checks["earthquake_cgs"]
+        tsunami_cgs_checks = checks["tsunami_cgs"]
 
     for raw_hazard in hazards:
         hazard = deepcopy(raw_hazard)

@@ -796,7 +796,7 @@
                         <i class="fas fa-map"></i>
                         <span>Multi-Hazard Risk Map</span>
                     </div>
-                    <div class="active-layers" id="active-layers">
+                <div class="active-layers" id="active-layers">
                         <div class="active-layer-badge">ZIP {{ zip_code }}</div>
                         {% if has_precise_location %}
                         <div class="active-layer-badge">Address Pin</div>
@@ -822,6 +822,9 @@ Visible checks:
 {% for hazard in structured_hazards %}• {{ hazard.name }}: {{ hazard.scope_label }} · {{ hazard.data_status_label }}
 {% endfor %}
 Use the links below for sourced actions and limitations.</div>
+                </div>
+                <div class="small text-muted mt-2" id="map-loading-status" aria-live="polite">
+                    Checking official mapped data only when a layer is opened.
                 </div>
             </div>
             <div class="chatbot-input-container d-flex flex-wrap gap-2">
@@ -878,7 +881,10 @@ Use the links below for sourced actions and limitations.</div>
         
         // Load ZIP boundary first
         loadZipBoundary();
-        matchedCGSLayers.forEach(layerKey => loadCGSLayer(layerKey));
+        // Matched official overlays load after the base map is usable.
+        window.setTimeout(() => {
+            matchedCGSLayers.forEach(layerKey => loadCGSLayer(layerKey));
+        }, 250);
     }
 
     // Load ZIP code boundary
@@ -1100,7 +1106,12 @@ Use the links below for sourced actions and limitations.</div>
 
     // Load wildfire hazard zones
     function loadWildfireZones() {
-        fetch('/api/wildfire-zones')
+        const params = new URLSearchParams({
+            zip: "{{ zip_code }}",
+            lat: "{{ user_lat }}",
+            lon: "{{ user_lon }}"
+        });
+        fetch(`/api/wildfire-zones?${params.toString()}`)
             .then(response => response.json())
             .then(data => {
                 if (data.error || ['unavailable', 'data_unavailable'].includes(data.data_status)) {
@@ -1346,7 +1357,7 @@ Use the links below for sourced actions and limitations.</div>
     }
 
     // Toggle risk focus (highlight specific risk card)
-    function toggleRiskFocus(hazardType) {
+    function toggleRiskFocus(hazardType, enableLayer = true) {
         // Remove active class from all risk cards
         document.querySelectorAll('.risk-card').forEach(card => {
             card.classList.remove('active');
@@ -1359,7 +1370,7 @@ Use the links below for sourced actions and limitations.</div>
             
             // Auto-enable the corresponding layer if not already active
             const layerToggle = document.getElementById(`${hazardType}-toggle`);
-            if (layerToggle && !layerToggle.classList.contains('active')) {
+            if (enableLayer && layerToggle && !layerToggle.classList.contains('active')) {
                 toggleLayer(hazardType);
             }
             
@@ -1438,7 +1449,7 @@ Use the links below for sourced actions and limitations.</div>
         // Use legacy ZIP values only to choose an initial map focus.
         if (highestScore >= 4) {
             setTimeout(() => {
-                toggleRiskFocus(highestRisk);
+                toggleRiskFocus(highestRisk, false);
             }, 2000);
         }
     }
