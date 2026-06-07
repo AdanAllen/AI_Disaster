@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from functools import lru_cache
 
 import requests
+from security_utils import allowed_remote_url
 
 from geospatial.adapters.base import GeospatialAdapter
 from geospatial.models import (
@@ -22,6 +23,8 @@ PROVISIONAL_LIMIT = (
 
 @lru_cache(maxsize=32)
 def _remote_record_count(service_url: str, timeout_seconds: int) -> int:
+    if not allowed_remote_url(service_url):
+        raise ValueError("Remote dataset host is not allowlisted.")
     response = requests.get(
         f"{service_url.rstrip('/')}/query",
         params={"f": "json", "where": "1=1", "returnCountOnly": "true"},
@@ -99,6 +102,12 @@ class ArcGISFeatureServiceAdapter(GeospatialAdapter):
                 dataset,
                 checked_at,
                 "The registered CGS service URL is missing, so the layer was not checked.",
+            )
+        if not allowed_remote_url(dataset.exact_service_or_download_url):
+            return self._unavailable(
+                dataset,
+                checked_at,
+                "The registered remote dataset host is not approved, so the layer was not checked.",
             )
 
         params = {
@@ -202,6 +211,8 @@ class ArcGISFeatureServiceAdapter(GeospatialAdapter):
             raise ValueError("The registered CGS dataset is unavailable.")
         if not dataset.exact_service_or_download_url:
             raise ValueError("The registered CGS service URL is missing.")
+        if not allowed_remote_url(dataset.exact_service_or_download_url):
+            raise ValueError("The registered CGS service host is not allowlisted.")
 
         params = {
             "f": "geojson",

@@ -833,6 +833,12 @@ Use the links below for sourced actions and limitations.</div>
     };
     let activeHazard = null;
 
+    function escapeHTML(value) {
+        const element = document.createElement('div');
+        element.textContent = String(value ?? '');
+        return element.innerHTML;
+    }
+
     // Initialize map
     function initMap() {
         map = L.map('map').setView([37.75, -122.2], 10);
@@ -1045,8 +1051,8 @@ Use the links below for sourced actions and limitations.</div>
                     },
                     onEachFeature: (feature, layer) => {
                         const popup = `
-                            <strong>${data.source || 'California Geological Survey'}</strong><br>
-                            ${data.source_summary || 'Official mapped-zone context.'}<br>
+                            <strong>${escapeHTML(data.source || 'California Geological Survey')}</strong><br>
+                            ${escapeHTML(data.source_summary || 'Official mapped-zone context.')}<br>
                             <small>Official Provisional. This overlay is informational and is not a site-specific engineering, legal, insurance, evacuation, or emergency determination.</small>
                         `;
                         layer.bindPopup(popup);
@@ -1095,7 +1101,7 @@ Use the links below for sourced actions and limitations.</div>
                         let popup = '<strong>Wildfire Hazard Zone</strong><br>';
                         for (const key in feature.properties) {
                             const val = feature.properties[key];
-                            if (val) popup += `<strong>${key}:</strong> ${val}<br>`;
+                            if (val) popup += `<strong>${escapeHTML(key)}:</strong> ${escapeHTML(val)}<br>`;
                         }
                         layer.bindPopup(popup);
                     }
@@ -1146,9 +1152,9 @@ Use the links below for sourced actions and limitations.</div>
                         let popup = '<strong>Flood Control Zone</strong><br>';
                         for (const key in feature.properties) {
                             const val = feature.properties[key];
-                            if (val) popup += `<strong>${key}:</strong> ${val}<br>`;
+                            if (val) popup += `<strong>${escapeHTML(key)}:</strong> ${escapeHTML(val)}<br>`;
                         }
-                        popup += `<strong>Mapped zone category:</strong> ${category}<br>`;
+                        popup += `<strong>Mapped zone category:</strong> ${escapeHTML(category)}<br>`;
                         popup += '<small>This polygon label is informational and is not a property safety determination.</small>';
                         layer.bindPopup(popup);
                     }
@@ -1188,7 +1194,7 @@ Use the links below for sourced actions and limitations.</div>
                         let popup = '<strong>Fault Line</strong><br>';
                         for (const key in feature.properties) {
                             const val = feature.properties[key];
-                            if (val) popup += `<strong>${key}:</strong> ${val}<br>`;
+                            if (val) popup += `<strong>${escapeHTML(key)}:</strong> ${escapeHTML(val)}<br>`;
                         }
                         layer.bindPopup(popup);
                     }
@@ -1236,10 +1242,10 @@ Use the links below for sourced actions and limitations.</div>
                         const props = feature.properties;
                         const popup = `
                             <strong>Recent Earthquake</strong><br>
-                            <strong>Magnitude:</strong> ${props.mag || 'Unknown'}<br>
-                            <strong>Location:</strong> ${props.place || 'Unknown'}<br>
-                            <strong>Time:</strong> ${new Date(props.time).toLocaleString()}<br>
-                            <strong>Depth:</strong> ${props.depth || 'Unknown'} km
+                            <strong>Magnitude:</strong> ${escapeHTML(props.mag || 'Unknown')}<br>
+                            <strong>Location:</strong> ${escapeHTML(props.place || 'Unknown')}<br>
+                            <strong>Time:</strong> ${escapeHTML(new Date(Number(props.time)).toLocaleString())}<br>
+                            <strong>Depth:</strong> ${escapeHTML(props.depth ?? 'Unknown')} km
                         `;
                         layer.bindPopup(popup);
                     }

@@ -4,6 +4,10 @@ services:
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
-    envVars: []
+    startCommand: gunicorn --workers 2 --threads 4 --timeout 30 app:app
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_SECRET_KEY
+        generateValue: true
     runtime: python3.11

@@ -10,6 +10,7 @@ from jinja2 import TemplateNotFound
 import logging
 from flask import send_from_directory
 import re
+import secrets
 from copy import deepcopy
 
 from action_library_service import select_action_ids
@@ -21,12 +22,33 @@ from rag_service import retrieve_chunks
 from resident_guidance_engine import build_resident_plan
 from source_registry import load_hazard_registry, load_jurisdictions, load_local_plans, load_resident_guidance_chunks, source_records_payload
 from supabase_repository import supabase_health as get_supabase_health
+from security_utils import (
+    ALLOWED_CGS_LAYER_KEYS,
+    ALLOWED_HAZARD_SLUGS,
+    rate_limit,
+    safe_next_url,
+    valid_address,
+    valid_coordinate_pair,
+    valid_short_query,
+    valid_zip,
+)
 
 # --- Load env vars and setup ---
 load_dotenv(".env")
 load_dotenv("secret.env")
 app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY", "super-secret-key")
+IS_PRODUCTION = (os.getenv("FLASK_ENV") or "").lower() == "production" or bool(os.getenv("RENDER"))
+configured_secret = (os.getenv("FLASK_SECRET_KEY") or "").strip()
+if IS_PRODUCTION and len(configured_secret) < 32:
+    raise RuntimeError("FLASK_SECRET_KEY must be configured with at least 32 characters in production.")
+app.secret_key = configured_secret or secrets.token_hex(32)
+app.config.update(
+    MAX_CONTENT_LENGTH=32 * 1024,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=IS_PRODUCTION,
+    SESSION_COOKIE_NAME="stayready_session",
+)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_LAT = 37.75
 DEFAULT_LON = -122.2
@@ -44,6 +66,18 @@ ZIP_FALLBACK_LIMITATION = (
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+@app.after_request
+def apply_security_headers(response):
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Permissions-Policy"] = "geolocation=(self), camera=(), microphone=()"
+    response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+    if IS_PRODUCTION:
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
 
 DATA_SOURCES = [
     {
@@ -764,6 +798,7 @@ def extract_zip_from_address(full_address):
     return None
 
 @app.route("/form", methods=["POST"])
+@rate_limit(20, 60)
 def process_form():
     try:
         zip_code = request.form.get("zip_code", "").strip()
@@ -775,7 +810,7 @@ def process_form():
         location_mode = ""
 
         if zip_code:
-            if not zip_code.isdigit() or len(zip_code) != 5:
+            if not valid_zip(zip_code):
                 session["form_error"] = "Invalid ZIP code. Please enter a 5-digit number."
                 session["form_data"] = request.form.to_dict()
                 return redirect(url_for("home"))
@@ -789,7 +824,7 @@ def process_form():
             location_mode = "zip"
 
         elif address:
-            if len(address) < 5 or re.search(r'[^a-zA-Z0-9\s,.-]', address):
+            if not valid_address(address):
                 session["form_error"] = "Invalid address. Please enter a proper street address."
                 session["form_data"] = request.form.to_dict()
                 return redirect(url_for("home"))
@@ -820,10 +855,19 @@ def process_form():
             session["form_data"] = request.form.to_dict()
             return redirect(url_for("home"))
 
-        household = request.form.get("household")
-        preparedness = request.form.get("preparedness")
-        special_needs = request.form.get("special_needs", "")
+        household = (request.form.get("household") or "").strip()
+        preparedness = (request.form.get("preparedness") or "").strip()
+        special_needs = (request.form.get("special_needs") or "").strip()
         household_tags = request.form.getlist("household_tags")
+        if (
+            len(household) > 40
+            or len(preparedness) > 40
+            or len(special_needs) > 120
+            or len(household_tags) > 12
+            or any(len(tag) > 40 or not valid_short_query(tag) for tag in household_tags)
+        ):
+            session["form_error"] = "One or more household fields were too long or invalid."
+            return redirect(url_for("home"))
 
         if not household or not preparedness:
             return safe_render(
@@ -844,6 +888,8 @@ def process_form():
         session["city"] = ""
         session[LOCATION_MODE_SESSION_KEY] = location_mode
         session["household"] = household
+        # Temporary session context only. StayReady does not write this value to
+        # logs, Supabase, analytics, or a durable profile database.
         session["special_needs"] = special_needs
         session["preparedness"] = preparedness
         session["household_tags"] = household_tags
@@ -900,13 +946,14 @@ def handle_unexpected_error(error):
 
 
 @app.route("/search-address", methods=["POST"])
+@rate_limit(20, 60)
 def search_address():
     """Handle address search and convert to ZIP code"""
     try:
         address_query = request.form.get("address", "").strip()
 
-        if not address_query:
-            return jsonify({"error": "Address is required"}), 400
+        if not valid_address(address_query):
+            return jsonify({"error": "A valid address is required."}), 400
 
         result = geocode_address(address_query)
 
@@ -946,7 +993,7 @@ def address_suggestions():
     """Simple address validation/suggestions"""
     query = request.args.get("q", "").strip()
     
-    if len(query) < 3:
+    if not valid_short_query(query) or len(query) < 3:
         return jsonify([])
     
     # Basic suggestions based on common Alameda County cities
@@ -1213,9 +1260,7 @@ def save_hazard_profile():
     session[HAZARD_PROFILE_SESSION_KEY] = profile
 
     next_url = request.form.get("next_url", "").strip()
-    if next_url:
-        return redirect(next_url)
-    return redirect(url_for("hazards_dashboard"))
+    return redirect(safe_next_url(next_url, "hazards_dashboard"))
 
 
 @app.route("/hazards")
@@ -1534,6 +1579,8 @@ def api_hazards():
 
 @app.route("/api/hazards/<name>")
 def api_hazard(name):
+    if slugify_hazard_name(name) not in ALLOWED_HAZARD_SLUGS:
+        return jsonify({"error": "Hazard not found"}), 404
     location_context = get_session_location_context()
     location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
     hazard = get_hazard_by_name(name, get_saved_hazard_profile(), location_context)
@@ -1560,6 +1607,8 @@ def api_explain_hazard():
     hazard_name = (payload.get("hazard_type") or payload.get("hazard") or "").strip().lower()
     if not hazard_name:
         return jsonify({"error": "hazard_type is required"}), 400
+    if len(hazard_name) > 60 or slugify_hazard_name(hazard_name) not in ALLOWED_HAZARD_SLUGS:
+        return jsonify({"error": "Hazard not found"}), 404
 
     location_context = get_session_location_context()
     location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
@@ -1591,10 +1640,13 @@ def api_explain_hazard():
 
 # Live Earthquake API
 @app.route("/api/live-earthquakes")
+@rate_limit(20, 60)
 def api_live_earthquakes():
     """API endpoint for recent earthquake data with normal empty states."""
     scope = request.args.get("scope", "bay_area").strip().lower()
     days = request.args.get("days", "7").strip()
+    if scope not in {"bay_area", "alameda"} or days not in {"1", "7"}:
+        return jsonify({"error": "Invalid earthquake query parameters."}), 400
     feed = "all_week" if days == "7" else "all_day"
     url = f"https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/{feed}.geojson"
     try:
@@ -1665,6 +1717,7 @@ def api_wildfire_zones():
 
 # Flood zones API
 @app.route("/api/flood-zones")
+@rate_limit(20, 60)
 def api_flood_zones():
     """API endpoint for filtered flood hazard zones."""
     data = load_geojson_file("FldHaz.geojson")
@@ -1672,7 +1725,16 @@ def api_flood_zones():
         zip_code = request.args.get("zip") or session.get("zip_code")
         lat = request.args.get("lat") or session.get("lat")
         lon = request.args.get("lon") or session.get("lon")
-        filter_bounds = build_filter_bounds(zip_code=zip_code, lat=lat, lon=lon)
+        if zip_code and not valid_zip(zip_code):
+            return jsonify({"error": "Invalid ZIP code."}), 400
+        coordinates = valid_coordinate_pair(lat, lon, COVERAGE_BOUNDS) if lat is not None or lon is not None else None
+        if (lat is not None or lon is not None) and coordinates is None:
+            return jsonify({"error": "Invalid map coordinates."}), 400
+        filter_bounds = build_filter_bounds(
+            zip_code=zip_code,
+            lat=coordinates[0] if coordinates else None,
+            lon=coordinates[1] if coordinates else None,
+        )
         filtered = filter_geojson_by_bounds(data, filter_bounds)
         feature_count = len(filtered.get("features", []))
         filtered.update({
@@ -1714,7 +1776,15 @@ def api_fault_lines():
 
 
 @app.route("/api/cgs-map-layer/<layer_key>")
+@rate_limit(20, 60)
 def api_cgs_map_layer(layer_key):
+    if layer_key not in ALLOWED_CGS_LAYER_KEYS:
+        return jsonify({
+            "type": "FeatureCollection",
+            "features": [],
+            "data_status": "data_unavailable",
+            "message": "Official CGS map layer unavailable — not displayed.",
+        }), 404
     layer = CGS_MAP_LAYERS.get(layer_key)
     if not layer:
         return jsonify({
@@ -1769,6 +1839,8 @@ def api_cgs_map_layer(layer_key):
 @app.route("/api/zip-boundary/<zip_code>")
 def api_zip_boundary(zip_code):
     """API endpoint for ZIP code boundary"""
+    if not valid_zip(zip_code):
+        return jsonify({"error": "Invalid ZIP code."}), 400
     boundary_data = get_zip_boundary(zip_code)
     if boundary_data:
         return jsonify(boundary_data)
@@ -1795,6 +1867,8 @@ def api_county_boundary():
 @app.route("/api/risk-assessment/<zip_code>")
 def api_risk_assessment(zip_code):
     """Compatibility endpoint exposing non-authoritative ZIP fallback rankings."""
+    if not valid_zip(zip_code):
+        return jsonify({"error": "Invalid ZIP code."}), 400
     data = zip_risk_data.get(zip_code)
     if not data:
         return jsonify({
@@ -1883,4 +1957,4 @@ def live_earthquake_map():
 
 # --- Run App ---
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
