@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Basics - Stay Ready Now{% endblock %}
+
+{% block meta_description %}Plain-language information about how StayReady handles addresses, optional household details, geocoding, and official map checks.{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="surface-card p-4 p-lg-5 mx-auto" style="max-width: 900px;">
+            <span class="section-eyebrow">Privacy Basics</span>
+            <h1 class="display-6 fw-bold mb-3">What StayReady uses, and what it does not save</h1>
+            <p class="lead">
+                StayReady is an independent educational project. It is not an official government site and it is not an emergency alert system.
+            </p>
+
+            <h2 class="h4 mt-4">Location checks</h2>
+            <p>
+                When you enter an address, StayReady may send it to OpenStreetMap's Nominatim geocoding service to find coordinates.
+                StayReady may then contact official public map services, including agency GIS services, to check mapped hazard information.
+                Those services receive the location needed to answer the map query and may have their own logging and privacy practices.
+            </p>
+
+            <h2 class="h4 mt-4">Temporary result state</h2>
+            <p>
+                StayReady does not save raw addresses to an account, Supabase, or a long-term resident database.
+                The address and coordinates are kept temporarily on the StayReady server so the summary and map pages work, then expire.
+                Your browser cookie contains only a random result token, not the raw address or coordinates.
+            </p>
+
+            <h2 class="h4 mt-4">Household details</h2>
+            <p>
+                Household planning fields are optional and structured. StayReady does not ask for medical diagnoses or free-text disability,
+                access, or vulnerability notes. Optional selections are kept only with the short-lived result and are not used to change hazard evidence.
+            </p>
+
+            <h2 class="h4 mt-4">During an emergency</h2>
+            <p>
+                Call 911 for immediate danger. Follow
+                <a href="https://www.acgov.org/emergencysite/" target="_blank" rel="noopener noreferrer">Alameda County emergency information</a>,
+                <a href="https://www.acalert.org/" target="_blank" rel="noopener noreferrer">AC Alert</a>,
+                and instructions from fire, police, public health, and other official agencies.
+            </p>
+
+            <h2 class="h4 mt-4">Questions or problems</h2>
+            <p class="mb-0">
+                <a href="https://github.com/AdanAllen/AI_Disaster/issues" target="_blank" rel="noopener noreferrer">Report a product or data issue on GitHub</a>
+                using fake or generalized location details. Do not post a real address, medical information, credentials, or emergency report.
+            </p>
+        </div>
+    </div>
+</section>
+{% endblock %}

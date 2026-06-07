@@ -18,11 +18,16 @@ may read public official-data tables from Supabase. It does not intentionally
 write user addresses, email addresses, household profiles, medical details, or
 access needs to Supabase or another durable application database.
 
-Address and optional household selections are held temporarily in the signed
-Flask session so the result pages work. They are not logged intentionally. The
-session cookie is HttpOnly, SameSite=Lax, and Secure in production. Flask signed
-cookies provide integrity, not confidentiality, so sensitive free-text medical
-details should not be requested or added without a separate privacy design.
+The signed Flask cookie contains only a random result token and non-sensitive
+one-time error text. Raw addresses, coordinates, optional household selections,
+and profile choices are held in a short-lived server-local cache so result
+pages work, then expire. StayReady does not request medical/access free text.
+The cookie is HttpOnly, SameSite=Lax, and Secure in production.
+
+Address geocoding uses OpenStreetMap's Nominatim service. Official public GIS
+services may also receive a coordinate for a mapped-data query. StayReady does
+not intentionally log raw addresses or coordinates, but those third-party
+services have their own operational logging and privacy practices.
 
 ## Secrets
 

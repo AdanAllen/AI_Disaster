@@ -13,6 +13,7 @@ from hazard_engine import (
 )
 from app import app, load_geojson_file
 from pydantic_models import LocationResult
+from testing_utils import set_test_resident_state
 
 
 BASE_DIR = Path(__file__).resolve().parents[1]
@@ -163,12 +164,11 @@ class MapPerformanceTests(unittest.TestCase):
         self.assertIn("Checking official mapped data", html)
 
     def test_wildfire_map_response_is_filtered(self):
-        with self.client.session_transaction() as saved:
-            saved.update({
-                "zip_code": "94619",
-                "lat": 37.79,
-                "lon": -122.19,
-            })
+        set_test_resident_state(self.client, {
+            "zip_code": "94619",
+            "lat": 37.79,
+            "lon": -122.19,
+        })
         response = self.client.get(
             "/api/wildfire-zones?zip=94619&lat=37.79&lon=-122.19"
         )

@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from app import app
 from hazard_engine import display_data_status
+from testing_utils import set_test_resident_state
 
 
 BASE_DIR = Path(__file__).resolve().parents[1]
@@ -21,9 +22,10 @@ class PublicTerminologyTests(unittest.TestCase):
         self.assertEqual(display_data_status("fallback_used"), "General area priority")
 
     def test_risk_summary_separates_evidence_from_priority(self):
-        with self.client.session_transaction() as saved:
-            saved["zip_code"] = "94619"
-            saved["location_mode"] = "zip"
+        set_test_resident_state(self.client, {
+            "zip_code": "94619",
+            "location_mode": "zip",
+        })
         html = self.client.get("/risk_summary").get_data(as_text=True)
         self.assertIn("How To Read This", html)
         self.assertIn("Mapped evidence and priority are different.", html)
@@ -60,14 +62,13 @@ class PublicTerminologyTests(unittest.TestCase):
             "limitations": ["Not a property-specific determination."],
         }]
         with patch("hazard_engine.check_cgs_layers", return_value=fixture):
-            with self.client.session_transaction() as saved:
-                saved.update({
-                    "zip_code": "94619",
-                    "location_mode": "address",
-                    "address": "Test address, Oakland, California",
-                    "lat": 37.79,
-                    "lon": -122.19,
-                })
+            set_test_resident_state(self.client, {
+                "zip_code": "94619",
+                "location_mode": "address",
+                "address": "Test address, Oakland, California",
+                "lat": 37.79,
+                "lon": -122.19,
+            })
             html = self.client.get("/hazards/earthquake").get_data(as_text=True)
         self.assertIn("Plain meaning:", html)
         self.assertIn("What this means:", html)
@@ -82,9 +83,10 @@ class PublicTerminologyTests(unittest.TestCase):
         self.assertNotIn("unknown exposure", templates)
 
     def test_public_pages_avoid_banned_reassurance_phrases(self):
-        with self.client.session_transaction() as saved:
-            saved["zip_code"] = "94619"
-            saved["location_mode"] = "zip"
+        set_test_resident_state(self.client, {
+            "zip_code": "94619",
+            "location_mode": "zip",
+        })
         text = " ".join(
             self.client.get(path).get_data(as_text=True).lower()
             for path in ("/risk_summary", "/hazards", "/map")

@@ -10,6 +10,7 @@ from geospatial.adapters.arcgis_feature_service import _remote_record_count
 from geospatial.models import GeoPoint
 from hazard_engine import _cgs_public_evidence, build_hazard_results, merge_structured_result
 from pydantic_models import LocationResult
+from testing_utils import set_test_resident_state
 
 
 BASE_DIR = Path(__file__).resolve().parents[1]
@@ -207,21 +208,19 @@ class CGSEvidenceTests(unittest.TestCase):
 class CGSPublicRenderingTests(unittest.TestCase):
     def setUp(self):
         self.client = app.test_client()
-        with self.client.session_transaction() as session:
-            session.update(
-                zip_code="94501",
-                lat=37.754029,
-                lon=-122.24918,
-                address="2301 Shore Line Drive, Alameda, Alameda County, California, 94501, United States",
-                input_address="2301 Shore Line Drive, Alameda, CA 94501",
-                county="Alameda County",
-                city="Alameda",
-                location_mode="address",
-                household="adults",
-                preparedness="starting",
-                special_needs="",
-                household_tags=[],
-            )
+        set_test_resident_state(self.client, {
+            "zip_code": "94501",
+            "lat": 37.754029,
+            "lon": -122.24918,
+            "address": "2301 Shore Line Drive, Alameda, Alameda County, California, 94501, United States",
+            "input_address": "2301 Shore Line Drive, Alameda, CA 94501",
+            "county": "Alameda County",
+            "city": "Alameda",
+            "location_mode": "address",
+            "household": "adults",
+            "preparedness": "starting",
+            "household_tags": [],
+        })
 
     def test_summary_and_hazard_pages_render_cgs_evidence(self):
         summary = self.client.get("/risk_summary").get_data(as_text=True)

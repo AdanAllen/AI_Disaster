@@ -4,6 +4,7 @@ import unittest
 from pathlib import Path
 
 from app import app
+from testing_utils import set_test_resident_state
 
 
 BASE_DIR = Path(__file__).resolve().parents[1]
@@ -64,9 +65,10 @@ class PublicAdviceSurfaceTests(unittest.TestCase):
             self.assertNotIn(phrase, text)
 
     def test_public_hazard_outputs_do_not_use_unsafe_reassurance(self):
-        with self.client.session_transaction() as saved:
-            saved["zip_code"] = "94619"
-            saved["location_mode"] = "zip"
+        set_test_resident_state(self.client, {
+            "zip_code": "94619",
+            "location_mode": "zip",
+        })
         for path in ("/api/hazards", "/api/top-risks", "/hazards", "/map"):
             response = self.client.get(path)
             text = response.get_data(as_text=True).lower()

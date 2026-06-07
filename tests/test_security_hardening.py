@@ -7,6 +7,7 @@ from app import app
 from geospatial.adapters.arcgis_feature_service import ArcGISFeatureServiceAdapter
 from geospatial.models import DatasetProvenance, GeoPoint
 from security_utils import allowed_remote_url, reset_rate_limits
+from testing_utils import set_test_resident_state
 
 
 BASE_DIR = Path(__file__).resolve().parents[1]
@@ -82,12 +83,13 @@ class SecurityRouteTests(unittest.TestCase):
         self.assertNotIn(".supabase.co", combined)
 
     def test_templates_escape_user_controlled_address(self):
-        with self.client.session_transaction() as saved:
-            saved["zip_code"] = "94601"
-            saved["address"] = "<script>alert(1)</script>"
-            saved["location_mode"] = "address"
-            saved["lat"] = 37.8
-            saved["lon"] = -122.2
+        set_test_resident_state(self.client, {
+            "zip_code": "94601",
+            "address": "<script>alert(1)</script>",
+            "location_mode": "address",
+            "lat": 37.8,
+            "lon": -122.2,
+        })
         response = self.client.get("/map")
         html = response.get_data(as_text=True)
         self.assertNotIn("<script>alert(1)</script>", html)

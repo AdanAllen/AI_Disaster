@@ -1052,11 +1052,7 @@ Use the links below for sourced actions and limitations.</div>
 
     function loadCGSLayer(layerKey) {
         const layerType = `cgs-${layerKey}`;
-        const params = new URLSearchParams({
-            lat: "{{ user_lat }}",
-            lon: "{{ user_lon }}"
-        });
-        fetch(`/api/cgs-map-layer/${layerKey}?${params.toString()}`)
+        fetch(`/api/cgs-map-layer/${layerKey}`)
             .then(response => response.json())
             .then(data => {
                 if (data.data_status === 'data_unavailable') {
@@ -1107,9 +1103,7 @@ Use the links below for sourced actions and limitations.</div>
     // Load wildfire hazard zones
     function loadWildfireZones() {
         const params = new URLSearchParams({
-            zip: "{{ zip_code }}",
-            lat: "{{ user_lat }}",
-            lon: "{{ user_lon }}"
+            zip: "{{ zip_code }}"
         });
         fetch(`/api/wildfire-zones?${params.toString()}`)
             .then(response => response.json())
@@ -1155,9 +1149,7 @@ Use the links below for sourced actions and limitations.</div>
     // Load flood zones
     function loadFloodZones() {
         const params = new URLSearchParams({
-            zip: "{{ zip_code }}",
-            lat: "{{ user_lat }}",
-            lon: "{{ user_lon }}"
+            zip: "{{ zip_code }}"
         });
         fetch(`/api/flood-zones?${params.toString()}`)
             .then(response => response.json())

@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from cachelib import FileSystemCache
 from geopy.geocoders import Nominatim
 import requests
 from dotenv import load_dotenv
 import os, json
+import tempfile
 from shapely.geometry import shape,Point
 import pandas as pd
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
@@ -112,8 +114,13 @@ DATA_SOURCES = [
 ]
 
 HAZARD_DATA_PATH = os.path.join(BASE_DIR, "oakland.json")
-HAZARD_PROFILE_SESSION_KEY = "hazard_user_profile"
-LOCATION_MODE_SESSION_KEY = "location_mode"
+RESULT_TOKEN_SESSION_KEY = "resident_result_token"
+RESIDENT_STATE_TTL_SECONDS = 30 * 60
+RESIDENT_STATE_CACHE = FileSystemCache(
+    cache_dir=os.path.join(tempfile.gettempdir(), "stayready-resident-state"),
+    threshold=1000,
+    default_timeout=RESIDENT_STATE_TTL_SECONDS,
+)
 HAZARD_LOCATION_OPTIONS = [
     {"value": "flatlands", "label": "Flatlands"},
     {"value": "hills", "label": "Hills"},
@@ -284,6 +291,43 @@ def normalize_user_profile(payload=None):
     }
 
 
+def get_resident_state():
+    """Return short-lived server-side result state referenced by an opaque cookie token."""
+    token = session.get(RESULT_TOKEN_SESSION_KEY)
+    if not token:
+        return {}
+    state = RESIDENT_STATE_CACHE.get(token)
+    return dict(state) if isinstance(state, dict) else {}
+
+
+def save_resident_state(state):
+    """Rotate the opaque browser token and store resident data only in ephemeral server state."""
+    previous_token = session.get(RESULT_TOKEN_SESSION_KEY)
+    if previous_token:
+        RESIDENT_STATE_CACHE.delete(previous_token)
+
+    token = secrets.token_urlsafe(24)
+    RESIDENT_STATE_CACHE.set(token, dict(state), timeout=RESIDENT_STATE_TTL_SECONDS)
+    session.clear()
+    session[RESULT_TOKEN_SESSION_KEY] = token
+    return token
+
+
+def update_resident_state(updates):
+    state = get_resident_state()
+    if not state:
+        return False
+    state.update(updates)
+    token = session.get(RESULT_TOKEN_SESSION_KEY)
+    RESIDENT_STATE_CACHE.set(token, state, timeout=RESIDENT_STATE_TTL_SECONDS)
+    return True
+
+
+def set_form_error(message):
+    """Store only a non-sensitive one-time error in the signed browser cookie."""
+    session["form_error"] = message
+
+
 def is_oakland_hazard_context(zip_code=None, address=None):
     normalized_zip = str(zip_code or "").strip()
     normalized_address = (address or "").strip().lower()
@@ -313,29 +357,30 @@ def get_oakland_guidance_error_context():
 
 
 def get_saved_hazard_profile():
-    return normalize_user_profile(session.get(HAZARD_PROFILE_SESSION_KEY, {}))
+    return normalize_user_profile(get_resident_state().get("hazard_user_profile", {}))
 
 
 def get_session_location_context():
-    zip_code = session.get("zip_code")
-    address = session.get("address")
-    location_mode = session.get(LOCATION_MODE_SESSION_KEY, "zip" if zip_code else "")
+    resident_state = get_resident_state()
+    zip_code = resident_state.get("zip_code")
+    address = resident_state.get("address")
+    location_mode = resident_state.get("location_mode", "zip" if zip_code else "")
     location_result = location_from_session({
-        "input_address": session.get("input_address"),
+        "input_address": resident_state.get("input_address"),
         "address": address,
         "zip_code": zip_code,
-        "lat": session.get("lat"),
-        "lon": session.get("lon"),
-        "city": session.get("city"),
-        "county": session.get("county"),
-        "neighborhood": session.get("neighborhood"),
-        "census_tract": session.get("census_tract"),
+        "lat": resident_state.get("lat"),
+        "lon": resident_state.get("lon"),
+        "city": resident_state.get("city"),
+        "county": resident_state.get("county"),
+        "neighborhood": resident_state.get("neighborhood"),
+        "census_tract": resident_state.get("census_tract"),
         "location_mode": location_mode,
     })
     has_precise_location = (
         location_mode == "address" and
         address and
-        is_valid_coordinate(session.get("lat"), session.get("lon"))
+        is_valid_coordinate(resident_state.get("lat"), resident_state.get("lon"))
     )
     return {
         "zip_code": zip_code,
@@ -448,11 +493,11 @@ def get_all_hazards(user=None, location_context=None):
         "zip_code": location_context.get("zip_code"),
         "location_mode": location_context.get("location_mode"),
     })
+    resident_state = get_resident_state()
     user_context = {
-        "household": session.get("household"),
-        "preparedness": session.get("preparedness"),
-        "special_needs": session.get("special_needs"),
-        "household_tags": session.get("household_tags", []),
+        "household": resident_state.get("household"),
+        "preparedness": resident_state.get("preparedness"),
+        "household_tags": resident_state.get("household_tags", []),
     }
     structured_results = build_hazard_results(
         hazards,
@@ -553,7 +598,9 @@ def get_data_sources_context():
 
 @app.context_processor
 def inject_data_sources_context():
-    return get_data_sources_context()
+    context = get_data_sources_context()
+    context["has_resident_result"] = bool(get_resident_state().get("zip_code"))
+    return context
 
 def is_valid_coordinate(lat, lon):
     return (
@@ -636,7 +683,7 @@ def get_zip_from_coordinates(lat, lon, zip_geojson_file="static/zipbound.geojson
                     if zip_code:
                         return str(zip_code)
     except Exception:
-        logger.exception("ZIP boundary lookup failed for coordinates (%s, %s).", lat, lon)
+        logger.exception("ZIP boundary lookup failed.")
     return None
 
 
@@ -705,7 +752,7 @@ def geocode_address(address_query):
             
             # Verify coordinates are in reasonable range for Bay Area
             if not is_valid_coordinate(lat, lon):
-                logger.info("Coordinates outside coverage bounds: %s, %s", lat, lon)
+                logger.info("Submitted coordinates were outside coverage bounds.")
                 return None
             
             # Reverse geocode to get address and ZIP
@@ -741,7 +788,7 @@ def geocode_address(address_query):
         if location:
             lat, lon = location.latitude, location.longitude
             if not is_valid_coordinate(lat, lon):
-                logger.info("Address geocoded outside coverage bounds: %s, %s", lat, lon)
+                logger.info("Geocoded address was outside coverage bounds.")
                 return None
 
             # Get correct ZIP from your GeoJSON boundaries
@@ -812,12 +859,10 @@ def process_form():
 
         if zip_code:
             if not valid_zip(zip_code):
-                session["form_error"] = "Invalid ZIP code. Please enter a 5-digit number."
-                session["form_data"] = request.form.to_dict()
+                set_form_error("Invalid ZIP code. Please enter a 5-digit number.")
                 return redirect(url_for("home"))
             if zip_risk_data and zip_code not in zip_risk_data:
-                session["form_error"] = f"ZIP code {zip_code} is outside our coverage area."
-                session["form_data"] = request.form.to_dict()
+                set_form_error(f"ZIP code {zip_code} is outside our coverage area.")
                 return redirect(url_for("home"))
             final_zip = zip_code
             lat, lon = geocode_zip(zip_code)
@@ -826,84 +871,65 @@ def process_form():
 
         elif address:
             if not valid_address(address):
-                session["form_error"] = "Invalid address. Please enter a proper street address."
-                session["form_data"] = request.form.to_dict()
+                set_form_error("Invalid address. Please enter a proper street address.")
                 return redirect(url_for("home"))
 
             result = geocode_address(address)
             if not result:
-                session["form_error"] = "Could not find a valid address in the supported service area."
-                session["form_data"] = request.form.to_dict()
+                set_form_error("Could not find a valid address in the supported service area.")
                 return redirect(url_for("home"))
 
             lat, lon, zip_from_address, formatted_address = result
             zip_from_address = (zip_from_address or "").split("-")[0]
 
             if not zip_from_address:
-                session["form_error"] = "We found the location, but could not verify a supported ZIP code."
-                session["form_data"] = request.form.to_dict()
+                set_form_error("We found the location, but could not verify a supported ZIP code.")
                 return redirect(url_for("home"))
 
             if zip_risk_data and zip_from_address not in zip_risk_data:
-                session["form_error"] = f"The address ZIP ({zip_from_address}) is not covered."
-                session["form_data"] = request.form.to_dict()
+                set_form_error(f"The address ZIP ({zip_from_address}) is not covered.")
                 return redirect(url_for("home"))
 
             final_zip = zip_from_address
             location_mode = "address"
         else:
-            session["form_error"] = "Please enter a ZIP code or address."
-            session["form_data"] = request.form.to_dict()
+            set_form_error("Please enter a ZIP code or address.")
             return redirect(url_for("home"))
 
         household = (request.form.get("household") or "").strip()
         preparedness = (request.form.get("preparedness") or "").strip()
-        special_needs = (request.form.get("special_needs") or "").strip()
         household_tags = request.form.getlist("household_tags")
         if (
             len(household) > 40
             or len(preparedness) > 40
-            or len(special_needs) > 120
             or len(household_tags) > 12
             or any(len(tag) > 40 or not valid_short_query(tag) for tag in household_tags)
         ):
-            session["form_error"] = "One or more household fields were too long or invalid."
+            set_form_error("One or more optional household fields were too long or invalid.")
             return redirect(url_for("home"))
-
-        if not household or not preparedness:
-            return safe_render(
-                "home.html",
-                error="Please fill in all required fields.",
-                form_data=request.form.to_dict()
-            )
 
         if not is_valid_coordinate(lat, lon):
             lat, lon = geocode_zip(final_zip) if final_zip else (DEFAULT_LAT, DEFAULT_LON)
 
-        session["zip_code"] = final_zip
-        session["lat"] = lat
-        session["lon"] = lon
-        session["address"] = formatted_address
-        session["input_address"] = address or zip_code
-        session["county"] = "Alameda County" if final_zip else ""
-        session["city"] = ""
-        session[LOCATION_MODE_SESSION_KEY] = location_mode
-        session["household"] = household
-        # Temporary session context only. StayReady does not write this value to
-        # logs, Supabase, analytics, or a durable profile database.
-        session["special_needs"] = special_needs
-        session["preparedness"] = preparedness
-        session["household_tags"] = household_tags
-
-        for hazard in ["wildfire", "flood", "earthquake"]:
-            session.pop(f"chat_{hazard}", None)
-            session.pop(f"meta_{hazard}", None)
+        save_resident_state({
+            "zip_code": final_zip,
+            "lat": lat,
+            "lon": lon,
+            "address": formatted_address,
+            "input_address": address or zip_code,
+            "county": "Alameda County" if final_zip else "",
+            "city": "",
+            "location_mode": location_mode,
+            "household": household,
+            "preparedness": preparedness,
+            "household_tags": household_tags,
+            "hazard_user_profile": {},
+        })
 
         return redirect(url_for("risk_summary"))
     except Exception:
         logger.exception("Form processing failed.")
-        session["form_error"] = "We could not process that request, but your saved data is still intact. Please try again."
-        session["form_data"] = request.form.to_dict()
+        set_form_error("We could not process that request. Please try entering the location again.")
         return redirect(url_for("home"))
 
 
@@ -1242,12 +1268,11 @@ def get_zip_boundary(zip_code):
 @app.route("/")
 def home():
     error = session.pop("form_error", None)
-    form_data = session.pop("form_data", None)
     location_context = get_session_location_context()
     return safe_render(
         "home.html",
         error=error,
-        form_data=form_data,
+        form_data=None,
         location_context=location_context,
         homepage_action_examples=get_action_items([
             "portable_go_bag",
@@ -1259,7 +1284,9 @@ def home():
 @app.route("/hazards/profile", methods=["POST"])
 def save_hazard_profile():
     profile = normalize_user_profile(request.form)
-    session[HAZARD_PROFILE_SESSION_KEY] = profile
+    # Exact age is intentionally not collected or retained.
+    profile["age"] = None
+    update_resident_state({"hazard_user_profile": profile})
 
     next_url = request.form.get("next_url", "").strip()
     return redirect(safe_next_url(next_url, "hazards_dashboard"))
@@ -1321,8 +1348,10 @@ def redirect_form():
 # --- Risk Summary Page ---
 @app.route("/risk_summary")
 def risk_summary():
-    zip_code = session.get("zip_code")
+    resident_state = get_resident_state()
+    zip_code = resident_state.get("zip_code")
     if not zip_code:
+        set_form_error("Your temporary result is unavailable or expired. Enter your location again.")
         return redirect(url_for("home"))
     warning_message = None
     location_context = get_session_location_context()
@@ -1345,10 +1374,9 @@ def risk_summary():
         structured_hazards,
         additional_local_hazards,
         session_data={
-            "household": session.get("household"),
-            "preparedness": session.get("preparedness"),
-            "special_needs": session.get("special_needs"),
-            "household_tags": session.get("household_tags", []),
+            "household": resident_state.get("household"),
+            "preparedness": resident_state.get("preparedness"),
+            "household_tags": resident_state.get("household_tags", []),
         },
     )
 
@@ -1416,15 +1444,16 @@ def risk_summary():
         checklist_items=checklist_items,
         checklist_total_count=len(all_checklist_items),
         warning_message=warning_message,
-        oakland_hazard_ready=is_oakland_hazard_context(session.get("zip_code"), session.get("address")),
+        oakland_hazard_ready=is_oakland_hazard_context(zip_code, resident_state.get("address")),
     )
 
 # --- Unified Hazard Map ---
 @app.route("/map", methods=["GET", "POST"])
 def map():
     """Unified hazard map showing all risks with toggleable layers"""
-    zip_code = session.get("zip_code", "94601")
-    address = session.get("address")
+    resident_state = get_resident_state()
+    zip_code = resident_state.get("zip_code", "94601")
+    address = resident_state.get("address")
     location_context = get_session_location_context()
     location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
     all_map_hazards = get_all_hazards(get_saved_hazard_profile(), location_context)
@@ -1446,8 +1475,8 @@ def map():
         })
 
     try:
-        lat = session.get("lat")
-        lon = session.get("lon")
+        lat = resident_state.get("lat")
+        lon = resident_state.get("lon")
         if not is_valid_coordinate(lat, lon):
             lat, lon = DEFAULT_LAT, DEFAULT_LON
 
@@ -1498,6 +1527,11 @@ def map():
 @app.route("/about")
 def about():
     return safe_render("about.html")
+
+
+@app.route("/privacy")
+def privacy_basics():
+    return safe_render("privacy.html")
 
 
 @app.route('/sitemap.xml')
@@ -1709,9 +1743,10 @@ def api_wildfire_zones():
     """API endpoint for wildfire hazard zones"""
     data = load_geojson_file("FireHaz.geojson")
     if usable_geojson_layer(data):
-        zip_code = request.args.get("zip") or session.get("zip_code")
-        lat = request.args.get("lat") or session.get("lat")
-        lon = request.args.get("lon") or session.get("lon")
+        resident_state = get_resident_state()
+        zip_code = request.args.get("zip") or resident_state.get("zip_code")
+        lat = request.args.get("lat") or resident_state.get("lat")
+        lon = request.args.get("lon") or resident_state.get("lon")
         if zip_code and not valid_zip(zip_code):
             return jsonify({"error": "Invalid ZIP code."}), 400
         coordinates = valid_coordinate_pair(lat, lon, COVERAGE_BOUNDS) if lat is not None or lon is not None else None
@@ -1745,9 +1780,10 @@ def api_flood_zones():
     """API endpoint for filtered flood hazard zones."""
     data = load_geojson_file("FldHaz.geojson")
     if usable_geojson_layer(data):
-        zip_code = request.args.get("zip") or session.get("zip_code")
-        lat = request.args.get("lat") or session.get("lat")
-        lon = request.args.get("lon") or session.get("lon")
+        resident_state = get_resident_state()
+        zip_code = request.args.get("zip") or resident_state.get("zip_code")
+        lat = request.args.get("lat") or resident_state.get("lat")
+        lon = request.args.get("lon") or resident_state.get("lon")
         if zip_code and not valid_zip(zip_code):
             return jsonify({"error": "Invalid ZIP code."}), 400
         coordinates = valid_coordinate_pair(lat, lon, COVERAGE_BOUNDS) if lat is not None or lon is not None else None
@@ -1818,8 +1854,9 @@ def api_cgs_map_layer(layer_key):
         }), 404
 
     try:
-        lat = float(request.args.get("lat") or session.get("lat"))
-        lon = float(request.args.get("lon") or session.get("lon"))
+        resident_state = get_resident_state()
+        lat = float(request.args.get("lat") or resident_state.get("lat"))
+        lon = float(request.args.get("lon") or resident_state.get("lon"))
         if not is_valid_coordinate(lat, lon):
             raise ValueError("Coordinates are unavailable.")
         service = GeospatialEvidenceService(project_root=BASE_DIR)
@@ -1968,7 +2005,7 @@ def earthquake():
 # --- Live Earthquake Map ---
 @app.route("/live-earthquake-map")
 def live_earthquake_map():
-    zip_code = session.get("zip_code", "94601")
+    zip_code = get_resident_state().get("zip_code", "94601")
     try:
         zip_geojson_data = get_zip_boundary(zip_code)
         zip_geojson = json.dumps(zip_geojson_data) if zip_geojson_data else "{}"

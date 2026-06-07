@@ -95,6 +95,11 @@
                                     </button>
                                 </div>
                                 <div class="form-text">Use a street address for the most specific checks StayReady can support.</div>
+                                <div class="form-text">
+                                    StayReady sends the address to OpenStreetMap's Nominatim geocoding service and may contact official map services.
+                                    The raw address is kept only in short-lived server-side result state, not in your browser cookie or an account.
+                                    <a href="{{ url_for('privacy_basics') }}">Read Privacy Basics</a>.
+                                </div>
                                 <div id="address-suggestions" class="list-group mt-2" style="display: none;"></div>
                             </div>
                         </div>
@@ -115,10 +120,16 @@
                             </div>
                         </div>
 
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="household" class="form-label">Household size</label>
-                                <select class="form-control" id="household" name="household" required>
+                        <details class="sr-household-options mt-3">
+                            <summary class="fw-semibold">Optional household planning details</summary>
+                            <p class="form-text mt-2 mb-3">
+                                These structured selections are optional and kept only with your short-lived result.
+                                Do not enter medical diagnoses or other sensitive details.
+                            </p>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                <label for="household" class="form-label">Household size <span class="text-muted">(optional)</span></label>
+                                <select class="form-control" id="household" name="household">
                                     <option value="">Select...</option>
                                     <option value="1" {% if form_data and form_data.household == '1' %}selected{% endif %}>1 person</option>
                                     <option value="2" {% if form_data and form_data.household == '2' %}selected{% endif %}>2 people</option>
@@ -126,33 +137,20 @@
                                     <option value="4" {% if form_data and form_data.household == '4' %}selected{% endif %}>4 people</option>
                                     <option value="5+" {% if form_data and form_data.household == '5+' %}selected{% endif %}>5+ people</option>
                                 </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="preparedness" class="form-label">Preparedness</label>
-                                <select class="form-control" id="preparedness" name="preparedness" required>
+                                </div>
+                                <div class="col-md-6">
+                                <label for="preparedness" class="form-label">Preparedness <span class="text-muted">(optional)</span></label>
+                                <select class="form-control" id="preparedness" name="preparedness">
                                     <option value="">Select...</option>
                                     <option value="none" {% if form_data and form_data.preparedness == 'none' %}selected{% endif %}>Not prepared</option>
                                     <option value="basic" {% if form_data and form_data.preparedness == 'basic' %}selected{% endif %}>Basic supplies</option>
                                     <option value="moderate" {% if form_data and form_data.preparedness == 'moderate' %}selected{% endif %}>Moderate prep</option>
                                     <option value="well-prepared" {% if form_data and form_data.preparedness == 'well-prepared' %}selected{% endif %}>Well prepared</option>
                                 </select>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="mt-3">
-                            <label for="special_needs" class="form-label">Medical, access, or household needs <span class="text-muted">(optional)</span></label>
-                            <input
-                                type="text"
-                                class="form-control"
-                                id="special_needs"
-                                name="special_needs"
-                                placeholder="e.g. medications, mobility device, pets, children"
-                                value="{{ form_data.special_needs if form_data else '' }}"
-                            >
-                        </div>
-
-                        <fieldset class="sr-household-options mt-3">
-                            <legend>Optional planning factors</legend>
+                            <fieldset class="mt-3">
+                            <legend class="fs-6">Planning factors <span class="text-muted">(optional)</span></legend>
                             <div class="sr-option-grid">
                                 <label><input type="checkbox" name="household_tags" value="medical"> Medical / medication needs</label>
                                 <label><input type="checkbox" name="household_tags" value="pets"> Pets</label>
@@ -163,7 +161,8 @@
                                 <label><input type="checkbox" name="household_tags" value="older_adults"> Older adults</label>
                                 <label><input type="checkbox" name="household_tags" value="access_needs"> Disability / access needs</label>
                             </div>
-                        </fieldset>
+                            </fieldset>
+                        </details>
 
                         <div id="form-messages" class="mt-3" style="display: none;"></div>
 
@@ -563,9 +562,6 @@
 
             const zipCode = zipInput.value.trim();
             const address = addressInput.value.trim();
-            const household = document.getElementById('household').value.trim();
-            const preparedness = document.getElementById('preparedness').value.trim();
-
             if (zipRadio.checked) {
                 if (!/^\d{5}$/.test(zipCode)) {
                     e.preventDefault();
@@ -575,12 +571,6 @@
             } else if (address.length < 5) {
                 e.preventDefault();
                 showMessage('Please enter a complete street address.', 'error');
-                return;
-            }
-
-            if (!household || !preparedness) {
-                e.preventDefault();
-                showMessage('Please fill in household size and preparedness.', 'error');
                 return;
             }
 

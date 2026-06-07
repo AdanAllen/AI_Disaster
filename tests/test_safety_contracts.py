@@ -337,6 +337,7 @@ class RenderedLimitationsTests(unittest.TestCase):
             "resources",
             "sources",
             "about",
+            "privacy_basics",
             "live_earthquake_map",
         ):
             app.add_url_rule(
