@@ -356,7 +356,7 @@ def _what_was_checked(hazard: Dict) -> Dict:
     if data_status == "not_in_layer":
         checked.append(
             "No matching mapped exposure was found for the address point in the checked layer. "
-            "This is informational and does not mean the location is safe."
+            "This is informational and does not establish overall location risk."
         )
     if slug == "flood" and hazard.get("scope") != "address_level":
         not_checked.append("FEMA address-point flood overlay was not completed for this result.")
@@ -472,6 +472,8 @@ def _hazard_plan(hazard: Dict, location_context: Dict, household_context: Dict, 
         "slug": slug,
         "priority": order,
         "exposure_level": hazard.get("exposure_level") or "Unknown",
+        "evidence_status_label": hazard.get("evidence_status_label") or hazard.get("data_status_label") or "Not determined from checked map data",
+        "priority_label": hazard.get("priority_label") or "General area priority",
         "why_it_matters": why,
         "evidence_badges": _dedupe(evidence_badges),
         "local_guidance_status": local_status,

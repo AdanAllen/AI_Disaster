@@ -284,7 +284,7 @@
                         {% if hazard.scope == "address_level" and hazard.is_in_hazard_zone %}
                         {{ hazard.exposure_level }} mapped-zone exposure
                         {% else %}
-                        Exposure not determined
+                        Not determined from checked map data
                         {% endif %}
                     </div>
                     <h3>{{ hazard.name }}</h3>
@@ -375,7 +375,7 @@
                         {% if hazard.scope == "address_level" and hazard.is_in_hazard_zone %}
                         {{ hazard.exposure_level | title }} mapped-zone exposure
                         {% else %}
-                        Not determined
+                        Not determined from checked map data
                         {% endif %}
                     </div>
                 </div>

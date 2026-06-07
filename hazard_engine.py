@@ -22,21 +22,37 @@ CGS_DATASETS = {
         "source_id": "cgs_alquist_priolo",
         "map_layer_key": "alquist-priolo",
         "match_label": "Inside a CGS mapped Alquist-Priolo fault rupture zone.",
+        "plain_definition": "Alquist-Priolo fault zones are official zones around active faults where the ground could rupture at the surface during an earthquake.",
+        "match_meaning": "The location appears inside a mapped surface fault rupture zone.",
+        "nonmatch_meaning": "No mapped surface fault rupture zone matched the location in this checked dataset.",
+        "does_not_mean": "This is not a general earthquake shaking score. Areas outside the zone can still experience strong shaking.",
     },
     "cgs_liquefaction_remote": {
         "source_id": "cgs_liquefaction",
         "map_layer_key": "liquefaction",
         "match_label": "Inside a CGS mapped liquefaction zone.",
+        "plain_definition": "Liquefaction can happen when strong earthquake shaking makes loose, wet soil temporarily lose strength.",
+        "match_meaning": "The location appears inside a CGS mapped area where liquefaction may occur during a strong earthquake.",
+        "nonmatch_meaning": "No CGS mapped liquefaction zone matched the location in this checked dataset.",
+        "does_not_mean": "This does not guarantee damage and is not a site-specific engineering report.",
     },
     "cgs_earthquake_landslide_remote": {
         "source_id": "cgs_earthquake_landslide",
         "map_layer_key": "earthquake-landslide",
         "match_label": "Inside a CGS mapped earthquake-induced landslide zone.",
+        "plain_definition": "Earthquake-induced landslides are slope failures triggered by strong earthquake shaking.",
+        "match_meaning": "The location appears inside a CGS mapped area where earthquake shaking may trigger landslides.",
+        "nonmatch_meaning": "No CGS mapped earthquake-induced landslide zone matched the location in this checked dataset.",
+        "does_not_mean": "This does not predict a landslide at the exact property and does not cover every landslide risk.",
     },
     "cgs_tsunami_hazard_area_remote": {
         "source_id": "cgs_tsunami_hazard_area",
         "map_layer_key": "tsunami",
         "match_label": "Inside a CGS mapped tsunami hazard area.",
+        "plain_definition": "Tsunami hazard areas are places that could be flooded during a tsunami event and are mainly used for evacuation planning.",
+        "match_meaning": "The location appears inside a CGS mapped tsunami hazard area.",
+        "nonmatch_meaning": "No CGS mapped tsunami hazard area matched the location in this checked dataset.",
+        "does_not_mean": "This is not a real-time evacuation order, a legal property determination, or a replacement for official alerts.",
     },
 }
 
@@ -111,12 +127,12 @@ def display_scope(scope: str) -> str:
 
 def display_data_status(status: str) -> str:
     labels = {
-        "checked": "Checked",
-        "not_checked": "Not checked yet",
-        "data_unavailable": "Official layer unavailable — not checked",
-        "not_in_layer": "Checked, no match in loaded layer",
-        "fallback_used": "Fallback used",
-        "needs_review": "Needs review",
+        "checked": "Mapped match found",
+        "not_checked": "Not checked",
+        "data_unavailable": "Not checked — map data unavailable",
+        "not_in_layer": "No mapped match found",
+        "fallback_used": "General area priority",
+        "needs_review": "Not determined from checked map data",
     }
     return labels.get(status, status.replace("_", " ").title())
 
@@ -411,18 +427,23 @@ def _cgs_public_evidence(dataset_id: str, evidence) -> Dict:
     if not available:
         exposure = "data_unavailable"
         result_label = "Official CGS layer unavailable — not checked."
+        status_label = "Not checked"
+        what_this_means = "The official map service was unavailable, so StayReady did not evaluate this location with this layer."
     elif not checked:
         exposure = "unknown"
         result_label = "This address was not evaluated by the registered CGS dataset."
+        status_label = "Not determined from checked map data"
+        what_this_means = "This location was not evaluated by this map layer."
     elif matched:
         exposure = "mapped_match"
         result_label = config["match_label"]
+        status_label = "Mapped match found"
+        what_this_means = config["match_meaning"]
     else:
         exposure = "no_mapped_match"
-        result_label = (
-            "No matching mapped exposure was found in the checked CGS dataset. "
-            "This does not mean the location is safe."
-        )
+        result_label = "No mapped match found in the checked CGS dataset."
+        status_label = "No mapped match found"
+        what_this_means = config["nonmatch_meaning"]
     provenance = payload.get("provenance") or {}
     return {
         "dataset_id": dataset_id,
@@ -433,7 +454,12 @@ def _cgs_public_evidence(dataset_id: str, evidence) -> Dict:
         "matched": matched,
         "exposure": exposure,
         "result_label": result_label,
-        "priority_band": "Mapped evidence" if matched else "Unknown",
+        "status_label": status_label,
+        "plain_definition": config["plain_definition"],
+        "what_this_means": what_this_means,
+        "why_it_matters": provenance.get("source_summary") or provenance.get("intended_claim", ""),
+        "what_this_does_not_mean": config["does_not_mean"],
+        "priority_band": "Mapped evidence" if matched else "Not an address-level priority ranking",
         "ranking_score": None,
         "evidence_tier": "official_mapped_data",
         "claim_type": payload.get("claim_type", ""),
@@ -473,7 +499,12 @@ def check_cgs_layers(
                 "matched": None,
                 "exposure": "data_unavailable",
                 "result_label": "Official CGS layer unavailable — not checked.",
-                "priority_band": "Unknown",
+                "status_label": "Not checked",
+                "plain_definition": CGS_DATASETS[dataset_id]["plain_definition"],
+                "what_this_means": "The official map service was unavailable, so StayReady did not evaluate this location with this layer.",
+                "why_it_matters": "",
+                "what_this_does_not_mean": CGS_DATASETS[dataset_id]["does_not_mean"],
+                "priority_band": "Not an address-level priority ranking",
                 "ranking_score": None,
                 "evidence_tier": "official_mapped_data",
                 "claim_type": "regulatory_zone",
@@ -487,8 +518,8 @@ def check_cgs_layers(
                 "public_claim_status": "official_unavailable",
                 "matched_features": [],
                 "limitations": [
-                    "Official CGS layer unavailable — not checked.",
-                    "Missing or failed data does not lower exposure or establish safety.",
+                        "Official CGS layer unavailable — not checked.",
+                    "Missing or failed data does not lower exposure or establish a location-wide risk conclusion.",
                 ],
             })
             continue
@@ -517,7 +548,7 @@ def _apply_cgs_evidence(result: HazardResult, checks: List[Dict]) -> HazardResul
         else:
             result.why_shown = (
                 f"{result.why_shown} No matching mapped exposure was found in the checked CGS datasets. "
-                "This does not mean the location is safe."
+                "This result applies only to those datasets and does not establish overall location risk."
             ).strip()
     elif unavailable:
         result.limitations.insert(0, "Official CGS layers were unavailable — not checked.")
@@ -828,7 +859,7 @@ def _flood_address_result(hazard: Dict, location_result, flood_check: Dict, zip_
     if not inside:
         limitations.append(
             "No matching Special Flood Hazard Area exposure was found for the point in the checked snapshot. "
-            "This does not mean the location is safe from flooding or other water-related impacts."
+            "This does not establish overall flood or water-related impact risk for the location."
         )
     limitations = _dedupe_text(
         limitations + list(geospatial_evidence.get("limitations") or [])
@@ -893,7 +924,7 @@ def _wildfire_address_result(hazard: Dict, location_result, wildfire_check: Dict
     if not inside:
         limitations.append(
             "No matching moderate, high, or very-high Fire Hazard Severity Zone exposure was found for the point in the checked snapshot. "
-            "This does not mean the location is safe from wildfire, smoke, ember, evacuation, or regional fire impacts."
+            "This does not establish overall wildfire, smoke, ember, evacuation, or regional fire-impact risk."
         )
     limitations = _dedupe_text(
         limitations + list(geospatial_evidence.get("limitations") or [])
@@ -1086,6 +1117,12 @@ def merge_structured_result(hazard: Dict, result: HazardResult) -> Dict:
     merged["structured_result"] = payload
     merged["scope_label"] = display_scope(result.scope)
     merged["data_status_label"] = display_data_status(result.data_status)
+    merged["evidence_status_label"] = display_data_status(result.data_status)
+    merged["priority_label"] = (
+        "General area priority"
+        if result.scope in {"jurisdiction_level", "zip_estimate", "county_fallback"}
+        else "Address evidence"
+    )
     merged["basis_label"] = result.basis.replace("_", " ").title()
     merged["location_precision_label"] = result.location_precision.replace("_", " ").title()
     merged["exposure_level"] = result.exposure_level.title()

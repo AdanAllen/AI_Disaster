@@ -14,7 +14,7 @@
     "coverage_bbox": null,
     "intended_claim": "Whether the saved address point intersects a loaded FEMA flood polygon, including Special Flood Hazard Area attributes when present.",
     "prohibited_claims": [
-      "A non-match does not mean the property is safe from flooding.",
+      "A non-match does not establish overall flood risk for the property.",
       "This is not a parcel, insurance, elevation-certificate, or building-specific determination."
     ],
     "retrieved_at": null,
@@ -108,7 +108,7 @@
     "intended_claim": "Whether the saved address point intersects the official CGS mapped Alquist-Priolo surface fault rupture regulatory zone service.",
     "prohibited_claims": [
       "This layer does not determine general earthquake risk or predict shaking damage.",
-      "A non-match does not mean the location is safe from earthquakes, fault movement, or other seismic effects.",
+      "A non-match does not establish overall earthquake, fault-movement, or seismic risk.",
       "This is not a site-specific engineering, legal, insurance, disclosure, or property determination."
     ],
     "retrieved_at": "2026-06-06",
@@ -142,7 +142,7 @@
     "intended_claim": "Whether the saved address point intersects the official CGS mapped liquefaction regulatory zone service.",
     "prohibited_claims": [
       "A mapped match does not mean liquefaction or damage is guaranteed.",
-      "A non-match does not mean ground failure cannot occur or that the location is safe.",
+      "A non-match does not establish that ground failure cannot occur.",
       "This is not a site-specific geotechnical, engineering, legal, insurance, or property determination."
     ],
     "retrieved_at": "2026-06-06",
@@ -176,7 +176,7 @@
     "intended_claim": "Whether the saved address point intersects the official CGS mapped earthquake-induced landslide regulatory zone service.",
     "prohibited_claims": [
       "This layer is not a general landslide forecast and does not predict when slope movement will occur.",
-      "A non-match does not mean the location is safe from landslides or other slope hazards.",
+      "A non-match does not establish overall landslide or slope-hazard risk.",
       "This is not a site-specific geotechnical, engineering, legal, insurance, or property determination."
     ],
     "retrieved_at": "2026-06-06",
@@ -210,7 +210,7 @@
     "intended_claim": "Whether the saved address point intersects a CGS polygon labeled Yes, Tsunami Hazard Area for evacuation and response planning.",
     "prohibited_claims": [
       "This result is for evacuation and response planning, not a legal or property disclosure determination.",
-      "A non-match does not mean the location is safe from all tsunami, coastal flooding, access, utility, or indirect impacts.",
+      "A non-match does not establish overall tsunami, coastal flooding, access, utility, or indirect-impact risk.",
       "This is not a live warning or emergency evacuation order."
     ],
     "retrieved_at": "2026-06-06",

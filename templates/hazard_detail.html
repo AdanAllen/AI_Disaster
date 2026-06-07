@@ -459,11 +459,13 @@
                         <h3 class="h6 mt-4">California Geological Survey checks</h3>
                         {% for evidence in hazard.additional_geospatial_evidence %}
                         <div class="border rounded-3 p-3 mb-3">
+                            <span class="evidence-badge status mb-2">{{ evidence.status_label }}</span>
                             <span class="d-block small fw-semibold text-uppercase text-muted mb-1">{{ evidence.dataset_name }}</span>
-                            <strong>{{ evidence.result_label }}</strong>
-                            {% if evidence.source_summary %}
-                            <p class="mb-2 mt-2">{{ evidence.source_summary }}</p>
-                            {% endif %}
+                            <p class="mb-2"><strong>Plain meaning:</strong> {{ evidence.plain_definition }}</p>
+                            <p class="mb-2"><strong>What this means:</strong> {{ evidence.what_this_means }}</p>
+                            <p class="mb-2"><strong>Why it matters:</strong> {{ evidence.why_it_matters or evidence.source_summary }}</p>
+                            <p class="mb-2"><strong>What this does not mean:</strong> {{ evidence.what_this_does_not_mean }}</p>
+                            <p class="mb-2"><strong>Source summary:</strong> {{ evidence.source_summary }}</p>
                             {% for limitation in evidence.limitations[:2] %}
                             <small class="d-block text-muted">{{ limitation }}</small>
                             {% endfor %}

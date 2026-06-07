@@ -83,9 +83,10 @@ class CGSEvidenceTests(unittest.TestCase):
         public = _cgs_public_evidence("cgs_liquefaction_remote", evidence)
         self.assertFalse(public["matched"])
         self.assertEqual(public["exposure"], "no_mapped_match")
-        self.assertEqual(public["priority_band"], "Unknown")
+        self.assertEqual(public["priority_band"], "Not an address-level priority ranking")
         self.assertIsNone(public["ranking_score"])
-        self.assertIn("does not mean the location is safe", public["result_label"].lower())
+        self.assertEqual(public["status_label"], "No mapped match found")
+        self.assertIn("no mapped match found", public["result_label"].lower())
         self.assertNotIn("low risk", public["result_label"].lower())
         self.assertNotIn("low exposure", public["result_label"].lower())
 

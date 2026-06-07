@@ -54,6 +54,16 @@
         </div>
     </section>
 
+    <section class="sr-section sr-section-compact" aria-label="How to read these results">
+        <div class="container">
+            <div class="sr-card sr-reading-guide">
+                <span class="sr-card-kicker">How To Read This</span>
+                <h2>Mapped evidence and priority are different.</h2>
+                <p>StayReady separates official mapped evidence from general priority ranking. A mapped match means your location appears inside a checked official hazard zone. A no-match result means no match was found in that specific dataset, not that the dataset determines every risk. A not-checked result means the data was unavailable or not evaluated. General area priority is used to organize hazards, not to prove address-level risk.</p>
+            </div>
+        </div>
+    </section>
+
     <section id="top-concerns" class="sr-section">
         <div class="container">
             <div class="sr-section-heading sr-section-heading-left">
@@ -69,7 +79,10 @@
                             <span class="sr-card-kicker">Priority {{ plan.priority }}</span>
                             <h3>{{ plan.hazard }}</h3>
                         </div>
-                        <span class="sr-badge sr-badge-muted">{{ plan.exposure_level }} exposure</span>
+                        <div class="text-end">
+                            <span class="sr-badge sr-badge-muted">{{ plan.evidence_status_label }}</span>
+                            <small class="d-block mt-2 text-muted">{{ plan.priority_label }}</small>
+                        </div>
                     </div>
 
                     <div class="sr-badge-row">
@@ -102,10 +115,13 @@
                         </div>
                         {% for evidence in plan.official_mapped_evidence %}
                         <div class="sr-local-evidence-row">
-                            <strong>{{ evidence.result_label }}</strong>
-                            {% if evidence.source_summary %}
-                            <p>{{ evidence.source_summary }}</p>
-                            {% endif %}
+                            <span class="sr-badge {% if evidence.matched %}sr-badge-success{% elif evidence.checked %}sr-badge-muted{% else %}sr-badge-warning{% endif %}">{{ evidence.status_label }}</span>
+                            <strong class="d-block mt-2">{{ evidence.dataset_name }}</strong>
+                            <p><strong>Plain meaning:</strong> {{ evidence.plain_definition }}</p>
+                            <p><strong>What this means:</strong> {{ evidence.what_this_means }}</p>
+                            <p><strong>Why it matters:</strong> {{ evidence.why_it_matters or evidence.source_summary }}</p>
+                            <p><strong>What this does not mean:</strong> {{ evidence.what_this_does_not_mean }}</p>
+                            <p><strong>Source summary:</strong> {{ evidence.source_summary }}</p>
                             {% for limitation in evidence.limitations[:2] %}
                             <small>{{ limitation }}</small>
                             {% endfor %}

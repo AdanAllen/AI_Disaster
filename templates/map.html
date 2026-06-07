@@ -726,6 +726,30 @@
                     </div>
                 </div>
 
+                <div class="cgs-legend-grid mt-3" aria-label="Core map layer explanations">
+                    <div class="cgs-legend-card">
+                        <strong>FEMA flood polygons</strong>
+                        <small><strong>Shows:</strong> Loaded mapped flood-zone polygons near the selected location.</small>
+                        <small><strong>Does not show:</strong> Building condition, drainage failures, every flood mechanism, or a property-specific determination.</small>
+                        <small><strong>Outside mapped areas:</strong> A non-match applies only to the checked provisional snapshot and does not rule out flooding.</small>
+                        <div class="cgs-status">FEMA · Official Provisional</div>
+                    </div>
+                    <div class="cgs-legend-card">
+                        <strong>CAL FIRE hazard zones</strong>
+                        <small><strong>Shows:</strong> Loaded moderate, high, and very-high Fire Hazard Severity Zone polygons.</small>
+                        <small><strong>Does not show:</strong> Live fire conditions, smoke, embers, evacuation conditions, or expected building damage.</small>
+                        <small><strong>Outside mapped areas:</strong> A non-match does not rule out wildfire or indirect fire impacts.</small>
+                        <div class="cgs-status">CAL FIRE · Official Provisional</div>
+                    </div>
+                    <div class="cgs-legend-card">
+                        <strong>Mapped fault traces</strong>
+                        <small><strong>Shows:</strong> Location context and distance to the nearest loaded mapped fault trace.</small>
+                        <small><strong>Does not show:</strong> Regulatory-zone membership, shaking intensity, liquefaction, building damage, or a complete earthquake assessment.</small>
+                        <small><strong>Outside the proximity threshold:</strong> Strong shaking and other seismic effects may still occur.</small>
+                        <div class="cgs-status">USGS / contributing CGS records · Official Provisional</div>
+                    </div>
+                </div>
+
                 <div class="cgs-layer-panel">
                     <h3>California Geological Survey mapped zones</h3>
                     <p>Optional official overlays show mapped zone boundaries. They are separate from the address-point match shown in your evidence cards.</p>
@@ -748,7 +772,10 @@
                                 <span class="cgs-legend-swatch" style="background: {{ cgs_map_layers[evidence.map_layer_key].color }}"></span>
                                 {{ evidence.dataset_name }}
                             </strong>
-                            <small>{{ evidence.source_summary }}</small>
+                            <small><strong>What this layer shows:</strong> {{ evidence.plain_definition }}</small>
+                            <small><strong>What it does not show:</strong> {{ evidence.what_this_does_not_mean }}</small>
+                            <small><strong>Outside mapped areas:</strong> A location outside this layer may still face related, indirect, or unmapped impacts.</small>
+                            <small><strong>Source summary:</strong> {{ evidence.source_summary }}</small>
                             {% for limitation in evidence.limitations[:2] %}
                             <small>{{ limitation }}</small>
                             {% endfor %}

@@ -941,7 +941,7 @@ def handle_unexpected_error(error):
         title="Temporary Error",
         error_heading="Something went wrong",
         error_message="Something went wrong, but your saved location and profile are still available.",
-        helper_message="The app has fallen back to a safe page so you can keep going."
+        helper_message="The app has fallen back to a generic error page so you can keep going."
     ), 500
 
 
@@ -1746,7 +1746,7 @@ def api_flood_zones():
                 f"Showing {feature_count} nearby flood polygons from the FEMA flood layer."
                 if feature_count else
                 "No matching mapped flood polygons were returned for the selected map area in this dataset. "
-                "This does not mean the location is safe or unaffected by flooding."
+                "This does not establish overall flood risk or rule out other flooding impacts."
             ),
         })
         return jsonify(filtered)
