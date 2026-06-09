@@ -811,8 +811,9 @@
 
 .sr-hazard-plan-top h3 {
     margin: 0;
-    font-size: 1.55rem;
+    font-size: 1.45rem;
     font-weight: 850;
+    line-height: 1.2;
 }
 
 .sr-badge-row {
@@ -886,8 +887,8 @@
 
 .sr-priority-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+    gap: 1.25rem;
 }
 
 .sr-priority-card h3 {
@@ -1003,8 +1004,8 @@
 
 .sr-other-hazard-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: 1.25rem;
 }
 
 .sr-other-hazard-grid article {
@@ -1152,12 +1153,13 @@
     }
 }
 .sr-local-evidence {
-    margin: 0 1.35rem 1.25rem;
-    padding: 1rem;
-    border: 1px solid #d7e1e8;
-    border-left: 4px solid #b7791f;
-    border-radius: 0.85rem;
-    background: #fbfcfa;
+    margin: 0.5rem 0 1.25rem;
+    padding: 1.25rem;
+    border: 1px solid #d1dce5;
+    border-left: 5px solid var(--sr-gold);
+    border-radius: 18px;
+    background: #fbfcff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
 }
 
 .sr-visible-limitations {
