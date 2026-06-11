@@ -1351,27 +1351,21 @@ def risk_summary():
     resident_state = get_resident_state()
     zip_code = resident_state.get("zip_code")
     if not zip_code:
-        set_form_error("Your temporary result is unavailable or expired. Enter your location again.")
-        return redirect(url_for("home"))
+        return safe_render(
+            "risk_summary.html",
+            empty_state=True,
+            warning_message=None,
+        )
     warning_message = None
     location_context = get_session_location_context()
     location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
     all_structured_hazards = get_all_hazards(get_saved_hazard_profile(), location_context)
-    core_hazards = [
-        hazard for hazard in all_structured_hazards
-        if hazard.get("slug") in {"flood", "wildfire", "earthquake"}
-    ]
-    structured_hazards = core_hazards[:3] if core_hazards else all_structured_hazards[:3]
-    for hazard in all_structured_hazards:
-        if (
-            hazard.get("slug") not in {item.get("slug") for item in structured_hazards}
-            and hazard.get("additional_geospatial_evidence")
-        ):
-            structured_hazards.append(hazard)
-    additional_local_hazards = get_additional_local_hazards(location_context, structured_hazards)
+    plan_hazards = all_structured_hazards[:4]
+    structured_hazards = plan_hazards[:3]
+    additional_local_hazards = get_additional_local_hazards(location_context, plan_hazards)
     resident_plan = build_resident_plan(
         location_context,
-        structured_hazards,
+        plan_hazards,
         additional_local_hazards,
         session_data={
             "household": resident_state.get("household"),
@@ -1433,6 +1427,7 @@ def risk_summary():
 
     return safe_render(
         "risk_summary.html",
+        empty_state=False,
         zip_code=zip_code,
         location_context=location_context,
         structured_hazards=structured_hazards,

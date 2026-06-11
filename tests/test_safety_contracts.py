@@ -326,7 +326,7 @@ class LocationFactSafetyTests(unittest.TestCase):
 
 
 class RenderedLimitationsTests(unittest.TestCase):
-    def test_risk_summary_renders_limitations_without_opening_details(self):
+    def test_risk_summary_renders_limitations_in_labeled_details(self):
         app = Flask(__name__, template_folder=str(BASE_DIR / "templates"))
         app.secret_key = "test"
         for endpoint in (
@@ -360,10 +360,14 @@ class RenderedLimitationsTests(unittest.TestCase):
                 "priority": 1,
                 "hazard": "Flood",
                 "exposure_level": "Unknown",
+                "evidence_status_label": "Not checked",
+                "evidence_tier_label": "Citywide source",
+                "priority_label": "General area priority",
                 "evidence_badges": ["Jurisdiction-level", "Official layer unavailable — not checked"],
                 "why_it_matters": "Jurisdiction context only.",
                 "limitations": ["Official layer unavailable — not checked."],
                 "location_matches": [],
+                "official_mapped_evidence": [],
                 "before_actions": [],
                 "during_actions": [],
                 "after_actions": [],
@@ -387,10 +391,11 @@ class RenderedLimitationsTests(unittest.TestCase):
                 "risk_summary.html",
                 resident_plan=resident_plan,
                 warning_message=None,
+                empty_state=False,
             )
-        visible_section = html.split("<details", 1)[0]
-        self.assertIn("Important limits", visible_section)
-        self.assertIn("Official layer unavailable", visible_section)
+        self.assertIn("Limits and source details", html)
+        self.assertIn("Important limits", html)
+        self.assertIn("Official layer unavailable", html)
 
 
 if __name__ == "__main__":

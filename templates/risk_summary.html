@@ -2,12 +2,21 @@
 {% from "_action_macros.html" import action_item %}
 {% block title %}Your Local Preparedness Plan - Stay Ready Now{% endblock %}
 
-{% block head %}
-<link href="{{ url_for('static', filename='css/stayready.css') }}" rel="stylesheet" />
-{% endblock %}
-
 {% block content %}
 <div class="sr-page sr-results-page">
+    {% if empty_state %}
+    <main class="sr-empty-state">
+        <div class="container">
+            <div class="sr-empty-state-inner">
+                <span class="sr-empty-state-icon" aria-hidden="true"><i class="fas fa-location-dot"></i></span>
+                <h1>Your preparedness summary</h1>
+                <p>Enter an Alameda County address to generate your preparedness summary.</p>
+                <a class="btn sr-button sr-button-primary" href="{{ url_for('home') }}#get-started">Enter an address</a>
+                <small>StayReady is an educational tool and is not an official emergency service.</small>
+            </div>
+        </div>
+    </main>
+    {% else %}
     {% if warning_message %}
     <div class="container pt-4">
         <div class="sr-alert sr-alert-warning">{{ warning_message }}</div>
@@ -18,12 +27,11 @@
         <div class="container">
             <div class="sr-results-hero-grid">
                 <div>
-                    <span class="sr-badge sr-badge-muted">Resident guidance plan</span>
-                    <h1>Your local preparedness and recovery plan</h1>
-                    <p>{{ resident_plan.address_summary.summary }}</p>
+                    <h1>Your preparedness summary</h1>
+                    <p>Based on official hazard and preparedness sources for this location.</p>
                     <div class="sr-results-actions">
-                        <a class="btn sr-button sr-button-primary" href="#top-concerns">Review top concerns</a>
-                        <a class="btn sr-button sr-button-secondary" href="{{ url_for('map') }}">Open supporting map</a>
+                        <a class="btn sr-button sr-button-primary" href="#top-concerns">Review priority hazards</a>
+                        <a class="btn sr-button sr-button-secondary" href="{{ url_for('map') }}">Open hazard map</a>
                     </div>
                 </div>
                 <aside class="sr-card sr-address-card" aria-label="Address summary">
@@ -54,192 +62,106 @@
         </div>
     </section>
 
-    <section class="sr-section sr-section-compact" aria-label="How to read these results">
-        <div class="container">
-            <div class="sr-card sr-reading-guide">
-                <span class="sr-card-kicker">How To Read This</span>
-                <h2>Mapped evidence and priority are different.</h2>
-                <p>StayReady separates official mapped evidence from general priority ranking. A mapped match means your location appears inside a checked official hazard zone. A no-match result means no match was found in that specific dataset, not that the dataset determines every risk. A not-checked result means the data was unavailable or not evaluated. General area priority is used to organize hazards, not to prove address-level risk.</p>
-            </div>
-        </div>
-    </section>
-
     <section id="top-concerns" class="sr-section">
         <div class="container">
             <div class="sr-section-heading sr-section-heading-left">
-                <h2>Top local concerns</h2>
-                <p>These are the hazards StayReady can explain most clearly for this location right now. Each card separates checked evidence from local-plan or fallback guidance.</p>
+                <h2>Priority hazards</h2>
+                <p>Start with these hazards. The status describes the evidence checked; the order helps organize preparedness and is not a safety determination.</p>
             </div>
 
-            <div class="sr-hazard-plan-grid">
-                {% for plan in resident_plan.hazards %}
+            <div class="sr-hazard-plan-list">
+                {% for plan in resident_plan.hazards[:3] %}
                 <article class="sr-card sr-hazard-plan-card">
                     <div class="sr-hazard-plan-top">
                         <div>
                             <span class="sr-card-kicker">Priority {{ plan.priority }}</span>
                             <h3>{{ plan.hazard }}</h3>
+                            <p class="sr-hazard-status">{{ plan.evidence_status_label }} · {{ plan.evidence_tier_label }}</p>
                         </div>
-                        <div class="text-end">
-                            <span class="sr-badge sr-badge-muted">{{ plan.evidence_status_label }}</span>
-                            <small class="d-block mt-2 text-muted">{{ plan.priority_label }}</small>
-                        </div>
+                        <span class="sr-priority-label">{{ plan.priority_label }}</span>
                     </div>
 
-                    <div class="sr-badge-row">
-                        {% for badge in plan.evidence_badges %}
-                        <span class="sr-badge {% if 'Address' in badge %}sr-badge-success{% elif 'fallback' in badge|lower or 'not' in badge|lower %}sr-badge-warning{% else %}sr-badge-muted{% endif %}">{{ badge }}</span>
-                        {% endfor %}
-                    </div>
-
-                    <section class="sr-card-body">
-                        <h4>Why it matters here</h4>
+                    <div class="sr-hazard-summary-grid">
+                    <section class="sr-card-body sr-hazard-meaning">
+                        <h4>What this means</h4>
                         <p>{{ plan.why_it_matters }}</p>
                     </section>
 
-                    {% if plan.limitations %}
-                    <section class="sr-visible-limitations" aria-label="Important limitations">
-                        <h4>Important limits</h4>
+                    <section class="sr-hazard-actions">
+                        <h4>What to do next</h4>
                         <ul class="sr-action-list">
-                            {% for limitation in plan.limitations[:3] %}
-                            <li>{{ limitation }}</li>
+                            {% for item in (plan.before_actions + plan.during_actions)[:3] %}
+                            <li>{{ item.instruction }}</li>
+                            {% else %}
+                            <li>Review official preparedness guidance for this hazard.</li>
                             {% endfor %}
                         </ul>
                     </section>
-                    {% endif %}
+                    </div>
 
-                    {% if plan.official_mapped_evidence %}
-                    <section class="sr-local-evidence" aria-label="Official CGS mapped evidence">
-                        <div class="sr-local-evidence-heading">
-                            <span class="sr-badge sr-badge-muted">Official mapped data</span>
-                            <h4>California Geological Survey checks</h4>
-                        </div>
-                        {% for evidence in plan.official_mapped_evidence %}
-                        <div class="sr-local-evidence-row">
-                            <span class="sr-badge {% if evidence.matched %}sr-badge-success{% elif evidence.checked %}sr-badge-muted{% else %}sr-badge-warning{% endif %}">{{ evidence.status_label }}</span>
-                            <strong class="d-block mt-2">{{ evidence.dataset_name }}</strong>
-                            <p><strong>Plain meaning:</strong> {{ evidence.plain_definition }}</p>
-                            <p><strong>What this means:</strong> {{ evidence.what_this_means }}</p>
-                            <p><strong>Why it matters:</strong> {{ evidence.why_it_matters or evidence.source_summary }}</p>
-                            <p><strong>What this does not mean:</strong> {{ evidence.what_this_does_not_mean }}</p>
-                            <p><strong>Source summary:</strong> {{ evidence.source_summary }}</p>
-                            {% for limitation in evidence.limitations[:2] %}
-                            <small>{{ limitation }}</small>
-                            {% endfor %}
-                            <div class="sr-local-evidence-citation">
-                                {% if evidence.source_url %}
-                                <a href="{{ evidence.source_url }}" target="_blank" rel="noopener noreferrer">{{ evidence.source_agency }}</a>
-                                {% else %}
-                                <span>{{ evidence.source_agency }}</span>
-                                {% endif %}
-                                <span>{{ evidence.public_claim_status | replace('_', ' ') | title }}</span>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </section>
-                    {% endif %}
-
-                    {% if plan.location_matches %}
-                    <section class="sr-local-evidence" aria-label="Matched local plan evidence">
-                        <div class="sr-local-evidence-heading">
-                            <span class="sr-badge sr-badge-warning">Area-based source</span>
-                            <h4>Reviewed named-area context</h4>
-                        </div>
-                        {% for match in plan.location_matches %}
-                        <div class="sr-local-evidence-row">
-                            <strong>{{ match.label }}</strong>
-                            <p>{{ match.reason }}</p>
-                            {% for limitation in match.precision_limitations %}
-                            <small>{{ limitation }}</small>
-                            {% endfor %}
-                            <div class="sr-local-evidence-citation">
-                                {% if match.source_url %}
-                                <a href="{{ match.source_url }}" target="_blank" rel="noopener noreferrer">{{ match.source_name }}</a>
-                                {% else %}
-                                <span>{{ match.source_name }}</span>
-                                {% endif %}
-                                <span>{{ match.source_document }} · page {{ match.source_page }}</span>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </section>
-                    {% endif %}
-
-                    <div class="sr-plan-columns">
-                        <section>
-                            <h4>Before</h4>
-                            <ul class="sr-action-list">
-                                {% for item in plan.before_actions[:4] %}
-                                <li>{{ action_item(item) }}</li>
-                                {% else %}
-                                <li>No reviewed source-backed action is available for this phase yet.</li>
-                                {% endfor %}
-                            </ul>
-                        </section>
-                        <section>
-                            <h4>During</h4>
-                            <ul class="sr-action-list">
-                                {% for item in plan.during_actions[:3] %}
-                                <li>{{ action_item(item) }}</li>
-                                {% else %}
-                                <li>No reviewed source-backed action is available for this phase yet.</li>
-                                {% endfor %}
-                            </ul>
-                        </section>
-                        <section>
-                            <h4>After</h4>
-                            <ul class="sr-action-list">
-                                {% for item in plan.after_actions[:3] %}
-                                <li>{{ action_item(item) }}</li>
-                                {% else %}
-                                <li>No reviewed source-backed action is available for this phase yet.</li>
-                                {% endfor %}
-                            </ul>
-                        </section>
+                    <div class="sr-source-trust-row">
+                        <i class="fas fa-shield-halved" aria-hidden="true"></i>
+                        <span>{{ plan.evidence_badges | join(" · ") }}</span>
+                        {% if plan.sources and plan.sources[0].url %}
+                        <a href="{{ plan.sources[0].url }}" target="_blank" rel="noopener noreferrer">{{ plan.sources[0].name }}</a>
+                        {% endif %}
                     </div>
 
                     <details class="sr-details">
-                        <summary>Recovery, checks, and sources</summary>
-                        <div class="sr-details-grid">
+                        <summary>Why this matters</summary>
+                        <div class="sr-details-content">
+                            <p>{{ plan.why_it_matters }}</p>
+                            {% if plan.location_matches %}
+                            {% for match in plan.location_matches %}
+                            <p><strong>{{ match.label }}:</strong> {{ match.reason }}</p>
+                            {% endfor %}
+                            {% endif %}
+                            <h4>During and after</h4>
+                            <ul class="sr-action-list">
+                                {% for item in (plan.during_actions + plan.after_actions + plan.recovery_steps)[:6] %}
+                                <li>{{ item.instruction }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details class="sr-details">
+                        <summary>Limits and source details</summary>
+                        <div class="sr-details-content sr-details-grid">
                             <section>
-                                <h4>Recovery prep</h4>
+                                <h4>Important limits</h4>
                                 <ul class="sr-action-list">
-                                    {% for item in plan.recovery_steps[:5] %}
-                                    <li>{{ action_item(item) }}</li>
-                                    {% else %}
-                                    <li>No reviewed source-backed recovery action is available yet.</li>
+                                    {% for limitation in plan.limitations %}
+                                    <li>{{ limitation }}</li>
                                     {% endfor %}
-                                </ul>
-                            </section>
-                            <section>
-                                <h4>What was checked</h4>
-                                <ul class="sr-action-list">
-                                    {% for item in plan['checked'] %}
+                                    {% for item in plan.not_checked[:3] %}
                                     <li>{{ item }}</li>
                                     {% endfor %}
                                 </ul>
                             </section>
                             <section>
-                                <h4>Not checked yet</h4>
-                                <ul class="sr-action-list">
-                                    {% for item in plan.not_checked %}
-                                    <li>{{ item }}</li>
+                                <h4>Official mapped evidence</h4>
+                                {% for evidence in plan.official_mapped_evidence %}
+                                <div class="sr-evidence-record">
+                                    <strong>{{ evidence.dataset_name }} · {{ evidence.status_label }}</strong>
+                                    <p>{{ evidence.what_this_means }}</p>
+                                    <small>{{ evidence.what_this_does_not_mean }}</small>
+                                    <small>{{ evidence.source_agency }} · {{ evidence.public_claim_status | replace('_', ' ') | title }}</small>
+                                    {% for limitation in evidence.limitations[:2] %}
+                                    <small>{{ limitation }}</small>
                                     {% endfor %}
-                                </ul>
+                                </div>
+                                {% else %}
+                                <p>No additional mapped evidence record is available for this hazard.</p>
+                                {% endfor %}
                             </section>
                             <section>
                                 <h4>Sources</h4>
                                 <div class="sr-source-list">
                                     {% for source in plan.sources[:4] %}
                                     <div class="sr-source-row">
-                                        {% if source.url %}
-                                        <a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.name }}</a>
-                                        {% else %}
-                                        <span>{{ source.name }}</span>
-                                        {% endif %}
-                                        <small>
-                                            {{ source.basis }} · {{ source.review_status }}
-                                            {% if source.page %} · page {{ source.page }}{% endif %}
-                                        </small>
+                                        {% if source.url %}<a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.name }}</a>{% else %}<span>{{ source.name }}</span>{% endif %}
+                                        <small>{{ source.basis }} · {{ source.review_status }}{% if source.page %} · page {{ source.page }}{% endif %}</small>
                                     </div>
                                     {% endfor %}
                                 </div>
@@ -260,9 +182,16 @@
                 <p>These notes are based only on the information you entered in this session. They are not stored as a user account.</p>
             </div>
             <div class="sr-priority-grid">
-                {% for note in resident_plan.household_priorities %}
-                <article class="sr-card sr-priority-card">
-                    {{ action_item(note) }}
+                {% for note in resident_plan.household_priorities[:4] %}
+                <article class="sr-priority-card">
+                    <h3>{{ note.title }}</h3>
+                    <p>{{ note.instruction }}</p>
+                    {% if note.why_shown %}<small><strong>Shown because:</strong> {{ note.why_shown }}</small>{% endif %}
+                    <details>
+                        <summary>Source details</summary>
+                        <a href="{{ note.citation.source_url }}" target="_blank" rel="noopener noreferrer">{{ note.citation.source_name }}</a>
+                        <small>{{ note.citation.source_summary }}</small>
+                    </details>
                 </article>
                 {% endfor %}
             </div>
@@ -339,26 +268,27 @@
                 </div>
             </div>
 
-            {% if resident_plan.additional_local_hazards %}
-            <div class="sr-card sr-other-hazards mt-4">
-                <div class="sr-card-header">
-                    <span class="sr-card-kicker">Other Local Hazards</span>
-                    <h2 class="sr-card-title">Also worth keeping on your radar</h2>
-                    <p>These are listed by the reviewed or draft-reviewed local plan for this jurisdiction, but StayReady has not turned them into address-level checks yet.</p>
-                </div>
+            {% if resident_plan.hazards[3:] or resident_plan.additional_local_hazards %}
+            <details class="sr-other-hazards mt-4">
+                <summary>Other hazards checked</summary>
                 <div class="sr-other-hazard-grid">
+                    {% for plan in resident_plan.hazards[3:] %}
+                    <article>
+                        <h3>{{ plan.hazard }}</h3>
+                        <p>{{ plan.evidence_status_label }} · {{ plan.why_it_matters }}</p>
+                    </article>
+                    {% endfor %}
                     {% for hazard in resident_plan.additional_local_hazards %}
                     <article>
-                        <span class="sr-badge sr-badge-warning">{{ hazard.data_status_label }}</span>
                         <h3>{{ hazard.label }}</h3>
-                        <p>{{ hazard.why_shown }}</p>
+                        <p>{{ hazard.data_status_label }} · {{ hazard.why_shown }}</p>
                         {% if hazard.plan_url %}
                         <a href="{{ hazard.plan_url }}" target="_blank" rel="noopener noreferrer">Review source</a>
                         {% endif %}
                     </article>
                     {% endfor %}
                 </div>
-            </div>
+            </details>
             {% endif %}
         </div>
     </section>
@@ -407,5 +337,6 @@
             </div>
         </div>
     </section>
+    {% endif %}
 </div>
 {% endblock %}

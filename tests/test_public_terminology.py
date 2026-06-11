@@ -27,9 +27,17 @@ class PublicTerminologyTests(unittest.TestCase):
             "location_mode": "zip",
         })
         html = self.client.get("/risk_summary").get_data(as_text=True)
-        self.assertIn("How To Read This", html)
-        self.assertIn("Mapped evidence and priority are different.", html)
+        self.assertIn("Priority hazards", html)
+        self.assertIn("The status describes the evidence checked", html)
         self.assertIn("General area priority", html)
+
+    def test_summary_navigation_and_empty_state_are_stable(self):
+        html = self.client.get("/risk_summary").get_data(as_text=True)
+        self.assertIn(">Summary<", html)
+        self.assertIn(
+            "Enter an Alameda County address to generate your preparedness summary.",
+            html,
+        )
 
     def test_cgs_card_has_plain_english_sections(self):
         fixture = [{
