@@ -288,6 +288,18 @@ class HazardResult(BaseModel):
     matched_layers: List[Dict[str, Any]] = Field(default_factory=list)
     geospatial_evidence: Optional[Dict[str, Any]] = None
     additional_geospatial_evidence: List[Dict[str, Any]] = Field(default_factory=list)
+    normalized_mapped_evidence: List[Dict[str, Any]] = Field(default_factory=list)
+    hazard_exposure: Literal[
+        "mapped_match",
+        "proximity_context",
+        "no_mapped_match",
+        "not_checked",
+        "regional_context",
+    ] = "regional_context"
+    hazard_importance: Literal["major_regional", "local_context", "general"] = "general"
+    action_priority: Literal["start_here", "important", "keep_in_plan"] = "keep_in_plan"
+    source_confidence: str = "needs_review"
+    priority_reasons: List[str] = Field(default_factory=list)
     claim_type: str = ""
     checked_at: str = ""
     effective_date: str = ""

@@ -39,6 +39,7 @@ def _remote_record_count(service_url: str, timeout_seconds: int) -> int:
 
 class ArcGISFeatureServiceAdapter(GeospatialAdapter):
     timeout_seconds = 8
+    map_feature_limit = 200
 
     @staticmethod
     def _unavailable(
@@ -214,17 +215,44 @@ class ArcGISFeatureServiceAdapter(GeospatialAdapter):
         if not allowed_remote_url(dataset.exact_service_or_download_url):
             raise ValueError("The registered CGS service host is not allowlisted.")
 
+        envelope = f"{min_lon},{min_lat},{max_lon},{max_lat}"
+        count_params = {
+            "f": "json",
+            "where": "1=1",
+            "geometry": envelope,
+            "geometryType": "esriGeometryEnvelope",
+            "inSR": "4326",
+            "spatialRel": "esriSpatialRelIntersects",
+            "returnCountOnly": "true",
+        }
         params = {
             "f": "geojson",
             "where": "1=1",
-            "geometry": f"{min_lon},{min_lat},{max_lon},{max_lat}",
+            "geometry": envelope,
             "geometryType": "esriGeometryEnvelope",
             "inSR": "4326",
             "outSR": "4326",
             "spatialRel": "esriSpatialRelIntersects",
             "outFields": "*",
             "returnGeometry": "true",
+            "geometryPrecision": "5",
+            "maxAllowableOffset": "0.0001",
+            "resultRecordCount": str(self.map_feature_limit),
         }
+        count_response = requests.get(
+            f"{dataset.exact_service_or_download_url.rstrip('/')}/query",
+            params=count_params,
+            timeout=self.timeout_seconds,
+        )
+        count_response.raise_for_status()
+        count_payload = count_response.json()
+        if (
+            not isinstance(count_payload, dict)
+            or count_payload.get("error")
+            or not isinstance(count_payload.get("count"), int)
+        ):
+            raise ValueError("The official CGS map service returned an invalid count.")
+
         response = requests.get(
             f"{dataset.exact_service_or_download_url.rstrip('/')}/query",
             params=params,
@@ -248,4 +276,6 @@ class ArcGISFeatureServiceAdapter(GeospatialAdapter):
                     (feature.get("properties") or {}).get(dataset.match_field, "")
                 ).casefold() in accepted_values
             ]
+        payload["available_feature_count"] = count_payload["count"]
+        payload["partial"] = count_payload["count"] > len(payload["features"])
         return payload

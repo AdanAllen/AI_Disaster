@@ -5,7 +5,7 @@ import requests
 from dotenv import load_dotenv
 import os, json
 import tempfile
-from shapely.geometry import shape,Point
+from shapely.geometry import Point, mapping, shape
 import pandas as pd
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 from jinja2 import TemplateNotFound
@@ -19,7 +19,7 @@ from functools import lru_cache
 from action_library_service import select_action_ids
 from geospatial.registry import DatasetRegistryError, get_default_registry
 from geospatial.service import GeospatialEvidenceService
-from hazard_engine import build_hazard_results, merge_structured_result
+from hazard_engine import build_hazard_results, check_flood_layer, merge_structured_result
 from location_service import location_from_session
 from rag_service import retrieve_chunks
 from resident_guidance_engine import build_resident_plan
@@ -512,7 +512,16 @@ def get_all_hazards(user=None, location_context=None):
     for result in structured_results:
         hazard = hazards_by_slug.get(result.hazard_id)
         if not hazard:
-            continue
+            hazard = {
+                "name": result.label,
+                "label": result.label,
+                "slug": result.hazard_id,
+                "priority_score": 0,
+                "action_steps": [],
+                "top_risks": [],
+                "locations": [],
+                "at_risk_groups": [],
+            }
         merged_hazards.append(merge_structured_result(hazard, result))
         used_slugs.add(result.hazard_id)
 
@@ -1186,9 +1195,9 @@ def expand_bounds(bounds, padding=0.025):
     )
 
 
-def build_filter_bounds(zip_code=None, lat=None, lon=None):
+def build_filter_bounds(zip_code=None, lat=None, lon=None, prefer_point=False):
     bounds = None
-    if zip_code:
+    if zip_code and not prefer_point:
         zip_boundary = get_zip_boundary(str(zip_code))
         bounds = get_geojson_bounds(zip_boundary)
 
@@ -1196,7 +1205,7 @@ def build_filter_bounds(zip_code=None, lat=None, lon=None):
         if lat is not None and lon is not None:
             lat_value = float(lat)
             lon_value = float(lon)
-            point_bounds = (lon_value - 0.045, lat_value - 0.045, lon_value + 0.045, lat_value + 0.045)
+            point_bounds = (lon_value - 0.03, lat_value - 0.03, lon_value + 0.03, lat_value + 0.03)
             bounds = point_bounds if bounds is None else (
                 min(bounds[0], point_bounds[0]),
                 min(bounds[1], point_bounds[1]),
@@ -1206,10 +1215,24 @@ def build_filter_bounds(zip_code=None, lat=None, lon=None):
     except (TypeError, ValueError):
         pass
 
-    return expand_bounds(bounds, padding=0.02)
+    return expand_bounds(bounds, padding=0.01)
 
 
-def filter_geojson_by_bounds(data, filter_bounds, max_features=400):
+def _simplify_geojson_feature(feature, tolerance=0.00008):
+    try:
+        geometry = shape(feature.get("geometry", {}))
+        simplified = geometry.simplify(tolerance, preserve_topology=True)
+        if simplified.is_empty or not simplified.is_valid:
+            return feature
+        return {
+            **feature,
+            "geometry": mapping(simplified),
+        }
+    except Exception:
+        return feature
+
+
+def filter_geojson_by_bounds(data, filter_bounds, max_features=120, simplify=False):
     if not data:
         return {"type": "FeatureCollection", "features": []}
     if not filter_bounds:
@@ -1221,9 +1244,16 @@ def filter_geojson_by_bounds(data, filter_bounds, max_features=400):
         feature for feature in data.get("features", [])
         if bounds_intersect(geojson_feature_bounds(feature), filter_bounds)
     ]
+    if simplify:
+        filtered_features = [
+            _simplify_geojson_feature(feature)
+            for feature in filtered_features[:max_features]
+        ]
+    else:
+        filtered_features = filtered_features[:max_features]
     return {
         "type": "FeatureCollection",
-        "features": filtered_features[:max_features],
+        "features": filtered_features,
     }
 
 def get_zip_boundary(zip_code):
@@ -1751,8 +1781,9 @@ def api_wildfire_zones():
             zip_code=zip_code,
             lat=coordinates[0] if coordinates else None,
             lon=coordinates[1] if coordinates else None,
+            prefer_point=resident_state.get("location_mode") == "address",
         )
-        filtered = filter_geojson_by_bounds(data, filter_bounds)
+        filtered = filter_geojson_by_bounds(data, filter_bounds, simplify=True)
         filtered.update({
             "source": "CAL FIRE Fire Hazard Severity Zones",
             "feature_count": len(filtered.get("features", [])),
@@ -1788,18 +1819,35 @@ def api_flood_zones():
             zip_code=zip_code,
             lat=coordinates[0] if coordinates else None,
             lon=coordinates[1] if coordinates else None,
+            prefer_point=resident_state.get("location_mode") == "address",
         )
-        filtered = filter_geojson_by_bounds(data, filter_bounds)
+        filtered = filter_geojson_by_bounds(data, filter_bounds, simplify=True)
         feature_count = len(filtered.get("features", []))
+        address_check = (
+            check_flood_layer(coordinates[0], coordinates[1])
+            if coordinates and resident_state.get("location_mode") == "address"
+            else None
+        )
+        address_status = "not_checked"
+        if address_check:
+            if address_check.get("sfha_match"):
+                address_status = "sfha_match"
+            elif address_check.get("polygon_match"):
+                address_status = "other_fema_category"
+            else:
+                address_status = "no_mapped_match"
         filtered.update({
             "source": "FEMA National Flood Hazard Layer",
             "feature_count": feature_count,
             "filtered": bool(filter_bounds),
+            "map_data_status": "checked" if feature_count else "not_in_layer",
+            "address_match_status": address_status,
             "data_status": "checked" if feature_count else "not_in_layer",
             "message": (
-                f"Showing {feature_count} nearby flood polygons from the FEMA flood layer."
+                f"Showing {feature_count} nearby FEMA polygons for map context. "
+                "The address-point match is reported separately."
                 if feature_count else
-                "No matching mapped flood polygons were returned for the selected map area in this dataset. "
+                "No FEMA polygons were returned for the selected map window in this dataset. "
                 "This does not establish overall flood risk or rule out other flooding impacts."
             ),
         })
@@ -1870,10 +1918,17 @@ def api_cgs_map_layer(layer_key):
             "limitations": dataset.prohibited_claims,
             "public_claim_status": "official_provisional",
             "feature_count": len(payload.get("features", [])),
+            "available_feature_count": payload.get("available_feature_count", len(payload.get("features", []))),
+            "partial": bool(payload.get("partial")),
             "filtered": True,
-            "data_status": "checked",
+            "data_status": "partial" if payload.get("partial") else "checked",
             "message": (
-                f"Showing {len(payload.get('features', []))} nearby polygons from the official CGS map service."
+                (
+                    f"Showing {len(payload.get('features', []))} simplified nearby polygons from the official CGS map service. "
+                    "The display is limited for performance; address-point checks use the full service."
+                    if payload.get("partial") else
+                    f"Showing {len(payload.get('features', []))} simplified nearby polygons from the official CGS map service."
+                )
                 if payload.get("features") else
                 "No CGS polygons were returned for this map window. This is not a safety determination."
             ),

@@ -44,7 +44,7 @@ class GeospatialEvidenceService:
         *,
         lat: float,
         lon: float,
-        radius_degrees: float = 0.12,
+        radius_degrees: float = 0.04,
     ) -> dict:
         dataset = self.registry.get(dataset_id)
         if dataset is None:

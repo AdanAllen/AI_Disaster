@@ -178,6 +178,26 @@ class MapPerformanceTests(unittest.TestCase):
         self.assertEqual(payload["feature_count"], len(payload["features"]))
         self.assertLess(len(json.dumps(payload)), 9_000_000)
 
+    def test_flood_map_response_is_filtered_simplified_and_address_scoped(self):
+        set_test_resident_state(self.client, {
+            "zip_code": "94501",
+            "lat": 37.754029,
+            "lon": -122.24918,
+            "location_mode": "address",
+        })
+        response = self.client.get(
+            "/api/flood-zones?zip=94501&lat=37.754029&lon=-122.24918"
+        )
+        payload = response.get_json()
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(payload["filtered"])
+        self.assertLessEqual(payload["feature_count"], 120)
+        self.assertIn(
+            payload["address_match_status"],
+            {"sfha_match", "other_fema_category", "no_mapped_match"},
+        )
+        self.assertLess(len(response.data), 3_000_000)
+
 
 if __name__ == "__main__":
     unittest.main()

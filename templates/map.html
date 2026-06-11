@@ -733,7 +733,7 @@
                     <div class="map-help-terms">
                         <div class="map-definition"><strong>Mapped match</strong><span>Your selected point falls inside that dataset's boundary. It signals a reason to review the hazard, not expected damage.</span></div>
                         <div class="map-definition"><strong>No mapped match</strong><span>The point is outside the displayed boundary. Related hazards, indirect impacts, and unmapped conditions may still occur.</span></div>
-                        <div class="map-definition"><strong>Official provisional</strong><span>Useful public planning information, but not a legal, engineering, insurance, or property-safety determination.</span></div>
+                        <div class="map-definition"><strong>Official source, provisional StayReady integration</strong><span>Useful public planning information, but not a legal, engineering, insurance, or property-safety determination.</span></div>
                     </div>
                     <p class="small text-muted">
                         This application uses public data from FEMA, USGS, CAL FIRE, and the California Geological Survey. It is not officially endorsed by these agencies.
@@ -742,17 +742,17 @@
                     <div class="cgs-legend-card">
                         <strong>FEMA flood polygons</strong>
                         <small>Areas FEMA maps for floodplain management and insurance purposes. Use them to prompt flood preparation; they do not capture every way flooding can occur.</small>
-                        <div class="cgs-status">FEMA · Official Provisional</div>
+                        <div class="cgs-status">FEMA · Official source, provisional StayReady integration</div>
                     </div>
                     <div class="cgs-legend-card">
                         <strong>CAL FIRE hazard zones</strong>
                         <small>Areas classified by long-term wildfire hazard conditions. They support preparedness and building-code decisions, not live fire or evacuation tracking.</small>
-                        <div class="cgs-status">CAL FIRE · Official Provisional</div>
+                        <div class="cgs-status">CAL FIRE · Official source, provisional StayReady integration</div>
                     </div>
                     <div class="cgs-legend-card">
                         <strong>Mapped fault traces</strong>
                         <small>Known surface locations of faults. Proximity helps explain earthquake context but does not predict shaking strength or building damage.</small>
-                        <div class="cgs-status">USGS / contributing CGS records · Official Provisional</div>
+                        <div class="cgs-status">USGS / contributing CGS records · Official source, provisional StayReady integration</div>
                     </div>
                 </div>
 
@@ -772,7 +772,7 @@
                             {% elif evidence.map_layer_key == 'tsunami' %}
                             <small>Coastal areas used for tsunami hazard and evacuation planning. Follow official warnings and evacuation instructions during an event.</small>
                             {% endif %}
-                            <div class="cgs-status">California Geological Survey · Official Provisional</div>
+                            <div class="cgs-status">California Geological Survey · Official source, provisional StayReady integration</div>
                             {% if evidence.source_url %}
                             <a class="small d-inline-block mt-2" href="{{ evidence.source_url }}" target="_blank" rel="noopener noreferrer">Open official CGS source</a>
                             {% endif %}
@@ -1050,7 +1050,7 @@
                         const popup = `
                             <strong>${escapeHTML(data.source || 'California Geological Survey')}</strong><br>
                             ${escapeHTML(data.source_summary || 'Official mapped-zone context.')}<br>
-                            <small>Official Provisional. This overlay is informational and is not a site-specific engineering, legal, insurance, evacuation, or emergency determination.</small>
+                            <small>Official source, provisional StayReady integration. This overlay is informational and is not a site-specific engineering, legal, insurance, evacuation, or emergency determination.</small>
                         `;
                         layer.bindPopup(popup);
                     }
@@ -1108,6 +1108,7 @@
                 }).addTo(map);
                 
                 setLoadingState('wildfire', false);
+                updateActiveLayers();
                 console.log('Wildfire zones loaded successfully');
                 
             })
@@ -1159,7 +1160,14 @@
                 }).addTo(map);
 
                 setLoadingState('flood', false);
-                showLayerMessage(data.message || 'Flood zones loaded.');
+                const addressLabels = {
+                    sfha_match: 'Address point: FEMA Special Flood Hazard Area match found.',
+                    other_fema_category: 'Address point: another FEMA mapped category matched, but not an SFHA.',
+                    no_mapped_match: 'Address point: this FEMA layer did not find a mapped match.',
+                    not_checked: 'Address point was not checked by this map request.'
+                };
+                showLayerMessage(`${data.message || 'Flood zones loaded.'} ${addressLabels[data.address_match_status] || ''}`.trim());
+                updateActiveLayers();
                 console.log('Flood zones loaded successfully');
                 
             })
@@ -1199,6 +1207,7 @@
                 }).addTo(map);
                 
                 setLoadingState('earthquake', false);
+                updateActiveLayers();
                 console.log('Fault lines loaded successfully');
                 
             })

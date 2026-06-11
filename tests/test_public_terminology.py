@@ -19,7 +19,7 @@ class PublicTerminologyTests(unittest.TestCase):
         self.assertEqual(display_data_status("checked"), "Mapped match found")
         self.assertEqual(display_data_status("not_in_layer"), "No mapped match found")
         self.assertEqual(display_data_status("not_checked"), "Not checked")
-        self.assertEqual(display_data_status("fallback_used"), "General area priority")
+        self.assertEqual(display_data_status("fallback_used"), "Regional preparedness priority")
 
     def test_risk_summary_separates_evidence_from_priority(self):
         set_test_resident_state(self.client, {
@@ -29,7 +29,16 @@ class PublicTerminologyTests(unittest.TestCase):
         html = self.client.get("/risk_summary").get_data(as_text=True)
         self.assertIn("Priority hazards", html)
         self.assertIn("The status describes the evidence checked", html)
-        self.assertIn("General area priority", html)
+        self.assertIn("Regional preparedness priority", html)
+
+    def test_summary_copy_is_not_line_clamped_or_absolutely_positioned(self):
+        css = (BASE_DIR / "static" / "css" / "stayready.css").read_text(encoding="utf-8")
+        summary_copy_rule = css.split(".sr-summary-hazard-copy {", 1)[1].split("}", 1)[0]
+        details_rule = css.split(".sr-summary-hazard-details {", 1)[1].split("}", 1)[0]
+        self.assertNotIn("overflow: hidden", summary_copy_rule)
+        self.assertNotIn("-webkit-line-clamp", summary_copy_rule)
+        self.assertNotIn("position: absolute", details_rule)
+        self.assertNotIn("position: fixed", details_rule)
 
     def test_summary_navigation_and_empty_state_are_stable(self):
         html = self.client.get("/risk_summary").get_data(as_text=True)

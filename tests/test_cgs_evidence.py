@@ -238,8 +238,7 @@ class CGSPublicRenderingTests(unittest.TestCase):
         self.assertIn("Inside a CGS mapped tsunami hazard area.", tsunami)
         for page in (summary, earthquake, tsunami):
             self.assertIn("California Geological Survey", page)
-            self.assertIn("Official Provisional", page)
-            self.assertIn("This official remote dataset is provisional", page)
+            self.assertIn("Official source, provisional StayReady integration", page)
 
     def test_map_has_all_cgs_controls_and_provenance_legends(self):
         page = self.client.get("/map").get_data(as_text=True)
@@ -251,7 +250,10 @@ class CGSPublicRenderingTests(unittest.TestCase):
         ):
             self.assertIn(f'id="cgs-{layer_key}-toggle"', page)
             self.assertIn(f'data-cgs-legend="{layer_key}"', page)
-        self.assertIn("California Geological Survey · Official Provisional", page)
+        self.assertIn(
+            "California Geological Survey · Official source, provisional StayReady integration",
+            page,
+        )
         self.assertIn("Open official CGS source", page)
         self.assertIn("California Geological Survey. It is not officially endorsed", page)
         self.assertIn("source_summary", page)
@@ -286,6 +288,34 @@ class CGSPublicRenderingTests(unittest.TestCase):
         self.assertEqual(payload["public_claim_status"], "official_provisional")
         self.assertTrue(payload["source_summary"])
         self.assertTrue(payload["limitations"])
+
+    @patch("app.GeospatialEvidenceService.map_geojson")
+    def test_cgs_map_api_marks_limited_display_as_partial(self, map_geojson):
+        map_geojson.return_value = {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[
+                        [-122.06, 37.69],
+                        [-122.04, 37.69],
+                        [-122.04, 37.71],
+                        [-122.06, 37.71],
+                        [-122.06, 37.69],
+                    ]],
+                },
+            }],
+            "available_feature_count": 41769,
+            "partial": True,
+        }
+        payload = self.client.get(
+            "/api/cgs-map-layer/earthquake-landslide?lat=37.70&lon=-122.05"
+        ).get_json()
+        self.assertEqual(payload["data_status"], "partial")
+        self.assertTrue(payload["partial"])
+        self.assertIn("display is limited for performance", payload["message"])
 
     @patch("app.GeospatialEvidenceService.map_geojson")
     def test_cgs_map_api_unavailable_state_is_non_reassuring(self, map_geojson):

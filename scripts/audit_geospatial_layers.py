@@ -4,6 +4,7 @@ import json
 import sys
 from pathlib import Path
 
+import requests
 from shapely.geometry import shape
 
 
@@ -27,8 +28,10 @@ def audit_dataset(dataset, project_root=PROJECT_ROOT):
         "errors": [],
         "warnings": [],
     }
+    if dataset.source_type == "remote_service":
+        return audit_remote_dataset(dataset, report)
     if dataset.source_type != "local_snapshot":
-        report["warnings"].append("Remote dataset audit is not implemented in v1.")
+        report["warnings"].append("This source type does not support the geospatial audit.")
         return report
 
     path = Path(project_root) / dataset.local_path
@@ -95,6 +98,90 @@ def audit_dataset(dataset, project_root=PROJECT_ROOT):
         report["warnings"].append("Effective or publication date is not verified.")
     if not dataset.retrieved_at:
         report["warnings"].append("Retrieval date is not verified.")
+    return report
+
+
+def audit_remote_dataset(dataset, report):
+    base_url = dataset.exact_service_or_download_url.rstrip("/")
+    if not base_url:
+        report["errors"].append("Remote service URL is missing.")
+        return report
+    bounds = dataset.coverage_bbox
+    if not bounds:
+        report["errors"].append("Remote dataset coverage bounds are missing.")
+        return report
+
+    center_lat = (bounds["min_lat"] + bounds["max_lat"]) / 2
+    center_lon = (bounds["min_lon"] + bounds["max_lon"]) / 2
+    envelope = (
+        center_lon - 0.01,
+        center_lat - 0.01,
+        center_lon + 0.01,
+        center_lat + 0.01,
+    )
+    try:
+        metadata_response = requests.get(
+            base_url,
+            params={"f": "json"},
+            timeout=10,
+        )
+        metadata_response.raise_for_status()
+        metadata = metadata_response.json()
+        count_response = requests.get(
+            f"{base_url}/query",
+            params={"f": "json", "where": "1=1", "returnCountOnly": "true"},
+            timeout=10,
+        )
+        count_response.raise_for_status()
+        count_payload = count_response.json()
+        map_response = requests.get(
+            f"{base_url}/query",
+            params={
+                "f": "geojson",
+                "where": "1=1",
+                "geometry": ",".join(str(value) for value in envelope),
+                "geometryType": "esriGeometryEnvelope",
+                "inSR": "4326",
+                "outSR": "4326",
+                "spatialRel": "esriSpatialRelIntersects",
+                "outFields": "*",
+                "returnGeometry": "true",
+                "geometryPrecision": "5",
+                "maxAllowableOffset": "0.0001",
+                "resultRecordCount": "20",
+            },
+            timeout=15,
+        )
+        map_response.raise_for_status()
+        map_payload = map_response.json()
+    except (requests.RequestException, ValueError, json.JSONDecodeError) as exc:
+        report["errors"].append(f"Remote audit request failed: {exc.__class__.__name__}.")
+        return report
+
+    if metadata.get("error") or metadata.get("type") != "Feature Layer":
+        report["errors"].append("Remote service metadata is invalid.")
+    if not isinstance(count_payload.get("count"), int) or count_payload["count"] <= 0:
+        report["errors"].append("Remote service record count is invalid or empty.")
+    if map_payload.get("type") != "FeatureCollection" or not isinstance(map_payload.get("features"), list):
+        report["errors"].append("Bounded map query did not return GeoJSON.")
+
+    report["record_count_matches"] = bool(
+        isinstance(count_payload.get("count"), int) and count_payload["count"] > 0
+    )
+    report["crs_matches"] = metadata.get("geometryType") in {
+        "esriGeometryPolygon",
+        "esriGeometryPolyline",
+    }
+    report["valid_geometry_count"] = len(map_payload.get("features") or [])
+    report["map_response_bytes"] = len(map_response.content)
+    report["map_query_feature_count"] = report["valid_geometry_count"]
+    if report["map_response_bytes"] > 3_000_000:
+        report["warnings"].append("Bounded simplified map response exceeded 3 MB.")
+    if dataset.status == "provisional":
+        report["warnings"].append(
+            "Technical validation passed, but human viewer comparison is still required."
+        )
+    report["technical_status"] = "invalid" if report["errors"] else "valid"
     return report
 
 

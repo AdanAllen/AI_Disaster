@@ -1804,34 +1804,43 @@
 }
 .is-wildfire .sr-summary-hazard-icon { background: #fdeceb; color: #b92e28; }
 .is-earthquake .sr-summary-hazard-icon { background: #fff0e5; color: #d75b0a; }
+.is-tsunami .sr-summary-hazard-icon { background: #e6f4fb; color: #1769a9; }
 .sr-summary-rank {
     width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center;
     border-radius: 50%; background: #1764a4; color: #fff; font-size: 0.75rem; font-weight: 800;
 }
 .is-wildfire .sr-summary-rank { background: #ad1515; }
 .is-earthquake .sr-summary-rank { background: #d55d06; }
+.is-tsunami .sr-summary-rank { background: #1764a4; }
 .sr-summary-hazard-card h3 { margin: 0; font-size: 1.1rem; font-weight: 800; }
 .sr-summary-severity {
     padding: 0.35rem 0.65rem; border: 1px solid #e3ac42; border-radius: 999px;
-    color: #9a6100; background: #fff8e8; font-size: 0.7rem; font-weight: 800; white-space: nowrap;
+    color: #9a6100; background: #fff8e8; font-size: 0.7rem; font-weight: 800;
+    max-width: 12rem; line-height: 1.25; text-align: center;
 }
 .is-wildfire .sr-summary-severity { border-color: #ebaaa6; color: #a51d18; background: #fff0ef; }
-.sr-summary-hazard-copy { min-height: 3.2em; margin: 0.9rem 0; font-size: 0.83rem; line-height: 1.55; }
 .sr-summary-hazard-copy {
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 4;
+    margin: 0.9rem 0;
+    font-size: 0.83rem;
+    line-height: 1.55;
 }
 .sr-summary-hazard-card h4 { margin: 0 0 0.4rem; color: var(--ref-navy); font-size: 0.78rem; font-weight: 800; }
 .sr-summary-hazard-card > ul { margin: 0; padding-left: 1.15rem; font-size: 0.78rem; line-height: 1.55; }
 .sr-summary-hazard-card > footer {
-    display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+    display: flex; flex-direction: column; align-items: stretch; gap: 0.5rem;
     margin-top: auto; padding-top: 0.8rem; border-top: 1px solid var(--ref-border); font-size: 0.7rem;
 }
-.sr-summary-hazard-card footer details { position: relative; }
+.sr-summary-hazard-card footer details { width: 100%; }
 .sr-summary-hazard-card footer summary { color: var(--ref-navy); font-weight: 800; cursor: pointer; }
-.sr-summary-hazard-details { position: absolute; z-index: 20; right: 0; width: 330px; max-height: 420px; overflow: auto; padding: 1rem; border: 1px solid var(--ref-border); border-radius: 7px; background: #fff; box-shadow: 0 12px 30px rgba(13,45,73,.12); font-size: 0.76rem; }
+.sr-summary-hazard-details {
+    width: 100%;
+    margin-top: 0.75rem;
+    padding: 1rem;
+    border: 1px solid var(--ref-border);
+    border-radius: 7px;
+    background: var(--ref-soft);
+    font-size: 0.76rem;
+}
 
 .sr-summary-action-layout {
     display: grid;
@@ -1976,7 +1985,7 @@
     .sr-summary-address { width: 100%; border-radius: 7px; flex-wrap: wrap; }
     .sr-summary-hazard-card > header { grid-template-columns: 48px 24px 1fr; }
     .sr-summary-severity { grid-column: 3; justify-self: start; }
-    .sr-summary-hazard-details { position: fixed; inset: 5rem 1rem auto; width: auto; }
+    .sr-summary-hazard-details { width: 100%; }
     .sr-summary-recovery-grid,
     .sr-summary-household-grid,
     .sr-summary-methodology-grid { grid-template-columns: 1fr; }

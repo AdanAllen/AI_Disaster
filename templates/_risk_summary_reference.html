@@ -32,16 +32,16 @@
             <div class="sr-summary-hazard-grid" id="top-concerns">
                 {% for plan in resident_plan.hazards[:3] %}
                 {% set hazard_lower = plan.hazard | lower %}
-                <article class="sr-summary-hazard-card {% if 'wildfire' in hazard_lower %}is-wildfire{% elif 'flood' in hazard_lower %}is-flood{% else %}is-earthquake{% endif %}">
+                <article class="sr-summary-hazard-card {% if 'wildfire' in hazard_lower %}is-wildfire{% elif 'flood' in hazard_lower %}is-flood{% elif 'tsunami' in hazard_lower %}is-tsunami{% else %}is-earthquake{% endif %}">
                     <header>
                         <span class="sr-summary-hazard-icon">
-                            <i class="fas {% if 'wildfire' in hazard_lower %}fa-fire{% elif 'flood' in hazard_lower %}fa-water{% else %}fa-house-crack{% endif %}"></i>
+                            <i class="fas {% if 'wildfire' in hazard_lower %}fa-fire{% elif 'flood' in hazard_lower %}fa-water{% elif 'tsunami' in hazard_lower %}fa-house-flood-water{% else %}fa-house-crack{% endif %}"></i>
                         </span>
                         <span class="sr-summary-rank">{{ plan.priority }}</span>
                         <h3>{{ plan.hazard }}</h3>
                         <span class="sr-summary-severity">{{ plan.priority_label }}</span>
                     </header>
-                    <p class="sr-summary-hazard-copy">{{ plan.why_it_matters }}</p>
+                    <p class="sr-summary-hazard-copy">{{ plan.concise_summary }}</p>
                     <h4>What to do next</h4>
                     <ul>
                         {% for item in (plan.before_actions + plan.during_actions)[:3] %}
@@ -60,13 +60,18 @@
                             <summary>Show details</summary>
                             <div class="sr-summary-hazard-details">
                                 <strong>{{ plan.evidence_status_label }} · {{ plan.evidence_tier_label }}</strong>
+                                {% if plan.priority_reasons %}
+                                <h5>Why this is a preparedness priority</h5>
+                                <ul>{% for reason in plan.priority_reasons %}<li>{{ reason }}</li>{% endfor %}</ul>
+                                {% endif %}
+                                <p>{{ plan.why_it_matters }}</p>
                                 {% for match in plan.location_matches %}<p><strong>{{ match.label }}:</strong> {{ match.reason }}</p>{% endfor %}
                                 <h5>During, after, and recovery</h5>
                                 <ul>{% for item in (plan.during_actions + plan.after_actions + plan.recovery_steps)[:6] %}<li>{{ item.instruction }}</li>{% endfor %}</ul>
                                 <h5>Limits and source details</h5>
                                 <ul>{% for limitation in plan.limitations %}<li>{{ limitation }}</li>{% endfor %}</ul>
                                 {% for evidence in plan.official_mapped_evidence %}
-                                <p><strong>{{ evidence.dataset_name }} · {{ evidence.status_label }}</strong><br>{{ evidence.what_this_means }}<br><small>{{ evidence.what_this_does_not_mean }}</small><br><small>{{ evidence.source_agency or "California Geological Survey" }} · Official Provisional</small><br><small>This official remote dataset is provisional and is not a property-safety determination.</small></p>
+                                <p><strong>{{ evidence.dataset_name }} · {{ evidence.status_label }}</strong><br>{{ evidence.what_this_means }}<br><small>{{ evidence.what_this_does_not_mean }}</small><br><small>{{ evidence.source_agency or "California Geological Survey" }} · Official source, provisional StayReady integration</small></p>
                                 {% endfor %}
                             </div>
                         </details>

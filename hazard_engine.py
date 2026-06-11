@@ -139,7 +139,7 @@ def display_data_status(status: str) -> str:
         "not_checked": "Not checked",
         "data_unavailable": "Not checked — map data unavailable",
         "not_in_layer": "No mapped match found",
-        "fallback_used": "General area priority",
+        "fallback_used": "Regional preparedness priority",
         "needs_review": "Not determined from checked map data",
     }
     return labels.get(status, status.replace("_", " ").title())
@@ -303,11 +303,19 @@ def check_flood_layer(lat: Optional[float], lon: Optional[float]) -> Dict:
         result["message"] = evidence.limitations[0]
         result["geospatial_evidence"] = evidence_payload
         return result
+    polygon_match = bool(evidence.matched)
+    sfha_layers = [
+        layer for layer in evidence.matched_features
+        if _fema_layer_is_sfha(layer)
+    ]
     return {
         "checked": True,
-        "data_status": "checked" if evidence.matched else "not_in_layer",
+        "data_status": "checked" if sfha_layers else "not_in_layer",
         "message": "",
-        "inside": bool(evidence.matched),
+        "inside": bool(sfha_layers),
+        "polygon_match": polygon_match,
+        "sfha_match": bool(sfha_layers),
+        "sfha_layers": sfha_layers,
         "layers": evidence.matched_features,
         "geospatial_evidence": evidence_payload,
     }
@@ -613,20 +621,20 @@ def _apply_cgs_evidence(result: HazardResult, checks: List[Dict]) -> HazardResul
     checked = [item for item in checks if item.get("checked")]
     matched = [item for item in checked if item.get("matched")]
     unavailable = [item for item in checks if not item.get("data_available")]
-    result.exposure_level = "unknown"
-    result.is_in_hazard_zone = None
     result.scope = "address_level" if checked else result.scope
     result.basis = "gis_overlay" if checked else result.basis
     result.location_precision = "address_point" if checked else result.location_precision
     if checked:
         result.data_status = "checked" if matched else "not_in_layer"
-        result.match_type = "inside" if matched else "none"
         if matched:
+            result.is_in_hazard_zone = True
+            if result.match_type not in {"near_fault", "near"}:
+                result.match_type = "inside"
             labels = " ".join(item["result_label"] for item in matched)
             result.why_shown = f"{result.why_shown} CGS address-point evidence: {labels}".strip()
         else:
             result.why_shown = (
-                f"{result.why_shown} No matching mapped exposure was found in the checked CGS datasets. "
+                f"{result.why_shown} These CGS layers did not find an address-level match. "
                 "This result applies only to those datasets and does not establish overall location risk."
             ).strip()
     elif unavailable:
@@ -648,6 +656,180 @@ def _fema_layer_is_sfha(layer: Dict) -> bool:
     zone = str(layer.get("zone") or "").upper()
     sfha = str(layer.get("sfha") or "").upper()
     return sfha in {"T", "TRUE", "Y", "YES"} or zone.startswith(("A", "V"))
+
+
+def _normalized_evidence_record(
+    *,
+    dataset_id: str,
+    label: str,
+    status: str,
+    matched: Optional[bool],
+    claim_type: str,
+    source_agency: str,
+    source_url: str,
+    details: Optional[Dict] = None,
+) -> Dict:
+    return {
+        "dataset_id": dataset_id,
+        "label": label,
+        "status": status,
+        "matched": matched,
+        "claim_type": claim_type,
+        "source_agency": source_agency,
+        "source_url": source_url,
+        "details": details or {},
+    }
+
+
+def _build_normalized_evidence(result: HazardResult) -> List[Dict]:
+    records = []
+    if result.geospatial_evidence:
+        evidence = result.geospatial_evidence
+        records.append(_normalized_evidence_record(
+            dataset_id=evidence.get("dataset_id", result.hazard_id),
+            label=(evidence.get("provenance") or {}).get("dataset_name", result.label),
+            status=result.data_status,
+            matched=result.is_in_hazard_zone,
+            claim_type=evidence.get("claim_type", result.claim_type),
+            source_agency=evidence.get("source_agency", result.source_agency),
+            source_url=evidence.get("source_url", result.source_url),
+            details={
+                "matched_layers": result.matched_layers,
+                "public_claim_status": evidence.get("public_claim_status", ""),
+            },
+        ))
+    if result.hazard_type == "wildfire" and not result.geospatial_evidence:
+        records.append(_normalized_evidence_record(
+            dataset_id="calfire_fhsz_local",
+            label="CAL FIRE Fire Hazard Severity Zones",
+            status=result.data_status,
+            matched=result.is_in_hazard_zone,
+            claim_type="hazard_zone",
+            source_agency="California Department of Forestry and Fire Protection",
+            source_url=result.source_url,
+            details={"matched_layers": result.matched_layers},
+        ))
+    if result.hazard_type == "earthquake":
+        records.append(_normalized_evidence_record(
+            dataset_id="usgs_cgs_faults_local",
+            label="Loaded mapped fault traces",
+            status="proximity_context" if result.match_type == "near_fault" else "checked",
+            matched=result.match_type == "near_fault",
+            claim_type="proximity",
+            source_agency="United States Geological Survey and contributing California Geological Survey records",
+            source_url=get_source("usgs_faults").url,
+            details={"matched_layers": result.matched_layers},
+        ))
+    for evidence in result.additional_geospatial_evidence:
+        records.append(_normalized_evidence_record(
+            dataset_id=evidence.get("dataset_id", ""),
+            label=evidence.get("dataset_name", ""),
+            status=evidence.get("exposure", "not_checked"),
+            matched=evidence.get("matched"),
+            claim_type=evidence.get("claim_type", ""),
+            source_agency=evidence.get("source_agency", ""),
+            source_url=evidence.get("source_url", ""),
+            details={"matched_features": evidence.get("matched_features") or []},
+        ))
+    return records
+
+
+def _classify_preparedness_priority(
+    result: HazardResult,
+    user_context: Optional[Dict] = None,
+) -> HazardResult:
+    user_context = user_context or {}
+    mapped_match = bool(result.is_in_hazard_zone) or any(
+        item.get("matched") for item in result.additional_geospatial_evidence
+    )
+    proximity = result.match_type in {"near", "near_fault"}
+    unavailable = result.data_status in {"not_checked", "data_unavailable"}
+    no_match = result.data_status == "not_in_layer"
+
+    if mapped_match:
+        result.hazard_exposure = "mapped_match"
+    elif proximity:
+        result.hazard_exposure = "proximity_context"
+    elif unavailable:
+        result.hazard_exposure = "not_checked"
+    elif no_match:
+        result.hazard_exposure = "no_mapped_match"
+    else:
+        result.hazard_exposure = "regional_context"
+
+    local_plan_supported = bool(
+        result.local_plan_match
+        and result.local_plan_match.get("hazard_supported")
+        and result.local_plan_match.get("review_status") in {"reviewed", "draft_reviewed"}
+    )
+    if result.hazard_type == "earthquake":
+        result.hazard_importance = "major_regional"
+    elif local_plan_supported or result.specialized_guidance.guidance_source_status == "local_reviewed":
+        result.hazard_importance = "local_context"
+    else:
+        result.hazard_importance = "general"
+
+    if mapped_match or proximity:
+        result.action_priority = "start_here"
+    elif result.hazard_importance in {"major_regional", "local_context"}:
+        result.action_priority = "important"
+    else:
+        result.action_priority = "keep_in_plan"
+
+    if result.location_precision == "address_point":
+        if result.public_claim_status == "official_verified":
+            result.source_confidence = "official_verified_address"
+        elif result.data_status == "data_unavailable":
+            result.source_confidence = "official_source_unavailable"
+        else:
+            result.source_confidence = "official_provisional_address"
+    elif result.scope == "jurisdiction_level":
+        result.source_confidence = "reviewed_area_context"
+    else:
+        result.source_confidence = "general_guidance"
+
+    reasons = []
+    if mapped_match:
+        reasons.append("An official mapped layer found an address-level match.")
+    elif proximity:
+        reasons.append("The address is near a loaded mapped fault trace; this is proximity context, not zone membership.")
+    elif unavailable:
+        reasons.append("An official layer was unavailable, so missing data was not used to lower this preparedness priority.")
+    elif no_match:
+        reasons.append("The checked layer did not find an address-level match; regional or indirect impacts may still apply.")
+    if result.hazard_importance == "major_regional":
+        reasons.append("Earthquake preparedness remains important throughout Alameda County, even without a single zone match.")
+    elif result.hazard_importance == "local_context":
+        reasons.append("Reviewed local planning context supports keeping this hazard prominent.")
+
+    household_tags = user_context.get("household_tags") or []
+    if household_tags:
+        reasons.append("Household needs were used to prioritize actions, not to change mapped exposure.")
+        if result.action_priority == "keep_in_plan":
+            result.action_priority = "important"
+
+    result.priority_reasons = _dedupe_text(reasons)
+    result.normalized_mapped_evidence = _build_normalized_evidence(result)
+    return result
+
+
+def _priority_sort_key(item: HazardResult):
+    exposure_rank = {
+        "mapped_match": 5,
+        "proximity_context": 4,
+        "regional_context": 1,
+        "no_mapped_match": 1,
+        "not_checked": 1,
+    }
+    importance_rank = {"major_regional": 3, "local_context": 2, "general": 1}
+    action_rank = {"start_here": 3, "important": 2, "keep_in_plan": 1}
+    stable_hazard_rank = {"earthquake": 3, "flood": 2, "wildfire": 1, "tsunami-seiche": 0}
+    return (
+        exposure_rank.get(item.hazard_exposure, 0),
+        action_rank.get(item.action_priority, 0),
+        importance_rank.get(item.hazard_importance, 0),
+        stable_hazard_rank.get(item.hazard_id, 0),
+    )
 
 
 def _fire_layer_is_hazard_zone(layer: Dict) -> bool:
@@ -925,8 +1107,11 @@ def _flood_address_result(hazard: Dict, location_result, flood_check: Dict, zip_
     hazard_type = "flood"
     score = _legacy_score(zip_snapshot, hazard_type)
     layers = flood_check.get("layers") or []
-    hazard_layers = [layer for layer in layers if _fema_layer_is_sfha(layer)]
-    inside = bool(hazard_layers)
+    hazard_layers = flood_check.get("sfha_layers") or [
+        layer for layer in layers if _fema_layer_is_sfha(layer)
+    ]
+    polygon_match = bool(flood_check.get("polygon_match", layers))
+    inside = bool(flood_check.get("sfha_match", hazard_layers))
     specialized_guidance = _specialized_guidance(location_result, hazard_type, user_context)
     geospatial_evidence = flood_check.get("geospatial_evidence") or {}
     status = "checked" if inside else "not_in_layer"
@@ -945,7 +1130,13 @@ def _flood_address_result(hazard: Dict, location_result, flood_check: Dict, zip_
     )
 
     zone_text = f" and matched {hazard_layers[0]['name']}" if hazard_layers else ""
-    context_text = f" The address matched {layers[0]['name']}, which is not treated here as Special Flood Hazard Area membership." if layers and not inside else ""
+    context_text = ""
+    if polygon_match and layers and not inside:
+        zone = str(layers[0].get("zone") or "other")
+        context_text = (
+            f" The address matched FEMA Zone {zone}, a mapped category that is not treated here "
+            "as Special Flood Hazard Area membership."
+        )
     return HazardResult(
         hazard_id=hazard_type,
         hazard_type=hazard_type,
@@ -970,7 +1161,8 @@ def _flood_address_result(hazard: Dict, location_result, flood_check: Dict, zip_
         why_shown=(
             f"Flood is shown because the saved address point was checked against StayReady's provisional local FEMA snapshot{zone_text}."
             if inside else
-            f"Flood is shown because no matching Special Flood Hazard Area exposure was found for the address point in StayReady's provisional local FEMA snapshot. This is informational, not a safety determination.{context_text}"
+            f"Flood is shown because the FEMA layer did not find an address-level Special Flood Hazard Area match. "
+            f"This is informational, not a safety determination.{context_text}"
         ),
         limitations=limitations,
         recommended_actions=_actions_for(location_result, hazard_type, "before", "today", "this_week"),
@@ -1164,19 +1356,36 @@ def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dic
             result = _apply_cgs_evidence(result, earthquake_cgs_checks)
         elif cgs_hazard_type == "tsunami":
             result = _apply_cgs_evidence(result, tsunami_cgs_checks)
-        results.append(result)
+        results.append(_classify_preparedness_priority(result, user_context))
 
-    def sort_key(item: HazardResult):
-        scope_rank = {"address_level": 4, "jurisdiction_level": 3, "zip_estimate": 2, "county_fallback": 1}
-        exposure_rank = {"high": 3, "medium": 2, "low": 1, "unknown": 0}
-        return (
-            scope_rank.get(item.scope, 0),
-            exposure_rank.get(item.exposure_level, 0),
-            item.legacy_score or 0,
-            item.legacy_priority_score or 0,
-        )
+    existing_hazard_ids = {item.hazard_id for item in results}
+    tsunami_match = any(item.get("matched") for item in tsunami_cgs_checks)
+    tsunami_plan = _local_plan_match(location_result, "tsunami")
+    reviewed_tsunami_context = bool(
+        tsunami_plan
+        and tsunami_plan.get("hazard_supported")
+        and tsunami_plan.get("review_status") in {"reviewed", "draft_reviewed"}
+    )
+    if "tsunami-seiche" not in existing_hazard_ids and (tsunami_match or reviewed_tsunami_context):
+        tsunami_hazard = {
+            "name": "Tsunami",
+            "label": "Tsunami",
+            "slug": "tsunami-seiche",
+            "priority_score": 0,
+        }
+        if location_result.city or location_result.county:
+            tsunami_result = _jurisdiction_result(
+                tsunami_hazard,
+                location_result,
+                zip_snapshot,
+                user_context,
+            )
+        else:
+            tsunami_result = _county_result(tsunami_hazard)
+        tsunami_result = _apply_cgs_evidence(tsunami_result, tsunami_cgs_checks)
+        results.append(_classify_preparedness_priority(tsunami_result, user_context))
 
-    return sorted(results, key=sort_key, reverse=True)
+    return sorted(results, key=_priority_sort_key, reverse=True)
 
 
 def merge_structured_result(hazard: Dict, result: HazardResult) -> Dict:
@@ -1187,11 +1396,11 @@ def merge_structured_result(hazard: Dict, result: HazardResult) -> Dict:
     merged["scope_label"] = display_scope(result.scope)
     merged["data_status_label"] = display_data_status(result.data_status)
     merged["evidence_status_label"] = display_data_status(result.data_status)
-    merged["priority_label"] = (
-        "General area priority"
-        if result.scope in {"jurisdiction_level", "zip_estimate", "county_fallback"}
-        else "Address evidence"
-    )
+    merged["priority_label"] = {
+        "start_here": "Start here",
+        "important": "Important preparedness priority",
+        "keep_in_plan": "Keep in your plan",
+    }.get(result.action_priority, "Regional preparedness priority")
     merged["basis_label"] = result.basis.replace("_", " ").title()
     merged["location_precision_label"] = result.location_precision.replace("_", " ").title()
     merged["exposure_level"] = result.exposure_level.title()
@@ -1208,6 +1417,12 @@ def merge_structured_result(hazard: Dict, result: HazardResult) -> Dict:
     merged["what_could_realistically_happen"] = local_summary
     merged["real_world_impact"] = _local_impact(result)
     merged["priority_reason"] = result.why_shown
+    merged["hazard_exposure"] = result.hazard_exposure
+    merged["hazard_importance"] = result.hazard_importance
+    merged["action_priority"] = result.action_priority
+    merged["source_confidence"] = result.source_confidence
+    merged["priority_reasons"] = result.priority_reasons
+    merged["normalized_mapped_evidence"] = result.normalized_mapped_evidence
     merged["action_steps"] = [item.model_dump(mode="json") for item in result.recommended_actions]
     merged["top_risks"] = _local_top_risks(result)
     merged["locations"] = _local_locations(result)

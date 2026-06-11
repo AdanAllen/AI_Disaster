@@ -365,7 +365,7 @@
                             <span class="evidence-badge status">{{ hazard.data_status_label }}</span>
                             <span class="evidence-badge">{{ hazard.basis_label }}</span>
                             {% if hazard.public_claim_status %}
-                            <span class="evidence-badge status">{{ hazard.public_claim_status | replace("_", " ") | title }}</span>
+                            <span class="evidence-badge status">{% if hazard.public_claim_status == "official_provisional" %}Official source, provisional StayReady integration{% else %}{{ hazard.public_claim_status | replace("_", " ") | title }}{% endif %}</span>
                             {% endif %}
                         </div>
                         <p class="detail-copy mb-0">{{ hazard.why_shown }}</p>
@@ -475,7 +475,7 @@
                                 {% else %}
                                 <span>{{ evidence.source_agency }}</span>
                                 {% endif %}
-                                <span> · {{ evidence.public_claim_status | replace('_', ' ') | title }}</span>
+                                <span> · {% if evidence.public_claim_status == "official_provisional" %}Official source, provisional StayReady integration{% else %}{{ evidence.public_claim_status | replace('_', ' ') | title }}{% endif %}</span>
                             </div>
                         </div>
                         {% endfor %}

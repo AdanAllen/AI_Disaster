@@ -355,7 +355,7 @@ def _what_was_checked(hazard: Dict) -> Dict:
         not_checked.append("Official layer unavailable — not checked.")
     if data_status == "not_in_layer":
         checked.append(
-            "No matching mapped exposure was found for the address point in the checked layer. "
+            "This layer did not find an address-level match. "
             "This is informational and does not establish overall location risk."
         )
     if slug == "flood" and hazard.get("scope") != "address_level":
@@ -366,6 +366,14 @@ def _what_was_checked(hazard: Dict) -> Dict:
         cgs_checks = hazard.get("additional_geospatial_evidence") or []
         if not cgs_checks:
             not_checked.append("CGS regulatory-zone layers were not checked.")
+        for evidence in cgs_checks:
+            dataset_name = evidence.get("dataset_name") or "CGS mapped layer"
+            if evidence.get("checked"):
+                checked.append(
+                    f"{dataset_name}: {evidence.get('status_label') or 'Official source checked'}."
+                )
+            else:
+                not_checked.append(f"{dataset_name}: official layer unavailable — not checked.")
         not_checked.append("Building retrofit, structural condition, and parcel-level seismic risk were not checked.")
     if slug in {"flood", "wildfire"}:
         not_checked.append("Parcel-level property conditions and building-specific vulnerability were not checked.")
@@ -467,13 +475,37 @@ def _hazard_plan(hazard: Dict, location_context: Dict, household_context: Dict, 
             "Multiple local-plan areas matched with equal confidence, so StayReady did not apply any area-specific claim automatically."
         )
 
+    exposure_labels = {
+        "mapped_match": "Mapped local exposure found",
+        "proximity_context": "Nearby mapped context found",
+        "no_mapped_match": "This layer did not find an address-level match",
+        "not_checked": "Official layer unavailable or not checked",
+        "regional_context": "Regional hazard context",
+    }
+    priority_reasons = hazard.get("priority_reasons") or []
+    exposure_statement = exposure_labels.get(
+        hazard.get("hazard_exposure"),
+        hazard.get("evidence_status_label", ""),
+    ).rstrip(".") + "."
+    concise_parts = [
+        exposure_statement,
+        priority_reasons[0] if priority_reasons else "",
+    ]
+    concise_summary = " ".join(_dedupe(concise_parts)).strip()
+
     return {
         "hazard": hazard.get("name") or hazard.get("label") or slug.title(),
         "slug": slug,
         "priority": order,
         "exposure_level": hazard.get("exposure_level") or "Unknown",
         "evidence_status_label": hazard.get("evidence_status_label") or hazard.get("data_status_label") or "Not determined from checked map data",
-        "priority_label": hazard.get("priority_label") or "General area priority",
+        "priority_label": hazard.get("priority_label") or "Regional preparedness priority",
+        "hazard_exposure": hazard.get("hazard_exposure") or "regional_context",
+        "hazard_importance": hazard.get("hazard_importance") or "general",
+        "action_priority": hazard.get("action_priority") or "keep_in_plan",
+        "source_confidence": hazard.get("source_confidence") or "needs_review",
+        "priority_reasons": priority_reasons,
+        "concise_summary": concise_summary or why,
         "why_it_matters": why,
         "evidence_badges": _dedupe(evidence_badges),
         "local_guidance_status": local_status,
