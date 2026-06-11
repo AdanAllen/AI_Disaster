@@ -3,6 +3,8 @@
 {% block title %}Your Local Preparedness Plan - Stay Ready Now{% endblock %}
 
 {% block content %}
+{% include "_risk_summary_reference.html" %}
+{% if false %}
 <div class="sr-page sr-results-page">
     {% if empty_state %}
     <main class="sr-empty-state">
@@ -339,4 +341,5 @@
     </section>
     {% endif %}
 </div>
+{% endif %}
 {% endblock %}

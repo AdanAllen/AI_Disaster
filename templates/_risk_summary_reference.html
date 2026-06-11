@@ -1,0 +1,152 @@
+<div class="sr-page sr-summary-reference">
+{% if empty_state %}
+    <main class="sr-empty-state">
+        <div class="container">
+            <div class="sr-empty-state-inner">
+                <span class="sr-empty-state-icon" aria-hidden="true"><i class="fas fa-location-dot"></i></span>
+                <h1>Your preparedness summary</h1>
+                <p>Enter an Alameda County address to generate your preparedness summary.</p>
+                <a class="btn sr-button sr-button-primary" href="{{ url_for('home') }}#get-started">Enter an address</a>
+                <small>StayReady is an educational tool and is not an official emergency service.</small>
+            </div>
+        </div>
+    </main>
+{% else %}
+    <section class="sr-summary-header">
+        <div class="container">
+            {% if warning_message %}<div class="sr-alert sr-alert-warning mb-4">{{ warning_message }}</div>{% endif %}
+            <h1>Your preparedness summary</h1>
+            <p>This summary is based on official sources and the address you selected in Alameda County.</p>
+            <div class="sr-summary-address">
+                <i class="fas fa-location-dot" aria-hidden="true"></i>
+                <strong>{{ resident_plan.address_summary.display_name }}</strong>
+                <a href="{{ url_for('home') }}#get-started">Change address</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="sr-summary-main">
+        <div class="container">
+            <h2 class="visually-hidden">Priority hazards</h2>
+            <p class="visually-hidden">The status describes the evidence checked; the order helps organize preparedness and is not a safety determination.</p>
+            <div class="sr-summary-hazard-grid" id="top-concerns">
+                {% for plan in resident_plan.hazards[:3] %}
+                {% set hazard_lower = plan.hazard | lower %}
+                <article class="sr-summary-hazard-card {% if 'wildfire' in hazard_lower %}is-wildfire{% elif 'flood' in hazard_lower %}is-flood{% else %}is-earthquake{% endif %}">
+                    <header>
+                        <span class="sr-summary-hazard-icon">
+                            <i class="fas {% if 'wildfire' in hazard_lower %}fa-fire{% elif 'flood' in hazard_lower %}fa-water{% else %}fa-house-crack{% endif %}"></i>
+                        </span>
+                        <span class="sr-summary-rank">{{ plan.priority }}</span>
+                        <h3>{{ plan.hazard }}</h3>
+                        <span class="sr-summary-severity">{{ plan.priority_label }}</span>
+                    </header>
+                    <p class="sr-summary-hazard-copy">{{ plan.why_it_matters }}</p>
+                    <h4>What to do next</h4>
+                    <ul>
+                        {% for item in (plan.before_actions + plan.during_actions)[:3] %}
+                        <li>{{ item.instruction }}</li>
+                        {% else %}
+                        <li>Review official preparedness guidance for this hazard.</li>
+                        {% endfor %}
+                    </ul>
+                    <footer>
+                        <span>Source:
+                        {% if plan.sources and plan.sources[0].url %}
+                        <a href="{{ plan.sources[0].url }}" target="_blank" rel="noopener noreferrer">{{ plan.sources[0].name }}</a>
+                        {% else %}official public information{% endif %}
+                        </span>
+                        <details>
+                            <summary>Show details</summary>
+                            <div class="sr-summary-hazard-details">
+                                <strong>{{ plan.evidence_status_label }} · {{ plan.evidence_tier_label }}</strong>
+                                {% for match in plan.location_matches %}<p><strong>{{ match.label }}:</strong> {{ match.reason }}</p>{% endfor %}
+                                <h5>During, after, and recovery</h5>
+                                <ul>{% for item in (plan.during_actions + plan.after_actions + plan.recovery_steps)[:6] %}<li>{{ item.instruction }}</li>{% endfor %}</ul>
+                                <h5>Limits and source details</h5>
+                                <ul>{% for limitation in plan.limitations %}<li>{{ limitation }}</li>{% endfor %}</ul>
+                                {% for evidence in plan.official_mapped_evidence %}
+                                <p><strong>{{ evidence.dataset_name }} · {{ evidence.status_label }}</strong><br>{{ evidence.what_this_means }}<br><small>{{ evidence.what_this_does_not_mean }}</small><br><small>{{ evidence.source_agency or "California Geological Survey" }} · Official Provisional</small><br><small>This official remote dataset is provisional and is not a property-safety determination.</small></p>
+                                {% endfor %}
+                            </div>
+                        </details>
+                    </footer>
+                </article>
+                {% endfor %}
+            </div>
+
+            <div class="sr-summary-action-layout">
+                <section class="sr-summary-now">
+                    <header><h2>Do these first</h2><p>High-impact actions to protect your household right now.</p></header>
+                    <ol>
+                        {% for item in resident_plan.what_to_do_now[:5] %}
+                        <li>
+                            <span>{{ loop.index }}</span>
+                            <i class="fas {% if loop.index == 1 %}fa-bell{% elif loop.index == 2 %}fa-people-group{% elif loop.index == 3 %}fa-briefcase{% elif loop.index == 4 %}fa-screwdriver-wrench{% else %}fa-shield-halved{% endif %}"></i>
+                            <div><strong>{{ item.action.title }}</strong><small>{{ item.action.instruction }}</small></div>
+                            <i class="fas fa-chevron-right"></i>
+                            <details><summary>Details</summary>{{ action_item(item.action) }}</details>
+                        </li>
+                        {% endfor %}
+                    </ol>
+                </section>
+
+                <section class="sr-summary-recovery">
+                    <header><h2>Recovery preparation</h2><p>Steps to take now so your household can recover faster.</p></header>
+                    <div class="sr-summary-recovery-grid">
+                        {% for group in resident_plan.recovery_plan[:3] %}
+                        <section>
+                            <h3><i class="fas {% if loop.index == 1 %}fa-shield-halved{% elif loop.index == 2 %}fa-house{% else %}fa-file-lines{% endif %}"></i>{{ group.category }}</h3>
+                            <ul>
+                                {% for item in group['items'][:3] %}
+                                <li><span aria-hidden="true"></span><div class="sr-sourced-action" data-action-id="{{ item.action_id }}"><strong>{{ item.title }}</strong><p>{{ item.instruction }}</p></div></li>
+                                {% endfor %}
+                            </ul>
+                            {% if group['items']|length > 3 %}<details><summary>View all ({{ group['items']|length }})</summary><ul>{% for item in group['items'][3:] %}<li><span></span><div class="sr-sourced-action" data-action-id="{{ item.action_id }}"><strong>{{ item.title }}</strong><p>{{ item.instruction }}</p></div></li>{% endfor %}</ul></details>{% endif %}
+                        </section>
+                        {% endfor %}
+                    </div>
+                </section>
+            </div>
+
+            {% if resident_plan.household_context.has_context %}
+            <section class="sr-summary-household">
+                <header><h2>Your household priorities</h2><a href="{{ url_for('home') }}#get-started"><i class="fas fa-pen"></i> Edit priorities</a></header>
+                <div class="sr-summary-household-grid">
+                    {% for note in resident_plan.household_priorities[:4] %}
+                    <article>
+                        <span><i class="fas {% if loop.index == 1 %}fa-kit-medical{% elif loop.index == 2 %}fa-prescription-bottle-medical{% elif loop.index == 3 %}fa-paw{% else %}fa-briefcase-medical{% endif %}"></i></span>
+                        <div><h3>{{ note.title }}</h3><p>{{ note.instruction }}</p>
+                            <details><summary>View details</summary>
+                                {% if note.why_shown %}<small>{{ note.why_shown }}</small>{% endif %}
+                                <a href="{{ note.citation.source_url }}" target="_blank" rel="noopener noreferrer">{{ note.citation.source_name }}</a>
+                            </details>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
+            <details class="sr-summary-methodology">
+                <summary>Evidence, other hazards, sources, and limitations</summary>
+                <div class="sr-summary-methodology-grid">
+                    <section><h3>What StayReady checked</h3><ul>{% for item in resident_plan.checks['checked'] %}<li>{{ item }}</li>{% endfor %}</ul></section>
+                    <section><h3>What is not checked yet</h3><ul>{% for item in resident_plan.checks.not_checked %}<li>{{ item }}</li>{% endfor %}</ul></section>
+                    <section><h3>Important limits</h3><ul>{% for item in resident_plan.limits %}<li>{{ item }}</li>{% endfor %}</ul></section>
+                    <section><h3>Sources used</h3>{% for source in resident_plan.sources %}<p>{% if source.url %}<a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.name }}</a>{% else %}{{ source.name }}{% endif %}<br><small>{{ source.basis }} · {{ source.review_status }}</small></p>{% endfor %}</section>
+                </div>
+                {% if resident_plan.hazards[3:] or resident_plan.additional_local_hazards %}
+                <div class="sr-summary-other-hazards">
+                    <h3>Other hazards checked</h3>
+                    {% for plan in resident_plan.hazards[3:] %}<p><strong>{{ plan.hazard }}:</strong> {{ plan.evidence_status_label }} · {{ plan.why_it_matters }}</p>{% endfor %}
+                    {% for hazard in resident_plan.additional_local_hazards %}<p><strong>{{ hazard.label }}:</strong> {{ hazard.data_status_label }} · {{ hazard.why_shown }}</p>{% endfor %}
+                </div>
+                {% endif %}
+            </details>
+
+            <p class="sr-summary-disclaimer">Information is provided for general preparedness guidance and is not a substitute for official warnings or emergency instructions.</p>
+        </div>
+    </section>
+{% endif %}
+</div>

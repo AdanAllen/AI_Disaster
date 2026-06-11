@@ -506,32 +506,14 @@
 
     <footer class="page-footer">
         <div class="container">
-            <div class="footer-grid">
-                <div>
-                    <h2 class="h4 fw-bold mb-3">Stay Ready Now</h2>
-                    <p class="mb-2">A practical disaster-readiness platform for Alameda County households.</p>
-                    <p class="mb-0">Built to help people understand local risk, prepare faster, and act with confidence before an emergency.</p>
-                </div>
-                <div>
-                    <h3 class="h6 fw-bold mb-3">Explore</h3>
-                    <div class="footer-links">
-                        <a href="{{ url_for('risk_summary') if has_resident_result else url_for('home') }}">Your Summary</a>
-                        <a href="{{ url_for('map') }}">Risk Map</a>
-                        <a href="{{ url_for('hazards_dashboard') }}">Hazard Rankings</a>
-                        <a href="{{ url_for('resources') }}">Resources</a>
-                        <a href="{{ url_for('sources') }}">Source Registry</a>
-                    </div>
-                </div>
-                <div>
-                    <h3 class="h6 fw-bold mb-3">Project</h3>
-                    <div class="footer-links">
-                        <a href="{{ url_for('about') }}">About the Builder</a>
-                        <a href="{{ url_for('privacy_basics') }}">Privacy Basics</a>
-                        <a href="{{ url_for('live_earthquake_map') }}">Live Earthquake Map</a>
-                        <a href="{{ url_for('sources') }}">Data Sources</a>
-                        <a href="https://github.com/AdanAllen/AI_Disaster/issues" target="_blank" rel="noopener noreferrer">Report an issue</a>
-                    </div>
-                </div>
+            <div class="footer-compact">
+                <p>Official public information from federal, state, and local agencies. StayReady is educational and is not an official emergency service.</p>
+                <nav aria-label="Footer">
+                    <a href="{{ url_for('sources') }}">Data sources</a>
+                    <a href="{{ url_for('privacy_basics') }}">Privacy</a>
+                    <a href="{{ url_for('about') }}">About</a>
+                    <a href="https://github.com/AdanAllen/AI_Disaster/issues" target="_blank" rel="noopener noreferrer">Report an issue</a>
+                </nav>
             </div>
         </div>
     </footer>

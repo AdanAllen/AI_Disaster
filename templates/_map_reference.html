@@ -1,0 +1,98 @@
+<div class="sr-map-reference">
+    <div class="container">
+        {% if map_notice %}<div class="alert alert-warning" role="alert">{{ map_notice }}</div>{% endif %}
+        <header class="sr-map-page-header">
+            <h1>Map view</h1>
+            <p>This map helps you visualize official hazard layers for the selected location.</p>
+        </header>
+
+        <section class="sr-map-layer-panel" aria-labelledby="map-layer-title">
+            <div class="sr-map-layer-panel-head">
+                <h2 id="map-layer-title">Map layers</h2>
+                <button type="button" onclick="document.querySelectorAll('.sr-map-layer-panel .layer-toggle:not(.active)').forEach((item) => item.click())">Show all</button>
+            </div>
+            <div class="sr-map-layer-groups">
+                <div>
+                    <h3>Location</h3>
+                    <div class="layer-toggle zip active" id="zip-toggle" onclick="toggleLayer('zip')"><i class="fas fa-square-check layer-icon"></i><span>ZIP boundary</span></div>
+                </div>
+                <div>
+                    <h3>FEMA Flood</h3>
+                    <div class="layer-toggle flood" id="flood-toggle" onclick="toggleLayer('flood')"><i class="fas fa-square layer-icon"></i><span>Flood Zones</span></div>
+                </div>
+                <div>
+                    <h3>CAL FIRE</h3>
+                    <div class="layer-toggle wildfire" id="wildfire-toggle" onclick="toggleLayer('wildfire')"><i class="fas fa-square layer-icon"></i><span>Wildfire Zones</span></div>
+                </div>
+                <div>
+                    <h3>CGS Earthquake Zones</h3>
+                    <div class="layer-toggle cgs{% if cgs_map_evidence | selectattr('map_layer_key', 'equalto', 'liquefaction') | selectattr('matched', 'equalto', true) | list %} active{% endif %}" id="cgs-liquefaction-toggle" data-cgs-layer="liquefaction" data-cgs-legend="liquefaction" onclick="toggleLayer('cgs-liquefaction')"><i class="fas fa-square layer-icon"></i><span>CGS Liquefaction Zones</span></div>
+                    <div class="layer-toggle cgs{% if cgs_map_evidence | selectattr('map_layer_key', 'equalto', 'earthquake-landslide') | selectattr('matched', 'equalto', true) | list %} active{% endif %}" id="cgs-earthquake-landslide-toggle" data-cgs-layer="earthquake-landslide" data-cgs-legend="earthquake-landslide" onclick="toggleLayer('cgs-earthquake-landslide')"><i class="fas fa-square layer-icon"></i><span>CGS Earthquake-Induced Landslide Zones</span></div>
+                </div>
+                <div>
+                    <h3>Faults</h3>
+                    <div class="layer-toggle earthquake" id="earthquake-toggle" onclick="toggleLayer('earthquake')"><i class="fas fa-square layer-icon"></i><span>Fault Lines</span></div>
+                    <div class="layer-toggle cgs{% if cgs_map_evidence | selectattr('map_layer_key', 'equalto', 'alquist-priolo') | selectattr('matched', 'equalto', true) | list %} active{% endif %}" id="cgs-alquist-priolo-toggle" data-cgs-layer="alquist-priolo" data-cgs-legend="alquist-priolo" onclick="toggleLayer('cgs-alquist-priolo')"><i class="fas fa-square layer-icon"></i><span>CGS Alquist-Priolo Fault Zones</span></div>
+                </div>
+                <div>
+                    <h3>Tsunami</h3>
+                    <div class="layer-toggle cgs{% if cgs_map_evidence | selectattr('map_layer_key', 'equalto', 'tsunami') | selectattr('matched', 'equalto', true) | list %} active{% endif %}" id="cgs-tsunami-toggle" data-cgs-layer="tsunami" data-cgs-legend="tsunami" onclick="toggleLayer('cgs-tsunami')"><i class="fas fa-square layer-icon"></i><span>CGS Tsunami Hazard Areas</span></div>
+                </div>
+                <div>
+                    <h3>Recent activity</h3>
+                    <div class="layer-toggle live" id="live-toggle" onclick="toggleLayer('live')"><i class="fas fa-square layer-icon"></i><span>Recent Bay Area Earthquakes</span></div>
+                </div>
+            </div>
+            <p id="map-loading-status" aria-live="polite">Checking official mapped data only when a layer is opened.</p>
+        </section>
+
+        <section class="map-container sr-map-shell">
+            <div class="sr-map-status-strip">
+                <div><i class="fas fa-location-dot"></i><span><strong>{{ user_address }}</strong><small>{% if has_precise_location %}Selected address{% else %}ZIP-based location{% endif %}</small></span></div>
+                <div><i class="fas fa-circle-check"></i><span><strong>{% if has_precise_location %}Address point checked{% else %}ZIP boundary view{% endif %}</strong><small>{{ location_context.precision_label }}</small></span></div>
+                <div><i class="fas fa-database"></i><span><strong>Official public layers</strong><small>Loaded on demand</small></span></div>
+                <a href="{{ url_for('risk_summary') }}"><i class="fas fa-chart-line"></i> Summary</a>
+                <button type="button" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+            </div>
+
+            <div class="sr-map-stage">
+                <div id="map"></div>
+                <aside class="sr-map-legend">
+                    <header><strong>Map legend</strong></header>
+                    <span><i style="background:#74aee8"></i> Flood zones</span>
+                    <span><i style="background:#e49b36"></i> Wildfire hazard</span>
+                    <span><i style="background:#759d78"></i> Liquefaction zone</span>
+                    <span><i style="background:#b69b76"></i> Landslide zone</span>
+                    <span><i class="line fault"></i> Mapped fault traces</span>
+                    <span><i class="line ap"></i> Alquist-Priolo zones</span>
+                </aside>
+
+                <aside class="sr-map-help-panel">
+                    <h2><i class="fas fa-book-open"></i> How to read this map</h2>
+                    <div><i class="fas fa-circle-check"></i><p><strong>Address point checked</strong>The selected coordinate was compared with an available official layer.</p></div>
+                    <div><i class="fas fa-location-dot"></i><p><strong>Mapped match found</strong>The point falls inside that dataset's boundary. This does not predict damage.</p></div>
+                    <div><i class="fas fa-location-dot muted"></i><p><strong>No mapped match</strong>The point is outside the displayed boundary; related hazards may still occur.</p></div>
+                    <div><i class="fas fa-clock"></i><p><strong>Official provisional</strong>Useful for planning, not a legal, engineering, insurance, or safety determination.</p></div>
+                    <details>
+                        <summary>Layer definitions and sources</summary>
+                        <div class="sr-map-source-details">
+                            <p><strong>FEMA flood zones:</strong> Floodplain-management and insurance mapping; not every flood mechanism.</p>
+                            <p><strong>CAL FIRE zones:</strong> Long-term wildfire hazard conditions; not live fire or evacuation tracking.</p>
+                            <p><strong>CGS liquefaction:</strong> Areas where strong shaking may cause wet, loose soil to lose strength.</p>
+                            <p><strong>CGS landslide:</strong> Slopes where earthquake shaking may trigger landslides.</p>
+                            <p><strong>Fault zones:</strong> Surface-fault context; not a forecast of shaking or damage.</p>
+                            <p><strong>Tsunami areas:</strong> Coastal hazard and evacuation-planning areas.</p>
+                            {% for evidence in cgs_map_evidence %}
+                            {% if evidence.source_url %}<a data-cgs-legend="{{ evidence.map_layer_key }}" href="{{ evidence.source_url }}" target="_blank" rel="noopener noreferrer">Open official CGS source: {{ evidence.dataset_name }}</a>{% endif %}
+                            {% endfor %}
+                        </div>
+                    </details>
+                    <a href="{{ url_for('sources') }}">Learn more about map sources <i class="fas fa-arrow-up-right-from-square"></i></a>
+                </aside>
+            </div>
+            <div class="active-layers visually-hidden" id="active-layers"><span class="active-layer-badge">ZIP {{ zip_code }}</span></div>
+        </section>
+
+        <p class="sr-map-disclaimer">Official public information from federal, state, and local agencies. California Geological Survey · Official Provisional. This application uses information from the California Geological Survey. It is not officially endorsed by these agencies and is not an official emergency service.</p>
+    </div>
+</div>

@@ -613,6 +613,8 @@
 {% endblock %}
 
 {% block content %}
+{% include "_map_reference.html" %}
+{% if false %}
 <!-- Page Header -->
 <div class="page-header">
     <div class="container">
@@ -802,6 +804,7 @@
 
 </div>
 
+{% endif %}
 <!-- Leaflet CSS & JS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
