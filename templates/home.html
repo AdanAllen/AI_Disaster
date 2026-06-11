@@ -10,7 +10,6 @@
 {% endblock %}
 
 {% block head %}
-<link href="{{ url_for('static', filename='css/stayready.css') }}" rel="stylesheet" />
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -29,31 +28,27 @@
 
 {% block content %}
 <div class="sr-home">
-    <section class="sr-hero" aria-labelledby="home-hero-title">
+    <section class="sr-home-intro" aria-labelledby="home-hero-title">
         <div class="container">
-            <div class="sr-hero-grid">
-                <div class="sr-hero-copy">
-                    <h1 id="home-hero-title">Turn your address into a local preparedness and recovery plan.</h1>
-                    <p class="sr-hero-lead">
-                        StayReady helps Alameda County residents understand nearby hazards, prepare their household, and plan for recovery using official public information.
+            <div class="sr-home-intro-grid">
+                <header class="sr-home-copy">
+                    <h1 id="home-hero-title">Prepare for local hazards before an emergency.</h1>
+                    <p>
+                        Enter an Alameda County address to get a plain-language summary of priority hazards, household actions, and important source limitations.
                     </p>
-
-                    <div class="sr-disclaimer" role="note">
-                        <i class="fas fa-circle-info" aria-hidden="true"></i>
-                        <span>Educational, source-backed guidance. Not a replacement for official emergency alerts.</span>
+                    <div class="sr-civic-note" role="note">
+                        <strong>Know what this tool is.</strong>
+                        StayReady translates official public information for educational use. It is not an official emergency service or alert system.
                     </div>
+                    <p class="sr-home-source-line">
+                        Uses public information from FEMA, CAL FIRE, USGS, CGS, and local hazard mitigation plans.
+                    </p>
+                </header>
 
-                    <div class="sr-trust-row" aria-label="StayReady credibility markers">
-                        <span class="sr-badge"><i class="fas fa-database" aria-hidden="true"></i> Official public sources</span>
-                        <span class="sr-badge"><i class="fas fa-location-dot" aria-hidden="true"></i> Address-first when available</span>
-                        <span class="sr-badge"><i class="fas fa-shield-heart" aria-hidden="true"></i> Recovery planning included</span>
-                    </div>
-                </div>
-
-                <aside class="sr-start-card" aria-label="Start your local guidance">
-                    <div class="sr-start-card-header">
-                        <h2>Start with your address</h2>
-                        <p>Address checks are preferred. ZIP is still available as a fallback estimate.</p>
+                <aside class="sr-location-panel" id="get-started" aria-label="Check your location">
+                    <div class="sr-location-panel-header">
+                        <h2>Check your location</h2>
+                        <p>Street addresses support the most specific checks currently available.</p>
                     </div>
 
                     <form action="{{ url_for('process_form') }}" method="POST" id="emergency-form" class="sr-form">
@@ -66,14 +61,10 @@
                         <div class="search-type-toggle sr-toggle mb-3">
                             <div class="btn-group w-100" role="group" aria-label="Choose location search type">
                                 <input type="radio" class="btn-check" name="search_type" id="address_search" autocomplete="off" checked>
-                                <label class="btn btn-outline-primary" for="address_search">
-                                    <i class="fas fa-house me-2" aria-hidden="true"></i>Street Address
-                                </label>
+                                <label class="btn btn-outline-primary" for="address_search">Street address</label>
 
                                 <input type="radio" class="btn-check" name="search_type" id="zip_search" autocomplete="off">
-                                <label class="btn btn-outline-primary" for="zip_search">
-                                    <i class="fas fa-map-marker-alt me-2" aria-hidden="true"></i>ZIP Fallback
-                                </label>
+                                <label class="btn btn-outline-primary" for="zip_search">ZIP fallback</label>
                             </div>
                         </div>
 
@@ -94,19 +85,14 @@
                                         <i class="fas fa-location-arrow" aria-hidden="true"></i>
                                     </button>
                                 </div>
-                                <div class="form-text">Use a street address for the most specific checks StayReady can support.</div>
-                                <div class="form-text">
-                                    StayReady sends the address to OpenStreetMap's Nominatim geocoding service and may contact official map services.
-                                    The raw address is kept only in short-lived server-side result state, not in your browser cookie or an account.
-                                    <a href="{{ url_for('privacy_basics') }}">Read Privacy Basics</a>.
-                                </div>
+                                <div class="form-text">Use a complete street address for address-point checks.</div>
                                 <div id="address-suggestions" class="list-group mt-2" style="display: none;"></div>
                             </div>
                         </div>
 
                         <div class="search-container" id="zip-search-container" style="display: none;">
                             <div class="mb-3">
-                                <label for="zip_code" class="form-label">ZIP Code</label>
+                                <label for="zip_code" class="form-label">ZIP code</label>
                                 <input
                                     type="text"
                                     class="form-control"
@@ -116,217 +102,156 @@
                                     maxlength="5"
                                     value="{{ form_data.zip_code if form_data else '' }}"
                                 >
-                                <div class="form-text">ZIP results are labeled as fallback estimates, not address-level checks.</div>
+                                <div class="form-text">ZIP results are fallback estimates, not address-level checks.</div>
                             </div>
                         </div>
 
                         <details class="sr-household-options mt-3">
-                            <summary class="fw-semibold">Optional household planning details</summary>
+                            <summary>Optional household planning details</summary>
                             <p class="form-text mt-2 mb-3">
-                                These structured selections are optional and kept only with your short-lived result.
-                                Do not enter medical diagnoses or other sensitive details.
+                                These selections stay only with your short-lived result. Do not enter medical diagnoses or other sensitive details.
                             </p>
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                <label for="household" class="form-label">Household size <span class="text-muted">(optional)</span></label>
-                                <select class="form-control" id="household" name="household">
-                                    <option value="">Select...</option>
-                                    <option value="1" {% if form_data and form_data.household == '1' %}selected{% endif %}>1 person</option>
-                                    <option value="2" {% if form_data and form_data.household == '2' %}selected{% endif %}>2 people</option>
-                                    <option value="3" {% if form_data and form_data.household == '3' %}selected{% endif %}>3 people</option>
-                                    <option value="4" {% if form_data and form_data.household == '4' %}selected{% endif %}>4 people</option>
-                                    <option value="5+" {% if form_data and form_data.household == '5+' %}selected{% endif %}>5+ people</option>
-                                </select>
+                                    <label for="household" class="form-label">Household size <span class="text-muted">(optional)</span></label>
+                                    <select class="form-control" id="household" name="household">
+                                        <option value="">Select...</option>
+                                        <option value="1" {% if form_data and form_data.household == '1' %}selected{% endif %}>1 person</option>
+                                        <option value="2" {% if form_data and form_data.household == '2' %}selected{% endif %}>2 people</option>
+                                        <option value="3" {% if form_data and form_data.household == '3' %}selected{% endif %}>3 people</option>
+                                        <option value="4" {% if form_data and form_data.household == '4' %}selected{% endif %}>4 people</option>
+                                        <option value="5+" {% if form_data and form_data.household == '5+' %}selected{% endif %}>5+ people</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-6">
-                                <label for="preparedness" class="form-label">Preparedness <span class="text-muted">(optional)</span></label>
-                                <select class="form-control" id="preparedness" name="preparedness">
-                                    <option value="">Select...</option>
-                                    <option value="none" {% if form_data and form_data.preparedness == 'none' %}selected{% endif %}>Not prepared</option>
-                                    <option value="basic" {% if form_data and form_data.preparedness == 'basic' %}selected{% endif %}>Basic supplies</option>
-                                    <option value="moderate" {% if form_data and form_data.preparedness == 'moderate' %}selected{% endif %}>Moderate prep</option>
-                                    <option value="well-prepared" {% if form_data and form_data.preparedness == 'well-prepared' %}selected{% endif %}>Well prepared</option>
-                                </select>
+                                    <label for="preparedness" class="form-label">Preparedness <span class="text-muted">(optional)</span></label>
+                                    <select class="form-control" id="preparedness" name="preparedness">
+                                        <option value="">Select...</option>
+                                        <option value="none" {% if form_data and form_data.preparedness == 'none' %}selected{% endif %}>Not prepared</option>
+                                        <option value="basic" {% if form_data and form_data.preparedness == 'basic' %}selected{% endif %}>Basic supplies</option>
+                                        <option value="moderate" {% if form_data and form_data.preparedness == 'moderate' %}selected{% endif %}>Moderate prep</option>
+                                        <option value="well-prepared" {% if form_data and form_data.preparedness == 'well-prepared' %}selected{% endif %}>Well prepared</option>
+                                    </select>
                                 </div>
                             </div>
                             <fieldset class="mt-3">
-                            <legend class="fs-6">Planning factors <span class="text-muted">(optional)</span></legend>
-                            <div class="sr-option-grid">
-                                <label><input type="checkbox" name="household_tags" value="medical"> Medical / medication needs</label>
-                                <label><input type="checkbox" name="household_tags" value="pets"> Pets</label>
-                                <label><input type="checkbox" name="household_tags" value="no_car"> No reliable car access</label>
-                                <label><input type="checkbox" name="household_tags" value="renter"> Renter</label>
-                                <label><input type="checkbox" name="household_tags" value="homeowner"> Homeowner</label>
-                                <label><input type="checkbox" name="household_tags" value="children"> Children / school needs</label>
-                                <label><input type="checkbox" name="household_tags" value="older_adults"> Older adults</label>
-                                <label><input type="checkbox" name="household_tags" value="access_needs"> Disability / access needs</label>
-                            </div>
+                                <legend class="fs-6">Planning factors <span class="text-muted">(optional)</span></legend>
+                                <div class="sr-option-grid">
+                                    <label><input type="checkbox" name="household_tags" value="medical"> Medical / medication needs</label>
+                                    <label><input type="checkbox" name="household_tags" value="pets"> Pets</label>
+                                    <label><input type="checkbox" name="household_tags" value="no_car"> No reliable car access</label>
+                                    <label><input type="checkbox" name="household_tags" value="renter"> Renter</label>
+                                    <label><input type="checkbox" name="household_tags" value="homeowner"> Homeowner</label>
+                                    <label><input type="checkbox" name="household_tags" value="children"> Children / school needs</label>
+                                    <label><input type="checkbox" name="household_tags" value="older_adults"> Older adults</label>
+                                    <label><input type="checkbox" name="household_tags" value="access_needs"> Disability / access needs</label>
+                                </div>
                             </fieldset>
                         </details>
 
                         <div id="form-messages" class="mt-3" style="display: none;"></div>
 
                         <button type="submit" class="btn sr-primary-action w-100 mt-4">
-                            Build My Local Plan
+                            Get my preparedness summary
                         </button>
+                        <p class="sr-form-privacy">
+                            Addresses are geocoded through OpenStreetMap's Nominatim service and kept only in short-lived server-side result state.
+                            <a href="{{ url_for('privacy_basics') }}">Privacy basics</a>
+                        </p>
                     </form>
                 </aside>
             </div>
         </div>
-
-        <div class="sr-skyline-frame" aria-hidden="true">
-            <img src="{{ url_for('static', filename='oakland-skyline-real.jpg') }}" alt="">
-        </div>
     </section>
 
-    <section class="sr-section" aria-labelledby="what-you-get-title">
+    <section class="sr-home-summary" aria-labelledby="summary-explainer-title">
         <div class="container">
-            <div class="sr-section-heading">
-                <h2 id="what-you-get-title">What you get</h2>
-                <p>One practical flow that moves from local risk context to household action.</p>
-            </div>
+            <div class="sr-home-summary-grid">
+                <div>
+                    <h2 id="summary-explainer-title">One summary. Clear next steps.</h2>
+                    <p class="sr-section-intro">StayReady keeps the first view practical and puts methodology and detailed source notes behind clear disclosures.</p>
 
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <article class="sr-card sr-feature-card">
-                        <span class="sr-icon sr-icon-blue"><i class="fas fa-map-location-dot" aria-hidden="true"></i></span>
-                        <h3>Understand your risks</h3>
-                        <p>See top hazards with clear labels for address-level checks, local plan context, ZIP fallback, and county guidance.</p>
-                    </article>
+                    <ol class="sr-home-process">
+                        <li>
+                            <span>1</span>
+                            <div>
+                                <h3>Priority hazards</h3>
+                                <p>See the top hazards first, with plain-language evidence status and meaning.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <span>2</span>
+                            <div>
+                                <h3>Household actions</h3>
+                                <p>Start with a short list of cited preparedness steps relevant to your selected context.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <span>3</span>
+                            <div>
+                                <h3>Sources and limits</h3>
+                                <p>Review what was checked, what was not checked, and where each source came from.</p>
+                            </div>
+                        </li>
+                    </ol>
                 </div>
-                <div class="col-md-4">
-                    <article class="sr-card sr-feature-card">
-                        <span class="sr-icon sr-icon-green"><i class="fas fa-house-chimney-user" aria-hidden="true"></i></span>
-                        <h3>Prepare your household</h3>
-                        <p>Turn hazard information into direct steps for supplies, communication, evacuation, medication, pets, and family needs.</p>
-                    </article>
-                </div>
-                <div class="col-md-4">
-                    <article class="sr-card sr-feature-card">
-                        <span class="sr-icon sr-icon-gold"><i class="fas fa-folder-open" aria-hidden="true"></i></span>
-                        <h3>Plan for recovery</h3>
-                        <p>Review recovery questions about insurance, documents, temporary housing, transportation, school, work, and finances.</p>
-                    </article>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <section class="sr-section sr-section-muted" aria-labelledby="preview-title">
-        <div class="container">
-            <div class="row g-4 align-items-center">
-                <div class="col-lg-5">
-                    <div class="sr-section-heading sr-section-heading-left">
-                        <h2 id="preview-title">A simple summary, not a black box.</h2>
-                        <p>StayReady is designed to show what was checked, why a hazard appears, what is uncertain, and what to do next.</p>
+                <article class="sr-summary-example" aria-label="Example preparedness summary">
+                    <div class="sr-summary-example-header">
+                        <div>
+                            <small>Example structure</small>
+                            <h3>Your preparedness summary</h3>
+                        </div>
+                        <span>Source-backed</span>
                     </div>
-                </div>
-                <div class="col-lg-7">
-                    <article class="sr-card sr-preview-card" aria-label="Example risk summary preview">
-                        <div class="sr-preview-header">
-                            <div>
-                                <span class="sr-badge">Example result</span>
-                                <h3>Local readiness summary</h3>
-                            </div>
-                            <span class="sr-status-dot">Source-backed</span>
+                    <div class="sr-summary-example-hazards">
+                        <div>
+                            <strong>Earthquake</strong>
+                            <span>Evidence status and immediate actions</span>
                         </div>
-
-                        <div class="sr-preview-location">
-                            <i class="fas fa-location-dot" aria-hidden="true"></i>
-                            <div>
-                                <strong>Location checked</strong>
-                                <span>Address point when available, then local context or fallback</span>
-                            </div>
+                        <div>
+                            <strong>Flood</strong>
+                            <span>Evidence status and immediate actions</span>
                         </div>
-
-                        <div class="sr-hazard-list">
-                            <div class="sr-hazard-row">
-                                <div>
-                                    <strong>Flood</strong>
-                                    <span>Address-level if official flood layer can be checked</span>
-                                </div>
-                                <span class="sr-mini-badge">Why shown</span>
-                            </div>
-                            <div class="sr-hazard-row">
-                                <div>
-                                    <strong>Earthquake</strong>
-                                    <span>Local fault and plan context with limitations</span>
-                                </div>
-                                <span class="sr-mini-badge">Prepare</span>
-                            </div>
-                            <div class="sr-hazard-row">
-                                <div>
-                                    <strong>Wildfire</strong>
-                                    <span>Official fire zone checks where supported</span>
-                                </div>
-                                <span class="sr-mini-badge">Recover</span>
-                            </div>
+                        <div>
+                            <strong>Wildfire</strong>
+                            <span>Evidence status and immediate actions</span>
                         </div>
+                    </div>
 
-                        <div class="sr-preview-actions">
+                    <details class="sr-summary-example-actions">
+                        <summary>See cited example actions</summary>
+                        <div>
                             {% for action in homepage_action_examples %}
-                            <div>
-                                <span>Reviewed example action</span>
                                 {{ action_item(action) }}
-                            </div>
                             {% endfor %}
                         </div>
-                    </article>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="sr-section" aria-labelledby="how-it-works-title">
-        <div class="container">
-            <div class="sr-section-heading">
-                <h2 id="how-it-works-title">How it works</h2>
-                <p>The product keeps precision visible, so residents can tell the difference between checked data and fallback guidance.</p>
-            </div>
-
-            <div class="sr-steps">
-                <article class="sr-step">
-                    <span>1</span>
-                    <h3>Enter your address</h3>
-                    <p>Start with a street address in Alameda County. ZIP entry remains available when address checks are unavailable.</p>
-                </article>
-                <article class="sr-step">
-                    <span>2</span>
-                    <h3>Check official maps and local plans</h3>
-                    <p>StayReady uses official public layers and reviewed local hazard plan context where the app can support it.</p>
-                </article>
-                <article class="sr-step">
-                    <span>3</span>
-                    <h3>Get clear guidance</h3>
-                    <p>Read the top hazards, limitations, next steps, recovery questions, and source labels in plain language.</p>
+                    </details>
+                    <div class="sr-summary-example-disclosures">
+                        <span>Why this matters</span>
+                        <span>Limits and source details</span>
+                    </div>
                 </article>
             </div>
         </div>
     </section>
 
-    <section class="sr-section sr-trust-section" aria-labelledby="trust-title">
+    <section class="sr-home-trust" aria-labelledby="trust-title">
         <div class="container">
-            <div class="sr-card sr-trust-card">
+            <div class="sr-home-trust-grid">
                 <div>
-                    <h2 id="trust-title">Built around official public information.</h2>
-                    <p>
-                        StayReady references sources such as FEMA flood information, CAL FIRE fire hazard severity zones, USGS and CGS earthquake context, and local hazard mitigation plans. The app should help you understand and prepare; official agencies remain the authority during emergencies.
-                    </p>
+                    <h2 id="trust-title">Built from public information.</h2>
+                    <p>StayReady references FEMA flood information, CAL FIRE fire hazard severity zones, USGS and CGS earthquake context, and reviewed local hazard mitigation plans.</p>
+                    <p>Official agencies remain the authority during emergencies. StayReady does not replace alerts, evacuation orders, inspections, engineering advice, insurance advice, or 911.</p>
                 </div>
-                <div class="sr-source-links">
-                    <a class="btn btn-outline-primary" href="{{ url_for('sources') }}">View Source Registry</a>
-                    <a class="btn btn-outline-secondary" href="{{ url_for('about') }}">About StayReady</a>
+                <nav class="sr-home-trust-links" aria-label="Source and project information">
+                    <a href="{{ url_for('sources') }}">View source registry</a>
+                    <a href="{{ url_for('privacy_basics') }}">Privacy basics</a>
+                    <a href="{{ url_for('about') }}">About StayReady</a>
+                </nav>
+                <div class="sr-home-return">
+                    <a href="#get-started">Check an Alameda County location</a>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="sr-final-cta" aria-labelledby="final-cta-title">
-        <div class="container">
-            <div class="sr-final-cta-inner">
-                <h2 id="final-cta-title">Start with your address.</h2>
-                <p>Get nearby hazard context, practical household actions, recovery preparation, and source-backed limitations.</p>
-                <a href="#emergency-form" class="btn sr-primary-action">Enter Address</a>
             </div>
         </div>
     </section>

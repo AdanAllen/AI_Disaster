@@ -216,23 +216,17 @@
     .layer-toggle.live.active { border-color: #dc3545; color: #dc3545; }
     .layer-toggle.cgs.active { border-color: #426b78; color: #294e5a; }
 
-    .cgs-layer-panel {
-        border-top: 1px solid #dfe7ec;
-        margin-top: 1.25rem;
-        padding-top: 1.25rem;
-    }
-
-    .cgs-layer-panel h3 {
+    .map-layer-heading {
         color: var(--text-dark);
         font-size: 1rem;
         font-weight: 800;
-        margin-bottom: 0.35rem;
+        margin: 0 0 0.3rem;
     }
 
-    .cgs-layer-panel > p {
+    .map-layer-intro {
         color: #5b6d7c;
         font-size: 0.88rem;
-        margin-bottom: 0.9rem;
+        margin: 0 0 0.9rem;
     }
 
     .cgs-legend-grid {
@@ -543,6 +537,21 @@
         line-height: 1.5;
     }
 
+    .map-definition {
+        border-left: 3px solid var(--civic-border-strong, #aebdc8);
+        padding-left: 0.75rem;
+    }
+
+    .map-definition strong {
+        display: block;
+        margin-bottom: 0.2rem;
+        color: var(--civic-ink, #142d3f);
+    }
+
+    .map-definition span {
+        color: #536678;
+    }
+
     .cgs-legend-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
@@ -675,6 +684,8 @@
                 </details>
 
                 <!-- Layer Toggle Controls -->
+                <h3 class="map-layer-heading">Map layers</h3>
+                <p class="map-layer-intro">Turn official hazard boundaries and reference information on or off.</p>
                 <div class="layer-controls">
                     <div class="layer-toggle zip active" id="zip-toggle" onclick="toggleLayer('zip')">
                         <i class="fas fa-map-marker-alt layer-icon"></i>
@@ -700,20 +711,27 @@
                         <i class="fas fa-broadcast-tower layer-icon"></i>
                         <span>Recent Bay Area Earthquakes</span>
                     </div>
+
+                    {% for layer_key, layer in cgs_map_layers.items() %}
+                    <div class="layer-toggle cgs{% if cgs_map_evidence | selectattr('map_layer_key', 'equalto', layer_key) | selectattr('matched', 'equalto', true) | list %} active{% endif %}"
+                         id="cgs-{{ layer_key }}-toggle"
+                         data-cgs-layer="{{ layer_key }}"
+                         onclick="toggleLayer('cgs-{{ layer_key }}')">
+                        <i class="fas fa-layer-group layer-icon"></i>
+                        <span>{{ layer.label }}</span>
+                    </div>
+                    {% endfor %}
                 </div>
                 <p class="small text-muted mt-2 mb-0" id="map-loading-status" aria-live="polite">
                     Checking official mapped data only when a layer is opened.
                 </p>
 
                 <details class="map-help">
-                    <summary>How to read this map</summary>
+                    <summary>Definitions and limits</summary>
                     <div class="map-help-terms">
-                        <div><strong>Address point checked</strong><br>The verified address coordinate was compared with an available mapped layer.</div>
-                        <div><strong>Mapped match found</strong><br>The checked point appears inside the specific mapped area shown.</div>
-                        <div><strong>No mapped match found</strong><br>No match was found in that dataset; this does not rule out the hazard.</div>
-                        <div><strong>Area-based source</strong><br>Reviewed guidance applies to a named neighborhood or geographic area.</div>
-                        <div><strong>Citywide source</strong><br>Reviewed guidance applies across the city rather than to one address.</div>
-                        <div><strong>Official provisional</strong><br>The source is official, but StayReady's loaded copy is informational and not a legal or engineering determination.</div>
+                        <div class="map-definition"><strong>Mapped match</strong><span>Your selected point falls inside that dataset's boundary. It signals a reason to review the hazard, not expected damage.</span></div>
+                        <div class="map-definition"><strong>No mapped match</strong><span>The point is outside the displayed boundary. Related hazards, indirect impacts, and unmapped conditions may still occur.</span></div>
+                        <div class="map-definition"><strong>Official provisional</strong><span>Useful public planning information, but not a legal, engineering, insurance, or property-safety determination.</span></div>
                     </div>
                     <p class="small text-muted">
                         This application uses public data from FEMA, USGS, CAL FIRE, and the California Geological Survey. It is not officially endorsed by these agencies.
@@ -721,41 +739,20 @@
                 <div class="cgs-legend-grid mt-3" aria-label="Core map layer explanations">
                     <div class="cgs-legend-card">
                         <strong>FEMA flood polygons</strong>
-                        <small><strong>Shows:</strong> Loaded mapped flood-zone polygons near the selected location.</small>
-                        <small><strong>Does not show:</strong> Building condition, drainage failures, every flood mechanism, or a property-specific determination.</small>
-                        <small><strong>Outside mapped areas:</strong> A non-match applies only to the checked provisional snapshot and does not rule out flooding.</small>
+                        <small>Areas FEMA maps for floodplain management and insurance purposes. Use them to prompt flood preparation; they do not capture every way flooding can occur.</small>
                         <div class="cgs-status">FEMA · Official Provisional</div>
                     </div>
                     <div class="cgs-legend-card">
                         <strong>CAL FIRE hazard zones</strong>
-                        <small><strong>Shows:</strong> Loaded moderate, high, and very-high Fire Hazard Severity Zone polygons.</small>
-                        <small><strong>Does not show:</strong> Live fire conditions, smoke, embers, evacuation conditions, or expected building damage.</small>
-                        <small><strong>Outside mapped areas:</strong> A non-match does not rule out wildfire or indirect fire impacts.</small>
+                        <small>Areas classified by long-term wildfire hazard conditions. They support preparedness and building-code decisions, not live fire or evacuation tracking.</small>
                         <div class="cgs-status">CAL FIRE · Official Provisional</div>
                     </div>
                     <div class="cgs-legend-card">
                         <strong>Mapped fault traces</strong>
-                        <small><strong>Shows:</strong> Location context and distance to the nearest loaded mapped fault trace.</small>
-                        <small><strong>Does not show:</strong> Regulatory-zone membership, shaking intensity, liquefaction, building damage, or a complete earthquake assessment.</small>
-                        <small><strong>Outside the proximity threshold:</strong> Strong shaking and other seismic effects may still occur.</small>
+                        <small>Known surface locations of faults. Proximity helps explain earthquake context but does not predict shaking strength or building damage.</small>
                         <div class="cgs-status">USGS / contributing CGS records · Official Provisional</div>
                     </div>
                 </div>
-
-                <div class="cgs-layer-panel">
-                    <h3>California Geological Survey mapped zones</h3>
-                    <p>Optional official overlays show mapped zone boundaries. They are separate from the address-point match shown in your evidence cards.</p>
-                    <div class="layer-controls">
-                        {% for layer_key, layer in cgs_map_layers.items() %}
-                        <div class="layer-toggle cgs{% if cgs_map_evidence | selectattr('map_layer_key', 'equalto', layer_key) | selectattr('matched', 'equalto', true) | list %} active{% endif %}"
-                             id="cgs-{{ layer_key }}-toggle"
-                             data-cgs-layer="{{ layer_key }}"
-                             onclick="toggleLayer('cgs-{{ layer_key }}')">
-                            <i class="fas fa-layer-group layer-icon"></i>
-                            <span>{{ layer.label }}</span>
-                        </div>
-                        {% endfor %}
-                    </div>
 
                     <div class="cgs-legend-grid">
                         {% for evidence in cgs_map_evidence %}
@@ -764,13 +761,15 @@
                                 <span class="cgs-legend-swatch" style="background: {{ cgs_map_layers[evidence.map_layer_key].color }}"></span>
                                 {{ evidence.dataset_name }}
                             </strong>
-                            <small><strong>What this layer shows:</strong> {{ evidence.plain_definition }}</small>
-                            <small><strong>What it does not show:</strong> {{ evidence.what_this_does_not_mean }}</small>
-                            <small><strong>Outside mapped areas:</strong> A location outside this layer may still face related, indirect, or unmapped impacts.</small>
-                            <small><strong>Source summary:</strong> {{ evidence.source_summary }}</small>
-                            {% for limitation in evidence.limitations[:2] %}
-                            <small>{{ limitation }}</small>
-                            {% endfor %}
+                            {% if evidence.map_layer_key == 'alquist-priolo' %}
+                            <small>Areas around active fault traces where surface rupture must be considered before certain development. This is not a shaking forecast.</small>
+                            {% elif evidence.map_layer_key == 'liquefaction' %}
+                            <small>Areas where strong shaking may cause loose, wet soil to lose strength. The map does not predict whether a specific building will be damaged.</small>
+                            {% elif evidence.map_layer_key == 'earthquake-landslide' %}
+                            <small>Slopes where earthquake shaking may trigger landslides. Conditions outside mapped zones can still fail.</small>
+                            {% elif evidence.map_layer_key == 'tsunami' %}
+                            <small>Coastal areas used for tsunami hazard and evacuation planning. Follow official warnings and evacuation instructions during an event.</small>
+                            {% endif %}
                             <div class="cgs-status">California Geological Survey · Official Provisional</div>
                             {% if evidence.source_url %}
                             <a class="small d-inline-block mt-2" href="{{ evidence.source_url }}" target="_blank" rel="noopener noreferrer">Open official CGS source</a>
@@ -778,7 +777,6 @@
                         </div>
                         {% endfor %}
                     </div>
-                </div>
                 </details>
             </div>
 
