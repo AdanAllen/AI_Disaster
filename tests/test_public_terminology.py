@@ -87,9 +87,9 @@ class PublicTerminologyTests(unittest.TestCase):
                 "lon": -122.19,
             })
             html = self.client.get("/hazards/earthquake").get_data(as_text=True)
-        self.assertIn("Plain meaning:", html)
-        self.assertIn("What this means:", html)
-        self.assertIn("What this does not mean:", html)
+        self.assertIn("CGS liquefaction zones", html)
+        self.assertIn("What this means", html)
+        self.assertIn("What this does not mean", html)
         self.assertIn("loose, wet soil temporarily lose strength", html)
 
     def test_unknown_exposure_is_not_a_public_label(self):

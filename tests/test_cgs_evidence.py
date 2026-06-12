@@ -238,7 +238,9 @@ class CGSPublicRenderingTests(unittest.TestCase):
         self.assertIn("Inside a CGS mapped tsunami hazard area.", tsunami)
         for page in (summary, earthquake, tsunami):
             self.assertIn("California Geological Survey", page)
-            self.assertIn("Official source, provisional StayReady integration", page)
+        self.assertIn("Official source, provisional StayReady integration", summary)
+        for page in (earthquake, tsunami):
+            self.assertIn("StayReady integration under review", page)
 
     def test_map_has_all_cgs_controls_and_provenance_legends(self):
         page = self.client.get("/map").get_data(as_text=True)

@@ -16,3 +16,35 @@
     <small class="d-block text-muted">Source note: {{ action.citation.source_summary }}</small>
 </div>
 {%- endmacro %}
+
+{% macro guide_action(action, hazard_slug, index) -%}
+<div class="sr-guide-action" data-action-id="{{ action.action_id }}">
+    <label class="sr-guide-action-main">
+        <input type="checkbox" class="sr-guide-action-checkbox" data-item-id="{{ hazard_slug }}-{{ index }}">
+        <span class="sr-guide-action-check" aria-hidden="true"><i class="fas fa-check"></i></span>
+        <span>
+            <strong>{{ action.title }}</strong>
+            <span>{{ action.instruction }}</span>
+            <small>
+                Source:
+                <a href="{{ action.citation.source_url }}" target="_blank" rel="noopener noreferrer">
+                    {{ action.citation.source_name }}
+                </a>
+            </small>
+        </span>
+    </label>
+    {% if action.why_shown or action.citation.source_summary or action.citation.source_section or action.citation.source_page %}
+    <details>
+        <summary>Why this action and source details</summary>
+        {% if action.why_shown %}<p><strong>Why this is shown:</strong> {{ action.why_shown }}</p>{% endif %}
+        {% if action.citation.source_summary %}<p><strong>Source note:</strong> {{ action.citation.source_summary }}</p>{% endif %}
+        {% if action.citation.source_section or action.citation.source_page %}
+        <p class="mb-0">
+            {% if action.citation.source_section %}Section: {{ action.citation.source_section }}{% endif %}
+            {% if action.citation.source_page %}{% if action.citation.source_section %} · {% endif %}Page {{ action.citation.source_page }}{% endif %}
+        </p>
+        {% endif %}
+    </details>
+    {% endif %}
+</div>
+{%- endmacro %}

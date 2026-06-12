@@ -27,6 +27,7 @@ from feedback_forms import (
 )
 from geospatial.registry import DatasetRegistryError, get_default_registry
 from geospatial.service import GeospatialEvidenceService
+from hazard_guide import build_hazard_detail_guide, build_hazard_library
 from hazard_engine import build_hazard_results, check_flood_layer, merge_structured_result
 from location_service import location_from_session
 from rag_service import retrieve_chunks
@@ -1556,15 +1557,10 @@ def hazards_dashboard():
     location_context = get_session_location_context()
     location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
     hazards = get_all_hazards(user_profile, location_context)
-    top_hazards = get_top_hazards_sorted_by_priority(user_profile, location_context)
-
+    additional_hazards = get_additional_local_hazards(location_context, hazards)
     return safe_render(
         "hazards_dashboard.html",
-        hazards=hazards,
-        top_hazards=top_hazards,
-        user_profile=user_profile,
-        location_options=HAZARD_LOCATION_OPTIONS,
-        location_context=location_context,
+        library=build_hazard_library(hazards, location_context, additional_hazards),
     )
 
 
@@ -1585,11 +1581,7 @@ def hazard_detail(name):
 
     return safe_render(
         "hazard_detail.html",
-        hazard=hazard,
-        top_hazards=get_top_hazards_sorted_by_priority(user_profile, location_context),
-        user_profile=user_profile,
-        location_options=HAZARD_LOCATION_OPTIONS,
-        location_context=location_context,
+        guide=build_hazard_detail_guide(hazard, location_context),
     )
 
 

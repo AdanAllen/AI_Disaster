@@ -1,750 +1,207 @@
 {% extends "base.html" %}
-{% from "_action_macros.html" import action_item %}
+{% from "_action_macros.html" import guide_action %}
 
-{% block title %}{{ hazard.name }} - Stay Ready Now{% endblock %}
-
-{% block head %}
-<style>
-    .hazard-hero {
-        margin-top: -2rem;
-        padding: 4.5rem 0 3rem;
-        background: linear-gradient(135deg, #173552, #2c6b97);
-        color: white;
-    }
-
-    .hazard-hero h1 {
-        font-size: 2.8rem;
-        font-weight: 800;
-        margin-bottom: 0.75rem;
-    }
-
-    .hazard-hero p {
-        color: rgba(255, 255, 255, 0.88);
-        max-width: 52rem;
-    }
-
-    .hero-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        margin-top: 1rem;
-    }
-
-    .meta-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.45rem;
-        border-radius: 999px;
-        padding: 0.55rem 0.9rem;
-        background: rgba(255, 255, 255, 0.14);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        font-weight: 700;
-    }
-
-    .detail-card,
-    .profile-card,
-    .sidebar-card,
-    .checklist-card {
-        border: 1px solid #dce5ec;
-        border-radius: 20px;
-        background: white;
-        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
-    }
-
-    .profile-card,
-    .detail-card,
-    .checklist-card,
-    .sidebar-card {
-        padding: 1.5rem;
-    }
-
-    .profile-card {
-        margin-top: -2rem;
-        position: relative;
-        z-index: 2;
-    }
-
-    .section-eyebrow {
-        display: inline-block;
-        font-size: 0.82rem;
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: #2c6b97;
-        margin-bottom: 0.55rem;
-    }
-
-    .detail-card h2,
-    .checklist-card h2,
-    .sidebar-card h3,
-    .profile-card h2 {
-        font-weight: 800;
-        color: #1f3347;
-    }
-
-    .detail-copy {
-        color: #4f6274;
-        line-height: 1.65;
-    }
-
-    .risk-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.4rem 0.75rem;
-        border-radius: 999px;
-        font-size: 0.88rem;
-        font-weight: 700;
-    }
-
-    .risk-pill.high {
-        background: #fdecea;
-        color: #b3261e;
-    }
-
-    .risk-pill.medium {
-        background: #fff4db;
-        color: #9c5f00;
-    }
-
-    .risk-pill.low {
-        background: #eaf7ef;
-        color: #1e7a38;
-    }
-
-    .risk-pill.neutral {
-        background: #eef2f5;
-        color: #52606d;
-    }
-
-    .evidence-badges {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin-top: 1rem;
-    }
-
-    .evidence-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        border-radius: 999px;
-        padding: 0.45rem 0.75rem;
-        background: #edf4f8;
-        color: #25455f;
-        font-size: 0.84rem;
-        font-weight: 800;
-    }
-
-    .evidence-badge.address {
-        background: #e8f4ee;
-        color: #236345;
-    }
-
-    .evidence-badge.status {
-        background: #fff4db;
-        color: #8d5b08;
-    }
-
-    .source-link-list {
-        display: grid;
-        gap: 0.55rem;
-        margin: 0;
-        padding-left: 1.1rem;
-    }
-
-    .source-link-list a {
-        font-weight: 800;
-        text-decoration: none;
-    }
-
-    .detail-list {
-        display: grid;
-        gap: 0.65rem;
-        padding-left: 1.1rem;
-        color: #4f6274;
-        margin-bottom: 0;
-    }
-
-    .note-banner {
-        border-radius: 16px;
-        border: 1px solid #cfe2f1;
-        background: #f4f9fc;
-        color: #36536b;
-        padding: 1rem 1.1rem;
-    }
-
-    .progress-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        margin-bottom: 1rem;
-    }
-
-    .progress-text {
-        color: #4f6274;
-        font-weight: 700;
-    }
-
-    .progress-track {
-        width: 100%;
-        height: 10px;
-        border-radius: 999px;
-        background: #e9f0f5;
-        overflow: hidden;
-        margin-bottom: 1.25rem;
-    }
-
-    .progress-fill {
-        width: 0;
-        height: 100%;
-        border-radius: 999px;
-        background: linear-gradient(90deg, #2c6b97, #5aa0d0);
-        transition: width 0.25s ease;
-    }
-
-    .task-list {
-        display: grid;
-        gap: 0.85rem;
-    }
-
-    .task-item {
-        position: relative;
-        display: flex;
-        align-items: flex-start;
-        gap: 0.85rem;
-        border-radius: 14px;
-        padding: 0.95rem 1rem;
-        transition: all 0.2s ease;
-        border: 1px solid #dce5ec;
-        background: #fbfdff;
-    }
-
-    .task-item.is-complete {
-        background: #edf8f1;
-        border-color: #9ed2ab;
-    }
-
-    .task-checkbox {
-        position: absolute;
-        inset: 0;
-        opacity: 0;
-        cursor: pointer;
-        margin: 0;
-    }
-
-    .task-checkmark {
-        width: 1.35rem;
-        height: 1.35rem;
-        border-radius: 6px;
-        border: 2px solid #b2c1cc;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        background: white;
-        flex-shrink: 0;
-        pointer-events: none;
-        transition: all 0.2s ease;
-    }
-
-    .task-checkmark i {
-        font-size: 0.75rem;
-        opacity: 0;
-    }
-
-    .task-item.is-complete .task-checkmark {
-        background: #2f8f5b;
-        border-color: #2f8f5b;
-    }
-
-    .task-item.is-complete .task-checkmark i {
-        opacity: 1;
-    }
-
-    .task-label {
-        color: #1f3347;
-        font-weight: 600;
-        line-height: 1.5;
-    }
-
-    .sidebar-links {
-        display: grid;
-        gap: 0.7rem;
-    }
-
-    .sidebar-link {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        padding: 0.9rem 1rem;
-        border-radius: 14px;
-        border: 1px solid #dce5ec;
-        background: #fbfdff;
-        text-decoration: none;
-        color: #1f3347;
-        font-weight: 700;
-    }
-
-    .sidebar-link:hover {
-        border-color: #2c6b97;
-        color: #2c6b97;
-    }
-
-    .profile-helper {
-        color: #546779;
-        max-width: 44rem;
-    }
-
-    @media (max-width: 768px) {
-        .hazard-hero h1 {
-            font-size: 2.2rem;
-        }
-
-        .profile-card,
-        .detail-card,
-        .checklist-card,
-        .sidebar-card {
-            padding: 1.2rem;
-        }
-
-        .progress-row {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-    }
-</style>
-{% endblock %}
+{% block title %}{{ guide.name }} Guide | Stay Ready Now{% endblock %}
+{% block meta_description %}Learn about {{ guide.name|lower }} in Alameda County, how StayReady checks official sources, and practical preparedness actions.{% endblock %}
 
 {% block content %}
-<section class="hazard-hero">
-    <div class="container">
-        <span class="section-eyebrow text-white-50">Source-Backed Hazard Detail</span>
-        <h1>{{ hazard.name }}</h1>
-        <p class="mb-0">{{ hazard.summary }}</p>
-        {% set risk_class = 'high' if hazard.exposure_level == 'High' else 'medium' if hazard.exposure_level == 'Medium' else 'neutral' %}
-        <div class="hero-meta">
-            <span class="meta-pill">{{ hazard.scope_label }}</span>
-            <span class="meta-pill">{{ hazard.data_status_label }}</span>
-            <span class="meta-pill">{{ hazard.location_precision_label }}</span>
-            <span class="meta-pill">{{ hazard.slug }}</span>
+<div class="sr-page sr-hazard-guide">
+    <header class="sr-hazard-guide-hero">
+        <div class="container">
+            <a class="sr-hazard-back-link" href="{{ url_for('hazards_dashboard') }}"><i class="fas fa-arrow-left"></i> Back to Hazards</a>
+            <span class="section-eyebrow">Hazard guide</span>
+            <h1>{{ guide.name }}</h1>
+            <p>{{ guide.definition }}</p>
+            <div class="sr-hazard-guide-tags">
+                <span>Alameda County hazard</span>
+                <span>Official sources checked</span>
+                {% if guide.under_review %}<span>Guide coverage under review</span>{% endif %}
+                {% if guide.has_address %}<span>Address context available</span>{% endif %}
+            </div>
         </div>
-    </div>
-</section>
+    </header>
 
-<section class="py-4">
-    <div class="container">
-        <div class="profile-card">
-            <span class="section-eyebrow">Personalization</span>
-            <h2 class="h3 mb-2">Adjust this page for your situation</h2>
-            <p class="text-muted mb-3">Current location: <strong>{{ location_context.display_name }}</strong> · {{ location_context.precision_label }}</p>
-            {% include "_hazard_profile_form.html" %}
-        </div>
-    </div>
-</section>
-
-<section class="pb-5">
-    <div class="container">
-        <div class="row g-4">
-            <div class="col-lg-8">
-                <div class="d-grid gap-4">
-                    {% if hazard.personalization_notes %}
-                    <div class="note-banner">
-                        <strong>Profile-aware updates:</strong>
-                        {{ hazard.personalization_notes | join(' ') }}
-                    </div>
-                    {% endif %}
-
-                    <article class="detail-card">
-                        <span class="section-eyebrow">Why This Is Shown</span>
-                        <h2 class="h4 mb-3">Why am I seeing this?</h2>
-                        <div class="evidence-badges mb-3">
-                            <span class="evidence-badge address">{{ hazard.scope_label }}</span>
-                            <span class="evidence-badge status">{{ hazard.data_status_label }}</span>
-                            <span class="evidence-badge">{{ hazard.basis_label }}</span>
-                            {% if hazard.public_claim_status %}
-                            <span class="evidence-badge status">{% if hazard.public_claim_status == "official_provisional" %}Official source, provisional StayReady integration{% else %}{{ hazard.public_claim_status | replace("_", " ") | title }}{% endif %}</span>
-                            {% endif %}
-                        </div>
-                        <p class="detail-copy mb-0">{{ hazard.why_shown }}</p>
-                    </article>
-
-                    <article class="detail-card">
-                        <span class="section-eyebrow">Local Guidance</span>
-                        <h2 class="h4 mb-3">What the local source says</h2>
-                        {% if hazard.specialized_guidance.guidance_source_status == "local_reviewed" %}
-                        <div class="evidence-badges mb-3">
-                            <span class="evidence-badge address">Local source reviewed</span>
-                            {% if hazard.local_plan_match %}
-                            <span class="evidence-badge">{{ hazard.local_plan_match.name }}</span>
-                            {% endif %}
-                        </div>
-                        {% elif hazard.specialized_guidance.guidance_source_status == "needs_source_review" %}
-                        <div class="evidence-badges mb-3">
-                            <span class="evidence-badge status">Needs source review</span>
-                        </div>
-                        {% else %}
-                        <div class="evidence-badges mb-3">
-                            <span class="evidence-badge status">County fallback guidance</span>
-                        </div>
+    <main class="sr-hazard-guide-main">
+        <div class="container">
+            <div class="sr-hazard-guide-layout">
+                <div class="sr-hazard-guide-content">
+                    <section class="sr-hazard-guide-section" aria-labelledby="local-importance-title">
+                        <span class="section-eyebrow">Local context</span>
+                        <h2 id="local-importance-title">Why this matters locally</h2>
+                        <p class="sr-hazard-guide-lead">{{ guide.local_relevance }}</p>
+                        {% if guide.city_context %}
+                        <details class="sr-hazard-inline-details">
+                            <summary>Reviewed local plan context</summary>
+                            {% for item in guide.city_context %}<p>{{ item }}</p>{% endfor %}
+                        </details>
                         {% endif %}
+                    </section>
 
-                        {% if hazard.specialized_guidance.location_specific_context %}
-                        <h3 class="h6 fw-bold">Address / area cues</h3>
-                        <ul class="detail-list mb-3">
-                            {% for item in hazard.specialized_guidance.location_specific_context[:3] %}
-                            <li>{{ item }}</li>
-                            {% endfor %}
-                        </ul>
-                        {% endif %}
-
-                        {% if hazard.specialized_guidance.city_context %}
-                        <h3 class="h6 fw-bold">City plan context</h3>
-                        <ul class="detail-list mb-3">
-                            {% for item in hazard.specialized_guidance.city_context[:3] %}
-                            <li>{{ item }}</li>
-                            {% endfor %}
-                        </ul>
-                        {% endif %}
-
-                        {% set limitation_items = hazard.specialized_guidance.resident_guidance.limitations if hazard.specialized_guidance.resident_guidance else [] %}
-                        {% if limitation_items %}
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <h3 class="h6 fw-bold">Precision limits</h3>
-                                <ul class="detail-list">
-                                    {% for item in limitation_items[:2] %}
-                                    <li>
-                                        {{ item.plain_language }}
-                                        {% if item.source_detail %}<span class="d-block small text-muted mt-1">{{ item.source_detail }}</span>{% endif %}
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                        </div>
-                        {% endif %}
-                    </article>
-
-                    <article class="detail-card">
-                        <span class="section-eyebrow">Location Precision</span>
-                        <h2 class="h4 mb-3">What this page checked</h2>
-                        <p class="detail-copy mb-2">
-                            This hazard page is using your saved location:
-                            <strong>{{ location_context.display_name }}</strong>.
-                        </p>
-                        <p class="detail-copy mb-2">
-                            Precision: <strong>{{ hazard.location_precision_label }}</strong>.
-                            Data status: <strong>{{ hazard.data_status_label }}</strong>.
-                        </p>
-                        {% if hazard.match_type in ["near_fault", "fault_proximity_context"] %}
-                        <p class="detail-copy mb-2">
-                            Fault proximity is contextual distance information. It is not official hazard-zone membership.
-                        </p>
-                        {% endif %}
-                        {% if hazard.matched_layers %}
-                        <ul class="detail-list">
-                            {% for layer in hazard.matched_layers %}
-                            <li>{{ layer.name }}{% if layer.zone %} (zone {{ layer.zone }}){% endif %}</li>
-                            {% endfor %}
-                        </ul>
-                        {% else %}
-                        <p class="detail-copy mb-0">
-                            No address-level matched layer is available for this result.
-                        </p>
-                        {% endif %}
-
-                        {% if hazard.additional_geospatial_evidence %}
-                        <h3 class="h6 mt-4">California Geological Survey checks</h3>
-                        {% for evidence in hazard.additional_geospatial_evidence %}
-                        <div class="border rounded-3 p-3 mb-3">
-                            <span class="evidence-badge status mb-2">{{ evidence.status_label }}</span>
-                            <span class="d-block small fw-semibold text-uppercase text-muted mb-1">{{ evidence.dataset_name }}</span>
-                            <p class="mb-2"><strong>Plain meaning:</strong> {{ evidence.plain_definition }}</p>
-                            <p class="mb-2"><strong>What this means:</strong> {{ evidence.what_this_means }}</p>
-                            <p class="mb-2"><strong>Why it matters:</strong> {{ evidence.why_it_matters or evidence.source_summary }}</p>
-                            <p class="mb-2"><strong>What this does not mean:</strong> {{ evidence.what_this_does_not_mean }}</p>
-                            <p class="mb-2"><strong>Source summary:</strong> {{ evidence.source_summary }}</p>
-                            {% for limitation in evidence.limitations[:2] %}
-                            <small class="d-block text-muted">{{ limitation }}</small>
-                            {% endfor %}
-                            <div class="small mt-2">
-                                {% if evidence.source_url %}
-                                <a href="{{ evidence.source_url }}" target="_blank" rel="noopener noreferrer">{{ evidence.source_agency }}</a>
-                                {% else %}
-                                <span>{{ evidence.source_agency }}</span>
-                                {% endif %}
-                                <span> · {% if evidence.public_claim_status == "official_provisional" %}Official source, provisional StayReady integration{% else %}{{ evidence.public_claim_status | replace('_', ' ') | title }}{% endif %}</span>
-                            </div>
-                        </div>
-                        {% endfor %}
-                        {% endif %}
-                    </article>
-
-                    <article class="detail-card">
-                        <span class="section-eyebrow">Limitations</span>
-                        <h2 class="h4 mb-3">What this result does not prove</h2>
-                        <ul class="detail-list">
-                            {% for limitation in hazard.limitations %}
-                            <li>{{ limitation }}</li>
-                            {% endfor %}
-                        </ul>
-                    </article>
-
-                    <article class="detail-card">
-                        <span class="section-eyebrow">Realistic Impact</span>
-                        <h2 class="h4 mb-3">What could happen</h2>
-                        <p class="detail-copy mb-3">{{ hazard.what_could_realistically_happen }}</p>
-                        <p class="detail-copy mb-0">{{ hazard.real_world_impact }}</p>
-                    </article>
-
-                    <article class="checklist-card">
-                        <span class="section-eyebrow">Preparedness Steps</span>
-                        <h2 class="h4 mb-2">Interactive checklist</h2>
-                        <div class="progress-row">
-                            <p class="progress-text mb-0">
-                                {{ hazard.name }} Preparedness:
-                                <span id="checklist-complete-count">0</span>/{{ hazard.action_steps | length }} complete
+                    <section class="sr-hazard-current-location" aria-labelledby="current-location-title">
+                        <div>
+                            <span class="section-eyebrow">For your current location</span>
+                            {% if guide.location.active %}
+                            <h2 id="current-location-title">{{ guide.location.display_name }}</h2>
+                            <p>
+                                {{ guide.location.message }}
+                                Use your Risk Summary for ranked priorities.
                             </p>
-                            <span class="risk-pill {{ risk_class }}">
-                                {% if hazard.scope == "address_level" and hazard.is_in_hazard_zone %}
-                                {{ hazard.exposure_level }} mapped-zone exposure
-                                {% else %}
-                                Exposure not determined
-                                {% endif %}
-                            </span>
-                        </div>
-                        <div class="progress-track" aria-hidden="true">
-                            <div id="checklist-progress-fill" class="progress-fill"></div>
-                        </div>
-                        <div class="task-list" data-checklist-storage-key="hazardChecklist-{{ hazard.slug }}">
-                            {% for step in hazard.action_steps %}
-                            <label class="task-item" data-item-id="{{ hazard.slug }}-{{ loop.index0 }}">
-                                <input type="checkbox" class="task-checkbox" data-item-id="{{ hazard.slug }}-{{ loop.index0 }}">
-                                <span class="task-checkmark" aria-hidden="true">
-                                    <i class="fas fa-check"></i>
-                                </span>
-                                <div class="task-label">{{ action_item(step) }}</div>
-                            </label>
                             {% else %}
-                            <p class="text-muted mb-0">No reviewed source-backed action is available for this hazard yet.</p>
+                            <h2 id="current-location-title">Add an address for available local checks</h2>
+                            <p>{{ guide.location.message }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="sr-hazard-location-actions">
+                            {% if guide.location.active %}
+                            <a class="btn sr-button sr-button-primary" href="{{ url_for('risk_summary') }}">View Risk Summary</a>
+                            <a class="btn sr-button sr-button-secondary" href="{{ url_for('map') }}">View on Map</a>
+                            {% else %}
+                            <a class="btn sr-button sr-button-primary" href="{{ url_for('home') }}#location">Check my address</a>
+                            {% endif %}
+                        </div>
+                    </section>
+
+                    <section class="sr-hazard-guide-section" aria-labelledby="checks-title">
+                        <span class="section-eyebrow">Official evidence</span>
+                        <h2 id="checks-title">What StayReady checks</h2>
+                        <p class="sr-hazard-guide-intro">
+                            Each check has its own status. A match, non-match, nearby feature, or unavailable layer
+                            applies only to that check.
+                        </p>
+                        <div class="sr-hazard-check-list">
+                            {% for check in guide.checks %}
+                            <details class="sr-hazard-check">
+                                <summary>
+                                    <span>
+                                        <strong>{{ check.name }}</strong>
+                                        <small>{{ check.plain_meaning }}</small>
+                                    </span>
+                                    <span class="sr-hazard-status sr-hazard-status-{{ check.tone }}">{{ check.status }}</span>
+                                </summary>
+                                <div class="sr-hazard-check-body">
+                                    <p><strong>What this means</strong>{{ check.what_this_means }}</p>
+                                    <p><strong>What this does not mean</strong>{{ check.does_not_mean }}</p>
+                                    {% if check.source_summary %}<p><strong>Source summary</strong>{{ check.source_summary }}</p>{% endif %}
+                                    {% if check.provisional %}
+                                    <p><strong>Integration note</strong>The source is official; StayReady's local extraction or integration remains under review.</p>
+                                    {% endif %}
+                                    {% if check.limitations %}
+                                    <div>
+                                        <strong>Limitations</strong>
+                                        <ul>{% for item in check.limitations %}<li>{{ item }}</li>{% endfor %}</ul>
+                                    </div>
+                                    {% endif %}
+                                    {% if check.sources %}
+                                    <p class="sr-hazard-check-sources">
+                                        {% for source in check.sources %}
+                                        <a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.name }}</a>{% if not loop.last %} · {% endif %}
+                                        {% endfor %}
+                                    </p>
+                                    {% endif %}
+                                </div>
+                            </details>
                             {% endfor %}
                         </div>
-                    </article>
+                    </section>
 
-                    <article class="detail-card">
-                        <span class="section-eyebrow">Recovery Readiness</span>
-                        <h2 class="h4 mb-3">Questions to answer before recovery starts</h2>
-                        <ul class="detail-list">
-                            {% for item in hazard.recovery_questions %}
-                            <li>
-                                {{ item.question }}
-                                {% if item.source_url %}
-                                <small class="d-block mt-1">
-                                    Source: <a href="{{ item.source_url }}" target="_blank" rel="noopener noreferrer">{{ item.source_name }}</a>
-                                </small>
-                                {% endif %}
-                            </li>
+                    <section class="sr-hazard-guide-section" aria-labelledby="actions-title">
+                        <span class="section-eyebrow">Preparedness</span>
+                        <h2 id="actions-title">What to do</h2>
+                        <p class="sr-hazard-guide-intro">Use this short checklist to review practical, source-backed actions.</p>
+                        <div class="sr-guide-action-list" data-checklist-storage-key="hazardChecklist-{{ guide.slug }}">
+                            {% for action in guide.actions %}
+                            {{ guide_action(action, guide.slug, loop.index0) }}
+                            {% else %}
+                            <p class="sr-hazard-empty-note">Reviewed actions for this guide are temporarily unavailable.</p>
                             {% endfor %}
-                        </ul>
-                    </article>
+                        </div>
+                    </section>
 
-                    <article class="detail-card">
-                        <span class="section-eyebrow">Sources</span>
-                        <h2 class="h4 mb-3">Matched sources and references</h2>
-                        <ul class="source-link-list">
-                            {% for source in hazard.sources %}
-                            <li>
-                                <a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.name }}</a>
-                                <span class="text-muted"> — {{ source.agency }} · {{ source.review_status }}</span>
-                            </li>
+                    <section class="sr-hazard-guide-section" aria-labelledby="recovery-title">
+                        <span class="section-eyebrow">Recovery readiness</span>
+                        <h2 id="recovery-title">Questions to answer before recovery starts</h2>
+                        <div class="sr-recovery-question-list">
+                            {% for item in guide.recovery_questions %}
+                            <div>
+                                <i class="far fa-square" aria-hidden="true"></i>
+                                <p>
+                                    {{ item.question }}
+                                    {% if item.source_url %}
+                                    <small>Source: <a href="{{ item.source_url }}" target="_blank" rel="noopener noreferrer">{{ item.source_name }}</a></small>
+                                    {% endif %}
+                                </p>
+                            </div>
                             {% endfor %}
-                        </ul>
-                    </article>
+                        </div>
+                    </section>
 
-                    <article class="detail-card">
-                        <span class="section-eyebrow">App Flow</span>
-                        <h2 class="h4 mb-3">Where to go next</h2>
-                        <p class="detail-copy mb-3">This page is the deep-dive layer of the app. Once you understand this hazard, use the map to see spatial context or return to the risk summary to compare it with the other hazards shown for your saved location.</p>
-                        <div class="d-flex flex-wrap gap-2">
-                            <a class="btn btn-primary" href="{{ url_for('map') }}">
-                                <i class="fas fa-layer-group me-2"></i>Open Unified Map
-                            </a>
-                            <a class="btn btn-outline-secondary" href="{{ url_for('hazards_dashboard') }}">
-                                <i class="fas fa-list-ol me-2"></i>Back to Ranked Hazards
-                            </a>
-                        </div>
-                    </article>
-
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <article class="detail-card h-100">
-                                <span class="section-eyebrow">Top Risks</span>
-                                <h2 class="h4 mb-3">Main dangers</h2>
-                                <ul class="detail-list">
-                                    {% for item in hazard.top_risks %}
-                                    <li>{{ item }}</li>
-                                    {% endfor %}
-                                </ul>
+                    <section class="sr-hazard-guide-section" aria-labelledby="guide-sources-title">
+                        <span class="section-eyebrow">Official references</span>
+                        <h2 id="guide-sources-title">Sources</h2>
+                        <div class="sr-hazard-guide-source-list">
+                            {% for source in guide.sources %}
+                            <article>
+                                <div>
+                                    <span>{{ source.agency }}</span>
+                                    <h3>{{ source.name }}</h3>
+                                    <p>{{ source.supports }}</p>
+                                </div>
+                                <div>
+                                    <small>{{ source.status_label }}</small>
+                                    {% if source.url %}
+                                    <a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">Open official source <i class="fas fa-arrow-up-right-from-square"></i></a>
+                                    {% endif %}
+                                </div>
                             </article>
-                        </div>
-                        <div class="col-md-6">
-                            <article class="detail-card h-100">
-                                <span class="section-eyebrow">Priority Reason</span>
-                                <h2 class="h4 mb-3">Why this is ranked here</h2>
-                                <p class="detail-copy mb-0">{{ hazard.priority_reason }}</p>
-                            </article>
-                        </div>
-                    </div>
-
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <article class="detail-card h-100">
-                                <span class="section-eyebrow">Locations</span>
-                                <h2 class="h4 mb-3">Areas mentioned in the dataset</h2>
-                                <ul class="detail-list">
-                                    {% for item in hazard.locations %}
-                                    <li>{{ item }}</li>
-                                    {% endfor %}
-                                </ul>
-                            </article>
-                        </div>
-                        <div class="col-md-6">
-                            <article class="detail-card h-100">
-                                <span class="section-eyebrow">At-Risk Groups</span>
-                                <h2 class="h4 mb-3">Who may need extra planning</h2>
-                                <ul class="detail-list">
-                                    {% for item in hazard.at_risk_groups %}
-                                    <li>{{ item }}</li>
-                                    {% endfor %}
-                                </ul>
-                            </article>
-                        </div>
-                    </div>
-
-                    <article class="detail-card">
-                        <span class="section-eyebrow">History</span>
-                        <h2 class="h4 mb-3">Historical examples</h2>
-                        <ul class="detail-list">
-                            {% for item in hazard.historical_examples %}
-                            <li>{{ item }}</li>
                             {% endfor %}
-                        </ul>
-                    </article>
+                        </div>
+                        <a class="sr-hazard-text-link" href="{{ url_for('sources') }}">View all sources and methodology</a>
+                    </section>
                 </div>
-            </div>
 
-            <div class="col-lg-4">
-                <div class="d-grid gap-4">
-                    <aside class="sidebar-card">
-                        <span class="section-eyebrow">Also Review</span>
-                        <h3 class="h5 mb-3">Top hazards for this profile</h3>
-                        <div class="sidebar-links">
-                            {% for item in top_hazards %}
-                            <a class="sidebar-link" href="{{ url_for('hazard_detail', name=item.slug) }}">
-                                <span>{{ item.name }}</span>
-                                <span>{{ item.priority_score }}/10</span>
-                            </a>
-                            {% endfor %}
-                        </div>
-                    </aside>
-
-                    <aside class="sidebar-card">
-                        <span class="section-eyebrow">Quick Stats</span>
-                        <h3 class="h5 mb-3">Key stats</h3>
-                        <ul class="detail-list">
-                            {% for item in hazard.key_stats %}
-                            <li>{{ item }}</li>
-                            {% endfor %}
-                        </ul>
-                    </aside>
-
-                    <aside class="sidebar-card">
-                        <span class="section-eyebrow">Navigation</span>
-                        <h3 class="h5 mb-3">Keep exploring the product</h3>
-                        <div class="d-grid gap-2">
-                            <a class="btn btn-primary" href="{{ url_for('hazards_dashboard') }}">
-                                <i class="fas fa-arrow-left me-2"></i>Back to dashboard
-                            </a>
-                            <a class="btn btn-outline-secondary" href="{{ url_for('risk_summary') }}">
-                                <i class="fas fa-chart-line me-2"></i>Risk summary
-                            </a>
-                            <a class="btn btn-outline-secondary" href="{{ url_for('map') }}">
-                                <i class="fas fa-layer-group me-2"></i>Unified map
-                            </a>
-                            <a class="btn btn-outline-secondary" href="{{ url_for('api_hazard', name=hazard.slug) }}" target="_blank" rel="noopener noreferrer">
-                                <i class="fas fa-code me-2"></i>View JSON
-                            </a>
-                        </div>
-                    </aside>
-                </div>
+                <aside class="sr-hazard-guide-nav" aria-label="Hazard guide navigation">
+                    <span class="section-eyebrow">Guide navigation</span>
+                    <nav>
+                        <a href="{{ url_for('hazards_dashboard') }}"><i class="fas fa-arrow-left"></i> Back to Hazards</a>
+                        <a href="{{ url_for('risk_summary') }}"><i class="fas fa-list-check"></i> View Risk Summary</a>
+                        <a href="{{ url_for('map') }}"><i class="fas fa-map"></i> View Map</a>
+                        <a href="{{ url_for('sources') }}"><i class="fas fa-book-open"></i> Sources and methodology</a>
+                        <a href="/feedback?category=incorrect_source&amp;page_context=hazards"><i class="fas fa-flag"></i> Report an issue</a>
+                    </nav>
+                </aside>
             </div>
         </div>
-    </div>
-</section>
+    </main>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const checklist = document.querySelector('[data-checklist-storage-key]');
-    const progressFill = document.getElementById('checklist-progress-fill');
-    const completeCount = document.getElementById('checklist-complete-count');
-
-    if (!checklist) {
-        return;
-    }
-
+document.addEventListener("DOMContentLoaded", () => {
+    const checklist = document.querySelector("[data-checklist-storage-key]");
+    if (!checklist) return;
     const storageKey = checklist.dataset.checklistStorageKey;
-    const checkboxes = Array.from(checklist.querySelectorAll('.task-checkbox'));
-
-    const loadState = () => {
-        try {
-            return JSON.parse(localStorage.getItem(storageKey)) || {};
-        } catch (error) {
-            return {};
-        }
-    };
-
-    const saveState = (state) => {
-        localStorage.setItem(storageKey, JSON.stringify(state));
-    };
-
-    const updateUI = () => {
-        const state = loadState();
-        let completed = 0;
-
+    const checkboxes = Array.from(checklist.querySelectorAll(".sr-guide-action-checkbox"));
+    let state = {};
+    try {
+        state = JSON.parse(localStorage.getItem(storageKey)) || {};
+    } catch (error) {
+        state = {};
+    }
+    const render = () => {
         checkboxes.forEach((checkbox) => {
-            const isChecked = Boolean(state[checkbox.dataset.itemId]);
-            checkbox.checked = isChecked;
-            checkbox.closest('.task-item')?.classList.toggle('is-complete', isChecked);
-            if (isChecked) {
-                completed += 1;
-            }
+            checkbox.checked = Boolean(state[checkbox.dataset.itemId]);
+            checkbox.closest(".sr-guide-action")?.classList.toggle("is-complete", checkbox.checked);
         });
-
-        const total = checkboxes.length;
-        const percent = total ? (completed / total) * 100 : 0;
-        if (completeCount) {
-            completeCount.textContent = completed;
-        }
-        if (progressFill) {
-            progressFill.style.width = `${percent}%`;
-        }
     };
-
     checkboxes.forEach((checkbox) => {
-        checkbox.addEventListener('change', function () {
-            // Keep each hazard checklist separate so progress follows the current hazard page only.
-            const state = loadState();
-            state[this.dataset.itemId] = this.checked;
-            saveState(state);
-            updateUI();
+        checkbox.addEventListener("change", () => {
+            state[checkbox.dataset.itemId] = checkbox.checked;
+            localStorage.setItem(storageKey, JSON.stringify(state));
+            render();
         });
     });
-
-    updateUI();
+    render();
 });
 </script>
 {% endblock %}

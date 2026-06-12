@@ -165,7 +165,9 @@ class StaticTrustContractTests(unittest.TestCase):
         )
         self.assertNotIn("Risk Level:", templates)
         self.assertNotIn("}} risk", templates)
-        self.assertIn("Exposure not determined", templates)
+        self.assertNotIn("Exposure not determined", templates)
+        guide_source = (BASE_DIR / "hazard_guide.py").read_text(encoding="utf-8")
+        self.assertIn("Add an address to check this layer", guide_source)
 
 
 if __name__ == "__main__":

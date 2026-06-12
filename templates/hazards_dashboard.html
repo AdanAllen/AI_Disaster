@@ -1,397 +1,134 @@
 {% extends "base.html" %}
 
-{% block title %}Hazard Dashboard - Stay Ready Now{% endblock %}
-
-{% block head %}
-<style>
-    .dashboard-hero {
-        margin-top: -2rem;
-        padding: 4.5rem 0 3rem;
-        background: linear-gradient(135deg, #173552, #285b80);
-        color: white;
-    }
-
-    .dashboard-hero h1 {
-        font-size: 2.8rem;
-        font-weight: 800;
-        margin-bottom: 0.8rem;
-    }
-
-    .dashboard-hero p {
-        max-width: 48rem;
-        color: rgba(255, 255, 255, 0.88);
-    }
-
-    .profile-panel,
-    .ranked-list-card,
-    .insight-card,
-    .hazard-highlight-card {
-        border: 1px solid #dce5ec;
-        border-radius: 20px;
-        background: white;
-        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
-    }
-
-    .profile-panel {
-        padding: 1.5rem;
-        margin-top: -2rem;
-        position: relative;
-        z-index: 2;
-    }
-
-    .profile-panel h2,
-    .ranked-list-card h2,
-    .insight-card h3 {
-        font-weight: 800;
-        color: #1f3347;
-    }
-
-    .profile-helper {
-        color: #546779;
-        max-width: 44rem;
-    }
-
-    .section-eyebrow {
-        display: inline-block;
-        font-size: 0.82rem;
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: #2c6b97;
-        margin-bottom: 0.55rem;
-    }
-
-    .hazard-highlight-card {
-        padding: 1.5rem;
-        height: 100%;
-    }
-
-    .hazard-rank {
-        width: 2.4rem;
-        height: 2.4rem;
-        border-radius: 999px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: #edf4f8;
-        color: #173552;
-        font-weight: 800;
-        margin-bottom: 1rem;
-    }
-
-    .hazard-highlight-card h3 {
-        font-size: 1.3rem;
-        font-weight: 800;
-        color: #1f3347;
-    }
-
-    .risk-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.4rem 0.75rem;
-        border-radius: 999px;
-        font-size: 0.88rem;
-        font-weight: 700;
-        margin-bottom: 0.9rem;
-    }
-
-    .risk-pill.high {
-        background: #fdecea;
-        color: #b3261e;
-    }
-
-    .risk-pill.medium {
-        background: #fff4db;
-        color: #9c5f00;
-    }
-
-    .risk-pill.low {
-        background: #eaf7ef;
-        color: #1e7a38;
-    }
-
-    .risk-pill.neutral {
-        background: #eef2f5;
-        color: #52606d;
-    }
-
-    .evidence-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        padding: 0.35rem 0.65rem;
-        border-radius: 999px;
-        background: #edf4f8;
-        color: #28465f;
-        font-size: 0.78rem;
-        font-weight: 800;
-        margin: 0 0.35rem 0.55rem 0;
-    }
-
-    .priority-score {
-        color: #173552;
-        font-weight: 800;
-    }
-
-    .hazard-summary {
-        color: #516476;
-        margin-bottom: 1rem;
-    }
-
-    .ranked-list-card {
-        padding: 1.5rem;
-    }
-
-    .hazard-row {
-        display: grid;
-        grid-template-columns: 3rem 1.6fr 0.8fr 1fr auto;
-        gap: 1rem;
-        align-items: start;
-        padding: 1rem 0;
-        border-top: 1px solid #e8eef3;
-    }
-
-    .hazard-row:first-of-type {
-        border-top: none;
-        padding-top: 0;
-    }
-
-    .hazard-row:last-of-type {
-        padding-bottom: 0;
-    }
-
-    .hazard-row-rank {
-        width: 2.2rem;
-        height: 2.2rem;
-        border-radius: 12px;
-        background: #edf4f8;
-        color: #173552;
-        font-weight: 800;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .hazard-row-name {
-        font-weight: 800;
-        color: #1f3347;
-        margin-bottom: 0.2rem;
-    }
-
-    .hazard-row p,
-    .hazard-row small {
-        color: #546779;
-        margin-bottom: 0;
-    }
-
-    .insight-card {
-        padding: 1.5rem;
-        height: 100%;
-    }
-
-    .insight-card ul {
-        padding-left: 1.1rem;
-        margin-bottom: 0;
-        color: #4d6173;
-    }
-
-    .insight-card li + li {
-        margin-top: 0.65rem;
-    }
-
-    .insight-card.strengths {
-        border-top: 4px solid #2f8f5b;
-    }
-
-    .insight-card.weaknesses {
-        border-top: 4px solid #d96c3f;
-    }
-
-    .insight-card.recommendations {
-        border-top: 4px solid #2c6b97;
-    }
-
-    @media (max-width: 991px) {
-        .hazard-row {
-            grid-template-columns: 3rem 1fr;
-        }
-
-        .hazard-row > div:nth-child(3),
-        .hazard-row > div:nth-child(4),
-        .hazard-row > div:nth-child(5) {
-            grid-column: 2 / -1;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .dashboard-hero h1 {
-            font-size: 2.2rem;
-        }
-
-        .profile-panel,
-        .ranked-list-card,
-        .insight-card,
-        .hazard-highlight-card {
-            padding: 1.2rem;
-        }
-    }
-</style>
-{% endblock %}
+{% block title %}Alameda County Hazards | Stay Ready Now{% endblock %}
+{% block meta_description %}Learn what Alameda County hazards mean, why they matter locally, and how StayReady checks official sources.{% endblock %}
 
 {% block content %}
-<section class="dashboard-hero">
-    <div class="container">
-        <span class="section-eyebrow text-white-50">Source-Backed Hazard Layer</span>
-        <h1>Hazard Dashboard</h1>
-        <p class="mb-0">
-            This view ranks hazards while keeping the evidence basis visible: address checks when available, jurisdiction context next, ZIP estimates after that, and county guidance as fallback.
-        </p>
-    </div>
-</section>
-
-<section class="py-4">
-    <div class="container">
-        <div class="profile-panel">
-            <span class="section-eyebrow">Personalization</span>
-            <h2 class="h3 mb-2">Make the hazard ranking fit your situation</h2>
-            <p class="text-muted mb-3">Current location: <strong>{{ location_context.display_name }}</strong> · {{ location_context.precision_label }}</p>
-            {% include "_hazard_profile_form.html" %}
+<div class="sr-page sr-hazard-library">
+    <header class="sr-hazard-library-hero">
+        <div class="container">
+            <span class="section-eyebrow">Hazard library</span>
+            <h1>Alameda County hazards</h1>
+            <p>
+                Learn what local hazards mean, why they matter, how StayReady checks them,
+                and which official sources support the information.
+            </p>
         </div>
-    </div>
-</section>
+    </header>
 
-<section class="pb-4">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
-            <div>
-                <span class="section-eyebrow">Top 3 Hazards</span>
-                <h2 class="h3 mb-1">Highest-priority hazards</h2>
-                <p class="text-muted mb-0">Ranked by the structured hazard engine, with precision and data status shown before legacy scoring.</p>
-            </div>
-            <a class="btn btn-outline-primary" href="{{ url_for('api_top_risks') }}" target="_blank" rel="noopener noreferrer">
-                <i class="fas fa-code me-2"></i>View API
-            </a>
-        </div>
-
-        <div class="row g-4">
-            {% for hazard in top_hazards %}
-            <div class="col-lg-4">
-                <article class="hazard-highlight-card">
-                    <div class="hazard-rank">{{ loop.index }}</div>
-                    {% set risk_class = 'high' if hazard.exposure_level == 'High' else 'medium' if hazard.exposure_level == 'Medium' else 'neutral' %}
-                    <div class="risk-pill {{ risk_class }}">
-                        {% if hazard.scope == "address_level" and hazard.is_in_hazard_zone %}
-                        {{ hazard.exposure_level }} mapped-zone exposure
-                        {% else %}
-                        Not determined from checked map data
-                        {% endif %}
-                    </div>
-                    <h3>{{ hazard.name }}</h3>
-                    <p class="hazard-summary">{{ hazard.summary }}</p>
-                    <div class="mb-2">
-                        <span class="evidence-pill">{{ hazard.scope_label or "County fallback" }}</span>
-                        <span class="evidence-pill">{{ hazard.data_status_label or "Needs review" }}</span>
-                    </div>
-                    <p class="mb-2 text-muted">{{ hazard.why_shown or "Shown from the reviewed hazard registry and available local context." }}</p>
-                    <a class="btn btn-primary" href="{{ url_for('hazard_detail', name=hazard.slug) }}">
-                        View hazard page
-                    </a>
-                </article>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-
-<section class="pb-4">
-    <div class="container">
-        <div class="row g-4">
-            <div class="col-lg-4">
-                <div class="insight-card h-100">
-                    <span class="section-eyebrow">User Journey</span>
-                    <h3 class="h5 mb-3">How this page fits the app</h3>
-                    <ul>
-                        <li>Use the risk summary to understand what is most urgent.</li>
-                        <li>Use the map to review loaded official-layer context and each layer's limitations.</li>
-                        <li>Use these hazard pages to read why a hazard is shown, where precision is limited, and what to do next.</li>
-                    </ul>
+    <main class="sr-hazard-library-main">
+        <div class="container">
+            <section class="sr-hazard-location-strip" aria-labelledby="hazard-location-title">
+                <div>
+                    <span class="section-eyebrow">Current location</span>
+                    {% if library.location.active %}
+                    <h2 id="hazard-location-title">{{ library.location.display_name }}</h2>
+                    <p>
+                        {{ library.location.message }}
+                        View your Risk Summary for ranked preparedness priorities.
+                    </p>
+                    {% else %}
+                    <h2 id="hazard-location-title">Explore the library or check an address</h2>
+                    <p>{{ library.location.message }}</p>
+                    {% endif %}
                 </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="insight-card h-100">
-                    <span class="section-eyebrow">Data Logic</span>
-                    <h3 class="h5 mb-3">What this ranking combines</h3>
-                    <ul>
-                        <li>Address-level official GIS checks when available.</li>
-                        <li>Jurisdiction context, ZIP estimates, or county guidance when stronger checks are unavailable.</li>
-                        <li>Your profile choices for renter, age, and neighborhood setting.</li>
-                    </ul>
+                <div class="sr-hazard-location-actions">
+                    {% if library.location.active %}
+                    <a class="btn sr-button sr-button-primary" href="{{ url_for('risk_summary') }}">View Risk Summary</a>
+                    <a class="btn sr-button sr-button-secondary" href="{{ url_for('map') }}">View Map</a>
+                    {% else %}
+                    <a class="btn sr-button sr-button-primary" href="{{ url_for('home') }}#location">Check my address</a>
+                    {% endif %}
                 </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="insight-card h-100">
-                    <span class="section-eyebrow">Next Moves</span>
-                    <h3 class="h5 mb-3">Keep moving through the product</h3>
-                    <div class="d-grid gap-2">
-                        <a class="btn btn-primary" href="{{ url_for('risk_summary') }}">
-                            <i class="fas fa-chart-line me-2"></i>Back to Risk Summary
+            </section>
+
+            <section class="sr-hazard-core" aria-labelledby="core-hazards-title">
+                <div class="sr-hazard-section-heading">
+                    <span class="section-eyebrow">Core hazard guides</span>
+                    <h2 id="core-hazards-title">Hazards StayReady checks</h2>
+                    <p>These guides explain the current map checks and reviewed preparedness sources.</p>
+                </div>
+
+                <div class="sr-hazard-library-grid">
+                    {% for hazard in library.hazards %}
+                    <article class="sr-hazard-library-card">
+                        <div class="sr-hazard-library-icon" aria-hidden="true"><i class="fas {{ hazard.icon }}"></i></div>
+                        <h3>{{ hazard.name }}</h3>
+                        <p class="sr-hazard-definition">{{ hazard.definition }}</p>
+
+                        <dl>
+                            <div>
+                                <dt>Why it matters locally</dt>
+                                <dd>{{ hazard.local_relevance }}</dd>
+                            </div>
+                            <div>
+                                <dt>How StayReady checks it</dt>
+                                <dd>{{ hazard.check_summary }}</dd>
+                            </div>
+                        </dl>
+
+                        <div class="sr-hazard-source-summary">
+                            <strong>Official sources used</strong>
+                            <p>
+                                {% for source in hazard.sources %}
+                                {{ source.agency or source.name }}{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+                        </div>
+
+                        <div class="sr-hazard-card-actions">
+                            <a class="btn sr-button sr-button-primary" href="{{ url_for('hazard_detail', name=hazard.slug) }}">Learn more</a>
+                            <a class="btn sr-button sr-button-secondary" href="{{ url_for('map') }}">View map</a>
+                            {% if hazard.has_location %}
+                            <a class="sr-hazard-text-link" href="{{ url_for('risk_summary') }}">View summary</a>
+                            {% else %}
+                            <a class="sr-hazard-text-link" href="{{ url_for('home') }}#location">Check my address</a>
+                            {% endif %}
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="sr-hazard-secondary" aria-labelledby="secondary-hazards-title">
+                <div class="sr-hazard-section-heading">
+                    <span class="section-eyebrow">Local planning context</span>
+                    <h2 id="secondary-hazards-title">Other regional hazards under review</h2>
+                    <p>
+                        These topics already appear in Alameda County or local preparedness planning.
+                        They are not ranked here and do not yet have complete StayReady address-level guides.
+                    </p>
+                </div>
+
+                <div class="sr-hazard-secondary-grid">
+                    {% for hazard in library.secondary_hazards %}
+                    <article>
+                        <h3>{{ hazard.label }}</h3>
+                        <p>{{ hazard.message }}</p>
+                        {% if hazard.plan_url %}
+                        <a href="{{ hazard.plan_url }}" target="_blank" rel="noopener noreferrer">
+                            {{ hazard.plan_name or "Open local plan source" }}
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i>
                         </a>
-                        <a class="btn btn-outline-secondary" href="{{ url_for('map') }}">
-                            <i class="fas fa-layer-group me-2"></i>Open Unified Map
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="pb-5">
-    <div class="container">
-        <div class="ranked-list-card">
-            <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
-                <div>
-                    <span class="section-eyebrow">All Hazards</span>
-                    <h2 class="h3 mb-1">Full ranked list</h2>
-                    <p class="text-muted mb-0">Every hazard page uses the same structured result model and clearly labels source, precision, status, and limitations.</p>
-                </div>
-                <a class="btn btn-outline-secondary" href="{{ url_for('api_hazards') }}" target="_blank" rel="noopener noreferrer">
-                    <i class="fas fa-database me-2"></i>All hazards JSON
-                </a>
-            </div>
-
-            {% for hazard in hazards %}
-            <div class="hazard-row">
-                <div class="hazard-row-rank">{{ loop.index }}</div>
-                <div>
-                    <div class="hazard-row-name">{{ hazard.name }}</div>
-                    <p>{{ hazard.summary }}</p>
-                    <small>{{ hazard.scope_label or "County fallback" }} · {{ hazard.data_status_label or "Needs review" }}</small>
-                </div>
-                <div>
-                    <small class="text-uppercase fw-semibold">Exposure evidence</small>
-                    <div>
-                        {% if hazard.scope == "address_level" and hazard.is_in_hazard_zone %}
-                        {{ hazard.exposure_level | title }} mapped-zone exposure
-                        {% else %}
-                        Not determined from checked map data
                         {% endif %}
-                    </div>
+                    </article>
+                    {% endfor %}
                 </div>
-                <div>
-                    <small class="text-uppercase fw-semibold">Precision</small>
-                    <div>{{ hazard.location_precision_label or "Needs review" }}</div>
-                </div>
-                <div>
-                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('hazard_detail', name=hazard.slug) }}">
-                        Open page
-                    </a>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</section>
+            </section>
 
+            <section class="sr-hazard-page-roles" aria-labelledby="page-roles-title">
+                <div>
+                    <span class="section-eyebrow">How StayReady is organized</span>
+                    <h2 id="page-roles-title">Use each page for a different job</h2>
+                </div>
+                <div class="sr-hazard-role-grid">
+                    <p><strong>Hazard Library</strong><span>Learn what hazards mean and how they are checked.</span></p>
+                    <p><strong>Risk Summary</strong><span>Review ranked preparedness priorities for your location.</span></p>
+                    <p><strong>Map</strong><span>Explore available geographic layers and nearby context.</span></p>
+                    <p><strong>Sources</strong><span>Read source methodology, review status, and limitations.</span></p>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
 {% endblock %}
