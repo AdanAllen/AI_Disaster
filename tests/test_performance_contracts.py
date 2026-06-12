@@ -148,7 +148,8 @@ class MapPerformanceTests(unittest.TestCase):
         app.config.update(TESTING=True)
         self.client = app.test_client()
 
-    def test_map_keeps_all_existing_layer_controls_and_defers_auto_fetch(self):
+    @patch("app.get_all_hazards")
+    def test_map_keeps_layer_controls_without_running_hazard_checks(self, hazards):
         html = self.client.get("/map").get_data(as_text=True)
         for label in (
             "Wildfire Zones",
@@ -162,6 +163,7 @@ class MapPerformanceTests(unittest.TestCase):
             self.assertIn(label, html)
         self.assertIn("toggleRiskFocus(highestRisk, false)", html)
         self.assertIn("Checking official mapped data", html)
+        hazards.assert_not_called()
 
     def test_wildfire_map_response_is_filtered(self):
         set_test_resident_state(self.client, {
@@ -178,7 +180,8 @@ class MapPerformanceTests(unittest.TestCase):
         self.assertEqual(payload["feature_count"], len(payload["features"]))
         self.assertLess(len(json.dumps(payload)), 9_000_000)
 
-    def test_flood_map_response_is_filtered_simplified_and_address_scoped(self):
+    @patch("app.load_geojson_file")
+    def test_flood_map_response_uses_processed_zip_slice_only(self, raw_loader):
         set_test_resident_state(self.client, {
             "zip_code": "94501",
             "lat": 37.754029,
@@ -192,11 +195,17 @@ class MapPerformanceTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(payload["filtered"])
         self.assertLessEqual(payload["feature_count"], 120)
-        self.assertIn(
-            payload["address_match_status"],
-            {"sfha_match", "other_fema_category", "no_mapped_match"},
-        )
+        self.assertEqual(payload["address_match_status"], "not_checked")
         self.assertLess(len(response.data), 3_000_000)
+        raw_loader.assert_not_called()
+
+    def test_missing_flood_zip_slice_returns_safe_empty_collection(self):
+        response = self.client.get("/api/flood-zones?zip=99999")
+        payload = response.get_json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(payload["features"], [])
+        self.assertEqual(payload["data_status"], "data_unavailable")
+        self.assertIn("map is still usable", payload["message"])
 
 
 if __name__ == "__main__":

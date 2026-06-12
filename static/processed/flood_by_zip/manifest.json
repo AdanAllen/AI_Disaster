@@ -1,0 +1,203 @@
+{
+  "source": "static/FldHaz.geojson",
+  "zip_count": 49,
+  "skipped_invalid_features": 6,
+  "files": {
+    "94502": {
+      "feature_count": 54,
+      "bytes": 96506
+    },
+    "94577": {
+      "feature_count": 69,
+      "bytes": 103881
+    },
+    "94579": {
+      "feature_count": 132,
+      "bytes": 124461
+    },
+    "94603": {
+      "feature_count": 23,
+      "bytes": 25984
+    },
+    "94605": {
+      "feature_count": 14,
+      "bytes": 21558
+    },
+    "94621": {
+      "feature_count": 87,
+      "bytes": 110017
+    },
+    "94501": {
+      "feature_count": 117,
+      "bytes": 220659
+    },
+    "94606": {
+      "feature_count": 31,
+      "bytes": 36758
+    },
+    "94607": {
+      "feature_count": 53,
+      "bytes": 105975
+    },
+    "94610": {
+      "feature_count": 15,
+      "bytes": 15350
+    },
+    "94612": {
+      "feature_count": 6,
+      "bytes": 7661
+    },
+    "94608": {
+      "feature_count": 39,
+      "bytes": 39998
+    },
+    "94609": {
+      "feature_count": 6,
+      "bytes": 6126
+    },
+    "94618": {
+      "feature_count": 6,
+      "bytes": 10495
+    },
+    "94702": {
+      "feature_count": 4,
+      "bytes": 4595
+    },
+    "94703": {
+      "feature_count": 3,
+      "bytes": 4352
+    },
+    "94704": {
+      "feature_count": 2,
+      "bytes": 2963
+    },
+    "94705": {
+      "feature_count": 3,
+      "bytes": 7608
+    },
+    "94709": {
+      "feature_count": 1,
+      "bytes": 1096
+    },
+    "94710": {
+      "feature_count": 49,
+      "bytes": 60757
+    },
+    "94720": {
+      "feature_count": 4,
+      "bytes": 6625
+    },
+    "94601": {
+      "feature_count": 24,
+      "bytes": 33847
+    },
+    "94602": {
+      "feature_count": 13,
+      "bytes": 15652
+    },
+    "94611": {
+      "feature_count": 8,
+      "bytes": 20444
+    },
+    "94613": {
+      "feature_count": 2,
+      "bytes": 1726
+    },
+    "94619": {
+      "feature_count": 3,
+      "bytes": 8233
+    },
+    "94706": {
+      "feature_count": 13,
+      "bytes": 11690
+    },
+    "94707": {
+      "feature_count": 7,
+      "bytes": 6721
+    },
+    "94708": {
+      "feature_count": 2,
+      "bytes": 4387
+    },
+    "94538": {
+      "feature_count": 97,
+      "bytes": 127008
+    },
+    "94555": {
+      "feature_count": 55,
+      "bytes": 60288
+    },
+    "94560": {
+      "feature_count": 72,
+      "bytes": 84008
+    },
+    "94539": {
+      "feature_count": 76,
+      "bytes": 80392
+    },
+    "94550": {
+      "feature_count": 188,
+      "bytes": 209548
+    },
+    "94536": {
+      "feature_count": 36,
+      "bytes": 54548
+    },
+    "94542": {
+      "feature_count": 4,
+      "bytes": 6561
+    },
+    "94544": {
+      "feature_count": 82,
+      "bytes": 116062
+    },
+    "94545": {
+      "feature_count": 101,
+      "bytes": 109021
+    },
+    "94587": {
+      "feature_count": 55,
+      "bytes": 84201
+    },
+    "94541": {
+      "feature_count": 152,
+      "bytes": 119788
+    },
+    "94546": {
+      "feature_count": 97,
+      "bytes": 80145
+    },
+    "94552": {
+      "feature_count": 12,
+      "bytes": 15051
+    },
+    "94578": {
+      "feature_count": 33,
+      "bytes": 41053
+    },
+    "94580": {
+      "feature_count": 292,
+      "bytes": 231384
+    },
+    "94566": {
+      "feature_count": 99,
+      "bytes": 97217
+    },
+    "94568": {
+      "feature_count": 79,
+      "bytes": 72850
+    },
+    "94586": {
+      "feature_count": 19,
+      "bytes": 44850
+    },
+    "94588": {
+      "feature_count": 144,
+      "bytes": 135422
+    },
+    "94551": {
+      "feature_count": 163,
+      "bytes": 169345
+    }
+  }
+}

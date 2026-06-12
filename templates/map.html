@@ -669,6 +669,7 @@
         <div class="map-section">
             <!-- Risk Overview & Controls -->
             <div class="control-panel">
+                {% if structured_hazards %}
                 <details class="map-context-details">
                     <summary>Hazard context for this location</summary>
                 <div class="risk-overview">
@@ -684,6 +685,7 @@
                     {% endfor %}
                 </div>
                 </details>
+                {% endif %}
 
                 <!-- Layer Toggle Controls -->
                 <h3 class="map-layer-heading">Map layers</h3>
@@ -833,6 +835,8 @@
         {% endfor %}
     };
     let activeHazard = null;
+    let floodOverlayFailed = false;
+    let floodWarningShown = false;
 
     function escapeHTML(value) {
         const element = document.createElement('div');
@@ -1120,6 +1124,13 @@
 
     // Load flood zones
     function loadFloodZones() {
+        if (floodOverlayFailed) {
+            setLoadingState('flood', false);
+            document.getElementById('flood-toggle').classList.remove('active');
+            showFloodOverlayWarning();
+            updateActiveLayers();
+            return;
+        }
         const params = new URLSearchParams({
             zip: "{{ zip_code }}"
         });
@@ -1127,8 +1138,10 @@
             .then(response => response.json())
             .then(data => {
                 if (data.error || ['unavailable', 'data_unavailable'].includes(data.data_status)) {
+                    floodOverlayFailed = true;
                     setLoadingState('flood', false);
-                    showLayerMessage(data.message || 'Official layer unavailable — not checked.');
+                    document.getElementById('flood-toggle').classList.remove('active');
+                    showFloodOverlayWarning(data.message);
                     updateActiveLayers();
                     return;
                 }
@@ -1174,7 +1187,24 @@
                 console.log('Flood zones loaded successfully');
                 
             })
-            .catch(error => showError('flood'));
+            .catch(() => {
+                floodOverlayFailed = true;
+                setLoadingState('flood', false);
+                document.getElementById('flood-toggle').classList.remove('active');
+                showFloodOverlayWarning();
+                updateActiveLayers();
+            });
+    }
+
+    function showFloodOverlayWarning(message) {
+        if (floodWarningShown) {
+            return;
+        }
+        floodWarningShown = true;
+        showLayerMessage(
+            message ||
+            'FEMA flood visual overlay is temporarily unavailable. The map is still usable.'
+        );
     }
 
     // Load fault lines

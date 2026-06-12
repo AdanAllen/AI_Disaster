@@ -3,7 +3,7 @@ services:
     name: stayready
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt && python scripts/preprocess_fema_flood.py
     startCommand: gunicorn --workers 2 --threads 4 --timeout 30 app:app
     envVars:
       - key: FLASK_ENV

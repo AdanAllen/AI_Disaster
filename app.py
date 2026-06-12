@@ -4,6 +4,7 @@ from geopy.geocoders import Nominatim
 import requests
 from dotenv import load_dotenv
 import os, json
+import resource
 import tempfile
 from shapely.geometry import Point, mapping, shape
 import pandas as pd
@@ -16,6 +17,7 @@ import secrets
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
+from pathlib import Path
 
 from action_library_service import select_action_ids
 from feedback_forms import (
@@ -1194,6 +1196,21 @@ def load_geojson_file(filename):
         return None
 
 
+def current_process_rss_mb():
+    """Return current process RSS where available, falling back to peak RSS."""
+    try:
+        statm = Path("/proc/self/statm")
+        if statm.exists():
+            resident_pages = int(statm.read_text(encoding="ascii").split()[1])
+            return resident_pages * os.sysconf("SC_PAGE_SIZE") / (1024 * 1024)
+    except (OSError, ValueError, IndexError):
+        pass
+    peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    if os.uname().sysname == "Darwin":
+        return peak / (1024 * 1024)
+    return peak / 1024
+
+
 def usable_geojson_layer(data):
     if (
         not isinstance(data, dict)
@@ -1701,16 +1718,21 @@ def map():
     address = resident_state.get("address")
     location_context = get_session_location_context()
     location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
-    all_map_hazards = get_all_hazards(get_saved_hazard_profile(), location_context)
-    map_hazards = [
-        hazard for hazard in all_map_hazards
-        if hazard.get("slug") in {"wildfire", "flood", "earthquake"}
-    ]
-    cgs_map_evidence = [
-        evidence
-        for hazard in all_map_hazards
-        for evidence in hazard.get("additional_geospatial_evidence", [])
-    ]
+    # Map overlays are loaded independently on demand. Do not run address-level
+    # hazard checks here; the FEMA snapshot is intentionally excluded from map
+    # page request handling because its raw parse can exhaust small instances.
+    map_hazards = []
+    registry = get_default_registry()
+    cgs_map_evidence = []
+    for layer_key, layer in CGS_MAP_LAYERS.items():
+        dataset = registry.get(layer["dataset_id"])
+        if dataset:
+            cgs_map_evidence.append({
+                "map_layer_key": layer_key,
+                "matched": False,
+                "dataset_name": dataset.dataset_name,
+                "source_url": dataset.authoritative_landing_url,
+            })
     map_notice = None
 
     if request.method == "POST":
@@ -2027,64 +2049,80 @@ def api_wildfire_zones():
 @app.route("/api/flood-zones")
 @rate_limit(20, 60)
 def api_flood_zones():
-    """API endpoint for filtered flood hazard zones."""
-    data = load_geojson_file("FldHaz.geojson")
-    if usable_geojson_layer(data):
-        resident_state = get_resident_state()
-        zip_code = request.args.get("zip") or resident_state.get("zip_code")
-        lat = request.args.get("lat") or resident_state.get("lat")
-        lon = request.args.get("lon") or resident_state.get("lon")
-        if zip_code and not valid_zip(zip_code):
-            return jsonify({"error": "Invalid ZIP code."}), 400
-        coordinates = valid_coordinate_pair(lat, lon, COVERAGE_BOUNDS) if lat is not None or lon is not None else None
-        if (lat is not None or lon is not None) and coordinates is None:
-            return jsonify({"error": "Invalid map coordinates."}), 400
-        filter_bounds = build_filter_bounds(
-            zip_code=zip_code,
-            lat=coordinates[0] if coordinates else None,
-            lon=coordinates[1] if coordinates else None,
-            prefer_point=resident_state.get("location_mode") == "address",
-        )
-        filtered = filter_geojson_by_bounds(data, filter_bounds, simplify=True)
-        feature_count = len(filtered.get("features", []))
-        address_check = (
-            check_flood_layer(coordinates[0], coordinates[1])
-            if coordinates and resident_state.get("location_mode") == "address"
-            else None
-        )
-        address_status = "not_checked"
-        if address_check:
-            if address_check.get("sfha_match"):
-                address_status = "sfha_match"
-            elif address_check.get("polygon_match"):
-                address_status = "other_fema_category"
-            else:
-                address_status = "no_mapped_match"
-        filtered.update({
-            "source": "FEMA National Flood Hazard Layer",
-            "feature_count": feature_count,
-            "filtered": bool(filter_bounds),
-            "map_data_status": "checked" if feature_count else "not_in_layer",
-            "address_match_status": address_status,
-            "data_status": "checked" if feature_count else "not_in_layer",
-            "message": (
-                f"Showing {feature_count} nearby FEMA polygons for map context. "
-                "The address-point match is reported separately."
-                if feature_count else
-                "No FEMA polygons were returned for the selected map window in this dataset. "
-                "This does not establish overall flood risk or rule out other flooding impacts."
-            ),
-        })
-        return jsonify(filtered)
-    return jsonify({
+    """Serve a preprocessed ZIP slice without parsing the raw FEMA dataset."""
+    resident_state = get_resident_state()
+    zip_code = request.args.get("zip") or resident_state.get("zip_code")
+    if not zip_code or not valid_zip(zip_code):
+        return jsonify({"error": "Invalid ZIP code."}), 400
+
+    processed_path = (
+        Path(BASE_DIR) / "static" / "processed" / "flood_by_zip"
+        / f"{zip_code}.geojson"
+    )
+    logger.info(
+        "Flood overlay request zip=%s rss_before_mb=%.1f file=%s",
+        zip_code,
+        current_process_rss_mb(),
+        processed_path,
+    )
+    unavailable = {
         "type": "FeatureCollection",
         "features": [],
         "source": "FEMA National Flood Hazard Layer",
         "feature_count": 0,
         "filtered": True,
         "data_status": "data_unavailable",
-        "message": "Official layer unavailable — not checked."
-    })
+        "map_data_status": "data_unavailable",
+        "address_match_status": "not_checked",
+        "message": (
+            "FEMA flood visual overlay is temporarily unavailable. "
+            "The map is still usable."
+        ),
+    }
+    try:
+        if not processed_path.is_file():
+            return jsonify(unavailable)
+        if processed_path.stat().st_size > 4_000_000:
+            logger.warning("Flood ZIP slice exceeds safe file limit: %s", processed_path)
+            return jsonify(unavailable)
+        with processed_path.open("r", encoding="utf-8") as source:
+            data = json.load(source)
+        if not usable_geojson_layer(data):
+            return jsonify(unavailable)
+
+        features = data.get("features", [])
+        payload = {
+            "type": "FeatureCollection",
+            "features": features,
+            "source": "FEMA National Flood Hazard Layer",
+            "feature_count": len(features),
+            "filtered": True,
+            "data_status": "checked",
+            "map_data_status": "checked",
+            "address_match_status": "not_checked",
+            "message": (
+                f"Showing {len(features)} simplified FEMA polygons for ZIP {zip_code}. "
+                "This display does not determine property safety."
+            ),
+        }
+        encoded = json.dumps(payload, separators=(",", ":")).encode("utf-8")
+        if len(encoded) > 2_500_000:
+            logger.warning(
+                "Flood response exceeds safe limit zip=%s bytes=%s",
+                zip_code,
+                len(encoded),
+            )
+            return jsonify(unavailable)
+        return app.response_class(encoded, mimetype="application/json")
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        logger.exception("Unable to serve processed FEMA flood slice for ZIP %s", zip_code)
+        return jsonify(unavailable)
+    finally:
+        logger.info(
+            "Flood overlay request zip=%s rss_after_mb=%.1f",
+            zip_code,
+            current_process_rss_mb(),
+        )
 
 # Fault lines API
 @app.route("/api/fault-lines")
