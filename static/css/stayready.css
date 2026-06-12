@@ -2919,6 +2919,12 @@
     font-size: 0.76rem;
 }
 
+.footer-compact .footer-copyright {
+    margin-top: 0.4rem;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 0.72rem;
+}
+
 .footer-compact nav {
     display: flex;
     gap: 1.25rem;

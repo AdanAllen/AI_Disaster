@@ -6,7 +6,7 @@
     <title>{% block title %}Stay Ready Now{% endblock %}</title>
     <meta name="description" content="{% block meta_description %}Alameda County disaster preparedness tools, risk maps, and emergency planning resources.{% endblock %}" />
     <meta name="robots" content="index, follow" />
-    <meta name="theme-color" content="#10243b" />
+    <meta name="theme-color" content="#00C47A" />
     {% block canonical %}{% endblock %}
 
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" sizes="any" />
@@ -478,8 +478,8 @@
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('home') }}">
                 <span class="brand-mark">
-                    <img src="{{ url_for('static', filename='favicon-48x48.png') }}"
-                         width="48" height="48" alt="" />
+                    <img src="{{ url_for('static', filename='logo-mark.png') }}"
+                         width="44" height="44" alt="" />
                 </span>
                 <span class="brand-copy">
                     <span class="brand-name">Stay Ready Now</span>
@@ -557,11 +557,12 @@
             <div class="footer-compact">
                 <div>
                     <span class="footer-brand">
-                        <img src="{{ url_for('static', filename='favicon-48x48.png') }}"
-                             width="48" height="48" alt="" />
+                        <img src="{{ url_for('static', filename='logo-mark.png') }}"
+                             width="32" height="32" alt="" />
                         Stay Ready Now
                     </span>
                     <p>Official public information from federal, state, and local agencies. StayReady is educational and is not an official emergency service.</p>
+                    <p class="footer-copyright">&copy; 2026 StayReadyNow. All rights reserved.</p>
                 </div>
                 <nav aria-label="Footer">
                     <a href="{{ url_for('sources') }}">Data sources</a>
