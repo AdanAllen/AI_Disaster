@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Contact and Feedback | Stay Ready Now{% endblock %}
+{% block meta_description %}Share product feedback, report confusing or incorrect information, or ask about using StayReady with an Alameda County community organization.{% endblock %}
+
+{% block content %}
+<section class="sr-feedback-hero">
+    <div class="container">
+        <span class="section-eyebrow">Contact and feedback</span>
+        <h1>Help improve StayReady</h1>
+        <p>Help improve StayReady by sharing feedback, reporting confusing information, or asking about community use.</p>
+        <div class="sr-emergency-notice" role="alert">
+            <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+            <div>
+                <strong>Do not use this form for emergencies.</strong>
+                For immediate danger, call 911. For official alerts and evacuation information, use
+                <a href="https://www.acalert.org/" target="_blank" rel="noopener noreferrer">AC Alert</a>
+                and local emergency agencies.
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="sr-feedback-section">
+    <div class="container">
+        {% if submission_status in ["success", "organization_success"] %}
+        <div class="alert alert-success" role="status">
+            Thank you. Your message was received for review. StayReady does not monitor this form for emergencies.
+        </div>
+        {% elif submission_status in ["invalid", "organization_invalid"] %}
+        <div class="alert alert-danger" role="alert">
+            Please review the required fields and try again. No information was saved.
+        </div>
+        {% elif submission_status == "unavailable" %}
+        <div class="alert alert-warning" role="alert">
+            This form is temporarily unavailable. Your message was not saved. Please try again later.
+        </div>
+        {% elif submission_status == "rate_limited" %}
+        <div class="alert alert-warning" role="alert">
+            Too many submissions were received from this connection. Please wait ten minutes and try again. Do not use this form for emergencies.
+        </div>
+        {% endif %}
+
+        <div class="sr-feedback-grid">
+            <article class="surface-card sr-feedback-card">
+                <span class="section-eyebrow">Product feedback</span>
+                <h2>Share a question or report an issue</h2>
+                <p>Use a category that best describes your message. Email is optional unless you are asking for a reply or follow-up.</p>
+
+                <form method="post" action="{{ url_for('submit_feedback') }}" novalidate>
+                    {{ feedback_form.hidden_tag() }}
+                    <div class="sr-honeypot" aria-hidden="true">
+                        {{ feedback_form.website.label }}
+                        {{ feedback_form.website(tabindex="-1", autocomplete="off") }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ feedback_form.category.label(class="form-label") }}
+                        {{ feedback_form.category(class="form-select") }}
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            {{ feedback_form.name.label(class="form-label") }}
+                            {{ feedback_form.name(class="form-control", autocomplete="name", maxlength="100") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ feedback_form.email.label(class="form-label") }}
+                            {{ feedback_form.email(class="form-control", type="email", autocomplete="email", maxlength="254") }}
+                            <div class="form-text">Required for questions and follow-up requests.</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        {{ feedback_form.message.label(class="form-label") }}
+                        {{ feedback_form.message(class="form-control", rows="7", maxlength="2000", placeholder="Describe what you saw and what would make it clearer. Do not include an address, medical details, or an emergency report.") }}
+                        <div class="form-text">Maximum 2,000 characters. Submissions are private and are not displayed publicly.</div>
+                    </div>
+                    <button class="btn btn-primary" type="submit">Send feedback</button>
+                </form>
+            </article>
+
+            <article class="surface-card sr-feedback-card" id="community-interest">
+                <span class="section-eyebrow">Community interest</span>
+                <h2>Interested in using StayReady with your community?</h2>
+                <p>Tell us about your school, nonprofit, faith or community center, CERT group, or neighborhood organization.</p>
+
+                <form method="post" action="{{ url_for('submit_feedback') }}" novalidate>
+                    {{ organization_form.hidden_tag() }}
+                    <div class="sr-honeypot" aria-hidden="true">
+                        {{ organization_form.website.label }}
+                        {{ organization_form.website(tabindex="-1", autocomplete="off") }}
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            {{ organization_form.name.label(class="form-label") }}
+                            {{ organization_form.name(class="form-control", autocomplete="name", maxlength="100", required=true) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ organization_form.email.label(class="form-label") }}
+                            {{ organization_form.email(class="form-control", type="email", autocomplete="email", maxlength="254", required=true) }}
+                        </div>
+                        <div class="col-md-7">
+                            {{ organization_form.organization.label(class="form-label") }}
+                            {{ organization_form.organization(class="form-control", autocomplete="organization", maxlength="160", required=true) }}
+                        </div>
+                        <div class="col-md-5">
+                            {{ organization_form.role.label(class="form-label") }}
+                            {{ organization_form.role(class="form-control", autocomplete="organization-title", maxlength="100", required=true) }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        {{ organization_form.interest_type.label(class="form-label") }}
+                        {{ organization_form.interest_type(class="form-select") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ organization_form.message.label(class="form-label") }}
+                        {{ organization_form.message(class="form-control", rows="6", maxlength="2000", required=true) }}
+                    </div>
+                    <button class="btn btn-primary" type="submit">Share community interest</button>
+                </form>
+            </article>
+        </div>
+
+        <p class="sr-feedback-privacy">
+            StayReady collects only the information needed to review your message.
+            Read the <a href="{{ url_for('privacy_basics') }}">Privacy policy</a> and
+            <a href="{{ url_for('terms') }}">Terms</a>.
+        </p>
+    </div>
+</section>
+{% endblock %}

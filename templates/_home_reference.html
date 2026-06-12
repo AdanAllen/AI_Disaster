@@ -150,4 +150,55 @@
             <div class="sr-home-safety-note"><strong><i class="fas fa-star"></i> Prepared today. Safer tomorrow.</strong><span>StayReady is educational and does not replace official alerts or emergency instructions.</span><a href="#get-started">Start preparing <i class="fas fa-chevron-right"></i></a></div>
         </div>
     </section>
+
+    <section class="sr-interest-section" id="updates" aria-labelledby="updates-title">
+        <div class="container">
+            <div class="sr-interest-grid">
+                <article class="sr-interest-copy">
+                    <span class="section-eyebrow">Stay connected</span>
+                    <h2 id="updates-title">Get StayReady updates</h2>
+                    <p>Receive product updates, preparedness resources, and launch news.</p>
+                    <p class="sr-interest-note">No emergency alerts. No sensitive household details. You can request removal before any campaign provider is used.</p>
+                </article>
+                <form class="sr-interest-form" method="post" action="{{ url_for('subscribe_updates') }}" novalidate>
+                    {{ update_form.hidden_tag() }}
+                    <div class="sr-honeypot" aria-hidden="true">
+                        {{ update_form.website.label }}
+                        {{ update_form.website(tabindex="-1", autocomplete="off") }}
+                    </div>
+                    {% if update_status == "success" %}
+                    <div class="alert alert-success py-2" role="status">Thanks. Your update interest was recorded.</div>
+                    {% elif update_status == "rate_limited" %}
+                    <div class="alert alert-warning py-2" role="alert">Too many signup attempts were received. Please wait ten minutes and try again.</div>
+                    {% endif %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ update_form.email.label(class="form-label") }}
+                            {{ update_form.email(class="form-control", type="email", autocomplete="email", maxlength="254", required=true) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ update_form.location.label(class="form-label") }}
+                            {{ update_form.location(class="form-control", autocomplete="address-level2", maxlength="100", placeholder="Oakland or 94601") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ update_form.user_type.label(class="form-label") }}
+                            {{ update_form.user_type(class="form-select") }}
+                        </div>
+                        <div class="col-md-6 sr-interest-consent">
+                            <label>{{ update_form.consent(required=true) }} <span>{{ update_form.consent.label.text }}</span></label>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary mt-3" type="submit">Join the update list</button>
+                </form>
+                <aside class="sr-community-cta">
+                    <span><i class="fas fa-people-group" aria-hidden="true"></i></span>
+                    <div>
+                        <h2>Interested in using StayReady with your community?</h2>
+                        <p>Share interest in a feedback call, demo, pilot, sponsorship discussion, or partnership conversation.</p>
+                        <a href="/feedback?page_context=home#community-interest">Tell us about your organization <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </section>
 </div>

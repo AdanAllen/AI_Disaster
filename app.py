@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, flash, render_template, request, redirect, url_for, session, jsonify
 from cachelib import FileSystemCache
 from geopy.geocoders import Nominatim
 import requests
@@ -14,9 +14,17 @@ from flask import send_from_directory
 import re
 import secrets
 from copy import deepcopy
+from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 
 from action_library_service import select_action_ids
+from feedback_forms import (
+    FEEDBACK_CATEGORIES,
+    SAFE_PAGE_CONTEXTS,
+    FeedbackForm,
+    OrganizationInterestForm,
+    UpdateInterestForm,
+)
 from geospatial.registry import DatasetRegistryError, get_default_registry
 from geospatial.service import GeospatialEvidenceService
 from hazard_engine import build_hazard_results, check_flood_layer, merge_structured_result
@@ -24,10 +32,12 @@ from location_service import location_from_session
 from rag_service import retrieve_chunks
 from resident_guidance_engine import build_resident_plan
 from source_registry import load_hazard_registry, load_jurisdictions, load_local_plans, load_resident_guidance_chunks, source_records_payload
+from submission_repository import save_email_interest, save_feedback_submission
 from supabase_repository import supabase_health as get_supabase_health
 from security_utils import (
     ALLOWED_CGS_LAYER_KEYS,
     ALLOWED_HAZARD_SLUGS,
+    form_rate_limit,
     rate_limit,
     safe_next_url,
     valid_address,
@@ -51,6 +61,7 @@ app.config.update(
     SESSION_COOKIE_SAMESITE="Lax",
     SESSION_COOKIE_SECURE=IS_PRODUCTION,
     SESSION_COOKIE_NAME="stayready_session",
+    WTF_CSRF_TIME_LIMIT=3600,
 )
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_LAT = 37.75
@@ -66,6 +77,15 @@ ZIP_FALLBACK_LIMITATION = (
     "Legacy ZIP values are used only to order fallback context. They do not determine "
     "address exposure or safety."
 )
+FEEDBACK_ADMIN_TAGS = {
+    "general_feedback": "resident_feedback",
+    "confusing_language": "resident_feedback",
+    "incorrect_source": "bug_source_report",
+    "organization_demo": "organization_lead",
+    "partnership_sponsorship": "partnership",
+    "other_question": "advisor_lead",
+}
+UPDATE_CONSENT_VERSION = "2026-06-11"
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -644,6 +664,35 @@ def safe_render(template_name, **context):
             helper_message="This page is temporarily unavailable. You can keep using the rest of the app.",
             **base_context
         ), 200
+
+
+def normalize_public_text(value):
+    text = str(value or "").strip()
+    return text or None
+
+
+def normalize_email(value):
+    return str(value or "").strip().lower()
+
+
+def safe_feedback_context(value):
+    context = str(value or "").strip()
+    return context if context in SAFE_PAGE_CONTEXTS else "feedback"
+
+
+def safe_feedback_category(value):
+    allowed = {item[0] for item in FEEDBACK_CATEGORIES}
+    category = str(value or "").strip()
+    return category if category in allowed else "general_feedback"
+
+
+def feedback_redirect(status, page_context="feedback", category="general_feedback"):
+    return redirect(url_for(
+        "feedback",
+        status=status,
+        page_context=safe_feedback_context(page_context),
+        category=safe_feedback_category(category),
+    ))
 
 
 def get_default_hazards():
@@ -1304,11 +1353,162 @@ def home():
         error=error,
         form_data=None,
         location_context=location_context,
+        update_form=UpdateInterestForm(prefix="updates"),
+        update_status=request.args.get("updates", ""),
         homepage_action_examples=get_action_items([
             "portable_go_bag",
             "protect_critical_documents",
         ]),
     )
+
+
+@app.post("/updates/subscribe")
+@form_rate_limit(
+    5,
+    10 * 60,
+    "home",
+    {"updates": "rate_limited"},
+    anchor="#updates",
+)
+def subscribe_updates():
+    form = UpdateInterestForm(prefix="updates")
+    if not form.validate_on_submit():
+        flash(
+            "Please check the update signup fields and try again. No information was saved.",
+            "error",
+        )
+        return redirect(url_for("home") + "?updates=invalid#updates")
+
+    if form.website.data:
+        return redirect(url_for("home") + "?updates=success#updates")
+
+    now = datetime.now(timezone.utc).isoformat()
+    saved = save_email_interest({
+        "email": normalize_email(form.email.data),
+        "location": normalize_public_text(form.location.data),
+        "user_type": normalize_public_text(form.user_type.data),
+        "consent_version": UPDATE_CONSENT_VERSION,
+        "consented_at": now,
+        "subscription_status": "subscribed",
+        "source": "homepage",
+        "updated_at": now,
+    })
+    if not saved:
+        flash(
+            "Update signup is temporarily unavailable. Please try again later.",
+            "error",
+        )
+        return redirect(url_for("home") + "?updates=unavailable#updates")
+
+    return redirect(url_for("home") + "?updates=success#updates")
+
+
+@app.get("/feedback")
+def feedback():
+    page_context = safe_feedback_context(request.args.get("page_context"))
+    category = safe_feedback_category(request.args.get("category"))
+    feedback_form = FeedbackForm(
+        prefix="feedback",
+        data={"page_context": page_context, "category": category},
+    )
+    organization_form = OrganizationInterestForm(
+        prefix="organization",
+        data={"page_context": page_context},
+    )
+    return safe_render(
+        "feedback.html",
+        feedback_form=feedback_form,
+        organization_form=organization_form,
+        page_context=page_context,
+        submission_status=request.args.get("status", ""),
+    )
+
+
+@app.post("/feedback")
+@form_rate_limit(
+    5,
+    10 * 60,
+    "feedback",
+    {"status": "rate_limited"},
+)
+def submit_feedback():
+    is_feedback = request.form.get("feedback-form_kind") == "feedback"
+    is_organization = request.form.get("organization-form_kind") == "organization"
+
+    if is_feedback:
+        form = FeedbackForm(prefix="feedback")
+        page_context = safe_feedback_context(form.page_context.data)
+        category = safe_feedback_category(form.category.data)
+        if not form.validate_on_submit():
+            return feedback_redirect("invalid", page_context, category)
+        if form.website.data:
+            return feedback_redirect("success", page_context, category)
+
+        retention_days = 730 if category in {
+            "organization_demo",
+            "partnership_sponsorship",
+        } else 365
+        saved = save_feedback_submission({
+            "submission_category": category,
+            "admin_tag": FEEDBACK_ADMIN_TAGS[category],
+            "name": normalize_public_text(form.name.data),
+            "email": normalize_email(form.email.data) or None,
+            "organization": None,
+            "role": None,
+            "interest_type": None,
+            "message": form.message.data.strip(),
+            "page_context": page_context,
+            "review_status": "new",
+            "retention_expires_at": (
+                datetime.now(timezone.utc) + timedelta(days=retention_days)
+            ).isoformat(),
+        })
+        return feedback_redirect(
+            "success" if saved else "unavailable",
+            page_context,
+            category,
+        )
+
+    if is_organization:
+        form = OrganizationInterestForm(prefix="organization")
+        page_context = safe_feedback_context(form.page_context.data)
+        if not form.validate_on_submit():
+            return feedback_redirect("organization_invalid", page_context)
+        if form.website.data:
+            return feedback_redirect("organization_success", page_context)
+
+        interest_type = form.interest_type.data
+        admin_tag = (
+            "partnership"
+            if interest_type in {"sponsorship", "partnership"}
+            else "organization_lead"
+        )
+        saved = save_feedback_submission({
+            "submission_category": "community_interest",
+            "admin_tag": admin_tag,
+            "name": form.name.data.strip(),
+            "email": normalize_email(form.email.data),
+            "organization": form.organization.data.strip(),
+            "role": form.role.data.strip(),
+            "interest_type": interest_type,
+            "message": form.message.data.strip(),
+            "page_context": page_context,
+            "review_status": "new",
+            "retention_expires_at": (
+                datetime.now(timezone.utc) + timedelta(days=730)
+            ).isoformat(),
+        })
+        return feedback_redirect(
+            "organization_success" if saved else "unavailable",
+            page_context,
+        )
+
+    return feedback_redirect("invalid")
+
+
+@app.get("/contact")
+def contact():
+    return redirect(url_for("feedback"), code=302)
 
 
 @app.route("/hazards/profile", methods=["POST"])
@@ -1557,6 +1757,11 @@ def about():
 @app.route("/privacy")
 def privacy_basics():
     return safe_render("privacy.html")
+
+
+@app.route("/terms")
+def terms():
+    return safe_render("terms.html")
 
 
 @app.route('/sitemap.xml')

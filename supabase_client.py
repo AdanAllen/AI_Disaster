@@ -13,11 +13,11 @@ def get_supabase_config_status() -> dict:
     key = (os.getenv("SUPABASE_ANON_KEY") or "").strip()
     return {
         "enabled": supabase_enabled(),
-        "configured": bool(url and key and _is_valid_project_url(url)),
+        "configured": bool(url and key and is_valid_project_url(url)),
     }
 
 
-def _is_valid_project_url(url: str) -> bool:
+def is_valid_project_url(url: str) -> bool:
     parsed = urlparse(url)
     if parsed.scheme != "https":
         return False
@@ -35,7 +35,7 @@ def get_supabase_client() -> Optional[object]:
 
     url = (os.getenv("SUPABASE_URL") or "").strip().rstrip("/")
     key = (os.getenv("SUPABASE_ANON_KEY") or "").strip()
-    if not url or not key or not _is_valid_project_url(url):
+    if not url or not key or not is_valid_project_url(url):
         return None
 
     try:

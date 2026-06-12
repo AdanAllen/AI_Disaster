@@ -71,3 +71,30 @@ For every scenario, confirm:
 - With `SUPABASE_ENABLED=false`, local JSON fallback still works.
 - No React, Next.js, Vite, Tailwind, or shadcn dependencies are added.
 - Supabase keys are not committed.
+
+## Feedback And Interest Sprint
+
+- `/feedback` shows the emergency warning before both forms.
+- `/contact` redirects to `/feedback`.
+- `/terms` clearly states that StayReady is not an emergency service.
+- Homepage update signup collects only email, optional ZIP/city, optional user type, and explicit consent.
+- Feedback links from summary, map, and sources preserve only an allowlisted page context and category.
+- Invalid CSRF tokens, unknown categories, malformed email, control characters, and oversized messages are rejected.
+- A completed honeypot returns the normal success state without storing a record.
+- A Supabase outage never shows a success message.
+- Submitted names, emails, messages, IP addresses, user agents, and full request bodies are not logged.
+- Desktop and mobile layouts keep labels, emergency language, errors, and success states readable.
+
+## Review And Retention Workflow
+
+Weekly:
+- Open the private Supabase dashboard and filter `feedback_submissions` by `review_status = new`.
+- Review by `admin_tag`: resident feedback, bug/source report, organization lead, advisor lead, partnership, or spam.
+- Change records to `reviewing`, `follow_up`, `closed`, or `spam`; never copy sensitive content into public issues.
+- Review `email_interests` only for aggregate interest and export preparation.
+
+Quarterly:
+- Delete feedback rows whose `retention_expires_at` has passed.
+- Remove update-list records when a deletion or unsubscribe request has been verified.
+- Confirm no `anon` or `authenticated` RLS policies grant access to either submissions table.
+- Before sending any update campaign, export only `subscription_status = subscribed` contacts to a provider with a functioning unsubscribe mechanism.

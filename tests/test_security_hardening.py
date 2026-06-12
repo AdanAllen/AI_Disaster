@@ -76,6 +76,7 @@ class SecurityRouteTests(unittest.TestCase):
         )
         for secret_name in (
             "SUPABASE_ANON_KEY",
+            "SUPABASE_SECRET_KEY",
             "SUPABASE_SERVICE_ROLE",
             "FLASK_SECRET_KEY",
         ):
@@ -99,6 +100,7 @@ class SecurityRouteTests(unittest.TestCase):
         env_example = (BASE_DIR / ".env.example").read_text(encoding="utf-8")
         self.assertNotIn("service_role", env_example.lower())
         self.assertNotIn("SUPABASE_SERVICE_ROLE", env_example)
+        self.assertIn("SUPABASE_SECRET_KEY", env_example)
         self.assertFalse((BASE_DIR / ".env").is_file() and os.getenv("CI") == "true")
 
 

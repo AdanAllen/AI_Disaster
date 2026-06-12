@@ -142,7 +142,29 @@ def rate_limit(limit, window_seconds):
     return decorator
 
 
+def form_rate_limit(limit, window_seconds, endpoint, status_value, anchor=""):
+    def decorator(function):
+        @wraps(function)
+        def wrapped(*args, **kwargs):
+            now = time.monotonic()
+            key = (function.__name__, client_key())
+            with _rate_lock:
+                bucket = _rate_buckets[key]
+                while bucket and bucket[0] <= now - window_seconds:
+                    bucket.popleft()
+                if len(bucket) >= limit:
+                    retry_after = max(1, int(window_seconds - (now - bucket[0])))
+                    location = url_for(endpoint, **status_value)
+                    response = redirect(f"{location}{anchor}")
+                    response.status_code = 302
+                    response.headers["Retry-After"] = str(retry_after)
+                    return response
+                bucket.append(now)
+            return function(*args, **kwargs)
+        return wrapped
+    return decorator
+
+
 def reset_rate_limits():
     with _rate_lock:
         _rate_buckets.clear()
-
