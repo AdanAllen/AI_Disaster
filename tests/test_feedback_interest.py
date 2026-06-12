@@ -321,6 +321,24 @@ class SubmissionRepositoryTests(unittest.TestCase):
         self.assertNotIn("create policy", sql)
         self.assertIn("grant select, insert, update, delete", sql)
 
+    @patch.dict(
+        "os.environ",
+        {
+            "SUPABASE_URL": "https://example.supabase.co",
+            "SUPABASE_SECRET_KEY": "test-secret",
+        },
+        clear=False,
+    )
+    def test_submission_config_status_reports_only_booleans(self):
+        status = submission_repository.get_submission_config_status()
+        self.assertEqual(status, {
+            "configured": True,
+            "project_url_configured": True,
+            "secret_key_configured": True,
+        })
+        self.assertNotIn("example.supabase.co", repr(status))
+        self.assertNotIn("test-secret", repr(status))
+
 
 if __name__ == "__main__":
     unittest.main()

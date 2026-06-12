@@ -82,6 +82,7 @@ class SecurityRouteTests(unittest.TestCase):
         ):
             self.assertNotIn(secret_name, combined)
         self.assertNotIn(".supabase.co", combined)
+        self.assertIn('"submission_backend"', combined)
 
     def test_templates_escape_user_controlled_address(self):
         set_test_resident_state(self.client, {

@@ -7,11 +7,21 @@ from supabase import create_client
 from supabase_client import is_valid_project_url
 
 
+def get_submission_config_status() -> Dict:
+    url = (os.getenv("SUPABASE_URL") or "").strip()
+    secret_key = (os.getenv("SUPABASE_SECRET_KEY") or "").strip()
+    return {
+        "configured": bool(url and secret_key and is_valid_project_url(url)),
+        "project_url_configured": bool(url and is_valid_project_url(url)),
+        "secret_key_configured": bool(secret_key),
+    }
+
+
 @lru_cache(maxsize=1)
 def get_submission_client() -> Optional[object]:
     url = (os.getenv("SUPABASE_URL") or "").strip().rstrip("/")
     secret_key = (os.getenv("SUPABASE_SECRET_KEY") or "").strip()
-    if not url or not secret_key or not is_valid_project_url(url):
+    if not get_submission_config_status()["configured"]:
         return None
 
     try:

@@ -32,7 +32,11 @@ from location_service import location_from_session
 from rag_service import retrieve_chunks
 from resident_guidance_engine import build_resident_plan
 from source_registry import load_hazard_registry, load_jurisdictions, load_local_plans, load_resident_guidance_chunks, source_records_payload
-from submission_repository import save_email_interest, save_feedback_submission
+from submission_repository import (
+    get_submission_config_status,
+    save_email_interest,
+    save_feedback_submission,
+)
 from supabase_repository import supabase_health as get_supabase_health
 from security_utils import (
     ALLOWED_CGS_LAYER_KEYS,
@@ -1394,6 +1398,11 @@ def subscribe_updates():
         "updated_at": now,
     })
     if not saved:
+        status = get_submission_config_status()
+        logger.warning(
+            "Update signup failed. Submission backend configured=%s.",
+            status["configured"],
+        )
         flash(
             "Update signup is temporarily unavailable. Please try again later.",
             "error",
@@ -1463,6 +1472,12 @@ def submit_feedback():
                 datetime.now(timezone.utc) + timedelta(days=retention_days)
             ).isoformat(),
         })
+        if not saved:
+            status = get_submission_config_status()
+            logger.warning(
+                "Feedback submission failed. Submission backend configured=%s.",
+                status["configured"],
+            )
         return feedback_redirect(
             "success" if saved else "unavailable",
             page_context,
@@ -1498,6 +1513,12 @@ def submit_feedback():
                 datetime.now(timezone.utc) + timedelta(days=730)
             ).isoformat(),
         })
+        if not saved:
+            status = get_submission_config_status()
+            logger.warning(
+                "Organization submission failed. Submission backend configured=%s.",
+                status["configured"],
+            )
         return feedback_redirect(
             "organization_success" if saved else "unavailable",
             page_context,
@@ -1795,6 +1816,7 @@ def sources():
 
 @app.route("/api/health")
 def api_health():
+    submission_status = get_submission_config_status()
     return jsonify({
         "ok": True,
         "app": "StayReady",
@@ -1803,6 +1825,9 @@ def api_health():
         "source_count": len(source_records_payload()),
         "local_plan_count": len(load_local_plans()),
         "resident_guidance_count": len(load_resident_guidance_chunks()),
+        "submission_backend": {
+            "configured": submission_status["configured"],
+        },
     })
 
 
