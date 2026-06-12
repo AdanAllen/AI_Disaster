@@ -1,178 +1,242 @@
 {% extends "base.html" %}
 
-{% block title %}Source Registry | Stay Ready Now{% endblock %}
-
-{% block head %}
-<style>
-    .sources-hero {
-        padding: 4.5rem 0 3rem;
-        background: linear-gradient(135deg, #14324f, #2a6f97);
-        color: white;
-    }
-
-    .source-section {
-        padding: 4rem 0;
-    }
-
-    .source-table-card {
-        background: white;
-        border: 1px solid var(--border-soft);
-        border-radius: 18px;
-        box-shadow: var(--shadow-soft);
-        overflow: hidden;
-    }
-
-    .source-table {
-        margin-bottom: 0;
-    }
-
-    .source-table th {
-        color: var(--brand-ink);
-        font-size: 0.82rem;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        background: #f3f7fa;
-    }
-
-    .source-table td {
-        vertical-align: top;
-        color: var(--text-main);
-    }
-
-    .source-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.34rem 0.62rem;
-        border-radius: 999px;
-        background: #edf4f8;
-        color: #26475f;
-        font-size: 0.82rem;
-        font-weight: 800;
-        margin: 0 0.25rem 0.25rem 0;
-    }
-
-    .registry-note {
-        border: 1px solid #cbdce9;
-        background: #f4f9fc;
-        border-radius: 16px;
-        padding: 1.2rem 1.35rem;
-        color: #36536b;
-    }
-</style>
-{% endblock %}
+{% block title %}Data Sources and Methods | Stay Ready Now{% endblock %}
+{% block meta_description %}See the official hazard data, preparedness guidance, local plans, review status, and limitations used by StayReady.{% endblock %}
 
 {% block content %}
-<section class="sources-hero">
+<div class="sr-page">
+<header class="sr-sources-hero">
     <div class="container">
-        <span class="section-eyebrow text-white-50">Source Registry</span>
-        <h1 class="display-4 fw-bold mb-3">What StayReady is using</h1>
-        <p class="lead mb-0">This page shows the official sources and reviewed guidance that support the demo. Address-level hazard checks, jurisdiction context, and fallback guidance are labeled separately.</p>
-    </div>
-</section>
-
-<section class="source-section">
-    <div class="container">
-        <div class="registry-note mb-4">
-            <strong>Precision rule:</strong>
-            GIS layers determine address-level checks. ZIP data is fallback context only, and countywide guidance is used only when stronger location evidence is unavailable.
-        </div>
-
-        <div class="source-table-card">
-            <div class="table-responsive">
-                <table class="table source-table align-middle">
-                    <thead>
-                        <tr>
-                            <th>Source</th>
-                            <th>Agency</th>
-                            <th>Hazards</th>
-                            <th>Geography</th>
-                            <th>Use</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for source in sources %}
-                        <tr>
-                            <td>
-                                <a class="fw-bold" href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.name }}</a>
-                                <div class="small text-muted">{{ source.source_type }}</div>
-                            </td>
-                            <td>{{ source.agency }}</td>
-                            <td>
-                                {% for hazard in source.hazards %}
-                                <span class="source-badge">{{ hazard }}</span>
-                                {% endfor %}
-                            </td>
-                            <td>{{ source.geographic_scope }}</td>
-                            <td>{{ source.use_in_app }}</td>
-                            <td>
-                                <span class="source-badge">{{ source.review_status }}</span>
-                                <span class="source-badge">{{ source.confidence }}</span>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="mt-5 mb-4">
-            <h2 class="h3 fw-bold mb-2">Local plan coverage audit</h2>
-            <p class="text-muted mb-0">
-                StayReady includes every incorporated Alameda County city plus unincorporated county in this audit.
-                City-specific hazard claims are only shown when reviewed or draft-reviewed source chunks exist.
-            </p>
-        </div>
-
-        <div class="source-table-card">
-            <div class="table-responsive">
-                <table class="table source-table align-middle">
-                    <thead>
-                        <tr>
-                            <th>Jurisdiction</th>
-                            <th>Plan / Source</th>
-                            <th>Hazards Covered</th>
-                            <th>Status</th>
-                            <th>Notes</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for plan in local_plans %}
-                        <tr>
-                            <td>
-                                <strong>{{ plan.name }}</strong>
-                                <div class="small text-muted">{{ plan.jurisdiction_type }}</div>
-                            </td>
-                            <td>
-                                {% if plan.url %}
-                                <a class="fw-bold" href="{{ plan.url }}" target="_blank" rel="noopener noreferrer">{{ plan.plan_name }}</a>
-                                {% else %}
-                                <strong>{{ plan.plan_name }}</strong>
-                                {% endif %}
-                                <div class="small text-muted">{{ plan.plan_group }}</div>
-                            </td>
-                            <td>
-                                {% if plan.hazards %}
-                                {% for hazard in plan.hazards %}
-                                <span class="source-badge">{{ hazard }}</span>
-                                {% endfor %}
-                                {% else %}
-                                <span class="source-badge">not reviewed</span>
-                                {% endif %}
-                            </td>
-                            <td><span class="source-badge">{{ plan.review_status }}</span></td>
-                            <td>{{ plan.notes }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="registry-note mt-4">
-            See incorrect or outdated source information?
-            <a class="fw-bold" href="/feedback?category=incorrect_source&amp;page_context=sources">Report a source issue</a>.
+        <span class="section-eyebrow">Data sources and methods</span>
+        <h1>See what StayReady uses and how</h1>
+        <p>
+            Explore the official map layers, public guidance, and local plans behind StayReady.
+            Each entry explains what the source supports, where it applies, and what still needs review.
+        </p>
+        <div class="sr-sources-stats" aria-label="Source registry summary">
+            <div><strong>{{ counts.registered }}</strong><span>registered sources</span></div>
+            <div><strong>{{ counts.mapped }}</strong><span>mapped data sources</span></div>
+            <div><strong>{{ counts.guidance }}</strong><span>guidance sources</span></div>
+            <div><strong>{{ counts.jurisdictions }}</strong><span>jurisdictions covered</span></div>
         </div>
     </div>
-</section>
+</header>
+
+<main class="sr-sources-main">
+    <div class="container">
+        <section class="sr-sources-explainer" aria-labelledby="sources-reading-title">
+            <div>
+                <span class="section-eyebrow">How to read this page</span>
+                <h2 id="sources-reading-title">Official source does not mean every integration is final</h2>
+                <p>
+                    StayReady separates the authority of a source from the review status of its use in the product.
+                    A source-link review date confirms that the cited page was checked; it is not the dataset's
+                    publication or effective date.
+                </p>
+            </div>
+            <dl>
+                <div>
+                    <dt>Mapped hazard data</dt>
+                    <dd>Used for address-level layer checks or geographic context.</dd>
+                </div>
+                <div>
+                    <dt>Preparedness guidance</dt>
+                    <dd>Used for actions, definitions, and regional information.</dd>
+                </div>
+                <div>
+                    <dt>Integration under review</dt>
+                    <dd>The source is official, but StayReady's extraction or local copy is still provisional.</dd>
+                </div>
+            </dl>
+        </section>
+
+        <section class="sr-sources-verifiers" aria-labelledby="official-viewers-title">
+            <div>
+                <span class="section-eyebrow">Verify directly</span>
+                <h2 id="official-viewers-title">Open the official tools</h2>
+                <p>Use these agency pages for current source information, official map viewers, and notices.</p>
+            </div>
+            <div class="sr-sources-verifier-links">
+                <a href="https://msc.fema.gov/nfhl" target="_blank" rel="noopener noreferrer">FEMA flood viewer <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                <a href="https://osfm.fire.ca.gov/what-we-do/community-wildfire-preparedness-and-mitigation/fire-hazard-severity-zones" target="_blank" rel="noopener noreferrer">CAL FIRE severity zones <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                <a href="https://www.conservation.ca.gov/cgs/geohazards/eq-zapp" target="_blank" rel="noopener noreferrer">CGS EQ Zapp <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                <a href="https://www.usgs.gov/programs/earthquake-hazards" target="_blank" rel="noopener noreferrer">USGS earthquake program <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+            </div>
+        </section>
+
+        <section class="sr-sources-registry" aria-labelledby="source-registry-title">
+            <div class="sr-sources-section-heading">
+                <div>
+                    <span class="section-eyebrow">Source registry</span>
+                    <h2 id="source-registry-title">Browse data and guidance</h2>
+                    <p>Search by agency, hazard, place, or source name.</p>
+                </div>
+                <label class="sr-sources-search">
+                    <span class="visually-hidden">Search sources</span>
+                    <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                    <input id="source-search" type="search" placeholder="Search sources" autocomplete="off">
+                </label>
+            </div>
+
+            <div class="sr-source-filters" role="group" aria-label="Filter sources by type">
+                <button class="is-active" type="button" data-source-filter="all" aria-pressed="true">All sources</button>
+                <button type="button" data-source-filter="mapped-data" aria-pressed="false">Mapped hazard data</button>
+                <button type="button" data-source-filter="guidance" aria-pressed="false">Preparedness guidance</button>
+            </div>
+
+            <p id="source-results-summary" class="sr-source-results-summary" aria-live="polite"></p>
+
+            <div id="source-card-grid" class="sr-source-card-grid">
+                {% for source in sources %}
+                <article class="sr-source-card"
+                    data-source-category="{{ source.category_key }}"
+                    data-source-search="{{ source.search_text }}">
+                    <div class="sr-source-card-topline">
+                        <span class="sr-source-kind">{{ source.category_label }}</span>
+                        <span class="sr-source-status sr-source-status-{{ source.status_tone }}">{{ source.status_label }}</span>
+                    </div>
+                    <p class="sr-source-agency">{{ source.agency }}</p>
+                    <h3>{{ source.name }}</h3>
+
+                    <div class="sr-source-tags" aria-label="Hazards covered">
+                        {% for hazard in source.hazard_labels %}
+                        <span>{{ hazard }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <dl class="sr-source-facts">
+                        <div>
+                            <dt>Geographic scope</dt>
+                            <dd>{{ source.geographic_scope }}</dd>
+                        </div>
+                        <div>
+                            <dt>How StayReady uses it</dt>
+                            <dd>{{ source.use_in_app }}</dd>
+                        </div>
+                        <div>
+                            <dt>Source link reviewed</dt>
+                            <dd>{{ source.verified_label }}</dd>
+                        </div>
+                    </dl>
+
+                    <details class="sr-source-details">
+                        <summary>Review status and limitations</summary>
+                        <p><strong>{{ source.status_label }}.</strong> {{ source.status_detail }}</p>
+                        {% if source.notes %}<p>{{ source.notes }}</p>{% endif %}
+                        <p class="sr-source-type">Source type: {{ source.source_type_label }}</p>
+                    </details>
+
+                    {% if source.url %}
+                    <a class="sr-source-link" href="{{ source.url }}" target="_blank" rel="noopener noreferrer">
+                        Open official source <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                    </a>
+                    {% endif %}
+                </article>
+                {% endfor %}
+            </div>
+
+            <div id="source-empty-state" class="sr-source-empty" hidden>
+                <h3>No matching sources</h3>
+                <p>Try a broader search or choose another source type.</p>
+            </div>
+        </section>
+
+        <section class="sr-plan-coverage" aria-labelledby="plan-coverage-title">
+            <div class="sr-sources-section-heading">
+                <div>
+                    <span class="section-eyebrow">Local context</span>
+                    <h2 id="plan-coverage-title">Local plan coverage</h2>
+                    <p>
+                        Shared regional plans appear once with all covered jurisdictions. Plan context does not
+                        replace an address-level map check.
+                    </p>
+                </div>
+                <span class="sr-plan-count">{{ local_plan_groups|length }} plan groups</span>
+            </div>
+
+            <div class="sr-plan-list">
+                {% for plan in local_plan_groups %}
+                <details class="sr-plan-item">
+                    <summary>
+                        <span>
+                            <strong>{{ plan.plan_name }}</strong>
+                            <small>{{ plan.jurisdictions|join(", ") }}</small>
+                        </span>
+                        <span class="sr-source-status sr-source-status-{{ plan.status_tone }}">{{ plan.status_label }}</span>
+                    </summary>
+                    <div class="sr-plan-item-body">
+                        <div>
+                            <h3>Hazards in plan scope</h3>
+                            <div class="sr-source-tags">
+                                {% for hazard in plan.hazards %}<span>{{ hazard }}</span>{% endfor %}
+                            </div>
+                        </div>
+                        <div>
+                            <h3>Coverage notes</h3>
+                            {% for note in plan.notes %}<p>{{ note }}</p>{% endfor %}
+                            <p>{{ plan.status_detail }}</p>
+                        </div>
+                        {% if plan.url %}
+                        <a class="sr-source-link" href="{{ plan.url }}" target="_blank" rel="noopener noreferrer">
+                            Open plan source <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </details>
+                {% endfor %}
+            </div>
+        </section>
+
+        <aside class="sr-sources-report">
+            <div>
+                <span class="section-eyebrow">Help improve the registry</span>
+                <h2>See incorrect or outdated source information?</h2>
+                <p>Tell us which source needs attention. Do not use the form for emergencies or live hazard reports.</p>
+            </div>
+            <a class="btn sr-button sr-button-primary" href="/feedback?category=incorrect_source&amp;page_context=sources">Report a source issue</a>
+        </aside>
+    </div>
+</main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(() => {
+    const cards = Array.from(document.querySelectorAll(".sr-source-card"));
+    const filters = Array.from(document.querySelectorAll("[data-source-filter]"));
+    const search = document.getElementById("source-search");
+    const summary = document.getElementById("source-results-summary");
+    const emptyState = document.getElementById("source-empty-state");
+    let activeFilter = "all";
+
+    const updateResults = () => {
+        const query = (search.value || "").trim().toLowerCase();
+        let visible = 0;
+        cards.forEach((card) => {
+            const categoryMatch = activeFilter === "all" || card.dataset.sourceCategory === activeFilter;
+            const searchMatch = !query || card.dataset.sourceSearch.includes(query);
+            const show = categoryMatch && searchMatch;
+            card.hidden = !show;
+            if (show) visible += 1;
+        });
+        summary.textContent = `${visible} ${visible === 1 ? "source" : "sources"} shown`;
+        emptyState.hidden = visible !== 0;
+    };
+
+    filters.forEach((button) => {
+        button.addEventListener("click", () => {
+            activeFilter = button.dataset.sourceFilter;
+            filters.forEach((item) => {
+                const active = item === button;
+                item.classList.toggle("is-active", active);
+                item.setAttribute("aria-pressed", String(active));
+            });
+            updateResults();
+        });
+    });
+    search.addEventListener("input", updateResults);
+    updateResults();
+})();
+</script>
 {% endblock %}

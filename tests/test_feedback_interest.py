@@ -325,7 +325,7 @@ class SubmissionRepositoryTests(unittest.TestCase):
         "os.environ",
         {
             "SUPABASE_URL": "https://example.supabase.co",
-            "SUPABASE_SECRET_KEY": "test-secret",
+            "SUPABASE_SECRET_KEY": "sb_secret_test",
         },
         clear=False,
     )
@@ -335,9 +335,23 @@ class SubmissionRepositoryTests(unittest.TestCase):
             "configured": True,
             "project_url_configured": True,
             "secret_key_configured": True,
+            "credential_type": "secret",
         })
         self.assertNotIn("example.supabase.co", repr(status))
-        self.assertNotIn("test-secret", repr(status))
+        self.assertNotIn("sb_secret_test", repr(status))
+
+    @patch.dict(
+        "os.environ",
+        {
+            "SUPABASE_URL": "https://example.supabase.co",
+            "SUPABASE_SECRET_KEY": "sb_publishable_test",
+        },
+        clear=False,
+    )
+    def test_publishable_key_is_not_submission_ready(self):
+        status = submission_repository.get_submission_config_status()
+        self.assertFalse(status["configured"])
+        self.assertEqual(status["credential_type"], "publishable")
 
 
 if __name__ == "__main__":

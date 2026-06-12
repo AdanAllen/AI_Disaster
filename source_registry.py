@@ -1,5 +1,7 @@
 import json
 import os
+from collections import OrderedDict
+from datetime import datetime
 from functools import lru_cache
 from typing import Dict, List
 
@@ -161,6 +163,133 @@ def source_records_payload() -> List[Dict]:
     return merged
 
 
+def _display_label(value: str) -> str:
+    return (value or "").replace("_", " ").strip().title()
+
+
+def _source_category(source: Dict) -> Dict[str, str]:
+    source_type = (source.get("source_type") or "").lower()
+    claim_type = (source.get("claim_type") or "").lower()
+    if source_type == "local hazard mitigation plan" or claim_type == "local_plan_context":
+        return {"key": "local-plans", "label": "Local plans"}
+    if any(token in source_type for token in ("gis", "map", "live data")) or claim_type in {
+        "address_point_overlay",
+        "fault_context",
+        "hazard_zone",
+        "hazard_zone_context",
+        "regulatory_zone",
+    }:
+        return {"key": "mapped-data", "label": "Mapped hazard data"}
+    return {"key": "guidance", "label": "Preparedness guidance"}
+
+
+def _source_status(source: Dict) -> Dict[str, str]:
+    review_status = (source.get("review_status") or "").lower()
+    confidence = (source.get("confidence") or "").lower()
+    if review_status == "reviewed" and confidence == "source_backed":
+        return {
+            "label": "Reviewed official guidance",
+            "detail": "StayReady reviewed this official source for the guidance described here.",
+            "tone": "reviewed",
+        }
+    if review_status in {"reviewed", "draft_reviewed"}:
+        return {
+            "label": "Official source; integration under review",
+            "detail": "The source is official. StayReady's extraction or map integration remains provisional.",
+            "tone": "provisional",
+        }
+    return {
+        "label": "Source review in progress",
+        "detail": "StayReady has not completed review of this source or its integration.",
+        "tone": "pending",
+    }
+
+
+def _format_verified_date(value: str) -> str:
+    if not value:
+        return "Not yet recorded"
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").strftime("%B %-d, %Y")
+    except (TypeError, ValueError):
+        return value
+
+
+def source_page_payload() -> Dict:
+    sources = []
+    category_counts = {"mapped-data": 0, "guidance": 0, "local-plans": 0}
+    for raw_source in source_records_payload():
+        source = dict(raw_source)
+        category = _source_category(source)
+        status = _source_status(source)
+        source["category_key"] = category["key"]
+        source["category_label"] = category["label"]
+        source["status_label"] = status["label"]
+        source["status_detail"] = status["detail"]
+        source["status_tone"] = status["tone"]
+        source["source_type_label"] = _display_label(source.get("source_type", ""))
+        source["hazard_labels"] = [_display_label(item) for item in source.get("hazards", [])]
+        source["verified_label"] = _format_verified_date(source.get("last_verified", ""))
+        source["search_text"] = " ".join(
+            str(value)
+            for value in (
+                source.get("name", ""),
+                source.get("agency", ""),
+                source.get("geographic_scope", ""),
+                source.get("source_type", ""),
+                " ".join(source.get("hazards", [])),
+            )
+        ).lower()
+        category_counts[category["key"]] += 1
+        sources.append(source)
+
+    public_sources = [source for source in sources if source["category_key"] != "local-plans"]
+    return {
+        "sources": public_sources,
+        "local_plan_groups": local_plan_groups_payload(),
+        "counts": {
+            "registered": len(sources),
+            "mapped": category_counts["mapped-data"],
+            "guidance": category_counts["guidance"],
+            "plan_records": category_counts["local-plans"],
+            "jurisdictions": len(load_local_plans()),
+        },
+    }
+
+
+def local_plan_groups_payload() -> List[Dict]:
+    groups = OrderedDict()
+    for plan in load_local_plans():
+        key = plan.get("plan_group") or plan.get("url") or plan.get("plan_name")
+        if key not in groups:
+            status = _source_status({
+                "review_status": plan.get("review_status"),
+                "confidence": "mixed_support",
+            })
+            groups[key] = {
+                "plan_group": key,
+                "plan_name": plan.get("plan_name", ""),
+                "url": plan.get("url", ""),
+                "jurisdictions": [],
+                "hazards": [],
+                "notes": [],
+                "status_label": status["label"],
+                "status_detail": status["detail"],
+                "status_tone": status["tone"],
+            }
+
+        group = groups[key]
+        group["jurisdictions"].append(plan.get("name", ""))
+        for hazard in plan.get("hazards", []):
+            label = _display_label(hazard)
+            if label not in group["hazards"]:
+                group["hazards"].append(label)
+        note = (plan.get("notes") or "").strip()
+        if note and note not in group["notes"]:
+            group["notes"].append(note)
+
+    return list(groups.values())
+
+
 def _supabase_source_records_payload() -> List[Dict]:
     try:
         from supabase_repository import fetch_sources
@@ -188,7 +317,7 @@ def _supabase_source_records_payload() -> List[Dict]:
             confidence="source_backed" if trust_level == "official" else "mixed_support",
             review_status="reviewed" if trust_level == "official" else "draft_reviewed",
             url=item.get("url") or "",
-            notes="Loaded from Supabase Phase 1 official data table.",
+            notes="Loaded from StayReady's private official-source registry.",
             last_verified="",
         ).model_dump())
     return records

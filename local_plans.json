@@ -17,7 +17,7 @@
     "plan_name": "City of Berkeley 2024 Local Hazard Mitigation Plan",
     "plan_group": "Berkeley LHMP",
     "review_status": "draft_reviewed",
-    "url": "https://berkeleyca.gov/Mitigation/",
+    "url": "https://berkeleyca.gov/local-hazard-mitigation-plan-update",
     "hazards": ["earthquake", "flood", "wildfire", "landslide", "severe_weather", "tsunami", "extreme_heat", "utility_disruption", "sea_level_rise", "high_wind", "poor_air_quality", "drought"],
     "notes": "Official city LHMP page and user-provided 2024 PDF confirm these hazards are in scope; city-specific hazard claims should use reviewed chunks or clearly labeled plan context."
   },

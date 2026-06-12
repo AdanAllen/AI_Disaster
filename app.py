@@ -31,7 +31,14 @@ from hazard_engine import build_hazard_results, check_flood_layer, merge_structu
 from location_service import location_from_session
 from rag_service import retrieve_chunks
 from resident_guidance_engine import build_resident_plan
-from source_registry import load_hazard_registry, load_jurisdictions, load_local_plans, load_resident_guidance_chunks, source_records_payload
+from source_registry import (
+    load_hazard_registry,
+    load_jurisdictions,
+    load_local_plans,
+    load_resident_guidance_chunks,
+    source_page_payload,
+    source_records_payload,
+)
 from submission_repository import (
     get_submission_config_status,
     save_email_interest,
@@ -1803,13 +1810,7 @@ def resources():
 
 @app.route("/sources")
 def sources():
-    return safe_render(
-        "sources.html",
-        sources=source_records_payload(),
-        hazards=load_hazard_registry(),
-        jurisdictions=load_jurisdictions(),
-        local_plans=load_local_plans(),
-    )
+    return safe_render("sources.html", **source_page_payload())
 
 # --- API Endpoints ---
 
@@ -1827,6 +1828,7 @@ def api_health():
         "resident_guidance_count": len(load_resident_guidance_chunks()),
         "submission_backend": {
             "configured": submission_status["configured"],
+            "credential_type": submission_status["credential_type"],
         },
     })
 

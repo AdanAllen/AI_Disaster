@@ -7,12 +7,12 @@
     "hazards": ["flood"],
     "geographic_scope": "United States, including Alameda County",
     "claim_type": "address_point_overlay",
-    "use_in_app": "Address point flood-zone check for the demo vertical slice.",
+    "use_in_app": "Address-point flood-zone check and map context.",
     "confidence": "mixed_support",
     "review_status": "draft_reviewed",
     "url": "https://www.fema.gov/flood-maps/national-flood-hazard-layer",
     "notes": "The local snapshot is provisional pending named human verification against the official FEMA viewer. The app checks the saved address point against the loaded polygon layer; this is not a parcel determination.",
-    "last_verified": ""
+    "last_verified": "2026-06-12"
   },
   {
     "source_id": "calfire_fhsz",
@@ -25,9 +25,9 @@
     "use_in_app": "Address point wildfire-zone check and map display.",
     "confidence": "mixed_support",
     "review_status": "draft_reviewed",
-    "url": "https://osfm.fire.ca.gov/what-we-do/community-wildfire-risk-reduction/fire-hazard-severity-zones",
+    "url": "https://osfm.fire.ca.gov/what-we-do/community-wildfire-preparedness-and-mitigation/fire-hazard-severity-zones",
     "notes": "The local snapshot is provisional pending named human verification against the official CAL FIRE viewer. A point match is scoped only to the loaded Fire Hazard Severity Zone polygons and does not determine building safety or capture smoke, evacuation, ember, road, or power-shutoff impacts.",
-    "last_verified": ""
+    "last_verified": "2026-06-12"
   },
   {
     "source_id": "usgs_faults",
@@ -42,7 +42,7 @@
     "review_status": "draft_reviewed",
     "url": "https://www.usgs.gov/programs/earthquake-hazards",
     "notes": "The local fault snapshot is provisional pending named human verification. Approximate address proximity is contextual only and does not determine regulatory zone membership, shaking, liquefaction, landslide, building damage, exposure, or safety.",
-    "last_verified": ""
+    "last_verified": "2026-06-12"
   },
   {
     "source_id": "cgs_alquist_priolo",
@@ -57,7 +57,7 @@
     "review_status": "draft_reviewed",
     "url": "https://www.conservation.ca.gov/cgs/alquist-priolo",
     "notes": "Provisional until human verification against the official CGS regulatory maps viewer. This is surface fault rupture zone evidence, not a general earthquake-risk or shaking-damage determination.",
-    "last_verified": ""
+    "last_verified": "2026-06-12"
   },
   {
     "source_id": "cgs_liquefaction",
@@ -72,7 +72,7 @@
     "review_status": "draft_reviewed",
     "url": "https://www.conservation.ca.gov/cgs/shma",
     "notes": "Provisional until human verification against the official CGS regulatory maps viewer. A match does not guarantee liquefaction; a non-match is not proof against ground failure.",
-    "last_verified": ""
+    "last_verified": "2026-06-12"
   },
   {
     "source_id": "cgs_earthquake_landslide",
@@ -87,7 +87,7 @@
     "review_status": "draft_reviewed",
     "url": "https://www.conservation.ca.gov/cgs/shma",
     "notes": "Provisional until human verification against the official CGS regulatory maps viewer. This is not a general landslide forecast.",
-    "last_verified": ""
+    "last_verified": "2026-06-12"
   },
   {
     "source_id": "cgs_tsunami_hazard_area",
@@ -102,7 +102,7 @@
     "review_status": "draft_reviewed",
     "url": "https://www.conservation.ca.gov/cgs/tsunami/maps",
     "notes": "Provisional until human verification against the official CGS tsunami viewer. This is planning evidence, not a live warning, legal disclosure, or all-coastal-flooding determination.",
-    "last_verified": ""
+    "last_verified": "2026-06-12"
   },
   {
     "source_id": "alameda_county_emergency",
@@ -145,7 +145,7 @@
     "use_in_app": "Berkeley jurisdiction context when a Berkeley location is resolved.",
     "confidence": "mixed_support",
     "review_status": "draft_reviewed",
-    "url": "https://berkeleyca.gov/Mitigation/",
+    "url": "https://berkeleyca.gov/local-hazard-mitigation-plan-update",
     "notes": "Official plan page confirmed; user-provided 2024 PDF was extracted locally for earthquake, WUI fire, and flood resident guidance.",
     "last_verified": "2026-06-04"
   },
@@ -191,7 +191,7 @@
     "confidence": "mixed_support",
     "review_status": "draft_reviewed",
     "url": "https://www.alamedaca.gov/Departments/Planning-Building-and-Transportation/Sustainability-and-Resilience/Climate-Adaptation-and-Hazard-Mitigation-Plan",
-    "notes": "Official source page confirmed; user-provided Volume 2 PDF was extracted locally for Dublin, Livermore, and Pleasanton resident guidance.",
+    "notes": "Official City of Alameda plan page confirmed. Use reviewed Alameda-specific source chunks before making detailed local exposure or preparedness claims.",
     "last_verified": "2026-06-04"
   },
   {
@@ -371,7 +371,7 @@
     "confidence": "source_backed",
     "review_status": "reviewed",
     "url": "https://www.ready.gov/recovering-disaster",
-    "notes": "Used to make recovery planning visible in the demo.",
+    "notes": "Used to include recovery planning in StayReady preparedness guidance.",
     "last_verified": "2026-06-04"
   }
 ]
