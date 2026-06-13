@@ -37,6 +37,118 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link href="{{ url_for('static', filename='css/stayready.css') }}" rel="stylesheet" />
 
+    {% block analytics %}
+    <!--
+      Privacy boundary: analytics must never receive precise locations, addresses,
+      household details, names, contact information, or emergency notes.
+      Private/admin templates must override this block and leave it empty.
+    -->
+    <script>
+        (function(document, posthog) {
+            const safeEventNames = new Set([
+                'address_search_started',
+                'address_search_completed',
+                'risk_summary_loaded',
+                'risk_summary_failed',
+                'map_opened',
+                'map_layer_toggled',
+                'source_link_clicked',
+                'action_clicked',
+                'data_unavailable_shown'
+            ]);
+            const unsafePropertyParts = new Set([
+                'address',
+                'lat',
+                'lng',
+                'latitude',
+                'longitude',
+                'coordinates',
+                'household',
+                'name',
+                'email',
+                'phone',
+                'notes'
+            ]);
+
+            function isUnsafePropertyKey(key) {
+                return String(key)
+                    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+                    .toLowerCase()
+                    .split(/[^a-z0-9]+/)
+                    .some((part) => unsafePropertyParts.has(part));
+            }
+
+            function sanitizeUrl(value) {
+                if (typeof value !== 'string') {
+                    return value;
+                }
+                try {
+                    const url = new URL(value, window.location.origin);
+                    return `${url.origin}${url.pathname}`;
+                } catch (_error) {
+                    return undefined;
+                }
+            }
+
+            function sanitizeProperties(properties) {
+                if (!properties || typeof properties !== 'object' || Array.isArray(properties)) {
+                    return {};
+                }
+
+                return Object.fromEntries(
+                    Object.entries(properties).flatMap(([key, value]) => {
+                        if (isUnsafePropertyKey(key)) {
+                            return [];
+                        }
+                        if (/(url|referrer)/i.test(key)) {
+                            const safeUrl = sanitizeUrl(value);
+                            return safeUrl === undefined ? [] : [[key, safeUrl]];
+                        }
+                        if (value && typeof value === 'object') {
+                            return [[key, Array.isArray(value)
+                                ? value.map((item) => (
+                                    item && typeof item === 'object'
+                                        ? sanitizeProperties(item)
+                                        : item
+                                ))
+                                : sanitizeProperties(value)]];
+                        }
+                        return [[key, value]];
+                    })
+                );
+            }
+
+            window.trackStayReadyEvent = function(eventName, properties) {
+                if (!window.posthog || !safeEventNames.has(eventName)) {
+                    return false;
+                }
+                window.posthog.capture(eventName, sanitizeProperties(properties));
+                return true;
+            };
+
+            !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,posthog);
+
+            window.posthog.init('phc_qiW2Y8hqapKpVbj3P8wuqB7Cs8vyRMZt9au3HpUqwnwS', {
+                api_host: 'https://us.i.posthog.com',
+                defaults: '2026-05-30',
+                person_profiles: 'identified_only',
+                capture_pageview: true,
+                capture_pageleave: false,
+                capture_dead_clicks: false,
+                autocapture: false,
+                disable_session_recording: true,
+                before_send: function(event) {
+                    if (!event || (event.event !== '$pageview' && !safeEventNames.has(event.event))) {
+                        return null;
+                    }
+                    event.properties = sanitizeProperties(event.properties);
+                    return event;
+                }
+            });
+        })(document, window.posthog || []);
+    </script>
+    {% endblock %}
+
     <style>
         :root {
             --brand-ink: #0b1d32;
