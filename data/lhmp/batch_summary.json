@@ -1,0 +1,403 @@
+{
+  "generated_at": "2026-06-13T04:18:30.627193+00:00",
+  "registry_path": "data/lhmp/plan_registry.json",
+  "replace_candidates": true,
+  "results": [
+    {
+      "candidate_counts": {
+        "data_sources": 45,
+        "evidence": 300,
+        "tables": 183,
+        "visuals": 22
+      },
+      "city": "alameda-county",
+      "city_display_name": "Alameda County",
+      "enabled": true,
+      "pdf_path": "data/raw/lhmps/alameda-county/alameda-county-hmp-2022-archive.pdf",
+      "rendered_pages": [
+        3,
+        4,
+        5,
+        6,
+        10,
+        11,
+        12,
+        13
+      ],
+      "status": "succeeded",
+      "warnings": [
+        "Evidence candidate limit reached (300); remaining snippets were skipped.",
+        "Visual page limit reached (8); 101 likely pages were not rendered."
+      ]
+    },
+    {
+      "candidate_counts": {
+        "data_sources": 53,
+        "evidence": 300,
+        "tables": 67,
+        "visuals": 7
+      },
+      "city": "alameda",
+      "city_display_name": "Alameda",
+      "enabled": true,
+      "pdf_path": "data/raw/lhmps/alameda/alameda-cahmp-2022.pdf",
+      "rendered_pages": [
+        3,
+        4,
+        5,
+        6,
+        24,
+        30,
+        31,
+        32
+      ],
+      "status": "succeeded",
+      "warnings": [
+        "Evidence candidate limit reached (300); remaining snippets were skipped.",
+        "Visual page limit reached (8); 109 likely pages were not rendered."
+      ]
+    },
+    {
+      "candidate_counts": {
+        "data_sources": 9,
+        "evidence": 284,
+        "tables": 2,
+        "visuals": 1
+      },
+      "city": "albany",
+      "city_display_name": "Albany",
+      "enabled": true,
+      "pdf_path": "data/raw/lhmps/albany/albany-draft-lhmp-update-2023.pdf",
+      "rendered_pages": [
+        1,
+        23
+      ],
+      "status": "succeeded",
+      "warnings": []
+    },
+    {
+      "candidate_counts": {
+        "data_sources": 154,
+        "evidence": 350,
+        "tables": 2,
+        "visuals": 16
+      },
+      "city": "berkeley",
+      "city_display_name": "Berkeley",
+      "enabled": true,
+      "pdf_path": "data/raw/lhmps/berkeley/berkeley-lhmp-2024.pdf",
+      "rendered_pages": [
+        16,
+        17,
+        18,
+        20,
+        21,
+        25,
+        28,
+        34
+      ],
+      "status": "succeeded",
+      "warnings": [
+        "Evidence candidate limit reached (350); remaining snippets were skipped.",
+        "Visual page limit reached (8); 48 likely pages were not rendered."
+      ]
+    },
+    {
+      "candidate_counts": {
+        "data_sources": 17,
+        "evidence": 300,
+        "tables": 143,
+        "visuals": 6
+      },
+      "city": "dublin",
+      "city_display_name": "Dublin",
+      "enabled": true,
+      "pdf_path": "data/raw/lhmps/tri-valley/tri-valley-lhmp-2024-volume-2.pdf",
+      "rendered_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "status": "succeeded",
+      "warnings": [
+        "Evidence candidate limit reached (300); remaining snippets were skipped.",
+        "Visual page limit reached (6); 205 likely pages were not rendered."
+      ]
+    },
+    {
+      "candidate_counts": {
+        "data_sources": 80,
+        "evidence": 300,
+        "tables": 10,
+        "visuals": 7
+      },
+      "city": "emeryville",
+      "city_display_name": "Emeryville",
+      "enabled": true,
+      "pdf_path": "data/raw/lhmps/emeryville/emeryville-lhmp-2025-2030-final-draft.pdf",
+      "rendered_pages": [
+        5,
+        12,
+        14,
+        26,
+        27,
+        30,
+        32,
+        33
+      ],
+      "status": "succeeded",
+      "warnings": [
+        "Evidence candidate limit reached (300); remaining snippets were skipped.",
+        "Visual page limit reached (8); 15 likely pages were not rendered."
+      ]
+    },
+    {
+      "candidate_counts": {
+        "data_sources": 160,
+        "evidence": 300,
+        "tables": 153,
+        "visuals": 6
+      },
+      "city": "fremont",
+      "city_display_name": "Fremont",
+      "enabled": true,
+      "pdf_path": "data/raw/lhmps/tri-city/tri-city-lhmp-2024-annex-a-fremont.pdf",
+      "rendered_pages": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11
+      ],
+      "status": "succeeded",
+      "warnings": [
+        "Evidence candidate limit reached (300); remaining snippets were skipped.",
+        "Visual page limit reached (8); 205 likely pages were not rendered."
+      ]
+    },
+    {
+      "candidate_counts": {
+        "data_sources": 81,
+        "evidence": 199,
+        "tables": 48,
+        "visuals": 15
+      },
+      "city": "hayward",
+      "city_display_name": "Hayward",
+      "enabled": true,
+      "pdf_path": "data/raw/lhmps/hayward/hayward-local-resilience-plan-2021-update.pdf",
+      "rendered_pages": [
+        2,
+        5,
+        9,
+        16,
+        21,
+        27,
+        34,
+        37
+      ],
+      "status": "succeeded",
+      "warnings": [
+        "Visual page limit reached (8); 28 likely pages were not rendered."
+      ]
+    },
+    {
+      "candidate_counts": {
+        "data_sources": 17,
+        "evidence": 300,
+        "tables": 143,
+        "visuals": 6
+      },
+      "city": "livermore",
+      "city_display_name": "Livermore",
+      "enabled": true,
+      "pdf_path": "data/raw/lhmps/tri-valley/tri-valley-lhmp-2024-volume-2.pdf",
+      "rendered_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "status": "succeeded",
+      "warnings": [
+        "Evidence candidate limit reached (300); remaining snippets were skipped.",
+        "Visual page limit reached (6); 205 likely pages were not rendered."
+      ]
+    },
+    {
+      "candidate_counts": {
+        "data_sources": 81,
+        "evidence": 300,
+        "tables": 84,
+        "visuals": 1
+      },
+      "city": "newark",
+      "city_display_name": "Newark",
+      "enabled": true,
+      "pdf_path": "data/raw/lhmps/tri-city/tri-city-lhmp-2024-annex-b-newark.pdf",
+      "rendered_pages": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        8,
+        9,
+        10
+      ],
+      "status": "succeeded",
+      "warnings": [
+        "Evidence candidate limit reached (300); remaining snippets were skipped.",
+        "Visual page limit reached (8); 142 likely pages were not rendered."
+      ]
+    },
+    {
+      "candidate_counts": {
+        "data_sources": 62,
+        "evidence": 350,
+        "tables": 362,
+        "visuals": 53
+      },
+      "city": "oakland",
+      "city_display_name": "Oakland",
+      "enabled": true,
+      "pdf_path": "data/raw/lhmps/oakland/oakland-draft-lhmp-2026-2031.pdf",
+      "rendered_pages": [
+        1,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "status": "succeeded",
+      "warnings": [
+        "Evidence candidate limit reached (350); remaining snippets were skipped.",
+        "Visual page limit reached (8); 184 likely pages were not rendered."
+      ]
+    },
+    {
+      "candidate_counts": {
+        "data_sources": 117,
+        "evidence": 300,
+        "tables": 101,
+        "visuals": 1
+      },
+      "city": "piedmont",
+      "city_display_name": "Piedmont",
+      "enabled": true,
+      "pdf_path": "data/raw/lhmps/piedmont/piedmont-lhmp-2019.pdf",
+      "rendered_pages": [
+        3,
+        5,
+        7,
+        11,
+        22,
+        25,
+        26,
+        27
+      ],
+      "status": "succeeded",
+      "warnings": [
+        "Evidence candidate limit reached (300); remaining snippets were skipped.",
+        "Visual page limit reached (8); 137 likely pages were not rendered."
+      ]
+    },
+    {
+      "candidate_counts": {
+        "data_sources": 17,
+        "evidence": 300,
+        "tables": 143,
+        "visuals": 6
+      },
+      "city": "pleasanton",
+      "city_display_name": "Pleasanton",
+      "enabled": true,
+      "pdf_path": "data/raw/lhmps/tri-valley/tri-valley-lhmp-2024-volume-2.pdf",
+      "rendered_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "status": "succeeded",
+      "warnings": [
+        "Evidence candidate limit reached (300); remaining snippets were skipped.",
+        "Visual page limit reached (6); 205 likely pages were not rendered."
+      ]
+    },
+    {
+      "candidate_counts": {
+        "data_sources": 6,
+        "evidence": 106,
+        "tables": 0,
+        "visuals": 10
+      },
+      "city": "san-leandro",
+      "city_display_name": "San Leandro",
+      "enabled": true,
+      "pdf_path": "data/raw/lhmps/san-leandro/san-leandro-environmental-hazards-element-2025.pdf",
+      "rendered_pages": [
+        3,
+        4,
+        5,
+        9,
+        10,
+        35,
+        41,
+        42
+      ],
+      "status": "succeeded",
+      "warnings": [
+        "Visual page limit reached (8); 3 likely pages were not rendered."
+      ]
+    },
+    {
+      "candidate_counts": {
+        "data_sources": 86,
+        "evidence": 300,
+        "tables": 92,
+        "visuals": 3
+      },
+      "city": "union-city",
+      "city_display_name": "Union City",
+      "enabled": true,
+      "pdf_path": "data/raw/lhmps/tri-city/tri-city-lhmp-2024-annex-c-union-city.pdf",
+      "rendered_pages": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        9,
+        11
+      ],
+      "status": "succeeded",
+      "warnings": [
+        "Evidence candidate limit reached (300); remaining snippets were skipped.",
+        "Visual page limit reached (8); 153 likely pages were not rendered."
+      ]
+    }
+  ],
+  "schema_version": 1,
+  "totals": {
+    "disabled": 0,
+    "enabled": 15,
+    "failed": 0,
+    "registered": 15,
+    "succeeded": 15
+  }
+}

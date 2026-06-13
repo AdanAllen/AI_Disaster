@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StayReady LHMP Coverage Audit</title>
+  <style>
+    :root { color-scheme: light; --ink:#17252f; --muted:#5d6b75; --line:#d9e0e4;
+      --paper:#fff; --wash:#f4f7f6; --accent:#087f5b; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:var(--wash);
+      font:15px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    main { width:min(1180px, calc(100% - 32px)); margin:0 auto; padding:40px 0 64px; }
+    h1,h2 { line-height:1.15; margin:0 0 8px; }
+    .intro { max-width:780px; color:var(--muted); margin-bottom:28px; }
+    .city-card { background:var(--paper); border:1px solid var(--line); border-radius:10px;
+      padding:22px; margin:16px 0; box-shadow:0 1px 2px rgba(23,37,47,.04); }
+    .city-heading { display:flex; align-items:flex-start; justify-content:space-between;
+      gap:18px; flex-wrap:wrap; }
+    .eyebrow { margin:0 0 5px; color:var(--accent); font-size:12px;
+      font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+    dl { display:grid; grid-template-columns:130px 1fr; gap:7px 16px; margin:18px 0; }
+    dt { font-weight:700; } dd { margin:0; min-width:0; overflow-wrap:anywhere; }
+    code { font-size:13px; }
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; min-width:740px; }
+    th,td { border-bottom:1px solid var(--line); padding:9px 10px; text-align:left; }
+    th { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+    .tier { display:inline-block; padding:4px 8px; border-radius:999px;
+      background:#e8eeec; font-size:12px; font-weight:700; white-space:nowrap; }
+    .tier-strong,.tier-full { color:#075c43; background:#dff3eb; }
+    .tier-standard { color:#4b5f12; background:#edf3d8; }
+    .tier-basic { color:#76520b; background:#fff0ca; }
+    .tier-none { color:#5d6b75; background:#edf0f2; }
+    .muted,.intro,details { color:var(--muted); }
+    details { margin-top:16px; } summary { cursor:pointer; font-weight:700; color:var(--ink); }
+    a { color:#066a4c; }
+    @media (max-width:640px) {
+      main { width:min(100% - 20px, 1180px); padding-top:24px; }
+      .city-card { padding:16px; }
+      dl { grid-template-columns:1fr; gap:2px; }
+      dd { margin-bottom:8px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Offline review aid</p>
+    <h1>StayReady LHMP coverage audit</h1>
+    <p class="intro">Candidate coverage across registered Alameda County plans. This report
+      reads extracted candidate files only. Tiers are workflow suggestions, not reviewed facts
+      and not public hazard conclusions. Generated 2026-06-13T04:18:31.161443+00:00.</p>
+    
+            <section class="city-card">
+              <div class="city-heading">
+                <div>
+                  <p class="eyebrow">extracted</p>
+                  <h2>Alameda County</h2>
+                  <p>Alameda County Hazard Mitigation Plan
+                    (2022)</p>
+                </div>
+                <span class="tier tier-full">
+                  full candidate coverage
+                </span>
+              </div>
+              <dl>
+                <dt>Local PDF</dt><dd><code>data/raw/lhmps/alameda-county/alameda-county-hmp-2022-archive.pdf</code></dd>
+                <dt>Source</dt><dd><a href="https://www.acgov.org/cda/planning/generalplans/2022-hazard-mitigation-plan.htm">Official source</a></dd>
+                <dt>Candidate totals</dt><dd>evidence: 300, visuals: 22, tables: 183, data sources: 45</dd>
+                <dt>Likely headings</dt><dd>Location, Nature, Unincorporated Alameda County, County, History, Probability, LIST OF TABLES, LOCAL HAZARD MITIGATION PLAN, HAZARD MITIGATION PLANNING, 2021 LOCAL HAZARD MITIGATION PLAN SYNOPSIS, Alameda County Public Works, Channels</dd>
+                <dt>Unresolved</dt><dd>129 candidate(s); aliases were not guessed.</dd>
+              </dl>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Hazard</th><th>Tier</th><th>Evidence</th><th>Visuals</th>
+                    <th>Tables</th><th>Sources</th><th>Headings</th><th>Actions</th></tr></thead>
+                  <tbody><tr><td><strong>Dam Failure</strong></td><td><span class="tier tier-strong">strong</span></td><td>15</td><td>0</td><td>7</td><td>0</td><td>7</td><td>4</td></tr><tr><td><strong>Drought</strong></td><td><span class="tier tier-standard">standard</span></td><td>28</td><td>0</td><td>0</td><td>0</td><td>4</td><td>2</td></tr><tr><td><strong>Earthquake</strong></td><td><span class="tier tier-strong">strong</span></td><td>26</td><td>0</td><td>23</td><td>7</td><td>20</td><td>17</td></tr><tr><td><strong>Extreme Heat</strong></td><td><span class="tier tier-basic">basic</span></td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td><strong>Flood</strong></td><td><span class="tier tier-strong">strong</span></td><td>53</td><td>0</td><td>14</td><td>8</td><td>33</td><td>22</td></tr><tr><td><strong>Landslide</strong></td><td><span class="tier tier-strong">strong</span></td><td>23</td><td>0</td><td>8</td><td>2</td><td>12</td><td>4</td></tr><tr><td><strong>Poor Air Quality</strong></td><td><span class="tier tier-strong">strong</span></td><td>2</td><td>0</td><td>4</td><td>0</td><td>4</td><td>2</td></tr><tr><td><strong>Sea Level Rise</strong></td><td><span class="tier tier-strong">strong</span></td><td>11</td><td>0</td><td>19</td><td>1</td><td>18</td><td>11</td></tr><tr><td><strong>Severe Weather</strong></td><td><span class="tier tier-strong">strong</span></td><td>2</td><td>0</td><td>4</td><td>0</td><td>4</td><td>1</td></tr><tr><td><strong>Tsunami</strong></td><td><span class="tier tier-strong">strong</span></td><td>14</td><td>0</td><td>5</td><td>1</td><td>9</td><td>3</td></tr><tr><td><strong>Utility Disruption</strong></td><td><span class="tier tier-strong">strong</span></td><td>9</td><td>0</td><td>71</td><td>0</td><td>14</td><td>24</td></tr><tr><td><strong>Wildfire</strong></td><td><span class="tier tier-full">full</span></td><td>21</td><td>22</td><td>18</td><td>2</td><td>45</td><td>8</td></tr></tbody>
+                </table>
+              </div>
+              <details>
+                <summary>Warnings and extraction notes (2)</summary>
+                <ul><li>Evidence candidate limit reached (300); remaining snippets were skipped.</li><li>Visual page limit reached (8); 101 likely pages were not rendered.</li></ul>
+              </details>
+            </section>
+            
+            <section class="city-card">
+              <div class="city-heading">
+                <div>
+                  <p class="eyebrow">extracted</p>
+                  <h2>Alameda</h2>
+                  <p>Climate Adaptation and Hazard Mitigation Plan
+                    (2022)</p>
+                </div>
+                <span class="tier tier-full">
+                  full candidate coverage
+                </span>
+              </div>
+              <dl>
+                <dt>Local PDF</dt><dd><code>data/raw/lhmps/alameda/alameda-cahmp-2022.pdf</code></dd>
+                <dt>Source</dt><dd><a href="https://www.alamedaca.gov/Departments/Planning-Building-and-Transportation/Sustainability-and-Resilience/Climate-Action-and-Resiliency-Plan-CARP">Official source</a></dd>
+                <dt>Candidate totals</dt><dd>evidence: 300, visuals: 7, tables: 67, data sources: 53</dd>
+                <dt>Likely headings</dt><dd>Actions, Description, Future Actions, Strategies, Hazard Specific Goals, Management Plan;, Vision, Plan), Land Use, Buildings, Asset Inventory | 3-8, Emergency Response</dd>
+                <dt>Unresolved</dt><dd>116 candidate(s); aliases were not guessed.</dd>
+              </dl>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Hazard</th><th>Tier</th><th>Evidence</th><th>Visuals</th>
+                    <th>Tables</th><th>Sources</th><th>Headings</th><th>Actions</th></tr></thead>
+                  <tbody><tr><td><strong>Dam Failure</strong></td><td><span class="tier tier-standard">standard</span></td><td>1</td><td>0</td><td>0</td><td>2</td><td>1</td><td>0</td></tr><tr><td><strong>Drought</strong></td><td><span class="tier tier-standard">standard</span></td><td>17</td><td>0</td><td>0</td><td>1</td><td>9</td><td>7</td></tr><tr><td><strong>Earthquake</strong></td><td><span class="tier tier-full">full</span></td><td>58</td><td>2</td><td>10</td><td>24</td><td>32</td><td>25</td></tr><tr><td><strong>Extreme Heat</strong></td><td><span class="tier tier-strong">strong</span></td><td>6</td><td>0</td><td>1</td><td>2</td><td>3</td><td>1</td></tr><tr><td><strong>Flood</strong></td><td><span class="tier tier-strong">strong</span></td><td>55</td><td>0</td><td>6</td><td>2</td><td>14</td><td>23</td></tr><tr><td><strong>Poor Air Quality</strong></td><td><span class="tier tier-strong">strong</span></td><td>11</td><td>0</td><td>3</td><td>5</td><td>10</td><td>5</td></tr><tr><td><strong>Sea Level Rise</strong></td><td><span class="tier tier-full">full</span></td><td>51</td><td>2</td><td>31</td><td>7</td><td>34</td><td>33</td></tr><tr><td><strong>Tsunami</strong></td><td><span class="tier tier-standard">standard</span></td><td>10</td><td>0</td><td>0</td><td>0</td><td>2</td><td>3</td></tr><tr><td><strong>Wildfire</strong></td><td><span class="tier tier-standard">standard</span></td><td>4</td><td>0</td><td>0</td><td>0</td><td>0</td><td>2</td></tr></tbody>
+                </table>
+              </div>
+              <details>
+                <summary>Warnings and extraction notes (2)</summary>
+                <ul><li>Evidence candidate limit reached (300); remaining snippets were skipped.</li><li>Visual page limit reached (8); 109 likely pages were not rendered.</li></ul>
+              </details>
+            </section>
+            
+            <section class="city-card">
+              <div class="city-heading">
+                <div>
+                  <p class="eyebrow">extracted</p>
+                  <h2>Albany</h2>
+                  <p>Draft Local Hazard Mitigation Plan Update
+                    (2023)</p>
+                </div>
+                <span class="tier tier-strong">
+                  strong candidate coverage
+                </span>
+              </div>
+              <dl>
+                <dt>Local PDF</dt><dd><code>data/raw/lhmps/albany/albany-draft-lhmp-update-2023.pdf</code></dd>
+                <dt>Source</dt><dd><a href="https://www.albanyca.org/departments/fire-emergency-medical-services/emergency-preparedness/hazard-mitigation-plan">Official source</a></dd>
+                <dt>Candidate totals</dt><dd>evidence: 284, visuals: 1, tables: 2, data sources: 9</dd>
+                <dt>Likely headings</dt><dd>Future Probability, Department, Mitigation &amp; Response, Impacts &amp; Vulnerability, Hazard Analysis, Update (2023-2028), Previous Occurrences, Hazard Profile, Executive Summary, • Public Health Epidemic, Utilities Failure, Earthquakes</dd>
+                <dt>Unresolved</dt><dd>111 candidate(s); aliases were not guessed.</dd>
+              </dl>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Hazard</th><th>Tier</th><th>Evidence</th><th>Visuals</th>
+                    <th>Tables</th><th>Sources</th><th>Headings</th><th>Actions</th></tr></thead>
+                  <tbody><tr><td><strong>Dam Failure</strong></td><td><span class="tier tier-basic">basic</span></td><td>2</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td><strong>Drought</strong></td><td><span class="tier tier-standard">standard</span></td><td>5</td><td>0</td><td>0</td><td>0</td><td>1</td><td>1</td></tr><tr><td><strong>Earthquake</strong></td><td><span class="tier tier-strong">strong</span></td><td>38</td><td>1</td><td>0</td><td>4</td><td>13</td><td>13</td></tr><tr><td><strong>Extreme Heat</strong></td><td><span class="tier tier-standard">standard</span></td><td>15</td><td>0</td><td>0</td><td>0</td><td>8</td><td>1</td></tr><tr><td><strong>Flood</strong></td><td><span class="tier tier-standard">standard</span></td><td>32</td><td>0</td><td>0</td><td>0</td><td>5</td><td>10</td></tr><tr><td><strong>Landslide</strong></td><td><span class="tier tier-standard">standard</span></td><td>18</td><td>0</td><td>0</td><td>0</td><td>8</td><td>3</td></tr><tr><td><strong>Poor Air Quality</strong></td><td><span class="tier tier-standard">standard</span></td><td>3</td><td>0</td><td>0</td><td>1</td><td>2</td><td>0</td></tr><tr><td><strong>Sea Level Rise</strong></td><td><span class="tier tier-standard">standard</span></td><td>17</td><td>0</td><td>0</td><td>0</td><td>4</td><td>2</td></tr><tr><td><strong>Severe Weather</strong></td><td><span class="tier tier-strong">strong</span></td><td>20</td><td>0</td><td>2</td><td>0</td><td>8</td><td>3</td></tr><tr><td><strong>Tsunami</strong></td><td><span class="tier tier-standard">standard</span></td><td>3</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td></tr><tr><td><strong>Utility Disruption</strong></td><td><span class="tier tier-standard">standard</span></td><td>7</td><td>0</td><td>0</td><td>0</td><td>4</td><td>1</td></tr><tr><td><strong>Wildfire</strong></td><td><span class="tier tier-standard">standard</span></td><td>15</td><td>0</td><td>0</td><td>2</td><td>5</td><td>6</td></tr></tbody>
+                </table>
+              </div>
+              <details>
+                <summary>Warnings and extraction notes (0)</summary>
+                <ul><li>None</li></ul>
+              </details>
+            </section>
+            
+            <section class="city-card">
+              <div class="city-heading">
+                <div>
+                  <p class="eyebrow">extracted</p>
+                  <h2>Berkeley</h2>
+                  <p>Local Hazard Mitigation Plan
+                    (2024)</p>
+                </div>
+                <span class="tier tier-strong">
+                  strong candidate coverage
+                </span>
+              </div>
+              <dl>
+                <dt>Local PDF</dt><dd><code>data/raw/lhmps/berkeley/berkeley-lhmp-2024.pdf</code></dd>
+                <dt>Source</dt><dd><a href="https://berkeleyca.gov/safety-health/disaster-readiness/local-hazard-mitigation-plan">Official source</a></dd>
+                <dt>Candidate totals</dt><dd>evidence: 350, visuals: 16, tables: 2, data sources: 154</dd>
+                <dt>Likely headings</dt><dd>Low, Internal, Final Draft 2024 Local Hazard Mitigation Plan, Housing Element., Useful Links, Medium, 1995 University Ave, Ste 325, B-20, B-234, Communities, Risk Assessment, Budget Process</dd>
+                <dt>Unresolved</dt><dd>142 candidate(s); aliases were not guessed.</dd>
+              </dl>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Hazard</th><th>Tier</th><th>Evidence</th><th>Visuals</th>
+                    <th>Tables</th><th>Sources</th><th>Headings</th><th>Actions</th></tr></thead>
+                  <tbody><tr><td><strong>Earthquake</strong></td><td><span class="tier tier-strong">strong</span></td><td>72</td><td>8</td><td>0</td><td>49</td><td>78</td><td>27</td></tr><tr><td><strong>Extreme Heat</strong></td><td><span class="tier tier-standard">standard</span></td><td>19</td><td>0</td><td>0</td><td>22</td><td>25</td><td>5</td></tr><tr><td><strong>Flood</strong></td><td><span class="tier tier-standard">standard</span></td><td>24</td><td>0</td><td>0</td><td>5</td><td>27</td><td>14</td></tr><tr><td><strong>Landslide</strong></td><td><span class="tier tier-strong">strong</span></td><td>8</td><td>0</td><td>1</td><td>0</td><td>9</td><td>2</td></tr><tr><td><strong>Poor Air Quality</strong></td><td><span class="tier tier-standard">standard</span></td><td>21</td><td>0</td><td>0</td><td>13</td><td>25</td><td>3</td></tr><tr><td><strong>Sea Level Rise</strong></td><td><span class="tier tier-standard">standard</span></td><td>22</td><td>0</td><td>0</td><td>14</td><td>26</td><td>7</td></tr><tr><td><strong>Severe Weather</strong></td><td><span class="tier tier-standard">standard</span></td><td>10</td><td>0</td><td>1</td><td>0</td><td>10</td><td>0</td></tr><tr><td><strong>Tsunami</strong></td><td><span class="tier tier-standard">standard</span></td><td>9</td><td>0</td><td>0</td><td>1</td><td>10</td><td>4</td></tr><tr><td><strong>Utility Disruption</strong></td><td><span class="tier tier-strong">strong</span></td><td>14</td><td>1</td><td>0</td><td>8</td><td>18</td><td>3</td></tr><tr><td><strong>Wildfire</strong></td><td><span class="tier tier-standard">standard</span></td><td>51</td><td>0</td><td>0</td><td>7</td><td>51</td><td>27</td></tr></tbody>
+                </table>
+              </div>
+              <details>
+                <summary>Warnings and extraction notes (2)</summary>
+                <ul><li>Evidence candidate limit reached (350); remaining snippets were skipped.</li><li>Visual page limit reached (8); 48 likely pages were not rendered.</li></ul>
+              </details>
+            </section>
+            
+            <section class="city-card">
+              <div class="city-heading">
+                <div>
+                  <p class="eyebrow">extracted</p>
+                  <h2>Dublin</h2>
+                  <p>Tri-Valley Local Hazard Mitigation Plan, Volume 2: City Annexes
+                    (2024)</p>
+                </div>
+                <span class="tier tier-strong">
+                  strong candidate coverage
+                </span>
+              </div>
+              <dl>
+                <dt>Local PDF</dt><dd><code>data/raw/lhmps/tri-valley/tri-valley-lhmp-2024-volume-2.pdf</code></dd>
+                <dt>Source</dt><dd><a href="https://www.dublin.ca.gov/2258/Local-Hazard-Mitigation-Plan">Official source</a></dd>
+                <dt>Candidate totals</dt><dd>evidence: 300, visuals: 6, tables: 143, data sources: 17</dd>
+                <dt>Likely headings</dt><dd>Tri-Valley Local Hazard Mitigation Plan; Volume 2—Planning Partner Annexes, O, Completed, No, Low, Yes, Select, Ongoing, If Yes, Department /Position:, Medium, Miles O, 1.6.2 Opportunities for Future Integration</dd>
+                <dt>Unresolved</dt><dd>246 candidate(s); aliases were not guessed.</dd>
+              </dl>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Hazard</th><th>Tier</th><th>Evidence</th><th>Visuals</th>
+                    <th>Tables</th><th>Sources</th><th>Headings</th><th>Actions</th></tr></thead>
+                  <tbody><tr><td><strong>Dam Failure</strong></td><td><span class="tier tier-standard">standard</span></td><td>2</td><td>0</td><td>0</td><td>0</td><td>1</td><td>2</td></tr><tr><td><strong>Drought</strong></td><td><span class="tier tier-strong">strong</span></td><td>1</td><td>0</td><td>2</td><td>0</td><td>3</td><td>2</td></tr><tr><td><strong>Earthquake</strong></td><td><span class="tier tier-strong">strong</span></td><td>14</td><td>0</td><td>9</td><td>1</td><td>8</td><td>22</td></tr><tr><td><strong>Extreme Heat</strong></td><td><span class="tier tier-basic">basic</span></td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>2</td></tr><tr><td><strong>Flood</strong></td><td><span class="tier tier-strong">strong</span></td><td>58</td><td>1</td><td>31</td><td>0</td><td>22</td><td>62</td></tr><tr><td><strong>Landslide</strong></td><td><span class="tier tier-standard">standard</span></td><td>4</td><td>0</td><td>0</td><td>0</td><td>2</td><td>2</td></tr><tr><td><strong>Sea Level Rise</strong></td><td><span class="tier tier-basic">basic</span></td><td>0</td><td>0</td><td>0</td><td>13</td><td>1</td><td>2</td></tr><tr><td><strong>Severe Weather</strong></td><td><span class="tier tier-strong">strong</span></td><td>32</td><td>0</td><td>38</td><td>0</td><td>29</td><td>55</td></tr><tr><td><strong>Wildfire</strong></td><td><span class="tier tier-strong">strong</span></td><td>6</td><td>0</td><td>5</td><td>1</td><td>8</td><td>10</td></tr></tbody>
+                </table>
+              </div>
+              <details>
+                <summary>Warnings and extraction notes (2)</summary>
+                <ul><li>Evidence candidate limit reached (300); remaining snippets were skipped.</li><li>Visual page limit reached (6); 205 likely pages were not rendered.</li></ul>
+              </details>
+            </section>
+            
+            <section class="city-card">
+              <div class="city-heading">
+                <div>
+                  <p class="eyebrow">extracted</p>
+                  <h2>Emeryville</h2>
+                  <p>Local Hazard Mitigation Plan 2025-2030 Final Draft
+                    (2025)</p>
+                </div>
+                <span class="tier tier-full">
+                  full candidate coverage
+                </span>
+              </div>
+              <dl>
+                <dt>Local PDF</dt><dd><code>data/raw/lhmps/emeryville/emeryville-lhmp-2025-2030-final-draft.pdf</code></dd>
+                <dt>Source</dt><dd><a href="https://www.ci.emeryville.ca.us/1527/Local-Hazard-Mitigation-Plan">Official source</a></dd>
+                <dt>Candidate totals</dt><dd>evidence: 300, visuals: 7, tables: 10, data sources: 80</dd>
+                <dt>Likely headings</dt><dd>Local Hazard Mitigation Plan Update, SEVERITY – HIGH, SEASONAL FLOODING, Medium Priority Mitigation Measures, Department, 5 years.,  English Language Proficiency, Alameda County, 11 | P a g e, 2019 update., Ranking, Local Hazard Mitigation Plan:</dd>
+                <dt>Unresolved</dt><dd>124 candidate(s); aliases were not guessed.</dd>
+              </dl>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Hazard</th><th>Tier</th><th>Evidence</th><th>Visuals</th>
+                    <th>Tables</th><th>Sources</th><th>Headings</th><th>Actions</th></tr></thead>
+                  <tbody><tr><td><strong>Dam Failure</strong></td><td><span class="tier tier-standard">standard</span></td><td>5</td><td>0</td><td>0</td><td>0</td><td>1</td><td>2</td></tr><tr><td><strong>Drought</strong></td><td><span class="tier tier-standard">standard</span></td><td>13</td><td>0</td><td>0</td><td>0</td><td>6</td><td>5</td></tr><tr><td><strong>Earthquake</strong></td><td><span class="tier tier-full">full</span></td><td>110</td><td>4</td><td>2</td><td>25</td><td>45</td><td>55</td></tr><tr><td><strong>Extreme Heat</strong></td><td><span class="tier tier-standard">standard</span></td><td>6</td><td>0</td><td>0</td><td>1</td><td>2</td><td>0</td></tr><tr><td><strong>Flood</strong></td><td><span class="tier tier-standard">standard</span></td><td>27</td><td>0</td><td>0</td><td>4</td><td>13</td><td>5</td></tr><tr><td><strong>Poor Air Quality</strong></td><td><span class="tier tier-standard">standard</span></td><td>2</td><td>0</td><td>0</td><td>1</td><td>2</td><td>1</td></tr><tr><td><strong>Sea Level Rise</strong></td><td><span class="tier tier-strong">strong</span></td><td>26</td><td>0</td><td>3</td><td>15</td><td>28</td><td>14</td></tr><tr><td><strong>Severe Weather</strong></td><td><span class="tier tier-standard">standard</span></td><td>3</td><td>0</td><td>0</td><td>1</td><td>2</td><td>2</td></tr><tr><td><strong>Tsunami</strong></td><td><span class="tier tier-strong">strong</span></td><td>12</td><td>0</td><td>4</td><td>0</td><td>4</td><td>7</td></tr><tr><td><strong>Utility Disruption</strong></td><td><span class="tier tier-standard">standard</span></td><td>4</td><td>0</td><td>0</td><td>1</td><td>2</td><td>2</td></tr><tr><td><strong>Wildfire</strong></td><td><span class="tier tier-standard">standard</span></td><td>4</td><td>0</td><td>0</td><td>0</td><td>2</td><td>1</td></tr></tbody>
+                </table>
+              </div>
+              <details>
+                <summary>Warnings and extraction notes (2)</summary>
+                <ul><li>Evidence candidate limit reached (300); remaining snippets were skipped.</li><li>Visual page limit reached (8); 15 likely pages were not rendered.</li></ul>
+              </details>
+            </section>
+            
+            <section class="city-card">
+              <div class="city-heading">
+                <div>
+                  <p class="eyebrow">extracted</p>
+                  <h2>Fremont</h2>
+                  <p>Tri-City Multi-jurisdictional Local Hazard Mitigation Plan: Fremont Annex
+                    (2024)</p>
+                </div>
+                <span class="tier tier-strong">
+                  strong candidate coverage
+                </span>
+              </div>
+              <dl>
+                <dt>Local PDF</dt><dd><code>data/raw/lhmps/tri-city/tri-city-lhmp-2024-annex-a-fremont.pdf</code></dd>
+                <dt>Source</dt><dd><a href="https://www.fremont.gov/government/departments/fire/emergency-preparedness/local-hazard-mitigation-plan">Official source</a></dd>
+                <dt>Candidate totals</dt><dd>evidence: 300, visuals: 6, tables: 153, data sources: 160</dd>
+                <dt>Likely headings</dt><dd>April 2024, Grand Total, Fremont Total, Total, Structures, X, Disaster Declarations, Community Lifelines, A.4.3., Middlefield Reservoir Total, EQ CT, A.4.1.</dd>
+                <dt>Unresolved</dt><dd>247 candidate(s); aliases were not guessed.</dd>
+              </dl>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Hazard</th><th>Tier</th><th>Evidence</th><th>Visuals</th>
+                    <th>Tables</th><th>Sources</th><th>Headings</th><th>Actions</th></tr></thead>
+                  <tbody><tr><td><strong>Dam Failure</strong></td><td><span class="tier tier-standard">standard</span></td><td>1</td><td>0</td><td>25</td><td>22</td><td>13</td><td>0</td></tr><tr><td><strong>Drought</strong></td><td><span class="tier tier-standard">standard</span></td><td>3</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr><tr><td><strong>Earthquake</strong></td><td><span class="tier tier-strong">strong</span></td><td>2</td><td>0</td><td>27</td><td>36</td><td>25</td><td>1</td></tr><tr><td><strong>Extreme Heat</strong></td><td><span class="tier tier-standard">standard</span></td><td>1</td><td>0</td><td>0</td><td>1</td><td>1</td><td>0</td></tr><tr><td><strong>Flood</strong></td><td><span class="tier tier-strong">strong</span></td><td>27</td><td>0</td><td>30</td><td>28</td><td>24</td><td>6</td></tr><tr><td><strong>Landslide</strong></td><td><span class="tier tier-basic">basic</span></td><td>0</td><td>0</td><td>8</td><td>9</td><td>5</td><td>0</td></tr><tr><td><strong>Poor Air Quality</strong></td><td><span class="tier tier-basic">basic</span></td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td><strong>Sea Level Rise</strong></td><td><span class="tier tier-strong">strong</span></td><td>79</td><td>0</td><td>15</td><td>10</td><td>18</td><td>13</td></tr><tr><td><strong>Severe Weather</strong></td><td><span class="tier tier-strong">strong</span></td><td>1</td><td>0</td><td>3</td><td>6</td><td>5</td><td>2</td></tr><tr><td><strong>Tsunami</strong></td><td><span class="tier tier-basic">basic</span></td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr><tr><td><strong>Utility Disruption</strong></td><td><span class="tier tier-standard">standard</span></td><td>2</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr><tr><td><strong>Wildfire</strong></td><td><span class="tier tier-strong">strong</span></td><td>8</td><td>0</td><td>12</td><td>12</td><td>12</td><td>2</td></tr></tbody>
+                </table>
+              </div>
+              <details>
+                <summary>Warnings and extraction notes (2)</summary>
+                <ul><li>Evidence candidate limit reached (300); remaining snippets were skipped.</li><li>Visual page limit reached (8); 205 likely pages were not rendered.</li></ul>
+              </details>
+            </section>
+            
+            <section class="city-card">
+              <div class="city-heading">
+                <div>
+                  <p class="eyebrow">extracted</p>
+                  <h2>Hayward</h2>
+                  <p>Hayward Local Resilience Plan Update
+                    (2021)</p>
+                </div>
+                <span class="tier tier-full">
+                  full candidate coverage
+                </span>
+              </div>
+              <dl>
+                <dt>Local PDF</dt><dd><code>data/raw/lhmps/hayward/hayward-local-resilience-plan-2021-update.pdf</code></dd>
+                <dt>Source</dt><dd><a href="https://www.hayward-ca.gov/discover/community-dashboard/local-hazard-mitigation-plan">Official source</a></dd>
+                <dt>Candidate totals</dt><dd>evidence: 199, visuals: 15, tables: 48, data sources: 81</dd>
+                <dt>Likely headings</dt><dd>Policies*, Government, Hayward Fire News, Other:, 4. Discussion, Calaveras Fault, Awareness, Update, TABLE OF CONTENTS, October 2021, Activities, Agenda</dd>
+                <dt>Unresolved</dt><dd>133 candidate(s); aliases were not guessed.</dd>
+              </dl>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Hazard</th><th>Tier</th><th>Evidence</th><th>Visuals</th>
+                    <th>Tables</th><th>Sources</th><th>Headings</th><th>Actions</th></tr></thead>
+                  <tbody><tr><td><strong>Drought</strong></td><td><span class="tier tier-strong">strong</span></td><td>4</td><td>0</td><td>1</td><td>0</td><td>1</td><td>1</td></tr><tr><td><strong>Earthquake</strong></td><td><span class="tier tier-strong">strong</span></td><td>74</td><td>0</td><td>12</td><td>4</td><td>12</td><td>62</td></tr><tr><td><strong>Flood</strong></td><td><span class="tier tier-strong">strong</span></td><td>17</td><td>0</td><td>3</td><td>1</td><td>2</td><td>15</td></tr><tr><td><strong>Landslide</strong></td><td><span class="tier tier-standard">standard</span></td><td>6</td><td>0</td><td>0</td><td>0</td><td>3</td><td>3</td></tr><tr><td><strong>Sea Level Rise</strong></td><td><span class="tier tier-full">full</span></td><td>31</td><td>13</td><td>19</td><td>2</td><td>31</td><td>30</td></tr><tr><td><strong>Severe Weather</strong></td><td><span class="tier tier-strong">strong</span></td><td>3</td><td>0</td><td>2</td><td>0</td><td>2</td><td>3</td></tr><tr><td><strong>Wildfire</strong></td><td><span class="tier tier-strong">strong</span></td><td>15</td><td>0</td><td>1</td><td>2</td><td>3</td><td>13</td></tr></tbody>
+                </table>
+              </div>
+              <details>
+                <summary>Warnings and extraction notes (1)</summary>
+                <ul><li>Visual page limit reached (8); 28 likely pages were not rendered.</li></ul>
+              </details>
+            </section>
+            
+            <section class="city-card">
+              <div class="city-heading">
+                <div>
+                  <p class="eyebrow">extracted</p>
+                  <h2>Livermore</h2>
+                  <p>Tri-Valley Local Hazard Mitigation Plan, Volume 2: City Annexes
+                    (2024)</p>
+                </div>
+                <span class="tier tier-strong">
+                  strong candidate coverage
+                </span>
+              </div>
+              <dl>
+                <dt>Local PDF</dt><dd><code>data/raw/lhmps/tri-valley/tri-valley-lhmp-2024-volume-2.pdf</code></dd>
+                <dt>Source</dt><dd><a href="https://www.livermoreca.gov/departments/community-development/planning/local-hazard-mitigation-plan">Official source</a></dd>
+                <dt>Candidate totals</dt><dd>evidence: 300, visuals: 6, tables: 143, data sources: 17</dd>
+                <dt>Likely headings</dt><dd>Tri-Valley Local Hazard Mitigation Plan; Volume 2—Planning Partner Annexes, O, Completed, No, Low, Yes, Select, Ongoing, If Yes, Department /Position:, Medium, Miles O, 1.6.2 Opportunities for Future Integration</dd>
+                <dt>Unresolved</dt><dd>246 candidate(s); aliases were not guessed.</dd>
+              </dl>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Hazard</th><th>Tier</th><th>Evidence</th><th>Visuals</th>
+                    <th>Tables</th><th>Sources</th><th>Headings</th><th>Actions</th></tr></thead>
+                  <tbody><tr><td><strong>Dam Failure</strong></td><td><span class="tier tier-standard">standard</span></td><td>2</td><td>0</td><td>0</td><td>0</td><td>1</td><td>2</td></tr><tr><td><strong>Drought</strong></td><td><span class="tier tier-strong">strong</span></td><td>1</td><td>0</td><td>2</td><td>0</td><td>3</td><td>2</td></tr><tr><td><strong>Earthquake</strong></td><td><span class="tier tier-strong">strong</span></td><td>14</td><td>0</td><td>9</td><td>1</td><td>8</td><td>22</td></tr><tr><td><strong>Extreme Heat</strong></td><td><span class="tier tier-basic">basic</span></td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>2</td></tr><tr><td><strong>Flood</strong></td><td><span class="tier tier-strong">strong</span></td><td>58</td><td>1</td><td>31</td><td>0</td><td>22</td><td>62</td></tr><tr><td><strong>Landslide</strong></td><td><span class="tier tier-standard">standard</span></td><td>4</td><td>0</td><td>0</td><td>0</td><td>2</td><td>2</td></tr><tr><td><strong>Sea Level Rise</strong></td><td><span class="tier tier-basic">basic</span></td><td>0</td><td>0</td><td>0</td><td>13</td><td>1</td><td>2</td></tr><tr><td><strong>Severe Weather</strong></td><td><span class="tier tier-strong">strong</span></td><td>32</td><td>0</td><td>38</td><td>0</td><td>29</td><td>55</td></tr><tr><td><strong>Wildfire</strong></td><td><span class="tier tier-strong">strong</span></td><td>6</td><td>0</td><td>5</td><td>1</td><td>8</td><td>10</td></tr></tbody>
+                </table>
+              </div>
+              <details>
+                <summary>Warnings and extraction notes (2)</summary>
+                <ul><li>Evidence candidate limit reached (300); remaining snippets were skipped.</li><li>Visual page limit reached (6); 205 likely pages were not rendered.</li></ul>
+              </details>
+            </section>
+            
+            <section class="city-card">
+              <div class="city-heading">
+                <div>
+                  <p class="eyebrow">extracted</p>
+                  <h2>Newark</h2>
+                  <p>Tri-City Multi-jurisdictional Local Hazard Mitigation Plan: Newark Annex
+                    (2024)</p>
+                </div>
+                <span class="tier tier-strong">
+                  strong candidate coverage
+                </span>
+              </div>
+              <dl>
+                <dt>Local PDF</dt><dd><code>data/raw/lhmps/tri-city/tri-city-lhmp-2024-annex-b-newark.pdf</code></dd>
+                <dt>Source</dt><dd><a href="https://www.newark.org/departments/police/emergency-services/local-hazard-mitigation-plan">Official source</a></dd>
+                <dt>Candidate totals</dt><dd>evidence: 300, visuals: 1, tables: 84, data sources: 81</dd>
+                <dt>Likely headings</dt><dd>April 2024, Newark Total, Total, Structures, Local Concerns, Vulnerability–High, B.4 Risk Assessment, Disaster Declarations, EQ CT, B.4.3., Newark, Residential Total</dd>
+                <dt>Unresolved</dt><dd>190 candidate(s); aliases were not guessed.</dd>
+              </dl>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Hazard</th><th>Tier</th><th>Evidence</th><th>Visuals</th>
+                    <th>Tables</th><th>Sources</th><th>Headings</th><th>Actions</th></tr></thead>
+                  <tbody><tr><td><strong>Dam Failure</strong></td><td><span class="tier tier-standard">standard</span></td><td>8</td><td>0</td><td>7</td><td>6</td><td>8</td><td>0</td></tr><tr><td><strong>Drought</strong></td><td><span class="tier tier-standard">standard</span></td><td>2</td><td>0</td><td>3</td><td>2</td><td>4</td><td>0</td></tr><tr><td><strong>Earthquake</strong></td><td><span class="tier tier-standard">standard</span></td><td>1</td><td>0</td><td>14</td><td>13</td><td>15</td><td>0</td></tr><tr><td><strong>Extreme Heat</strong></td><td><span class="tier tier-standard">standard</span></td><td>1</td><td>0</td><td>0</td><td>1</td><td>1</td><td>0</td></tr><tr><td><strong>Flood</strong></td><td><span class="tier tier-strong">strong</span></td><td>32</td><td>0</td><td>19</td><td>17</td><td>18</td><td>3</td></tr><tr><td><strong>Poor Air Quality</strong></td><td><span class="tier tier-basic">basic</span></td><td>0</td><td>0</td><td>2</td><td>3</td><td>5</td><td>0</td></tr><tr><td><strong>Sea Level Rise</strong></td><td><span class="tier tier-strong">strong</span></td><td>91</td><td>0</td><td>9</td><td>8</td><td>17</td><td>13</td></tr><tr><td><strong>Severe Weather</strong></td><td><span class="tier tier-strong">strong</span></td><td>1</td><td>0</td><td>4</td><td>4</td><td>3</td><td>2</td></tr><tr><td><strong>Tsunami</strong></td><td><span class="tier tier-basic">basic</span></td><td>0</td><td>0</td><td>2</td><td>1</td><td>3</td><td>0</td></tr><tr><td><strong>Utility Disruption</strong></td><td><span class="tier tier-standard">standard</span></td><td>2</td><td>0</td><td>0</td><td>0</td><td>1</td><td>1</td></tr><tr><td><strong>Wildfire</strong></td><td><span class="tier tier-strong">strong</span></td><td>6</td><td>0</td><td>10</td><td>7</td><td>8</td><td>3</td></tr></tbody>
+                </table>
+              </div>
+              <details>
+                <summary>Warnings and extraction notes (2)</summary>
+                <ul><li>Evidence candidate limit reached (300); remaining snippets were skipped.</li><li>Visual page limit reached (8); 142 likely pages were not rendered.</li></ul>
+              </details>
+            </section>
+            
+            <section class="city-card">
+              <div class="city-heading">
+                <div>
+                  <p class="eyebrow">extracted</p>
+                  <h2>Oakland</h2>
+                  <p>Draft Local Hazard Mitigation Plan 2026-2031
+                    (2026)</p>
+                </div>
+                <span class="tier tier-full">
+                  full candidate coverage
+                </span>
+              </div>
+              <dl>
+                <dt>Local PDF</dt><dd><code>data/raw/lhmps/oakland/oakland-draft-lhmp-2026-2031.pdf</code></dd>
+                <dt>Source</dt><dd><a href="https://www.oaklandca.gov/topics/local-hazard-mitigation-plan">Official source</a></dd>
+                <dt>Candidate totals</dt><dd>evidence: 350, visuals: 53, tables: 362, data sources: 62</dd>
+                <dt>Likely headings</dt><dd>Black &amp; Veatch, MITIGATION OPPORTUNITIES, Total, Table 13-9. General Building Stock Replacement Cost Values ......................................................... 13-35, Table 10-17. National Flood Insurance Program Statistics .................................................................. 10-25, Sources:, Plan Amendment Process.......................................................................................................... 20-6, Federal Declarations, State Proclamations, Totals, Figure 3-6. General Plan Environmental Justice Element Community Screening, Flood – 0.2% Annual Chance Flood Hazard Area ..................................................................................... 10-19</dd>
+                <dt>Unresolved</dt><dd>283 candidate(s); aliases were not guessed.</dd>
+              </dl>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Hazard</th><th>Tier</th><th>Evidence</th><th>Visuals</th>
+                    <th>Tables</th><th>Sources</th><th>Headings</th><th>Actions</th></tr></thead>
+                  <tbody><tr><td><strong>Dam Failure</strong></td><td><span class="tier tier-full">full</span></td><td>14</td><td>36</td><td>63</td><td>4</td><td>15</td><td>27</td></tr><tr><td><strong>Drought</strong></td><td><span class="tier tier-strong">strong</span></td><td>8</td><td>0</td><td>5</td><td>7</td><td>10</td><td>1</td></tr><tr><td><strong>Earthquake</strong></td><td><span class="tier tier-strong">strong</span></td><td>17</td><td>0</td><td>53</td><td>13</td><td>16</td><td>29</td></tr><tr><td><strong>Flood</strong></td><td><span class="tier tier-strong">strong</span></td><td>33</td><td>0</td><td>34</td><td>6</td><td>22</td><td>21</td></tr><tr><td><strong>Landslide</strong></td><td><span class="tier tier-strong">strong</span></td><td>11</td><td>0</td><td>9</td><td>1</td><td>6</td><td>3</td></tr><tr><td><strong>Poor Air Quality</strong></td><td><span class="tier tier-strong">strong</span></td><td>1</td><td>0</td><td>1</td><td>0</td><td>1</td><td>1</td></tr><tr><td><strong>Sea Level Rise</strong></td><td><span class="tier tier-full">full</span></td><td>18</td><td>17</td><td>19</td><td>2</td><td>10</td><td>10</td></tr><tr><td><strong>Severe Weather</strong></td><td><span class="tier tier-strong">strong</span></td><td>10</td><td>0</td><td>58</td><td>6</td><td>17</td><td>47</td></tr><tr><td><strong>Tsunami</strong></td><td><span class="tier tier-strong">strong</span></td><td>11</td><td>0</td><td>14</td><td>2</td><td>5</td><td>3</td></tr><tr><td><strong>Utility Disruption</strong></td><td><span class="tier tier-strong">strong</span></td><td>2</td><td>0</td><td>37</td><td>0</td><td>2</td><td>27</td></tr><tr><td><strong>Wildfire</strong></td><td><span class="tier tier-strong">strong</span></td><td>10</td><td>0</td><td>15</td><td>7</td><td>12</td><td>6</td></tr></tbody>
+                </table>
+              </div>
+              <details>
+                <summary>Warnings and extraction notes (2)</summary>
+                <ul><li>Evidence candidate limit reached (350); remaining snippets were skipped.</li><li>Visual page limit reached (8); 184 likely pages were not rendered.</li></ul>
+              </details>
+            </section>
+            
+            <section class="city-card">
+              <div class="city-heading">
+                <div>
+                  <p class="eyebrow">extracted</p>
+                  <h2>Piedmont</h2>
+                  <p>Local Hazard Mitigation Plan
+                    (2019)</p>
+                </div>
+                <span class="tier tier-strong">
+                  strong candidate coverage
+                </span>
+              </div>
+              <dl>
+                <dt>Local PDF</dt><dd><code>data/raw/lhmps/piedmont/piedmont-lhmp-2019.pdf</code></dd>
+                <dt>Source</dt><dd><a href="https://piedmont.ca.gov/government/departments/public_safety/emergency_preparedness">Official source</a></dd>
+                <dt>Candidate totals</dt><dd>evidence: 300, visuals: 1, tables: 101, data sources: 117</dd>
+                <dt>Likely headings</dt><dd>April 2019, Grand Total, Total, Disaster Declaration History, Debris Generation, X, Inside Liquefaction Zone Total, Other, 1) Organize Resources, Significance, Severe Weather: General, Figure 4-34 Landslide Susceptibility Areas</dd>
+                <dt>Unresolved</dt><dd>174 candidate(s); aliases were not guessed.</dd>
+              </dl>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Hazard</th><th>Tier</th><th>Evidence</th><th>Visuals</th>
+                    <th>Tables</th><th>Sources</th><th>Headings</th><th>Actions</th></tr></thead>
+                  <tbody><tr><td><strong>Dam Failure</strong></td><td><span class="tier tier-strong">strong</span></td><td>4</td><td>0</td><td>2</td><td>2</td><td>3</td><td>4</td></tr><tr><td><strong>Drought</strong></td><td><span class="tier tier-strong">strong</span></td><td>10</td><td>0</td><td>2</td><td>5</td><td>5</td><td>10</td></tr><tr><td><strong>Earthquake</strong></td><td><span class="tier tier-strong">strong</span></td><td>77</td><td>0</td><td>30</td><td>35</td><td>24</td><td>70</td></tr><tr><td><strong>Extreme Heat</strong></td><td><span class="tier tier-strong">strong</span></td><td>6</td><td>0</td><td>3</td><td>7</td><td>6</td><td>7</td></tr><tr><td><strong>Flood</strong></td><td><span class="tier tier-strong">strong</span></td><td>25</td><td>0</td><td>12</td><td>8</td><td>6</td><td>28</td></tr><tr><td><strong>Landslide</strong></td><td><span class="tier tier-strong">strong</span></td><td>9</td><td>0</td><td>2</td><td>4</td><td>5</td><td>9</td></tr><tr><td><strong>Poor Air Quality</strong></td><td><span class="tier tier-basic">basic</span></td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td></tr><tr><td><strong>Sea Level Rise</strong></td><td><span class="tier tier-strong">strong</span></td><td>11</td><td>0</td><td>2</td><td>1</td><td>3</td><td>11</td></tr><tr><td><strong>Severe Weather</strong></td><td><span class="tier tier-strong">strong</span></td><td>28</td><td>0</td><td>15</td><td>15</td><td>17</td><td>22</td></tr><tr><td><strong>Wildfire</strong></td><td><span class="tier tier-strong">strong</span></td><td>18</td><td>0</td><td>4</td><td>7</td><td>9</td><td>21</td></tr></tbody>
+                </table>
+              </div>
+              <details>
+                <summary>Warnings and extraction notes (2)</summary>
+                <ul><li>Evidence candidate limit reached (300); remaining snippets were skipped.</li><li>Visual page limit reached (8); 137 likely pages were not rendered.</li></ul>
+              </details>
+            </section>
+            
+            <section class="city-card">
+              <div class="city-heading">
+                <div>
+                  <p class="eyebrow">extracted</p>
+                  <h2>Pleasanton</h2>
+                  <p>Tri-Valley Local Hazard Mitigation Plan, Volume 2: City Annexes
+                    (2024)</p>
+                </div>
+                <span class="tier tier-strong">
+                  strong candidate coverage
+                </span>
+              </div>
+              <dl>
+                <dt>Local PDF</dt><dd><code>data/raw/lhmps/tri-valley/tri-valley-lhmp-2024-volume-2.pdf</code></dd>
+                <dt>Source</dt><dd><a href="https://www.cityofpleasantonca.gov/your-community/emergency-preparedness/">Official source</a></dd>
+                <dt>Candidate totals</dt><dd>evidence: 300, visuals: 6, tables: 143, data sources: 17</dd>
+                <dt>Likely headings</dt><dd>Tri-Valley Local Hazard Mitigation Plan; Volume 2—Planning Partner Annexes, O, Completed, No, Low, Yes, Select, Ongoing, If Yes, Department /Position:, Medium, Miles O, 1.6.2 Opportunities for Future Integration</dd>
+                <dt>Unresolved</dt><dd>246 candidate(s); aliases were not guessed.</dd>
+              </dl>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Hazard</th><th>Tier</th><th>Evidence</th><th>Visuals</th>
+                    <th>Tables</th><th>Sources</th><th>Headings</th><th>Actions</th></tr></thead>
+                  <tbody><tr><td><strong>Dam Failure</strong></td><td><span class="tier tier-standard">standard</span></td><td>2</td><td>0</td><td>0</td><td>0</td><td>1</td><td>2</td></tr><tr><td><strong>Drought</strong></td><td><span class="tier tier-strong">strong</span></td><td>1</td><td>0</td><td>2</td><td>0</td><td>3</td><td>2</td></tr><tr><td><strong>Earthquake</strong></td><td><span class="tier tier-strong">strong</span></td><td>14</td><td>0</td><td>9</td><td>1</td><td>8</td><td>22</td></tr><tr><td><strong>Extreme Heat</strong></td><td><span class="tier tier-basic">basic</span></td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>2</td></tr><tr><td><strong>Flood</strong></td><td><span class="tier tier-strong">strong</span></td><td>58</td><td>1</td><td>31</td><td>0</td><td>22</td><td>62</td></tr><tr><td><strong>Landslide</strong></td><td><span class="tier tier-standard">standard</span></td><td>4</td><td>0</td><td>0</td><td>0</td><td>2</td><td>2</td></tr><tr><td><strong>Sea Level Rise</strong></td><td><span class="tier tier-basic">basic</span></td><td>0</td><td>0</td><td>0</td><td>13</td><td>1</td><td>2</td></tr><tr><td><strong>Severe Weather</strong></td><td><span class="tier tier-strong">strong</span></td><td>32</td><td>0</td><td>38</td><td>0</td><td>29</td><td>55</td></tr><tr><td><strong>Wildfire</strong></td><td><span class="tier tier-strong">strong</span></td><td>6</td><td>0</td><td>5</td><td>1</td><td>8</td><td>10</td></tr></tbody>
+                </table>
+              </div>
+              <details>
+                <summary>Warnings and extraction notes (2)</summary>
+                <ul><li>Evidence candidate limit reached (300); remaining snippets were skipped.</li><li>Visual page limit reached (6); 205 likely pages were not rendered.</li></ul>
+              </details>
+            </section>
+            
+            <section class="city-card">
+              <div class="city-heading">
+                <div>
+                  <p class="eyebrow">extracted</p>
+                  <h2>San Leandro</h2>
+                  <p>Environmental Hazards Element
+                    (2025)</p>
+                </div>
+                <span class="tier tier-strong">
+                  strong candidate coverage
+                </span>
+              </div>
+              <dl>
+                <dt>Local PDF</dt><dd><code>data/raw/lhmps/san-leandro/san-leandro-environmental-hazards-element-2025.pdf</code></dd>
+                <dt>Source</dt><dd><a href="https://www.sanleandro.org/332/General-Plan">Official source</a></dd>
+                <dt>Candidate totals</dt><dd>evidence: 106, visuals: 10, tables: 0, data sources: 6</dd>
+                <dt>Likely headings</dt><dd>E N V I R O N M E N T A L H A Z A R D S, Severity Zone., EMERGENCY PREPAREDNESS, Element, Seismic Conditions, Air Pollution, MITIGATION OF NATURAL HAZARDS, Risk Management., Projected Flood Zones, WILDFIRE HAZARDS, Enforce, Maps</dd>
+                <dt>Unresolved</dt><dd>52 candidate(s); aliases were not guessed.</dd>
+              </dl>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Hazard</th><th>Tier</th><th>Evidence</th><th>Visuals</th>
+                    <th>Tables</th><th>Sources</th><th>Headings</th><th>Actions</th></tr></thead>
+                  <tbody><tr><td><strong>Dam Failure</strong></td><td><span class="tier tier-standard">standard</span></td><td>2</td><td>0</td><td>0</td><td>0</td><td>1</td><td>2</td></tr><tr><td><strong>Drought</strong></td><td><span class="tier tier-standard">standard</span></td><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td><td>1</td></tr><tr><td><strong>Earthquake</strong></td><td><span class="tier tier-strong">strong</span></td><td>15</td><td>3</td><td>0</td><td>1</td><td>6</td><td>8</td></tr><tr><td><strong>Extreme Heat</strong></td><td><span class="tier tier-standard">standard</span></td><td>1</td><td>0</td><td>0</td><td>1</td><td>2</td><td>2</td></tr><tr><td><strong>Flood</strong></td><td><span class="tier tier-standard">standard</span></td><td>15</td><td>0</td><td>0</td><td>0</td><td>2</td><td>14</td></tr><tr><td><strong>Poor Air Quality</strong></td><td><span class="tier tier-standard">standard</span></td><td>4</td><td>0</td><td>0</td><td>0</td><td>2</td><td>2</td></tr><tr><td><strong>Sea Level Rise</strong></td><td><span class="tier tier-strong">strong</span></td><td>11</td><td>1</td><td>0</td><td>0</td><td>2</td><td>9</td></tr><tr><td><strong>Severe Weather</strong></td><td><span class="tier tier-standard">standard</span></td><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td></tr><tr><td><strong>Wildfire</strong></td><td><span class="tier tier-standard">standard</span></td><td>12</td><td>0</td><td>0</td><td>2</td><td>6</td><td>8</td></tr></tbody>
+                </table>
+              </div>
+              <details>
+                <summary>Warnings and extraction notes (1)</summary>
+                <ul><li>Visual page limit reached (8); 3 likely pages were not rendered.</li></ul>
+              </details>
+            </section>
+            
+            <section class="city-card">
+              <div class="city-heading">
+                <div>
+                  <p class="eyebrow">extracted</p>
+                  <h2>Union City</h2>
+                  <p>Tri-City Multi-jurisdictional Local Hazard Mitigation Plan: Union City Annex
+                    (2024)</p>
+                </div>
+                <span class="tier tier-strong">
+                  strong candidate coverage
+                </span>
+              </div>
+              <dl>
+                <dt>Local PDF</dt><dd><code>data/raw/lhmps/tri-city/tri-city-lhmp-2024-annex-c-union-city.pdf</code></dd>
+                <dt>Source</dt><dd><a href="https://www.unioncity.org/183/Emergency-Preparedness">Official source</a></dd>
+                <dt>Candidate totals</dt><dd>evidence: 300, visuals: 3, tables: 92, data sources: 86</dd>
+                <dt>Likely headings</dt><dd>April 2024, Total, Structures, Community Lifelines, Disaster Declarations, Union City Total, Vulnerability–High, C.4 Risk Assessment, C.4.3., Future Development, 4900 Horner Street, EQ CT</dd>
+                <dt>Unresolved</dt><dd>190 candidate(s); aliases were not guessed.</dd>
+              </dl>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Hazard</th><th>Tier</th><th>Evidence</th><th>Visuals</th>
+                    <th>Tables</th><th>Sources</th><th>Headings</th><th>Actions</th></tr></thead>
+                  <tbody><tr><td><strong>Dam Failure</strong></td><td><span class="tier tier-strong">strong</span></td><td>13</td><td>0</td><td>10</td><td>9</td><td>8</td><td>3</td></tr><tr><td><strong>Drought</strong></td><td><span class="tier tier-standard">standard</span></td><td>4</td><td>0</td><td>1</td><td>1</td><td>2</td><td>0</td></tr><tr><td><strong>Earthquake</strong></td><td><span class="tier tier-strong">strong</span></td><td>3</td><td>0</td><td>17</td><td>15</td><td>16</td><td>2</td></tr><tr><td><strong>Extreme Heat</strong></td><td><span class="tier tier-standard">standard</span></td><td>1</td><td>0</td><td>0</td><td>1</td><td>1</td><td>0</td></tr><tr><td><strong>Flood</strong></td><td><span class="tier tier-strong">strong</span></td><td>34</td><td>0</td><td>20</td><td>14</td><td>21</td><td>5</td></tr><tr><td><strong>Landslide</strong></td><td><span class="tier tier-basic">basic</span></td><td>0</td><td>0</td><td>5</td><td>3</td><td>3</td><td>0</td></tr><tr><td><strong>Poor Air Quality</strong></td><td><span class="tier tier-basic">basic</span></td><td>0</td><td>0</td><td>2</td><td>2</td><td>4</td><td>0</td></tr><tr><td><strong>Sea Level Rise</strong></td><td><span class="tier tier-strong">strong</span></td><td>93</td><td>0</td><td>12</td><td>8</td><td>21</td><td>13</td></tr><tr><td><strong>Severe Weather</strong></td><td><span class="tier tier-strong">strong</span></td><td>1</td><td>0</td><td>3</td><td>3</td><td>4</td><td>1</td></tr><tr><td><strong>Wildfire</strong></td><td><span class="tier tier-strong">strong</span></td><td>4</td><td>0</td><td>6</td><td>6</td><td>6</td><td>1</td></tr></tbody>
+                </table>
+              </div>
+              <details>
+                <summary>Warnings and extraction notes (2)</summary>
+                <ul><li>Evidence candidate limit reached (300); remaining snippets were skipped.</li><li>Visual page limit reached (8); 153 likely pages were not rendered.</li></ul>
+              </details>
+            </section>
+            
+  </main>
+</body>
+</html>

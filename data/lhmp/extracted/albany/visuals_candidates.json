@@ -1,0 +1,17 @@
+[
+  {
+    "id": "lhmp_visual_1a91bc753f0e9ef9",
+    "city": "albany",
+    "source_document": "albany-draft-lhmp-update-2023.pdf",
+    "pdf_page": 23,
+    "page_label": "",
+    "section_heading": "",
+    "suggested_hazard": "earthquake",
+    "extraction_reason": "Caption contained configured hazard alias “earthquake”.",
+    "review_status": "candidate",
+    "visual_type": "map",
+    "caption": "Map of Bay Area Fault Lines",
+    "page_image_path": "data/lhmp/extracted/albany/page-images/page-0023.png",
+    "address_specific": false
+  }
+]

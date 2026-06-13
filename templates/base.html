@@ -3,15 +3,31 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}Stay Ready Now{% endblock %}</title>
-    <meta name="description" content="{% block meta_description %}Alameda County disaster preparedness tools, risk maps, and emergency planning resources.{% endblock %}" />
+    <title>{% block title %}StayReadyNow | Alameda County Disaster Preparedness{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Independent Alameda County disaster preparedness tools, hazard maps, and source-backed local guidance.{% endblock %}" />
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#00C47A" />
-    {% block canonical %}{% endblock %}
+    {% block canonical %}
+    <link rel="canonical" href="https://stayreadynow.org{{ request.path }}" />
+    {% endblock %}
 
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" sizes="any" />
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}" />
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="StayReadyNow" />
+    <meta property="og:title" content="{{ self.title()|striptags|trim }}" />
+    <meta property="og:description" content="{{ self.meta_description()|striptags|trim }}" />
+    <meta property="og:url" content="https://stayreadynow.org{{ request.path }}" />
+    <meta property="og:image" content="https://stayreadynow.org/static/site-icon-1024.png" />
+    <meta property="og:image:width" content="1024" />
+    <meta property="og:image:height" content="1024" />
+    <meta property="og:image:alt" content="StayReadyNow shield and location pin logo" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="{{ self.title()|striptags|trim }}" />
+    <meta name="twitter:description" content="{{ self.meta_description()|striptags|trim }}" />
+    <meta name="twitter:image" content="https://stayreadynow.org/static/site-icon-1024.png" />
+
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="48x48" href="{{ url_for('static', filename='favicon-48.png') }}" />
+    <link rel="icon" type="image/png" sizes="96x96" href="{{ url_for('static', filename='favicon-96.png') }}" />
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}" />
     <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -470,6 +486,34 @@
         }
     </style>
 
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://stayreadynow.org/#website",
+          "url": "https://stayreadynow.org/",
+          "name": "StayReadyNow",
+          "description": "An independent educational tool for Alameda County disaster preparedness using official public data."
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://stayreadynow.org/#application",
+          "name": "StayReadyNow",
+          "url": "https://stayreadynow.org/",
+          "applicationCategory": "UtilitiesApplication",
+          "operatingSystem": "Web",
+          "isAccessibleForFree": true,
+          "description": "An independent educational hazard checker and preparedness map for Alameda County. It is not an official emergency service.",
+          "areaServed": {
+            "@type": "AdministrativeArea",
+            "name": "Alameda County, California"
+          }
+        }
+      ]
+    }
+    </script>
     {% block head %}{% endblock %}
 </head>
 <body>
@@ -561,7 +605,7 @@
                              width="32" height="32" alt="" />
                         Stay Ready Now
                     </span>
-                    <p>Official public information from federal, state, and local agencies. StayReady is educational and is not an official emergency service.</p>
+                    <p>StayReady is an independent educational tool using official public data. It is not an official emergency service and does not replace AC Alert, evacuation orders, 911, or instructions from public agencies.</p>
                     <p class="footer-copyright">&copy; 2026 StayReadyNow. All rights reserved.</p>
                 </div>
                 <nav aria-label="Footer">

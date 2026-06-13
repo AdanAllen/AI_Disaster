@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "city": "emeryville",
+  "source_document": "emeryville-lhmp-2025-2030-final-draft.pdf",
+  "source_pdf_path": "data/raw/lhmps/emeryville/emeryville-lhmp-2025-2030-final-draft.pdf",
+  "markdown_path": "",
+  "source_url": "https://www.ci.emeryville.ca.us/1527/Local-Hazard-Mitigation-Plan",
+  "source_pdf_sha256": "d8a370d8e7920257999295d46ca5799624a4b7bf3c1b398f87eb56245959596b",
+  "source_pdf_size_bytes": 95530852,
+  "pdf_page_count": 346,
+  "extracted_at": "2026-06-13T04:18:13.310167Z",
+  "extractor_version": "1.0.0",
+  "pymupdf_version": "1.27.2.3",
+  "hazard_filter": null,
+  "rendered_pdf_pages": [
+    5,
+    12,
+    14,
+    26,
+    27,
+    30,
+    32,
+    33
+  ],
+  "warnings": [
+    "Evidence candidate limit reached (300); remaining snippets were skipped.",
+    "Visual page limit reached (8); 15 likely pages were not rendered."
+  ],
+  "review_status": "candidate"
+}

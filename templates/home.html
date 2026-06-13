@@ -1,29 +1,12 @@
 {% extends "base.html" %}
 {% from "_action_macros.html" import action_item %}
 
-{% block title %}Stay Ready Now - Alameda County Disaster Preparedness Guidance{% endblock %}
+{% block title %}Alameda County Disaster Preparedness Map & Hazard Checker | StayReadyNow{% endblock %}
 
-{% block meta_description %}StayReady helps Alameda County residents enter an address and get simple, source-backed disaster preparedness and recovery guidance using official public information.{% endblock %}
+{% block meta_description %}Check Alameda County flood zones, wildfire zones, earthquake faults, liquefaction, tsunami layers, and practical disaster preparedness guidance.{% endblock %}
 
 {% block canonical %}
 <link rel="canonical" href="https://stayreadynow.org/" />
-{% endblock %}
-
-{% block head %}
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "Stay Ready Now",
-  "applicationCategory": "UtilitiesApplication",
-  "operatingSystem": "Web",
-  "description": "Address-first disaster preparedness and recovery guidance for Alameda County residents using official public information.",
-  "areaServed": {
-    "@type": "Place",
-    "name": "Alameda County, California"
-  }
-}
-</script>
 {% endblock %}
 
 {% block content %}

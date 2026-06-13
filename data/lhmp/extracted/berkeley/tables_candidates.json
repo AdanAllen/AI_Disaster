@@ -1,0 +1,30 @@
+[
+  {
+    "id": "lhmp_table_7a0dba982ad0a520",
+    "city": "berkeley",
+    "source_document": "berkeley-lhmp-2024.pdf",
+    "pdf_page": 142,
+    "page_label": "",
+    "section_heading": "Exhibit 15.",
+    "suggested_hazard": "severe_weather",
+    "extraction_reason": "Caption contained configured hazard alias “high wind”.",
+    "review_status": "candidate",
+    "caption": "Table 10 pinpoints key ideas from Exhibit 14 above. For example, over a one-year period,",
+    "extracted_text": "Table 10 pinpoints key ideas from Exhibit 14 above. For example, over a one-year period, there is a 5 percent chance that there will be a wind event causing $600,000 of damage, but there is a 90 percent chance of zero damage. However, over a ten-year period, the risk increases. There is a 5 percent chance that there will be a high wind event causing $3.5 million in damage, and a 90 percent chance that there will be at least $600,000 in damage due to high winds.",
+    "page_image_path": ""
+  },
+  {
+    "id": "lhmp_table_fb75931556a53994",
+    "city": "berkeley",
+    "source_document": "berkeley-lhmp-2024.pdf",
+    "pdf_page": 154,
+    "page_label": "",
+    "section_heading": "Exhibit 16.",
+    "suggested_hazard": "landslide",
+    "extraction_reason": "Caption contained configured hazard alias “landslide”.",
+    "review_status": "candidate",
+    "caption": "Table 10 pinpoints key ideas from Exhibit 10 above. For example, over a one-year period,",
+    "extracted_text": "Table 10 pinpoints key ideas from Exhibit 10 above. For example, over a one-year period,",
+    "page_image_path": ""
+  }
+]

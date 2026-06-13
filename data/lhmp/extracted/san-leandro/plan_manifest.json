@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "city": "san-leandro",
+  "source_document": "san-leandro-environmental-hazards-element-2025.pdf",
+  "source_pdf_path": "data/raw/lhmps/san-leandro/san-leandro-environmental-hazards-element-2025.pdf",
+  "markdown_path": "",
+  "source_url": "https://www.sanleandro.org/332/General-Plan",
+  "source_pdf_sha256": "067ff6bd9d177c808c51b72cbe66372fd36595ac797e31953065a00894061008",
+  "source_pdf_size_bytes": 2847322,
+  "pdf_page_count": 84,
+  "extracted_at": "2026-06-13T04:18:29.054562Z",
+  "extractor_version": "1.0.0",
+  "pymupdf_version": "1.27.2.3",
+  "hazard_filter": null,
+  "rendered_pdf_pages": [
+    3,
+    4,
+    5,
+    9,
+    10,
+    35,
+    41,
+    42
+  ],
+  "warnings": [
+    "Visual page limit reached (8); 3 likely pages were not rendered."
+  ],
+  "review_status": "candidate"
+}

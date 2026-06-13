@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "city": "oakland",
+  "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+  "source_pdf_path": "data/raw/lhmps/oakland/oakland-draft-lhmp-2026-2031.pdf",
+  "markdown_path": "",
+  "source_url": "https://www.oaklandca.gov/topics/local-hazard-mitigation-plan",
+  "source_pdf_sha256": "ec63b335266713c5f5d0c1dd375dd747e94d97e57ebbb6191f9815478562b9f4",
+  "source_pdf_size_bytes": 14089915,
+  "pdf_page_count": 388,
+  "extracted_at": "2026-06-13T04:18:23.573111Z",
+  "extractor_version": "1.0.0",
+  "pymupdf_version": "1.27.2.3",
+  "hazard_filter": null,
+  "rendered_pdf_pages": [
+    1,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "warnings": [
+    "Evidence candidate limit reached (350); remaining snippets were skipped.",
+    "Visual page limit reached (8); 184 likely pages were not rendered."
+  ],
+  "review_status": "candidate"
+}

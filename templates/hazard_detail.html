@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "_action_macros.html" import guide_action %}
 
-{% block title %}{{ guide.name }} Guide | Stay Ready Now{% endblock %}
+{% block title %}Alameda County {{ guide.name }} Guide | StayReadyNow{% endblock %}
 {% block meta_description %}Learn about {{ guide.name|lower }} in Alameda County, how StayReady checks official sources, and practical preparedness actions.{% endblock %}
 
 {% block content %}
@@ -14,7 +14,8 @@
             <p>{{ guide.definition }}</p>
             <div class="sr-hazard-guide-tags">
                 <span>Alameda County hazard</span>
-                <span>Official sources checked</span>
+                <span>Independent educational guide</span>
+                <span>Official public sources checked</span>
                 {% if guide.under_review %}<span>Guide coverage under review</span>{% endif %}
                 {% if guide.has_address %}<span>Address context available</span>{% endif %}
             </div>

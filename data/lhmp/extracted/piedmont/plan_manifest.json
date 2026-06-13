@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "city": "piedmont",
+  "source_document": "piedmont-lhmp-2019.pdf",
+  "source_pdf_path": "data/raw/lhmps/piedmont/piedmont-lhmp-2019.pdf",
+  "markdown_path": "",
+  "source_url": "https://piedmont.ca.gov/government/departments/public_safety/emergency_preparedness",
+  "source_pdf_sha256": "49fbdfe314be18fa7732656490dffccdcf6113d29058ce8879505b3162bc9139",
+  "source_pdf_size_bytes": 17342192,
+  "pdf_page_count": 426,
+  "extracted_at": "2026-06-13T04:18:25.794189Z",
+  "extractor_version": "1.0.0",
+  "pymupdf_version": "1.27.2.3",
+  "hazard_filter": null,
+  "rendered_pdf_pages": [
+    3,
+    5,
+    7,
+    11,
+    22,
+    25,
+    26,
+    27
+  ],
+  "warnings": [
+    "Evidence candidate limit reached (300); remaining snippets were skipped.",
+    "Visual page limit reached (8); 137 likely pages were not rendered."
+  ],
+  "review_status": "candidate"
+}

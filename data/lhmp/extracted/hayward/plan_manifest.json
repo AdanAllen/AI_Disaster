@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "city": "hayward",
+  "source_document": "hayward-local-resilience-plan-2021-update.pdf",
+  "source_pdf_path": "data/raw/lhmps/hayward/hayward-local-resilience-plan-2021-update.pdf",
+  "markdown_path": "",
+  "source_url": "https://www.hayward-ca.gov/discover/community-dashboard/local-hazard-mitigation-plan",
+  "source_pdf_sha256": "9c2869ea55be8c19f2ecde70d9c23482db782e63b8a4b1be0a3c94ccc87aec41",
+  "source_pdf_size_bytes": 5267506,
+  "pdf_page_count": 199,
+  "extracted_at": "2026-06-13T04:18:16.810994Z",
+  "extractor_version": "1.0.0",
+  "pymupdf_version": "1.27.2.3",
+  "hazard_filter": null,
+  "rendered_pdf_pages": [
+    2,
+    5,
+    9,
+    16,
+    21,
+    27,
+    34,
+    37
+  ],
+  "warnings": [
+    "Visual page limit reached (8); 28 likely pages were not rendered."
+  ],
+  "review_status": "candidate"
+}

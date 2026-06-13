@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "city": "alameda",
+  "source_document": "alameda-cahmp-2022.pdf",
+  "source_pdf_path": "data/raw/lhmps/alameda/alameda-cahmp-2022.pdf",
+  "markdown_path": "",
+  "source_url": "https://www.alamedaca.gov/Departments/Planning-Building-and-Transportation/Sustainability-and-Resilience/Climate-Action-and-Resiliency-Plan-CARP",
+  "source_pdf_sha256": "84e2f2e3c5dd7095c50817c512c3eb4b2bacfd64f9ad8798b7675575dd287ac7",
+  "source_pdf_size_bytes": 48118935,
+  "pdf_page_count": 402,
+  "extracted_at": "2026-06-13T04:18:04.836686Z",
+  "extractor_version": "1.0.0",
+  "pymupdf_version": "1.27.2.3",
+  "hazard_filter": null,
+  "rendered_pdf_pages": [
+    3,
+    4,
+    5,
+    6,
+    24,
+    30,
+    31,
+    32
+  ],
+  "warnings": [
+    "Evidence candidate limit reached (300); remaining snippets were skipped.",
+    "Visual page limit reached (8); 109 likely pages were not rendered."
+  ],
+  "review_status": "candidate"
+}

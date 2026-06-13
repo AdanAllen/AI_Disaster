@@ -3,7 +3,7 @@
         {% if map_notice %}<div class="alert alert-warning" role="alert">{{ map_notice }}</div>{% endif %}
         <header class="sr-map-page-header">
             <h1>Map view</h1>
-            <p>This map helps you visualize official hazard layers for the selected location.</p>
+            <p>This independent educational map helps you visualize official public hazard layers for the selected location.</p>
         </header>
 
         <section class="sr-map-layer-panel" aria-labelledby="map-layer-title">
@@ -50,7 +50,7 @@
             <div class="sr-map-status-strip">
                 <div><i class="fas fa-location-dot"></i><span><strong>{{ user_address }}</strong><small>{% if has_precise_location %}Selected address{% else %}ZIP-based location{% endif %}</small></span></div>
                 <div><i class="fas fa-circle-check"></i><span><strong>{% if has_precise_location %}Address point checked{% else %}ZIP boundary view{% endif %}</strong><small>{{ location_context.precision_label }}</small></span></div>
-                <div><i class="fas fa-database"></i><span><strong>Official public layers</strong><small>Loaded on demand</small></span></div>
+                <div><i class="fas fa-database"></i><span><strong>Official public layers</strong><small>Loaded on demand by independent StayReady</small></span></div>
                 <a href="{{ url_for('risk_summary') }}"><i class="fas fa-chart-line"></i> Summary</a>
                 <button type="button" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
             </div>
@@ -95,6 +95,6 @@
             <div class="active-layers visually-hidden" id="active-layers"><span class="active-layer-badge">ZIP {{ zip_code }}</span></div>
         </section>
 
-        <p class="sr-map-disclaimer">Official public information from federal, state, and local agencies. California Geological Survey · Official source, provisional StayReady integration. This application uses information from the California Geological Survey. It is not officially endorsed by these agencies and is not an official emergency service.</p>
+        <p class="sr-map-disclaimer">StayReady is an independent educational tool using official public data. It is not an official emergency service and does not replace AC Alert, evacuation orders, 911, or instructions from public agencies. California Geological Survey · Official source, provisional StayReady integration. This application uses information from the California Geological Survey. It is not officially endorsed by that agency.</p>
     </div>
 </div>

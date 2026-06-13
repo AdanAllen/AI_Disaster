@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "canonical_hazards": [
+    "earthquake",
+    "flood",
+    "wildfire",
+    "landslide",
+    "tsunami",
+    "dam_failure",
+    "drought",
+    "extreme_heat",
+    "poor_air_quality",
+    "utility_disruption",
+    "severe_weather",
+    "sea_level_rise"
+  ],
+  "aliases": {
+    "earthquake": [
+      "earthquake",
+      "seismic",
+      "ground shaking",
+      "fault rupture",
+      "liquefaction"
+    ],
+    "flood": [
+      "flood",
+      "flooding",
+      "floodplain",
+      "stormwater",
+      "storm drain"
+    ],
+    "wildfire": [
+      "wildfire",
+      "wildland fire",
+      "wildland-urban interface",
+      "wildland urban interface",
+      "wui fire"
+    ],
+    "landslide": [
+      "landslide",
+      "landsliding",
+      "slope failure",
+      "debris flow"
+    ],
+    "tsunami": [
+      "tsunami"
+    ],
+    "dam_failure": [
+      "dam failure",
+      "dam inundation"
+    ],
+    "drought": [
+      "drought"
+    ],
+    "extreme_heat": [
+      "extreme heat",
+      "heat wave",
+      "heatwave"
+    ],
+    "poor_air_quality": [
+      "poor air quality",
+      "wildfire smoke",
+      "smoke"
+    ],
+    "utility_disruption": [
+      "utility disruption",
+      "utility outage",
+      "power outage",
+      "public safety power shutoff",
+      "psps"
+    ],
+    "severe_weather": [
+      "severe weather",
+      "severe storm",
+      "winter storm",
+      "high wind",
+      "atmospheric river"
+    ],
+    "sea_level_rise": [
+      "sea level rise",
+      "sea-level rise",
+      "coastal flooding"
+    ]
+  },
+  "city_overrides": {
+    "hayward": {
+      "geologic hazards": "earthquake",
+      "seismic hazards": "earthquake"
+    }
+  }
+}

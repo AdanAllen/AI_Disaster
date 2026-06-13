@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "city": "albany",
+  "source_document": "albany-draft-lhmp-update-2023.pdf",
+  "source_pdf_path": "data/raw/lhmps/albany/albany-draft-lhmp-update-2023.pdf",
+  "markdown_path": "",
+  "source_url": "https://www.albanyca.org/departments/fire-emergency-medical-services/emergency-preparedness/hazard-mitigation-plan",
+  "source_pdf_sha256": "196895dc7343dc7a96910f07fced3698790dffb1a9cc1326ccf027f838e5e9c3",
+  "source_pdf_size_bytes": 3211579,
+  "pdf_page_count": 100,
+  "extracted_at": "2026-06-13T04:18:05.398197Z",
+  "extractor_version": "1.0.0",
+  "pymupdf_version": "1.27.2.3",
+  "hazard_filter": null,
+  "rendered_pdf_pages": [
+    1,
+    23
+  ],
+  "warnings": [],
+  "review_status": "candidate"
+}

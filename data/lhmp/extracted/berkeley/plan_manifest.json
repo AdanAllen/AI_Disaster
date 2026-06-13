@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "city": "berkeley",
+  "source_document": "berkeley-lhmp-2024.pdf",
+  "source_pdf_path": "data/raw/lhmps/berkeley/berkeley-lhmp-2024.pdf",
+  "markdown_path": "",
+  "source_url": "https://berkeleyca.gov/safety-health/disaster-readiness/local-hazard-mitigation-plan",
+  "source_pdf_sha256": "4c6905c2d5569f563cf61bd19e766c1874fa6afda758834135e94e5ee49335a3",
+  "source_pdf_size_bytes": 102280685,
+  "pdf_page_count": 1210,
+  "extracted_at": "2026-06-13T04:18:09.015380Z",
+  "extractor_version": "1.0.0",
+  "pymupdf_version": "1.27.2.3",
+  "hazard_filter": null,
+  "rendered_pdf_pages": [
+    16,
+    17,
+    18,
+    20,
+    21,
+    25,
+    28,
+    34
+  ],
+  "warnings": [
+    "Evidence candidate limit reached (350); remaining snippets were skipped.",
+    "Visual page limit reached (8); 48 likely pages were not rendered."
+  ],
+  "review_status": "candidate"
+}

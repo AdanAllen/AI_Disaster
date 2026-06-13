@@ -1,0 +1,17 @@
+[
+  {
+    "id": "lhmp_visual_87f73f8335cdbb39",
+    "city": "piedmont",
+    "source_document": "piedmont-lhmp-2019.pdf",
+    "pdf_page": 22,
+    "page_label": "",
+    "section_heading": "April 2019",
+    "suggested_hazard": null,
+    "extraction_reason": "PDF text matched a figure or table caption pattern.",
+    "review_status": "candidate",
+    "visual_type": "figure",
+    "caption": "Figure 2-1 City of Piedmont",
+    "page_image_path": "data/lhmp/extracted/piedmont/page-images/page-0022.png",
+    "address_specific": false
+  }
+]

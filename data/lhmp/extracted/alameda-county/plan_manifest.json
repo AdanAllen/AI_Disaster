@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "city": "alameda-county",
+  "source_document": "alameda-county-hmp-2022-archive.pdf",
+  "source_pdf_path": "data/raw/lhmps/alameda-county/alameda-county-hmp-2022-archive.pdf",
+  "markdown_path": "",
+  "source_url": "https://www.acgov.org/cda/planning/generalplans/2022-hazard-mitigation-plan.htm",
+  "source_pdf_sha256": "a5bbb3f6dbfd8f0849d8c1c56c6c7a615c487dd040d55f6b2e8c560800dec4eb",
+  "source_pdf_size_bytes": 10234872,
+  "pdf_page_count": 161,
+  "extracted_at": "2026-06-13T04:18:02.358201Z",
+  "extractor_version": "1.0.0",
+  "pymupdf_version": "1.27.2.3",
+  "hazard_filter": null,
+  "rendered_pdf_pages": [
+    3,
+    4,
+    5,
+    6,
+    10,
+    11,
+    12,
+    13
+  ],
+  "warnings": [
+    "Evidence candidate limit reached (300); remaining snippets were skipped.",
+    "Visual page limit reached (8); 101 likely pages were not rendered."
+  ],
+  "review_status": "candidate"
+}

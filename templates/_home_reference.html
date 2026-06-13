@@ -4,7 +4,11 @@
             <div class="sr-home-hero-grid">
                 <div class="sr-home-hero-copy">
                     <h1 id="home-hero-title">Know your risks.<br>Take action with confidence.</h1>
-                    <p>StayReady helps Alameda County residents understand local hazards and take practical steps using official information in plain language.</p>
+                    <p>StayReady helps Alameda County residents understand local hazards and take practical steps using official public data in plain language.</p>
+                    <div class="sr-civic-note" role="note">
+                        <strong>Independent educational tool.</strong>
+                        StayReady is an independent educational tool using official public data. It is not an official emergency service and does not replace AC Alert, evacuation orders, 911, or instructions from public agencies.
+                    </div>
 
                     <form action="{{ url_for('process_form') }}" method="POST" id="emergency-form" class="sr-home-search sr-form">
                         {% if error %}<div class="form-messages error mb-3">{{ error }}</div>{% endif %}
@@ -98,7 +102,7 @@
     <section class="sr-home-pillars" aria-label="Why use StayReady">
         <div class="container">
             <div class="sr-home-pillar-grid">
-                <article><span><i class="fas fa-shield-halved"></i></span><div><h2>Official sources</h2><p>Information from FEMA, CAL FIRE, USGS, CGS, and reviewed local plans.</p></div></article>
+                <article><span><i class="fas fa-shield-halved"></i></span><div><h2>Official public sources</h2><p>Used by StayReady as an independent educational tool, including FEMA, CAL FIRE, USGS, CGS, and reviewed local plans.</p></div></article>
                 <article><span><i class="fas fa-message"></i></span><div><h2>Plain-language guidance</h2><p>Clear steps to help you prepare, respond, and recover.</p></div></article>
                 <article><span><i class="fas fa-location-dot"></i></span><div><h2>Local hazard context</h2><p>See the hazards and mapped evidence available for your location.</p></div></article>
             </div>

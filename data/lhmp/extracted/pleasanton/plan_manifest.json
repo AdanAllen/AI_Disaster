@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "city": "pleasanton",
+  "source_document": "tri-valley-lhmp-2024-volume-2.pdf",
+  "source_pdf_path": "data/raw/lhmps/tri-valley/tri-valley-lhmp-2024-volume-2.pdf",
+  "markdown_path": "",
+  "source_url": "https://www.cityofpleasantonca.gov/your-community/emergency-preparedness/",
+  "source_pdf_sha256": "e982172949428b644a9522604c090be983019ca6d02f0b96d14925b73084e387",
+  "source_pdf_size_bytes": 21903453,
+  "pdf_page_count": 211,
+  "extracted_at": "2026-06-13T04:18:28.039104Z",
+  "extractor_version": "1.0.0",
+  "pymupdf_version": "1.27.2.3",
+  "hazard_filter": null,
+  "rendered_pdf_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "warnings": [
+    "Evidence candidate limit reached (300); remaining snippets were skipped.",
+    "Visual page limit reached (6); 205 likely pages were not rendered."
+  ],
+  "review_status": "candidate"
+}

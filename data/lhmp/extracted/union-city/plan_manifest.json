@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "city": "union-city",
+  "source_document": "tri-city-lhmp-2024-annex-c-union-city.pdf",
+  "source_pdf_path": "data/raw/lhmps/tri-city/tri-city-lhmp-2024-annex-c-union-city.pdf",
+  "markdown_path": "",
+  "source_url": "https://www.unioncity.org/183/Emergency-Preparedness",
+  "source_pdf_sha256": "ad421aad40cafc5188de506801b14734ecb4afb8e591cdc0e91f190258923d64",
+  "source_pdf_size_bytes": 21894510,
+  "pdf_page_count": 296,
+  "extracted_at": "2026-06-13T04:18:30.601529Z",
+  "extractor_version": "1.0.0",
+  "pymupdf_version": "1.27.2.3",
+  "hazard_filter": null,
+  "rendered_pdf_pages": [
+    1,
+    2,
+    3,
+    4,
+    6,
+    7,
+    9,
+    11
+  ],
+  "warnings": [
+    "Evidence candidate limit reached (300); remaining snippets were skipped.",
+    "Visual page limit reached (8); 153 likely pages were not rendered."
+  ],
+  "review_status": "candidate"
+}

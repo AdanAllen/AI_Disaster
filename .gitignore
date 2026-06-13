@@ -21,3 +21,6 @@ dist/
 build/
 *.egg-info/
 data/raw/lhmps/**/*.pdf
+data/lhmp/raw/**/*.pdf
+data/lhmp/extracted/**/page-images/*
+!data/lhmp/extracted/**/page-images/.gitkeep

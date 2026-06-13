@@ -17,7 +17,7 @@
         <div class="container">
             {% if warning_message %}<div class="sr-alert sr-alert-warning mb-4" role="status"><strong>Some information could not be checked.</strong> {{ warning_message }} The summary below shows only information that was returned.</div>{% endif %}
             <h1>Your preparedness summary</h1>
-            <p>This summary is based on official sources and the address you selected in Alameda County.</p>
+            <p>This independent educational summary uses official public sources and the address you selected in Alameda County.</p>
             <div class="sr-summary-address">
                 <i class="fas fa-location-dot" aria-hidden="true"></i>
                 <strong>{{ resident_plan.address_summary.display_name }}</strong>

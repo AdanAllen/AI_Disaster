@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "city": "fremont",
+  "source_document": "tri-city-lhmp-2024-annex-a-fremont.pdf",
+  "source_pdf_path": "data/raw/lhmps/tri-city/tri-city-lhmp-2024-annex-a-fremont.pdf",
+  "markdown_path": "",
+  "source_url": "https://www.fremont.gov/government/departments/fire/emergency-preparedness/local-hazard-mitigation-plan",
+  "source_pdf_sha256": "001cfa4999308241188a63488915008359e8f4b1d0efc8f507c42dd3311a3e9e",
+  "source_pdf_size_bytes": 29967852,
+  "pdf_page_count": 441,
+  "extracted_at": "2026-06-13T04:18:15.568859Z",
+  "extractor_version": "1.0.0",
+  "pymupdf_version": "1.27.2.3",
+  "hazard_filter": null,
+  "rendered_pdf_pages": [
+    1,
+    2,
+    5,
+    6,
+    7,
+    9,
+    10,
+    11
+  ],
+  "warnings": [
+    "Evidence candidate limit reached (300); remaining snippets were skipped.",
+    "Visual page limit reached (8); 205 likely pages were not rendered."
+  ],
+  "review_status": "candidate"
+}

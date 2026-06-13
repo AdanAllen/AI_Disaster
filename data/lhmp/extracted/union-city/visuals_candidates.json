@@ -1,0 +1,47 @@
+[
+  {
+    "id": "lhmp_visual_df8f1fcdd975e05f",
+    "city": "union-city",
+    "source_document": "tri-city-lhmp-2024-annex-c-union-city.pdf",
+    "pdf_page": 4,
+    "page_label": "",
+    "section_heading": "April 2024",
+    "suggested_hazard": null,
+    "extraction_reason": "PDF text matched a figure or table caption pattern.",
+    "review_status": "candidate",
+    "visual_type": "figure",
+    "caption": "Figure C-1 City of Union City",
+    "page_image_path": "data/lhmp/extracted/union-city/page-images/page-0004.png",
+    "address_specific": false
+  },
+  {
+    "id": "lhmp_visual_9d883b2b168a0a85",
+    "city": "union-city",
+    "source_document": "tri-city-lhmp-2024-annex-c-union-city.pdf",
+    "pdf_page": 11,
+    "page_label": "",
+    "section_heading": "April 2024",
+    "suggested_hazard": null,
+    "extraction_reason": "PDF text matched a figure or table caption pattern.",
+    "review_status": "candidate",
+    "visual_type": "figure",
+    "caption": "Figure C-2 City of Union City – Overall Social Vulnerability",
+    "page_image_path": "data/lhmp/extracted/union-city/page-images/page-0011.png",
+    "address_specific": false
+  },
+  {
+    "id": "lhmp_visual_203907190277afcf",
+    "city": "union-city",
+    "source_document": "tri-city-lhmp-2024-annex-c-union-city.pdf",
+    "pdf_page": 11,
+    "page_label": "",
+    "section_heading": "Data; Grey – Not Available",
+    "suggested_hazard": null,
+    "extraction_reason": "PDF text matched a figure or table caption pattern.",
+    "review_status": "candidate",
+    "visual_type": "figure",
+    "caption": "Figure C-3 City of Union City – Socioeconomic Status Vulnerability",
+    "page_image_path": "data/lhmp/extracted/union-city/page-images/page-0011.png",
+    "address_specific": false
+  }
+]

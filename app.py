@@ -1806,6 +1806,15 @@ def terms():
     return safe_render("terms.html")
 
 
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory(
+        os.path.join(BASE_DIR, "static"),
+        "favicon.ico",
+        mimetype="image/vnd.microsoft.icon",
+    )
+
+
 @app.route('/sitemap.xml')
 def sitemap():
     return send_from_directory(BASE_DIR, 'sitemap.xml')

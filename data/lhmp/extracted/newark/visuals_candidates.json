@@ -1,0 +1,17 @@
+[
+  {
+    "id": "lhmp_visual_511c93ae83caf9d2",
+    "city": "newark",
+    "source_document": "tri-city-lhmp-2024-annex-b-newark.pdf",
+    "pdf_page": 4,
+    "page_label": "",
+    "section_heading": "April 2024",
+    "suggested_hazard": null,
+    "extraction_reason": "PDF text matched a figure or table caption pattern.",
+    "review_status": "candidate",
+    "visual_type": "figure",
+    "caption": "Figure B-1 City of Newark",
+    "page_image_path": "data/lhmp/extracted/newark/page-images/page-0004.png",
+    "address_specific": false
+  }
+]

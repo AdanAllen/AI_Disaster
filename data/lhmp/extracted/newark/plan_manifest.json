@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "city": "newark",
+  "source_document": "tri-city-lhmp-2024-annex-b-newark.pdf",
+  "source_pdf_path": "data/raw/lhmps/tri-city/tri-city-lhmp-2024-annex-b-newark.pdf",
+  "markdown_path": "",
+  "source_url": "https://www.newark.org/departments/police/emergency-services/local-hazard-mitigation-plan",
+  "source_pdf_sha256": "6612a632028856c0b4edd83ea40a6217c4bb96f0dede432958e714eb830e70b7",
+  "source_pdf_size_bytes": 22543795,
+  "pdf_page_count": 274,
+  "extracted_at": "2026-06-13T04:18:20.754849Z",
+  "extractor_version": "1.0.0",
+  "pymupdf_version": "1.27.2.3",
+  "hazard_filter": null,
+  "rendered_pdf_pages": [
+    1,
+    2,
+    3,
+    4,
+    6,
+    8,
+    9,
+    10
+  ],
+  "warnings": [
+    "Evidence candidate limit reached (300); remaining snippets were skipped.",
+    "Visual page limit reached (8); 142 likely pages were not rendered."
+  ],
+  "review_status": "candidate"
+}
