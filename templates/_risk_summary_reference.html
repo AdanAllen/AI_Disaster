@@ -6,6 +6,7 @@
                 <span class="sr-empty-state-icon" aria-hidden="true"><i class="fas fa-location-dot"></i></span>
                 <h1>Your preparedness summary</h1>
                 <p>Enter an Alameda County address to generate your preparedness summary.</p>
+                <p class="sr-empty-state-explanation">No source-backed findings are shown until StayReady has a location to check.</p>
                 <a class="btn sr-button sr-button-primary" href="{{ url_for('home') }}#get-started">Enter an address</a>
                 <small>StayReady is an educational tool and is not an official emergency service.</small>
             </div>
@@ -14,7 +15,7 @@
 {% else %}
     <section class="sr-summary-header">
         <div class="container">
-            {% if warning_message %}<div class="sr-alert sr-alert-warning mb-4">{{ warning_message }}</div>{% endif %}
+            {% if warning_message %}<div class="sr-alert sr-alert-warning mb-4" role="status"><strong>Some information could not be checked.</strong> {{ warning_message }} The summary below shows only information that was returned.</div>{% endif %}
             <h1>Your preparedness summary</h1>
             <p>This summary is based on official sources and the address you selected in Alameda County.</p>
             <div class="sr-summary-address">
@@ -29,6 +30,11 @@
         <div class="container">
             <h2 class="visually-hidden">Priority hazards</h2>
             <p class="visually-hidden">The status describes the evidence checked; the order helps organize preparedness and is not a safety determination.</p>
+            <header class="sr-summary-section-heading">
+                <span class="section-eyebrow">Main answer</span>
+                <h2>Key findings for this location</h2>
+                <p>Start with these preparedness priorities. Open details to review address-level evidence, limits, and official sources.</p>
+            </header>
             <div class="sr-summary-hazard-grid" id="top-concerns">
                 {% for plan in resident_plan.hazards[:3] %}
                 {% set hazard_lower = plan.hazard | lower %}
@@ -41,7 +47,10 @@
                         <h3>{{ plan.hazard }}</h3>
                         <span class="sr-summary-severity">{{ plan.priority_label }}</span>
                     </header>
-                    <p class="sr-summary-hazard-copy">{{ plan.concise_summary }}</p>
+                    <div class="sr-summary-hazard-copy">
+                        <h4>What this means</h4>
+                        <p>{{ plan.concise_summary }}</p>
+                    </div>
                     <h4>What to do next</h4>
                     <ul>
                         {% for item in (plan.before_actions + plan.during_actions)[:3] %}
@@ -133,11 +142,26 @@
             </section>
             {% endif %}
 
+            <details class="sr-summary-terms">
+                <summary><i class="fas fa-circle-question" aria-hidden="true"></i> Help with map and evidence terms</summary>
+                <div class="sr-summary-term-grid">
+                    <div><strong>FEMA Zone X</strong><span>A FEMA mapped category generally outside the Special Flood Hazard Area or with lower or undetermined mapped flood hazard. It does not mean flooding cannot occur.</span></div>
+                    <div><strong>Liquefaction zone</strong><span>Some soils may lose strength during strong shaking. This does not predict damage to a specific building.</span></div>
+                    <div><strong>Alquist-Priolo Fault Zone</strong><span>A California regulatory zone around active fault traces used for surface-fault-rupture review.</span></div>
+                    <div><strong>Earthquake-induced landslide zone</strong><span>An area where strong shaking may trigger landslides. It is not a property-level slope inspection.</span></div>
+                    <div><strong>Tsunami hazard area</strong><span>An official planning area for possible tsunami flooding or evacuation. Follow local instructions during an event.</span></div>
+                    <div><strong>Mapped match found</strong><span>The selected point falls inside a checked map boundary. It does not predict building damage.</span></div>
+                    <div><strong>No mapped match found</strong><span>The selected point was outside that checked boundary. Unmapped or indirect impacts may still occur.</span></div>
+                    <div><strong>Not checked</strong><span>StayReady did not receive enough source data to make an address-level comparison for that layer.</span></div>
+                    <div><strong>General area information</strong><span>County or city preparedness context that is useful for planning but is not a property-level finding.</span></div>
+                </div>
+            </details>
+
             <details class="sr-summary-methodology">
                 <summary>Evidence, other hazards, sources, and limitations</summary>
                 <div class="sr-summary-methodology-grid">
-                    <section><h3>What StayReady checked</h3><ul>{% for item in resident_plan.checks['checked'] %}<li>{{ item }}</li>{% endfor %}</ul></section>
-                    <section><h3>What is not checked yet</h3><ul>{% for item in resident_plan.checks.not_checked %}<li>{{ item }}</li>{% endfor %}</ul></section>
+                    <section><h3>What StayReady checked</h3><ul>{% for item in resident_plan.checks['checked'] %}<li>{{ item }}</li>{% else %}<li>No source check was completed for this address.</li>{% endfor %}</ul></section>
+                    <section><h3>What is not checked yet</h3><ul>{% for item in resident_plan.checks.not_checked %}<li>{{ item }}</li>{% else %}<li>No additional unchecked source was reported.</li>{% endfor %}</ul></section>
                     <section><h3>Important limits</h3><ul>{% for item in resident_plan.limits %}<li>{{ item }}</li>{% endfor %}</ul></section>
                     <section><h3>Sources used</h3>{% for source in resident_plan.sources %}<p>{% if source.url %}<a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.name }}</a>{% else %}{{ source.name }}{% endif %}<br><small>{{ source.basis }} · {{ source.review_status }}</small></p>{% endfor %}</section>
                 </div>

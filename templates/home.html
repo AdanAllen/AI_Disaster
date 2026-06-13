@@ -288,6 +288,10 @@
         const addressInput = document.getElementById('address');
         const form = document.getElementById('emergency-form');
         const suggestionsContainer = document.getElementById('address-suggestions');
+        const loadingPanel = document.getElementById('sr-summary-loading');
+        const loadingMessage = document.getElementById('sr-loading-message');
+        const loadingSteps = loadingPanel ? Array.from(loadingPanel.querySelectorAll('.sr-loading-steps span')) : [];
+        let loadingTimer = null;
 
         function toggleSearchType() {
             if (zipRadio.checked) {
@@ -502,12 +506,63 @@
                 return;
             }
 
-            const submitBtn = this.querySelector('button[type="submit"]');
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Checking location...';
-            submitBtn.disabled = true;
+            const loadingMessages = [
+                zipRadio.checked ? 'Checking ZIP location…' : 'Finding address…',
+                'Checking mapped hazard zones…',
+                'Checking FEMA flood data…',
+                'Checking CAL FIRE wildfire data…',
+                'Loading local plan facts…',
+                'Preparing summary…'
+            ];
+            let loadingIndex = 0;
+
+            this.querySelectorAll('button[type="submit"]').forEach(button => {
+                button.dataset.originalContent = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Checking location…';
+                button.disabled = true;
+            });
+
+            if (loadingPanel && loadingMessage) {
+                loadingPanel.hidden = false;
+                loadingPanel.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('sr-is-preparing-summary');
+                loadingMessage.textContent = loadingMessages[0];
+                loadingSteps.forEach((step, index) => step.classList.toggle('is-active', index === 0));
+                window.requestAnimationFrame(() => loadingPanel.classList.add('is-visible'));
+
+                // These messages describe work in progress only; they never predict a hazard result.
+                loadingTimer = window.setInterval(() => {
+                    if (loadingIndex >= loadingMessages.length - 1) {
+                        window.clearInterval(loadingTimer);
+                        return;
+                    }
+                    loadingIndex += 1;
+                    loadingMessage.textContent = loadingMessages[loadingIndex];
+                    loadingSteps.forEach((step, index) => step.classList.toggle('is-active', index <= loadingIndex));
+                }, 700);
+            }
         });
 
         addressInput.focus();
+
+        window.addEventListener('pageshow', function() {
+            if (loadingTimer) {
+                window.clearInterval(loadingTimer);
+                loadingTimer = null;
+            }
+            document.body.classList.remove('sr-is-preparing-summary');
+            if (loadingPanel) {
+                loadingPanel.classList.remove('is-visible');
+                loadingPanel.hidden = true;
+                loadingPanel.setAttribute('aria-hidden', 'true');
+            }
+            form.querySelectorAll('button[type="submit"]').forEach(button => {
+                if (button.dataset.originalContent) {
+                    button.innerHTML = button.dataset.originalContent;
+                }
+                button.disabled = false;
+            });
+        });
     });
 </script>
 {% endblock %}

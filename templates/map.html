@@ -736,9 +736,9 @@
                 <details class="map-help">
                     <summary>Definitions and limits</summary>
                     <div class="map-help-terms">
-                        <div class="map-definition"><strong>Mapped match</strong><span>Your selected point falls inside that dataset's boundary. It signals a reason to review the hazard, not expected damage.</span></div>
-                        <div class="map-definition"><strong>No mapped match</strong><span>The point is outside the displayed boundary. Related hazards, indirect impacts, and unmapped conditions may still occur.</span></div>
-                        <div class="map-definition"><strong>Official source, provisional StayReady integration</strong><span>Useful public planning information, but not a legal, engineering, insurance, or property-safety determination.</span></div>
+                    <div class="map-definition"><strong>Mapped match</strong><span>Your selected point falls inside that dataset's boundary. It signals a reason to review the hazard, not expected damage.</span></div>
+                    <div class="map-definition"><strong>No mapped match</strong><span>The point is outside the displayed boundary. Related hazards, indirect impacts, and unmapped conditions may still occur.</span></div>
+                    <div class="map-definition"><strong>Official source, provisional StayReady integration</strong><span>Useful public planning information, but not a legal, engineering, insurance, or property-safety determination.</span></div>
                     </div>
                     <p class="small text-muted">
                         This application uses public data from FEMA, USGS, CAL FIRE, and the California Geological Survey. It is not officially endorsed by these agencies.
@@ -835,8 +835,30 @@
         {% endfor %}
     };
     let activeHazard = null;
-    let floodOverlayFailed = false;
-    let floodWarningShown = false;
+    const layerRequestState = Object.fromEntries(Object.keys(layers).map(key => [key, 'idle']));
+    const layerWarningsShown = new Set();
+    const layerIcons = {
+        wildfire: 'fas fa-fire',
+        flood: 'fas fa-water',
+        earthquake: 'fas fa-mountain',
+        live: 'fas fa-broadcast-tower',
+        zip: 'fas fa-map-marker-alt',
+        'cgs-alquist-priolo': 'fas fa-layer-group',
+        'cgs-liquefaction': 'fas fa-layer-group',
+        'cgs-earthquake-landslide': 'fas fa-layer-group',
+        'cgs-tsunami': 'fas fa-layer-group'
+    };
+    const layerLabels = {
+        wildfire: 'Wildfire Zones',
+        flood: 'Flood Zones',
+        earthquake: 'Fault Lines',
+        live: 'Recent Bay Area Earthquakes',
+        zip: `ZIP Boundary ({{ zip_code }})`,
+        'cgs-alquist-priolo': 'CGS Alquist-Priolo Fault Zones',
+        'cgs-liquefaction': 'CGS Liquefaction Zones',
+        'cgs-earthquake-landslide': 'CGS Earthquake-Induced Landslide Zones',
+        'cgs-tsunami': 'CGS Tsunami Hazard Areas'
+    };
 
     function escapeHTML(value) {
         const element = document.createElement('div');
@@ -865,7 +887,7 @@
     // Load ZIP code boundary
     function loadZipBoundary() {
         const zipCode = "{{ zip_code }}";
-        
+        setLayerFeedback('zip', 'loading', `Loading ${layerLabels.zip}…`);
         fetch(`/api/zip-boundary/${zipCode}`)
             .then(response => response.json())
             .then(data => {
@@ -889,6 +911,7 @@
                     }).addTo(map);
                     
                     map.fitBounds(layers.zip.getBounds());
+                    setLayerFeedback('zip', 'loaded', 'ZIP boundary loaded using an approximate display area.');
                     return;
                 }
                 
@@ -906,6 +929,7 @@
                 if (layers.zip.getBounds && layers.zip.getBounds().isValid()) {
                     map.fitBounds(layers.zip.getBounds());
                 }
+                setLayerFeedback('zip', 'loaded');
             })
             .catch(error => {
                 console.error('Error loading ZIP boundary:', error);
@@ -927,30 +951,47 @@
                 }).addTo(map);
                 
                 map.fitBounds(layers.zip.getBounds());
+                setLayerFeedback('zip', 'loaded', 'ZIP boundary loaded using an approximate display area.');
             });
     }
 
     // Toggle layer visibility with proper loading/error handling
     function toggleLayer(layerType) {
         const toggle = document.getElementById(`${layerType}-toggle`);
+        if (!toggle || layerRequestState[layerType] === 'loading') {
+            return;
+        }
         const isActive = toggle.classList.contains('active');
         
         if (isActive) {
-            // Remove layer
+            // Keep the Leaflet object in memory so reopening a recently loaded layer does not refetch it.
             if (layers[layerType]) {
                 map.removeLayer(layers[layerType]);
-                layers[layerType] = null;
             }
             toggle.classList.remove('active');
             resetToggleContent(layerType);
+            setLayerFeedback(layerType, 'hidden');
             updateActiveLayers();
-        } else {
-            // Add layer with loading state
-            setLoadingState(layerType, true);
-            toggle.classList.add('active');
-            loadLayer(layerType);
-            updateActiveLayers();
+            return;
         }
+
+        if (layerRequestState[layerType] === 'loaded' && layers[layerType]) {
+            layers[layerType].addTo(map);
+            toggle.classList.add('active');
+            setLayerFeedback(layerType, 'loaded', `${layerLabels[layerType]} shown from the recent map request.`);
+            updateActiveLayers();
+            return;
+        }
+
+        if (['empty', 'unavailable'].includes(layerRequestState[layerType])) {
+            setLayerFeedback(layerType, layerRequestState[layerType]);
+            return;
+        }
+
+        setLoadingState(layerType, true);
+        toggle.classList.add('active');
+        loadLayer(layerType);
+        updateActiveLayers();
     }
 
     // Set loading state for toggles
@@ -958,13 +999,17 @@
         const toggle = document.getElementById(`${layerType}-toggle`);
         
         if (isLoading) {
+            layerRequestState[layerType] = 'loading';
             toggle.classList.add('layer-loading');
+            toggle.setAttribute('aria-busy', 'true');
             const iconElement = toggle.querySelector('.layer-icon');
             iconElement.className = 'fas fa-spinner fa-spin layer-icon';
             const textElement = toggle.querySelector('span');
-            textElement.textContent = 'Loading...';
+            textElement.textContent = `${layerLabels[layerType]}: Loading`;
+            setLayerFeedback(layerType, 'loading');
         } else {
             toggle.classList.remove('layer-loading');
+            toggle.removeAttribute('aria-busy');
             resetToggleContent(layerType);
         }
     }
@@ -975,32 +1020,40 @@
         const iconElement = toggle.querySelector('.layer-icon');
         const textElement = toggle.querySelector('span');
         
-        const icons = {
-            wildfire: 'fas fa-fire',
-            flood: 'fas fa-water',
-            earthquake: 'fas fa-mountain',
-            live: 'fas fa-broadcast-tower',
-            zip: 'fas fa-map-marker-alt',
-            'cgs-alquist-priolo': 'fas fa-layer-group',
-            'cgs-liquefaction': 'fas fa-layer-group',
-            'cgs-earthquake-landslide': 'fas fa-layer-group',
-            'cgs-tsunami': 'fas fa-layer-group'
+        iconElement.className = `${layerIcons[layerType]} layer-icon`;
+        textElement.textContent = layerLabels[layerType];
+    }
+
+    function setLayerFeedback(layerType, state, message = '') {
+        const status = document.getElementById('map-loading-status');
+        const toggle = document.getElementById(`${layerType}-toggle`);
+        if (state !== 'hidden') {
+            layerRequestState[layerType] = state;
+        }
+        if (toggle) {
+            toggle.dataset.layerState = state;
+        }
+
+        const defaultMessages = {
+            loading: `Loading ${layerLabels[layerType]}…`,
+            loaded: `${layerLabels[layerType]} loaded.`,
+            hidden: `${layerLabels[layerType]} hidden. Select it again to show the cached layer.`,
+            empty: `${layerLabels[layerType]}: no data shown for this address or map area.`,
+            unavailable: `${layerLabels[layerType]} is temporarily unavailable. Other map layers are still available.`
         };
-        
-        const labels = {
-            wildfire: 'Wildfire Zones',
-            flood: 'Flood Zones', 
-            earthquake: 'Fault Lines',
-            live: 'Recent Bay Area Earthquakes',
-            zip: `ZIP Boundary ({{ zip_code }})`,
-            'cgs-alquist-priolo': 'CGS Alquist-Priolo Fault Zones',
-            'cgs-liquefaction': 'CGS Liquefaction Zones',
-            'cgs-earthquake-landslide': 'CGS Earthquake-Induced Landslide Zones',
-            'cgs-tsunami': 'CGS Tsunami Hazard Areas'
-        };
-        
-        iconElement.className = `${icons[layerType]} layer-icon`;
-        textElement.textContent = labels[layerType];
+        if (status) {
+            status.textContent = message || defaultMessages[state] || 'Choose a map layer to view official data.';
+        }
+    }
+
+    function finishLayerLoad(layerType, state, message = '') {
+        setLoadingState(layerType, false);
+        const toggle = document.getElementById(`${layerType}-toggle`);
+        if (toggle) {
+            toggle.classList.toggle('active', state === 'loaded');
+        }
+        setLayerFeedback(layerType, state, message);
+        updateActiveLayers();
     }
 
     // Load specific layer data
@@ -1027,21 +1080,20 @@
 
     function loadCGSLayer(layerKey) {
         const layerType = `cgs-${layerKey}`;
+        const cgsUnavailableFallback = 'Official CGS map layer unavailable — not displayed. Other map layers are still available.';
+        if (layerRequestState[layerType] === 'loaded') {
+            return;
+        }
+        setLoadingState(layerType, true);
         fetch(`/api/cgs-map-layer/${layerKey}`)
             .then(response => response.json())
             .then(data => {
                 if (data.data_status === 'data_unavailable') {
-                    setLoadingState(layerType, false);
-                    document.getElementById(`${layerType}-toggle`).classList.remove('active');
-                    showLayerMessage(data.message || 'Official CGS map layer unavailable — not displayed.');
-                    updateActiveLayers();
+                    finishLayerLoad(layerType, 'unavailable', data.message || cgsUnavailableFallback);
                     return;
                 }
                 if (!data.features || data.features.length === 0) {
-                    setLoadingState(layerType, false);
-                    document.getElementById(`${layerType}-toggle`).classList.remove('active');
-                    showLayerMessage(data.message || 'No CGS polygons were returned for this map window. This is not a safety determination.');
-                    updateActiveLayers();
+                    finishLayerLoad(layerType, 'empty', data.message || 'No data is shown for this map area. This is not a safety determination.');
                     return;
                 }
 
@@ -1062,17 +1114,10 @@
                         layer.bindPopup(popup);
                     }
                 }).addTo(map);
-                setLoadingState(layerType, false);
-                document.getElementById(`${layerType}-toggle`).classList.add('active');
+                finishLayerLoad(layerType, 'loaded', data.message || `${layerLabels[layerType]} loaded.`);
                 showLayerMessage(data.message || 'CGS mapped zones displayed.');
-                updateActiveLayers();
             })
-            .catch(() => {
-                setLoadingState(layerType, false);
-                document.getElementById(`${layerType}-toggle`).classList.remove('active');
-                showLayerMessage('Official CGS map layer unavailable — not displayed.');
-                updateActiveLayers();
-            });
+            .catch(() => showError(layerType));
     }
 
     // Load wildfire hazard zones
@@ -1084,13 +1129,11 @@
             .then(response => response.json())
             .then(data => {
                 if (data.error || ['unavailable', 'data_unavailable'].includes(data.data_status)) {
-                    setLoadingState('wildfire', false);
-                    showLayerMessage(data.message || 'Official layer unavailable — not checked.');
-                    updateActiveLayers();
+                    finishLayerLoad('wildfire', 'unavailable', data.message || 'Wildfire Zones are temporarily unavailable. Other map layers are still available.');
                     return;
                 }
-                if (data.error || !data.features || data.features.length === 0) {
-                    showError('wildfire');
+                if (!data.features || data.features.length === 0) {
+                    finishLayerLoad('wildfire', 'empty', data.message || 'Wildfire Zones: no data shown for this address or map area.');
                     return;
                 }
                 
@@ -1114,8 +1157,7 @@
                     }
                 }).addTo(map);
                 
-                setLoadingState('wildfire', false);
-                updateActiveLayers();
+                finishLayerLoad('wildfire', 'loaded');
                 console.log('Wildfire zones loaded successfully');
                 
             })
@@ -1124,13 +1166,6 @@
 
     // Load flood zones
     function loadFloodZones() {
-        if (floodOverlayFailed) {
-            setLoadingState('flood', false);
-            document.getElementById('flood-toggle').classList.remove('active');
-            showFloodOverlayWarning();
-            updateActiveLayers();
-            return;
-        }
         const params = new URLSearchParams({
             zip: "{{ zip_code }}"
         });
@@ -1138,17 +1173,13 @@
             .then(response => response.json())
             .then(data => {
                 if (data.error || ['unavailable', 'data_unavailable'].includes(data.data_status)) {
-                    floodOverlayFailed = true;
-                    setLoadingState('flood', false);
-                    document.getElementById('flood-toggle').classList.remove('active');
+                    finishLayerLoad('flood', 'unavailable', data.message || 'FEMA flood visual overlay is temporarily unavailable. The map is still usable.');
                     showFloodOverlayWarning(data.message);
-                    updateActiveLayers();
                     return;
                 }
                 if (!data.features || data.features.length === 0) {
+                    finishLayerLoad('flood', 'empty', data.message || 'Flood Zones: no data shown for this address or map area.');
                     showLayerMessage(data.message || 'No flood polygons were returned for the selected map area.');
-                    setLoadingState('flood', false);
-                    updateActiveLayers();
                     return;
                 }
 
@@ -1175,32 +1206,29 @@
                     }
                 }).addTo(map);
 
-                setLoadingState('flood', false);
                 const addressLabels = {
                     sfha_match: 'Address point: FEMA Special Flood Hazard Area match found.',
                     other_fema_category: 'Address point: another FEMA mapped category matched, but not an SFHA.',
                     no_mapped_match: 'Address point: this FEMA layer did not find a mapped match.',
                     not_checked: 'Address point was not checked by this map request.'
                 };
-                showLayerMessage(`${data.message || 'Flood zones loaded.'} ${addressLabels[data.address_match_status] || ''}`.trim());
-                updateActiveLayers();
+                const floodMessage = `${data.message || 'Flood zones loaded.'} ${addressLabels[data.address_match_status] || ''}`.trim();
+                finishLayerLoad('flood', 'loaded', floodMessage);
+                showLayerMessage(floodMessage);
                 console.log('Flood zones loaded successfully');
                 
             })
             .catch(() => {
-                floodOverlayFailed = true;
-                setLoadingState('flood', false);
-                document.getElementById('flood-toggle').classList.remove('active');
+                finishLayerLoad('flood', 'unavailable', 'FEMA flood visual overlay is temporarily unavailable. The map is still usable.');
                 showFloodOverlayWarning();
-                updateActiveLayers();
             });
     }
 
     function showFloodOverlayWarning(message) {
-        if (floodWarningShown) {
+        if (layerWarningsShown.has('flood')) {
             return;
         }
-        floodWarningShown = true;
+        layerWarningsShown.add('flood');
         showLayerMessage(
             message ||
             'FEMA flood visual overlay is temporarily unavailable. The map is still usable.'
@@ -1213,13 +1241,11 @@
             .then(response => response.json())
             .then(data => {
                 if (data.error || ['unavailable', 'data_unavailable'].includes(data.data_status)) {
-                    setLoadingState('earthquake', false);
-                    showLayerMessage(data.message || 'Official layer unavailable — not checked.');
-                    updateActiveLayers();
+                    finishLayerLoad('earthquake', 'unavailable', data.message || 'Fault Lines are temporarily unavailable. Other map layers are still available.');
                     return;
                 }
                 if (!data.features || data.features.length === 0) {
-                    showError('earthquake');
+                    finishLayerLoad('earthquake', 'empty', data.message || 'Fault Lines: no data shown for this address or map area.');
                     return;
                 }
                 
@@ -1239,8 +1265,7 @@
                     }
                 }).addTo(map);
                 
-                setLoadingState('earthquake', false);
-                updateActiveLayers();
+                finishLayerLoad('earthquake', 'loaded');
                 console.log('Fault lines loaded successfully');
                 
             })
@@ -1258,9 +1283,7 @@
                 }
                 if (!data.features || data.features.length === 0) {
                     layers.live = L.layerGroup([]).addTo(map);
-                    setLoadingState('live', false);
-                    showLayerMessage(data.message || 'No recent Bay Area earthquakes in this time window.');
-                    updateActiveLayers();
+                    finishLayerLoad('live', 'empty', data.message || 'No recent Bay Area earthquakes are shown for this time window.');
                     return;
                 }
                 
@@ -1291,7 +1314,7 @@
                     }
                 }).addTo(map);
                 
-                setLoadingState('live', false);
+                finishLayerLoad('live', 'loaded', data.message || 'Recent Bay Area earthquakes loaded.');
                 showLayerMessage(data.message || 'Recent Bay Area earthquakes loaded.');
                 console.log('Live earthquake data loaded successfully');
                 
@@ -1383,32 +1406,12 @@
 
     // Show error message
     function showError(layerType) {
-        const toggle = document.getElementById(`${layerType}-toggle`);
-        if (toggle) {
-            toggle.classList.remove('active');
+        const message = `${layerLabels[layerType]} is temporarily unavailable. Other map layers are still available.`;
+        finishLayerLoad(layerType, 'unavailable', message);
+        if (!layerWarningsShown.has(layerType)) {
+            layerWarningsShown.add(layerType);
+            showLayerMessage(message);
         }
-        setLoadingState(layerType, false);
-        
-        // Show error in map
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-message';
-        errorDiv.textContent = 'Map data temporarily unavailable. You can still view your risk and preparedness steps below.';
-        errorDiv.style.position = 'absolute';
-        errorDiv.style.top = '80px';
-        errorDiv.style.left = '20px';
-        errorDiv.style.right = '20px';
-        errorDiv.style.zIndex = '1000';
-        
-        document.querySelector('.map-container').appendChild(errorDiv);
-        
-        // Remove error after 5 seconds
-        setTimeout(() => {
-            if (errorDiv.parentNode) {
-                errorDiv.parentNode.removeChild(errorDiv);
-            }
-        }, 5000);
-        
-        updateActiveLayers();
     }
 
     function showLayerMessage(message) {
@@ -1460,6 +1463,17 @@
     document.addEventListener('DOMContentLoaded', function() {
         initMap();
         updateActiveLayers();
+
+        document.querySelectorAll('.layer-toggle').forEach(toggle => {
+            toggle.setAttribute('role', 'button');
+            toggle.setAttribute('tabindex', '0');
+            toggle.addEventListener('keydown', event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    toggle.click();
+                }
+            });
+        });
         
         const userLat = {{ user_lat|tojson }};
         const userLon = {{ user_lon|tojson }};

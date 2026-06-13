@@ -201,4 +201,32 @@
             </div>
         </div>
     </section>
+
+    <section class="sr-summary-loading" id="sr-summary-loading" hidden aria-hidden="true">
+        <div class="sr-summary-loading-panel" role="status" aria-live="polite" aria-atomic="true">
+            <header>
+                <span class="sr-summary-loading-mark" aria-hidden="true"><i class="fas fa-location-dot"></i></span>
+                <div>
+                    <p class="section-eyebrow">StayReady location check</p>
+                    <h2>Preparing your summary</h2>
+                    <p id="sr-loading-message">Finding address…</p>
+                </div>
+            </header>
+            <div class="sr-loading-steps" aria-hidden="true">
+                <span class="is-active"></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="sr-summary-skeleton-grid" aria-hidden="true">
+                {% for _ in range(3) %}
+                <article class="sr-summary-skeleton-card">
+                    <div class="sr-skeleton-heading"><span></span><i></i></div>
+                    <div class="sr-skeleton-line is-long"></div>
+                    <div class="sr-skeleton-line"></div>
+                    <div class="sr-skeleton-line is-short"></div>
+                    <div class="sr-skeleton-action"></div>
+                </article>
+                {% endfor %}
+            </div>
+            <p class="sr-summary-loading-note">StayReady will show findings only after the available source checks return.</p>
+        </div>
+    </section>
 </div>
