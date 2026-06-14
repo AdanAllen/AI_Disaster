@@ -1,5 +1,6 @@
 import unittest
 from pathlib import Path
+import re
 
 from app import app
 
@@ -21,9 +22,15 @@ class PostHogAnalyticsTests(unittest.TestCase):
             "defaults: '2026-05-30'",
             "person_profiles: 'identified_only'",
             "capture_pageview: true",
-            "autocapture: false",
-            "disable_session_recording: true",
-            "capture_pageleave: false",
+            "capture_pageleave: true",
+            "autocapture: true",
+            "capture_performance: true",
+            "enable_heatmaps: true",
+            "disable_session_recording: false",
+            "capture_exceptions:",
+            "maskAllInputs: true",
+            "maskTextSelector: '*'",
+            "blockClass: 'ph-no-capture'",
             "capture_dead_clicks: false",
         ):
             self.assertIn(expected, html)
@@ -46,23 +53,113 @@ class PostHogAnalyticsTests(unittest.TestCase):
 
         for unsafe_key in (
             "address",
+            "street",
             "lat",
             "lng",
             "latitude",
             "longitude",
             "coordinates",
+            "coords",
             "household",
             "name",
             "email",
             "phone",
             "notes",
+            "emergency_notes",
+            "user_input",
+            "query",
         ):
             self.assertIn(f"'{unsafe_key}'", source)
 
+        for safe_key in (
+            "city",
+            "jurisdiction",
+            "hazard",
+            "layer",
+            "status",
+            "source",
+            "page",
+            "device_type",
+            "result_type",
+            "error_type",
+        ):
+            self.assertIn(f"'{safe_key}'", source)
+
         self.assertIn("window.trackStayReadyEvent", source)
-        self.assertIn("sanitizeProperties(event.properties)", source)
-        self.assertIn("event.event !== '$pageview'", source)
+        self.assertIn("sanitizeCustomProperties(event.properties)", source)
+        self.assertIn("sanitizeInternalProperties(event.properties)", source)
         self.assertIn("Private/admin templates must override this block", source)
+
+    def test_sensitive_surfaces_are_blocked_from_replay_and_autocapture(self):
+        protected_templates = {
+            "_home_reference.html": ("id=\"emergency-form\"", "sr-interest-form ph-no-capture"),
+            "_risk_summary_reference.html": ("sr-summary-reference ph-no-capture",),
+            "_map_reference.html": ("sr-map-shell ph-no-capture",),
+            "_hazard_profile_form.html": ("hazard-profile-form ph-no-capture",),
+            "feedback.html": ("class=\"ph-no-capture\"",),
+            "sources.html": ("sr-sources-search ph-no-capture",),
+        }
+
+        templates_dir = BASE_TEMPLATE.parent
+        for template_name, expected_values in protected_templates.items():
+            source = (templates_dir / template_name).read_text(encoding="utf-8")
+            for expected in expected_values:
+                self.assertIn(expected, source, template_name)
+
+        home_source = (templates_dir / "_home_reference.html").read_text(encoding="utf-8")
+        self.assertIn(
+            'id="emergency-form" class="sr-home-search sr-form ph-no-capture"',
+            home_source,
+        )
+
+    def test_privacy_page_discloses_posthog_features_and_masking(self):
+        html = self.client.get("/privacy").get_data(as_text=True)
+        for expected in (
+            "PostHog analytics",
+            "pageviews",
+            "heatmaps",
+            "session recordings",
+            "mask all page text and input fields",
+            "not an official emergency service",
+        ):
+            self.assertIn(expected, html)
+
+    def test_custom_event_calls_do_not_use_sensitive_property_names(self):
+        templates_dir = BASE_TEMPLATE.parent
+        sensitive_keys = {
+            "address",
+            "street",
+            "lat",
+            "lng",
+            "latitude",
+            "longitude",
+            "coordinates",
+            "coords",
+            "household",
+            "name",
+            "email",
+            "phone",
+            "notes",
+            "emergency_notes",
+            "user_input",
+            "query",
+        }
+
+        for template_path in templates_dir.glob("*.html"):
+            source = template_path.read_text(encoding="utf-8")
+            for call in re.findall(
+                r"trackStayReadyEvent\([^;]+?\);",
+                source,
+                flags=re.DOTALL,
+            ):
+                if "function(eventName, properties)" in call:
+                    continue
+                for key in sensitive_keys:
+                    self.assertNotRegex(
+                        call,
+                        rf"(?<![A-Za-z0-9_$]){re.escape(key)}\s*:",
+                        f"{template_path.name} uses unsafe analytics property {key}",
+                    )
 
 
 if __name__ == "__main__":

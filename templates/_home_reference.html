@@ -10,7 +10,8 @@
                         StayReady is an independent educational tool using official public data. It is not an official emergency service and does not replace AC Alert, evacuation orders, 911, or instructions from public agencies.
                     </div>
 
-                    <form action="{{ url_for('process_form') }}" method="POST" id="emergency-form" class="sr-home-search sr-form">
+                    <!-- Exact address and household selections must never be recorded or autocaptured by PostHog. -->
+                    <form action="{{ url_for('process_form') }}" method="POST" id="emergency-form" class="sr-home-search sr-form ph-no-capture">
                         {% if error %}<div class="form-messages error mb-3">{{ error }}</div>{% endif %}
                         <div class="search-type-toggle sr-toggle sr-home-search-toggle">
                             <div class="btn-group" role="group" aria-label="Choose location search type">
@@ -164,7 +165,8 @@
                     <p>Receive product updates, preparedness resources, and launch news.</p>
                     <p class="sr-interest-note">No emergency alerts. No sensitive household details. You can request removal before any campaign provider is used.</p>
                 </article>
-                <form class="sr-interest-form" method="post" action="{{ url_for('subscribe_updates') }}" novalidate>
+                <!-- Contact details are excluded from PostHog replay and autocapture. -->
+                <form class="sr-interest-form ph-no-capture" method="post" action="{{ url_for('subscribe_updates') }}" novalidate>
                     {{ update_form.hidden_tag() }}
                     <div class="sr-honeypot" aria-hidden="true">
                         {{ update_form.website.label }}

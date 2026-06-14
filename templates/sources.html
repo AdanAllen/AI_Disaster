@@ -71,7 +71,8 @@
                     <h2 id="source-registry-title">Browse data and guidance</h2>
                     <p>Search by agency, hazard, place, or source name.</p>
                 </div>
-                <label class="sr-sources-search">
+                <!-- Search text is user input and is excluded from replay and autocapture. -->
+                <label class="sr-sources-search ph-no-capture">
                     <span class="visually-hidden">Search sources</span>
                     <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
                     <input id="source-search" type="search" placeholder="Search sources" autocomplete="off">

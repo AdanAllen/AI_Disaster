@@ -39,8 +39,8 @@
 
     {% block analytics %}
     <!--
-      Privacy boundary: analytics must never receive precise locations, addresses,
-      household details, names, contact information, or emergency notes.
+      Privacy rule: StayReady must never send exact addresses, exact coordinates,
+      household details, names, emails, phone numbers, or emergency notes to PostHog.
       Private/admin templates must override this block and leave it empty.
     -->
     <script>
@@ -56,26 +56,43 @@
                 'action_clicked',
                 'data_unavailable_shown'
             ]);
-            const unsafePropertyParts = new Set([
+            const safePropertyNames = new Set([
+                'city',
+                'jurisdiction',
+                'hazard',
+                'layer',
+                'status',
+                'source',
+                'page',
+                'device_type',
+                'result_type',
+                'error_type'
+            ]);
+            const unsafePropertyNames = new Set([
                 'address',
+                'street',
                 'lat',
                 'lng',
                 'latitude',
                 'longitude',
                 'coordinates',
+                'coords',
                 'household',
                 'name',
                 'email',
                 'phone',
-                'notes'
+                'notes',
+                'emergency_notes',
+                'user_input',
+                'query'
             ]);
 
             function isUnsafePropertyKey(key) {
-                return String(key)
+                const normalizedKey = String(key)
                     .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
-                    .toLowerCase()
-                    .split(/[^a-z0-9]+/)
-                    .some((part) => unsafePropertyParts.has(part));
+                    .toLowerCase();
+                return unsafePropertyNames.has(normalizedKey)
+                    || normalizedKey.split(/[^a-z0-9]+/).some((part) => unsafePropertyNames.has(part));
             }
 
             function sanitizeUrl(value) {
@@ -90,39 +107,72 @@
                 }
             }
 
-            function sanitizeProperties(properties) {
+            function sanitizeInternalValue(key, value) {
+                if (isUnsafePropertyKey(key)) {
+                    return undefined;
+                }
+                if (/(url|href|referrer)/i.test(key)) {
+                    return sanitizeUrl(value);
+                }
+                if (Array.isArray(value)) {
+                    return value.map((item) => (
+                        item && typeof item === 'object'
+                            ? sanitizeInternalProperties(item)
+                            : item
+                    ));
+                }
+                if (value && typeof value === 'object') {
+                    return sanitizeInternalProperties(value);
+                }
+                return value;
+            }
+
+            function sanitizeInternalProperties(properties) {
                 if (!properties || typeof properties !== 'object' || Array.isArray(properties)) {
                     return {};
                 }
-
                 return Object.fromEntries(
                     Object.entries(properties).flatMap(([key, value]) => {
-                        if (isUnsafePropertyKey(key)) {
-                            return [];
-                        }
-                        if (/(url|referrer)/i.test(key)) {
-                            const safeUrl = sanitizeUrl(value);
-                            return safeUrl === undefined ? [] : [[key, safeUrl]];
-                        }
-                        if (value && typeof value === 'object') {
-                            return [[key, Array.isArray(value)
-                                ? value.map((item) => (
-                                    item && typeof item === 'object'
-                                        ? sanitizeProperties(item)
-                                        : item
-                                ))
-                                : sanitizeProperties(value)]];
-                        }
-                        return [[key, value]];
+                        const safeValue = sanitizeInternalValue(key, value);
+                        return safeValue === undefined ? [] : [[key, safeValue]];
                     })
                 );
+            }
+
+            function sanitizeCustomProperties(properties) {
+                if (!properties || typeof properties !== 'object' || Array.isArray(properties)) {
+                    return {};
+                }
+                return Object.fromEntries(
+                    Object.entries(properties).flatMap(([key, value]) => {
+                        if (!safePropertyNames.has(key) || isUnsafePropertyKey(key)) {
+                            return [];
+                        }
+                        if (!['string', 'number', 'boolean'].includes(typeof value)) {
+                            return [];
+                        }
+                        return [[key, typeof value === 'string' ? value.slice(0, 120) : value]];
+                    })
+                );
+            }
+
+            function sanitizeException(event) {
+                const exceptionList = event.properties && event.properties.$exception_list;
+                if (Array.isArray(exceptionList)) {
+                    exceptionList.forEach((exception) => {
+                        if (exception && typeof exception === 'object' && 'value' in exception) {
+                            exception.value = 'Client-side exception';
+                        }
+                    });
+                }
+                return event;
             }
 
             window.trackStayReadyEvent = function(eventName, properties) {
                 if (!window.posthog || !safeEventNames.has(eventName)) {
                     return false;
                 }
-                window.posthog.capture(eventName, sanitizeProperties(properties));
+                window.posthog.capture(eventName, sanitizeCustomProperties(properties));
                 return true;
             };
 
@@ -133,16 +183,110 @@
                 defaults: '2026-05-30',
                 person_profiles: 'identified_only',
                 capture_pageview: true,
-                capture_pageleave: false,
+                capture_pageleave: true,
                 capture_dead_clicks: false,
-                autocapture: false,
-                disable_session_recording: true,
+                autocapture: true,
+                capture_performance: true,
+                enable_heatmaps: true,
+                disable_session_recording: false,
+                capture_exceptions: {
+                    capture_unhandled_errors: true,
+                    capture_unhandled_rejections: true,
+                    capture_console_errors: false
+                },
+                session_recording: {
+                    maskAllInputs: true,
+                    maskTextSelector: '*',
+                    blockClass: 'ph-no-capture',
+                    maskCapturedNetworkRequestFn: function(request) {
+                        if (request && request.name) {
+                            request.name = request.name.split('?')[0].split('#')[0];
+                        }
+                        return request;
+                    }
+                },
                 before_send: function(event) {
-                    if (!event || (event.event !== '$pageview' && !safeEventNames.has(event.event))) {
+                    if (!event) {
                         return null;
                     }
-                    event.properties = sanitizeProperties(event.properties);
-                    return event;
+                    event.properties = safeEventNames.has(event.event)
+                        ? sanitizeCustomProperties(event.properties)
+                        : sanitizeInternalProperties(event.properties);
+                    return event.event === '$exception' ? sanitizeException(event) : event;
+                }
+            });
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const page = window.location.pathname.replace(/^\/|\/$/g, '') || 'home';
+                const addressForm = document.getElementById('emergency-form');
+                const addressInput = document.getElementById('address');
+                let addressSearchStarted = false;
+
+                if (page === 'map') {
+                    window.trackStayReadyEvent('map_opened', { page: 'map' });
+                }
+
+                const riskSummary = document.querySelector('[data-analytics-risk-summary]');
+                if (riskSummary) {
+                    const resultType = riskSummary.dataset.analyticsResultType || 'unavailable';
+                    window.trackStayReadyEvent(
+                        resultType === 'loaded' ? 'risk_summary_loaded' : 'risk_summary_failed',
+                        { page: 'risk_summary', result_type: resultType }
+                    );
+                }
+
+                if (addressInput) {
+                    addressInput.addEventListener('focus', function() {
+                        if (!addressSearchStarted) {
+                            addressSearchStarted = true;
+                            window.trackStayReadyEvent('address_search_started', {
+                                page: 'home',
+                                status: 'started'
+                            });
+                        }
+                    });
+                }
+
+                if (addressForm) {
+                    addressForm.addEventListener('submit', function() {
+                        window.trackStayReadyEvent('address_search_completed', {
+                            page: 'home',
+                            status: 'submitted'
+                        });
+                    });
+                }
+
+                document.addEventListener('click', function(event) {
+                    const layerToggle = event.target.closest('.layer-toggle');
+                    if (layerToggle) {
+                        window.trackStayReadyEvent('map_layer_toggled', {
+                            page: 'map',
+                            layer: layerToggle.id.replace(/-toggle$/, '').slice(0, 80),
+                            status: layerToggle.classList.contains('active') ? 'shown' : 'hidden'
+                        });
+                    }
+
+                    const sourceLink = event.target.closest('a[target="_blank"]');
+                    if (sourceLink) {
+                        let source = 'external';
+                        try {
+                            source = new URL(sourceLink.href).hostname.slice(0, 120);
+                        } catch (_error) {
+                            source = 'external';
+                        }
+                        window.trackStayReadyEvent('source_link_clicked', { page: page, source: source });
+                    }
+
+                    if (event.target.closest('[data-action-id]')) {
+                        window.trackStayReadyEvent('action_clicked', { page: page });
+                    }
+                });
+
+                if (document.querySelector('[data-analytics-unavailable]')) {
+                    window.trackStayReadyEvent('data_unavailable_shown', {
+                        page: page,
+                        status: 'unavailable'
+                    });
                 }
             });
         })(document, window.posthog || []);

@@ -1045,6 +1045,13 @@
         if (status) {
             status.textContent = message || defaultMessages[state] || 'Choose a map layer to view official data.';
         }
+        if (['empty', 'unavailable'].includes(state) && window.trackStayReadyEvent) {
+            window.trackStayReadyEvent('data_unavailable_shown', {
+                page: 'map',
+                layer: layerType,
+                status: state
+            });
+        }
     }
 
     function finishLayerLoad(layerType, state, message = '') {
