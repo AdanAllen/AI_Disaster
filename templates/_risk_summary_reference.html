@@ -1,4 +1,7 @@
-<div class="sr-page sr-summary-reference">
+<!-- User-specific address, evidence, and household results must never be recorded or autocaptured. -->
+<div class="sr-page sr-summary-reference ph-no-capture"
+     data-analytics-risk-summary
+     data-analytics-result-type="{% if empty_state %}unavailable{% else %}loaded{% endif %}">
 {% if empty_state %}
     <main class="sr-empty-state">
         <div class="container">
@@ -15,7 +18,7 @@
 {% else %}
     <section class="sr-summary-header">
         <div class="container">
-            {% if warning_message %}<div class="sr-alert sr-alert-warning mb-4" role="status"><strong>Some information could not be checked.</strong> {{ warning_message }} The summary below shows only information that was returned.</div>{% endif %}
+            {% if warning_message %}<div class="sr-alert sr-alert-warning mb-4" role="status" data-analytics-unavailable><strong>Some information could not be checked.</strong> {{ warning_message }} The summary below shows only information that was returned.</div>{% endif %}
             <h1>Your preparedness summary</h1>
             <p>This independent educational summary uses official public sources and the address you selected in Alameda County.</p>
             <div class="sr-summary-address">

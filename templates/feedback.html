@@ -47,7 +47,8 @@
                 <h2>Share a question or report an issue</h2>
                 <p>Use a category that best describes your message. Email is optional unless you are asking for a reply or follow-up.</p>
 
-                <form method="post" action="{{ url_for('submit_feedback') }}" novalidate>
+                <!-- Names, emails, and free-text notes must never be recorded or autocaptured. -->
+                <form class="ph-no-capture" method="post" action="{{ url_for('submit_feedback') }}" novalidate>
                     {{ feedback_form.hidden_tag() }}
                     <div class="sr-honeypot" aria-hidden="true">
                         {{ feedback_form.website.label }}
@@ -83,7 +84,8 @@
                 <h2>Interested in using StayReady with your community?</h2>
                 <p>Tell us about your school, nonprofit, faith or community center, CERT group, or neighborhood organization.</p>
 
-                <form method="post" action="{{ url_for('submit_feedback') }}" novalidate>
+                <!-- Organization contact details and notes must never be recorded or autocaptured. -->
+                <form class="ph-no-capture" method="post" action="{{ url_for('submit_feedback') }}" novalidate>
                     {{ organization_form.hidden_tag() }}
                     <div class="sr-honeypot" aria-hidden="true">
                         {{ organization_form.website.label }}

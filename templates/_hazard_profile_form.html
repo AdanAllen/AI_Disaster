@@ -1,4 +1,5 @@
-<form method="post" action="{{ url_for('save_hazard_profile') }}" class="hazard-profile-form">
+<!-- Location and household profile context must never be recorded or autocaptured. -->
+<form method="post" action="{{ url_for('save_hazard_profile') }}" class="hazard-profile-form ph-no-capture">
     <input type="hidden" name="next_url" value="{{ request.path }}">
     {% if location_context %}
     <div class="location-summary mb-3">
