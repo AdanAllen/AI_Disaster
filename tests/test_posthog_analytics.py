@@ -18,7 +18,9 @@ class PostHogAnalyticsTests(unittest.TestCase):
         html = self.client.get("/").get_data(as_text=True)
         for expected in (
             "phc_qiW2Y8hqapKpVbj3P8wuqB7Cs8vyRMZt9au3HpUqwnwS",
-            "api_host: 'https://us.i.posthog.com'",
+            "posthog.init",
+            "api_host: 'https://e.stayreadynow.org'",
+            "ui_host: 'https://us.posthog.com'",
             "defaults: '2026-05-30'",
             "person_profiles: 'identified_only'",
             "capture_pageview: true",
