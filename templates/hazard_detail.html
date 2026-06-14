@@ -38,7 +38,8 @@
                         {% endif %}
                     </section>
 
-                    <section class="sr-hazard-current-location" aria-labelledby="current-location-title">
+                    <!-- This section may display the selected address, so block recording and autocapture. -->
+                    <section class="sr-hazard-current-location ph-no-capture" aria-labelledby="current-location-title">
                         <div>
                             <span class="section-eyebrow">For your current location</span>
                             {% if guide.location.active %}

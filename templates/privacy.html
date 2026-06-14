@@ -36,15 +36,17 @@
 
             <h2 class="h4 mt-4">Analytics and session recordings</h2>
             <p>
-                StayReady uses PostHog analytics to understand pageviews, clicks and other interactions, performance and web-vitals metrics,
-                heatmaps, browser errors, and session recordings. Session recordings mask all page text and input fields. Sensitive areas,
-                including address input, household personalization, user-specific risk summaries, maps showing selected locations, feedback,
+                StayReady uses PostHog analytics to understand pageviews, pageleaves, clicks and other interactions,
+                performance and web-vitals metrics, heatmaps, browser errors, and session recordings. Session recordings
+                mask all page text and input fields. Sensitive areas, including address input, household details and
+                personalization, user-specific risk summaries, maps showing selected locations, search boxes, feedback,
                 and contact forms, are intended to be blocked from both recordings and automatic interaction capture.
             </p>
             <p>
                 StayReady is configured not to send exact addresses, exact coordinates, household details, names, emails, phone numbers,
-                emergency notes, or raw user-entered search text to PostHog. Analytics are for improving this educational site only.
-                StayReady is not an official emergency service and must not be relied on for alerts, evacuation orders, or emergency response.
+                emergency notes, or raw user-entered search text to PostHog. Query strings are stripped from captured URLs and
+                session-recording network request names. Analytics are for improving this educational site only. StayReady is
+                not an official emergency service and must not be relied on for alerts, evacuation orders, or emergency response.
             </p>
 
             <h2 class="h4 mt-4">Feedback, community interest, and update signups</h2>

@@ -18,7 +18,8 @@
 
     <main class="sr-hazard-library-main">
         <div class="container">
-            <section class="sr-hazard-location-strip" aria-labelledby="hazard-location-title">
+            <!-- This strip may display the selected address, so block recording and autocapture. -->
+            <section class="sr-hazard-location-strip ph-no-capture" aria-labelledby="hazard-location-title">
                 <div>
                     <span class="section-eyebrow">Current location</span>
                     {% if library.location.active %}
