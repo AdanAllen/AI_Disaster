@@ -66,6 +66,17 @@ class UIFeedbackTests(unittest.TestCase):
         self.assertIn("Other map layers are still available", html)
         self.assertIn("layerRequestState[layerType] === 'loaded'", html)
 
+    def test_map_styles_zone_x_as_context_instead_of_zip_sized_fill(self):
+        set_test_resident_state(self.client, {
+            "zip_code": "94605",
+            "location_mode": "zip",
+        })
+        html = self.client.get("/map").get_data(as_text=True)
+
+        self.assertIn("const isContextZone = category.startsWith('Zone X');", html)
+        self.assertIn("fillOpacity: isContextZone ? 0.08 : 0.58", html)
+        self.assertIn("weight: isContextZone ? 1 : 2", html)
+
 
 if __name__ == "__main__":
     unittest.main()

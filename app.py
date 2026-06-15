@@ -2253,7 +2253,7 @@ def api_dam_inundation_layer():
             DAM_INUNDATION_DATASET_ID,
             lat=lat,
             lon=lon,
-            radius_degrees=0.08,
+            radius_degrees=0.04,
         )
         dataset = get_default_registry().get(DAM_INUNDATION_DATASET_ID)
         if dataset is None:

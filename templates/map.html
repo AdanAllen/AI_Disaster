@@ -1256,12 +1256,7 @@
                 layers.flood = L.geoJSON(data, {
                     style: function(feature) {
                         const category = getFloodZoneCategory(feature);
-                        return {
-                            color: getFloodColor(category),
-                            fillColor: getFloodColor(category),
-                            weight: 1,
-                            fillOpacity: 0.6
-                        };
+                        return getFloodStyle(category);
                     },
                     onEachFeature: (feature, layer) => {
                         const category = getFloodZoneCategory(feature);
@@ -1415,8 +1410,19 @@
     function getFloodColor(category) {
         if (category.startsWith('Coastal high-hazard')) return '#d32f2f';
         if (category.startsWith('Special Flood Hazard')) return '#f57c00';
-        if (category.startsWith('Zone X')) return '#5f6b76';
-        return '#9e9e9e';
+        if (category.startsWith('Zone X')) return '#6f8797';
+        return '#607d8b';
+    }
+
+    function getFloodStyle(category) {
+        const isContextZone = category.startsWith('Zone X');
+        return {
+            color: getFloodColor(category),
+            fillColor: getFloodColor(category),
+            weight: isContextZone ? 1 : 2,
+            opacity: isContextZone ? 0.65 : 1,
+            fillOpacity: isContextZone ? 0.08 : 0.58
+        };
     }
 
     function getEarthquakeColor(magnitude) {

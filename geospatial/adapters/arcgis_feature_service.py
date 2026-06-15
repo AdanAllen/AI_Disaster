@@ -39,6 +39,7 @@ def _remote_record_count(service_url: str, timeout_seconds: int) -> int:
 
 class ArcGISFeatureServiceAdapter(GeospatialAdapter):
     timeout_seconds = 8
+    map_timeout_seconds = 15
     map_feature_limit = 200
 
     @staticmethod
@@ -242,7 +243,7 @@ class ArcGISFeatureServiceAdapter(GeospatialAdapter):
         count_response = requests.get(
             f"{dataset.exact_service_or_download_url.rstrip('/')}/query",
             params=count_params,
-            timeout=self.timeout_seconds,
+            timeout=self.map_timeout_seconds,
         )
         count_response.raise_for_status()
         count_payload = count_response.json()
@@ -256,7 +257,7 @@ class ArcGISFeatureServiceAdapter(GeospatialAdapter):
         response = requests.get(
             f"{dataset.exact_service_or_download_url.rstrip('/')}/query",
             params=params,
-            timeout=self.timeout_seconds,
+            timeout=self.map_timeout_seconds,
         )
         response.raise_for_status()
         payload = response.json()

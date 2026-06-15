@@ -173,6 +173,12 @@ class DamInundationMapTests(unittest.TestCase):
         self.assertEqual(payload["source"], SOURCE_AGENCY)
         self.assertTrue(payload["source_url"])
         self.assertTrue(payload["limitations"])
+        map_geojson.assert_called_once_with(
+            "dwr_dsod_dam_inundation_remote",
+            lat=37.754029,
+            lon=-122.24918,
+            radius_degrees=0.04,
+        )
 
     def test_map_template_has_plain_language_toggle_and_warning(self):
         html = self.client.get("/map").get_data(as_text=True)
