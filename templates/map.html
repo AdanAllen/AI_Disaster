@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Alameda County Flood, Wildfire & Earthquake Hazard Map | StayReadyNow{% endblock %}
-{% block meta_description %}Explore Alameda County FEMA flood, CAL FIRE wildfire, earthquake fault, liquefaction, landslide, and tsunami hazard map layers.{% endblock %}
+{% block meta_description %}Explore Alameda County FEMA flood, CAL FIRE wildfire, earthquake, tsunami, and DWR dam-failure inundation planning layers.{% endblock %}
 
 {% block head %}
 <style>
@@ -717,6 +717,11 @@
                         <span>Recent Bay Area Earthquakes</span>
                     </div>
 
+                    <div class="layer-toggle dam-inundation" id="dam-inundation-toggle" onclick="toggleLayer('dam-inundation')">
+                        <i class="fas fa-water layer-icon"></i>
+                        <span>{{ dam_inundation_map_layer.label }}</span>
+                    </div>
+
                     {% for layer_key, layer in cgs_map_layers.items() %}
                     <div class="layer-toggle cgs{% if cgs_map_evidence | selectattr('map_layer_key', 'equalto', layer_key) | selectattr('matched', 'equalto', true) | list %} active{% endif %}"
                          id="cgs-{{ layer_key }}-toggle"
@@ -759,6 +764,15 @@
                         <strong>Mapped fault traces</strong>
                         <small>Known surface locations of faults. Proximity helps explain earthquake context but does not predict shaking strength or building damage.</small>
                         <div class="cgs-status">USGS / contributing CGS records · Official source, provisional StayReady integration</div>
+                    </div>
+                    <div class="cgs-legend-card">
+                        <strong>
+                            <span class="cgs-legend-swatch" style="background: {{ dam_inundation_map_layer.color }}"></span>
+                            Dam failure inundation
+                        </strong>
+                        <small>Areas that could be flooded in hypothetical dam or critical-structure failure scenarios approved by DSOD for emergency planning. This is not a prediction or live evacuation map.</small>
+                        <div class="cgs-status">California DWR / DSOD · Official mapped planning data, provisional StayReady integration</div>
+                        <a class="small d-inline-block mt-2" href="https://water.ca.gov/programs/all-programs/division-of-safety-of-dams/inundation-maps" target="_blank" rel="noopener noreferrer">Open official DWR source</a>
                     </div>
                 </div>
 
@@ -824,6 +838,7 @@
         flood: null,
         earthquake: null,
         live: null,
+        'dam-inundation': null,
         'cgs-alquist-priolo': null,
         'cgs-liquefaction': null,
         'cgs-earthquake-landslide': null,
@@ -843,6 +858,7 @@
         flood: 'fas fa-water',
         earthquake: 'fas fa-mountain',
         live: 'fas fa-broadcast-tower',
+        'dam-inundation': 'fas fa-water',
         zip: 'fas fa-map-marker-alt',
         'cgs-alquist-priolo': 'fas fa-layer-group',
         'cgs-liquefaction': 'fas fa-layer-group',
@@ -854,6 +870,7 @@
         flood: 'Flood Zones',
         earthquake: 'Fault Lines',
         live: 'Recent Bay Area Earthquakes',
+        'dam-inundation': 'Dam Failure Inundation',
         zip: `ZIP Boundary ({{ zip_code }})`,
         'cgs-alquist-priolo': 'CGS Alquist-Priolo Fault Zones',
         'cgs-liquefaction': 'CGS Liquefaction Zones',
@@ -1079,6 +1096,9 @@
             case 'live':
                 loadLiveEarthquakes();
                 break;
+            case 'dam-inundation':
+                loadDamInundation();
+                break;
             default:
                 if (layerType.startsWith('cgs-')) {
                     loadCGSLayer(layerType.replace('cgs-', ''));
@@ -1124,6 +1144,48 @@
                 }).addTo(map);
                 finishLayerLoad(layerType, 'loaded', data.message || `${layerLabels[layerType]} loaded.`);
                 showLayerMessage(data.message || 'CGS mapped zones displayed.');
+            })
+            .catch(() => showError(layerType));
+    }
+
+    function loadDamInundation() {
+        const layerType = 'dam-inundation';
+        fetch('/api/dam-inundation-layer')
+            .then(response => response.json())
+            .then(data => {
+                if (data.data_status === 'data_unavailable') {
+                    finishLayerLoad(layerType, 'unavailable', data.message);
+                    return;
+                }
+                if (!data.features || data.features.length === 0) {
+                    finishLayerLoad(layerType, 'empty', data.message);
+                    return;
+                }
+                layers[layerType] = L.geoJSON(data, {
+                    style: {
+                        color: '{{ dam_inundation_map_layer.color }}',
+                        fillColor: '{{ dam_inundation_map_layer.color }}',
+                        fillOpacity: 0.24,
+                        weight: 2
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const properties = feature.properties || {};
+                        const parts = [
+                            properties.DamName,
+                            properties.FailedStr,
+                            properties.Scenario,
+                            properties.LoadingScn
+                        ].filter(Boolean);
+                        const popup = `
+                            <strong>${escapeHTML(parts.join(' · ') || 'Dam failure inundation scenario')}</strong><br>
+                            ${properties.HazardCl ? `<span>Hazard classification: ${escapeHTML(properties.HazardCl)}</span><br>` : ''}
+                            <small>Hypothetical DSOD-approved planning scenario, not a prediction or evacuation order. Follow local emergency officials.</small>
+                        `;
+                        layer.bindPopup(popup);
+                    }
+                }).addTo(map);
+                finishLayerLoad(layerType, 'loaded', data.message);
+                showLayerMessage(data.message);
             })
             .catch(() => showError(layerType));
     }

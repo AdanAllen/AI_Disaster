@@ -39,6 +39,7 @@ ALLOWED_REMOTE_HOSTS = {
     "earthquake.usgs.gov",
     "gis.conservation.ca.gov",
     "nominatim.openstreetmap.org",
+    "services.arcgis.com",
     "services2.arcgis.com",
 }
 

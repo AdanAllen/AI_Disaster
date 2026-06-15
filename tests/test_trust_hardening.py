@@ -123,6 +123,7 @@ class StaticTrustContractTests(unittest.TestCase):
                 "cgs_liquefaction_remote",
                 "cgs_earthquake_landslide_remote",
                 "cgs_tsunami_hazard_area_remote",
+                "dwr_dsod_dam_inundation_remote",
             },
         )
         self.assertTrue(all(item["status"] == "provisional" for item in datasets))

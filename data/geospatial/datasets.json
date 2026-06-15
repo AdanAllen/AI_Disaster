@@ -194,8 +194,8 @@
     "source_summary": "CGS maps regulatory seismic hazard zones where earthquake-induced landslide investigation requirements may apply.",
     "notes": "Official public-authoritative CGS ArcGIS service. StayReady status remains provisional until known Alameda County locations are compared with the official viewer."
   },
-  {
-    "dataset_id": "cgs_tsunami_hazard_area_remote",
+    {
+        "dataset_id": "cgs_tsunami_hazard_area_remote",
     "dataset_version": "official-feature-service-accessed-2026-06-06",
     "hazard_type": "tsunami",
     "agency": "California Geological Survey",
@@ -228,6 +228,47 @@
     "match_values": ["Yes, Tsunami Hazard Area"],
     "result_label": "Inside a CGS mapped tsunami hazard area.",
     "source_summary": "CGS tsunami hazard areas support community evacuation and response planning for maximum considered tsunami scenarios.",
-    "notes": "Official CGS map service. StayReady status remains provisional until known Alameda County shoreline locations are compared with the official viewer."
-  }
+        "notes": "Official CGS map service. StayReady status remains provisional until known Alameda County shoreline locations are compared with the official viewer."
+    },
+    {
+        "dataset_id": "dwr_dsod_dam_inundation_remote",
+        "dataset_version": "approved-boundaries-2025-10-01-accessed-2026-06-15",
+        "hazard_type": "dam_failure",
+        "agency": "California Department of Water Resources, Division of Safety of Dams",
+        "authoritative_landing_url": "https://water.ca.gov/programs/all-programs/division-of-safety-of-dams/inundation-maps",
+        "exact_service_or_download_url": "https://services.arcgis.com/aa38u6OgfNoCkTJ6/arcgis/rest/services/Approved_InundationBoundaries_As_of_Oct01_2025/FeatureServer/100",
+        "dataset_name": "DSOD Approved Dam Inundation Boundaries as of October 1, 2025",
+        "claim_type": "scenario",
+        "source_type": "remote_service",
+        "license_terms_notes": "The State of California and DWR provide the data without warranties as to completeness, accuracy, or correctness and do not accept liability arising from its use.",
+        "coverage_area": "DSOD-approved inundation boundaries statewide; automated StayReady checks are limited to Alameda County addresses and nearby map windows.",
+        "coverage_bbox": {
+            "min_lat": 37.45,
+            "max_lat": 37.95,
+            "min_lon": -122.4,
+            "max_lon": -121.45
+        },
+        "intended_claim": "Whether the saved address point intersects one or more published DSOD-approved hypothetical dam-failure inundation scenario boundaries.",
+        "prohibited_claims": [
+            "This mapped planning data does not predict that a dam failure will occur or estimate its probability.",
+            "A non-match does not establish safety from flooding, infrastructure failure, indirect impacts, or evacuation disruption.",
+            "Published boundaries are approximate, may omit federal dams or redacted information, and may change as DSOD approves updated maps.",
+            "Actual evacuation zones, routes, timing, and instructions come from local emergency officials.",
+            "Do not use LHMP or EOP screenshots for address-level dam inundation conclusions."
+        ],
+        "retrieved_at": "2026-06-15",
+        "effective_date": "2025-10-01",
+        "local_path": "",
+        "sha256": "",
+        "record_count": 1202,
+        "source_crs": "EPSG:3310",
+        "converted_crs": "",
+        "status": "provisional",
+        "human_reviewer": "",
+        "human_reviewed_at": null,
+        "official_viewer_url": "https://fmds.water.ca.gov/maps/damim/",
+        "result_label": "Inside a DSOD-approved hypothetical dam-failure inundation boundary.",
+        "source_summary": "DWR/DSOD publishes approved inundation boundaries for emergency action planning; the boundaries represent hypothetical failure scenarios, not predictions.",
+        "notes": "Official DWR-owned ArcGIS FeatureServer layer 100. The service has 1,202 statewide polygon records, a 2,000-record query limit, pagination support, and 45 scenarios intersecting the Alameda County boundary as checked on 2026-06-15."
+    }
 ]

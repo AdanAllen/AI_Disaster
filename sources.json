@@ -60,6 +60,21 @@
     "last_verified": "2026-06-12"
   },
   {
+    "source_id": "dwr_dsod_dam_inundation",
+    "name": "DSOD Approved Dam Inundation Boundaries",
+    "agency": "California Department of Water Resources, Division of Safety of Dams",
+    "source_type": "official GIS",
+    "hazards": ["dam_failure"],
+    "geographic_scope": "California, with address checks limited to Alameda County",
+    "claim_type": "scenario",
+    "use_in_app": "Address-point intersection and map display for published hypothetical dam-failure inundation scenarios.",
+    "confidence": "mixed_support",
+    "review_status": "draft_reviewed",
+    "url": "https://water.ca.gov/programs/all-programs/division-of-safety-of-dams/inundation-maps",
+    "notes": "Official mapped planning data, not a prediction. No address-level conclusions are drawn from LHMP or EOP screenshots. Actual evacuation instructions come from local emergency officials.",
+    "last_verified": "2026-06-15"
+  },
+  {
     "source_id": "cgs_liquefaction",
     "name": "CGS Liquefaction Zones",
     "agency": "California Geological Survey",

@@ -42,6 +42,10 @@
                     <h3>Recent activity</h3>
                     <div class="layer-toggle live" id="live-toggle" onclick="toggleLayer('live')"><i class="fas fa-square layer-icon"></i><span>Recent Bay Area Earthquakes</span></div>
                 </div>
+                <div>
+                    <h3>Dam safety planning</h3>
+                    <div class="layer-toggle dam-inundation" id="dam-inundation-toggle" onclick="toggleLayer('dam-inundation')"><i class="fas fa-square layer-icon"></i><span>Dam Failure Inundation</span></div>
+                </div>
             </div>
             <p id="map-loading-status" aria-live="polite">Checking official mapped data only when a layer is opened.</p>
         </section>
@@ -85,6 +89,8 @@
                             <p><strong>CGS landslide:</strong> Slopes where earthquake shaking may trigger landslides.</p>
                             <p><strong>Fault zones:</strong> Surface-fault context; not a forecast of shaking or damage.</p>
                             <p><strong>Tsunami areas:</strong> Coastal hazard and evacuation-planning areas.</p>
+                            <p><strong>Dam failure inundation:</strong> Areas that could be flooded in hypothetical dam or critical-structure failure scenarios approved by DWR/DSOD for emergency planning. This is not a prediction or live evacuation map. Actual evacuation instructions come from local emergency officials.</p>
+                            <a href="https://water.ca.gov/programs/all-programs/division-of-safety-of-dams/inundation-maps" target="_blank" rel="noopener noreferrer">Open official DWR/DSOD inundation map source</a>
                             {% for evidence in cgs_map_evidence %}
                             {% if evidence.source_url %}<a data-cgs-legend="{{ evidence.map_layer_key }}" href="{{ evidence.source_url }}" target="_blank" rel="noopener noreferrer">Open official CGS source: {{ evidence.dataset_name }}</a>{% endif %}
                             {% endfor %}
@@ -96,6 +102,6 @@
             <div class="active-layers visually-hidden" id="active-layers"><span class="active-layer-badge">ZIP {{ zip_code }}</span></div>
         </section>
 
-        <p class="sr-map-disclaimer">StayReady is an independent educational tool using official public data. It is not an official emergency service and does not replace AC Alert, evacuation orders, 911, or instructions from public agencies. California Geological Survey · Official source, provisional StayReady integration. This application uses information from the California Geological Survey. It is not officially endorsed by that agency.</p>
+        <p class="sr-map-disclaimer">StayReady is an independent educational tool using official public data. It is not an official emergency service and does not replace AC Alert, evacuation orders, 911, or instructions from public agencies. California Geological Survey · Official source, provisional StayReady integration. This application uses information from the California Geological Survey. It is not officially endorsed by that agency. California DWR/DSOD · Official mapped planning source, provisional StayReady integration. StayReady is not officially endorsed by DWR or DSOD.</p>
     </div>
 </div>

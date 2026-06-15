@@ -12,6 +12,7 @@ from shapely.geometry import Point, shape
 from shapely.ops import nearest_points
 
 from action_library_service import select_actions
+from dam_inundation import check_dam_inundation
 from geospatial.registry import DatasetRegistryError
 from geospatial.service import GeospatialEvidenceService
 from pydantic_models import HazardResult, PreparednessAction, RecoveryQuestion, ResidentGuidanceItem, SpecializedGuidance
@@ -544,6 +545,61 @@ def check_cgs_layers(
         return [future.result() for future in futures]
 
 
+def _dam_inundation_public_evidence(result: Dict) -> Dict:
+    checked = result.get("data_status") == "checked"
+    matched = result.get("inside_inundation_boundary") if checked else None
+    scenarios = result.get("matched_dam_scenarios") or []
+    if not checked:
+        exposure = "data_unavailable"
+        result_label = "Official DWR/DSOD dam inundation layer unavailable — not checked."
+        status_label = "Not checked"
+        meaning = "The official map service was unavailable, so StayReady did not evaluate this location for published dam-failure inundation boundaries."
+    elif matched:
+        exposure = "mapped_match"
+        result_label = "Inside one or more DSOD-approved hypothetical dam-failure inundation boundaries."
+        status_label = "Mapped match found"
+        meaning = (
+            "The selected address point intersects these published planning scenarios: "
+            + "; ".join(result.get("matched_dam_scenario_names") or [])
+            + "."
+        )
+    else:
+        exposure = "no_mapped_match"
+        result_label = "No mapped dam-failure inundation boundary matched the selected point."
+        status_label = "No mapped match found"
+        meaning = "The selected point did not intersect a published boundary in the checked DWR/DSOD layer."
+    return {
+        "dataset_id": "dwr_dsod_dam_inundation_remote",
+        "map_layer_key": "dam-inundation",
+        "dataset_name": "DSOD Approved Dam Inundation Boundaries",
+        "checked": checked,
+        "data_available": checked,
+        "matched": matched,
+        "exposure": exposure,
+        "result_label": result_label,
+        "status_label": status_label,
+        "plain_definition": "Dam-failure inundation boundaries show areas that could be flooded in a hypothetical failure scenario used for emergency planning.",
+        "what_this_means": meaning,
+        "why_it_matters": "This official mapped planning data helps residents review evacuation readiness and local emergency information.",
+        "what_this_does_not_mean": "It is not a prediction that a dam will fail, a live warning, or an evacuation order.",
+        "priority_band": "Mapped evidence" if matched else "Not an address-level priority ranking",
+        "ranking_score": None,
+        "evidence_tier": "official_mapped_data",
+        "claim_type": "scenario",
+        "precision": "address_point",
+        "source_summary": "DWR/DSOD publishes approved hypothetical inundation boundaries for emergency action planning.",
+        "source_id": "dwr_dsod_dam_inundation",
+        "source_agency": result.get("source_agency", ""),
+        "source_url": result.get("source_landing_url") or result.get("source_url", ""),
+        "service_url": result.get("source_url", ""),
+        "effective_date": result.get("effective_date"),
+        "checked_at": result.get("checked_at"),
+        "public_claim_status": result.get("public_claim_status", ""),
+        "matched_features": scenarios,
+        "limitations": result.get("limitations") or [],
+    }
+
+
 def clear_location_check_cache():
     with _LOCATION_CHECK_CACHE_LOCK:
         _LOCATION_CHECK_CACHE.clear()
@@ -559,6 +615,7 @@ def _collect_location_checks(lat: float, lon: float) -> Dict:
         id(check_wildfire_layer),
         id(check_fault_layer),
         id(check_cgs_layers),
+        id(check_dam_inundation),
     )
     now = time.monotonic()
     with _LOCATION_CHECK_CACHE_LOCK:
@@ -566,7 +623,7 @@ def _collect_location_checks(lat: float, lon: float) -> Dict:
         if cached and cached["expires_at"] > now:
             return deepcopy(cached["payload"])
 
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=6) as executor:
         flood_future = executor.submit(check_flood_layer, lat, lon)
         wildfire_future = executor.submit(check_wildfire_layer, lat, lon)
         fault_future = executor.submit(check_fault_layer, lat, lon)
@@ -586,12 +643,16 @@ def _collect_location_checks(lat: float, lon: float) -> Dict:
             lon,
             ["cgs_tsunami_hazard_area_remote"],
         )
+        dam_inundation_future = executor.submit(check_dam_inundation, lat, lon)
         payload = {
             "flood": flood_future.result(),
             "wildfire": wildfire_future.result(),
             "fault": fault_future.result(),
             "earthquake_cgs": earthquake_cgs_future.result(),
             "tsunami_cgs": tsunami_cgs_future.result(),
+            "dam_inundation": _dam_inundation_public_evidence(
+                dam_inundation_future.result()
+            ),
         }
 
     unavailable = any(
@@ -599,7 +660,11 @@ def _collect_location_checks(lat: float, lon: float) -> Dict:
         for check in (payload["flood"], payload["wildfire"], payload["fault"])
     ) or any(
         not evidence.get("data_available")
-        for evidence in payload["earthquake_cgs"] + payload["tsunami_cgs"]
+        for evidence in (
+            payload["earthquake_cgs"]
+            + payload["tsunami_cgs"]
+            + [payload["dam_inundation"]]
+        )
     )
     ttl = (
         _LOCATION_CHECK_FAILURE_TTL_SECONDS
@@ -647,6 +712,65 @@ def _apply_cgs_evidence(result: HazardResult, checks: List[Dict]) -> HazardResul
     result.sources = _source_payload(result.hazard_type, [
         *result.specialized_guidance.source_ids,
         *source_ids,
+        "ready_recovery",
+    ])
+    return result
+
+
+def _apply_dam_inundation_evidence(result: HazardResult, check: Dict) -> HazardResult:
+    if not check:
+        return result
+    result.additional_geospatial_evidence = [
+        *result.additional_geospatial_evidence,
+        check,
+    ]
+    if check.get("checked"):
+        result.scope = "address_level"
+        result.basis = "gis_overlay"
+        result.location_precision = "address_point"
+        if check.get("matched"):
+            result.data_status = "checked"
+            result.is_in_hazard_zone = True
+            result.match_type = "inside"
+            scenario_names = [
+                item.get("display_name")
+                for item in check.get("matched_features") or []
+                if item.get("display_name")
+            ]
+            result.matched_layers = [
+                {
+                    "name": name,
+                    "source": check.get("source_agency"),
+                }
+                for name in scenario_names
+            ]
+            result.why_shown = (
+                f"{result.why_shown} DWR/DSOD address-point evidence found "
+                f"{len(scenario_names)} overlapping hypothetical inundation "
+                f"{'scenario' if len(scenario_names) == 1 else 'scenarios'}."
+            ).strip()
+        else:
+            result.data_status = "not_in_layer"
+            result.is_in_hazard_zone = False
+            result.match_type = "none"
+            result.why_shown = (
+                f"{result.why_shown} The checked DWR/DSOD layer did not find a mapped "
+                "dam-failure inundation boundary at the selected point. This is not a safety determination."
+            ).strip()
+    else:
+        result.data_status = "data_unavailable"
+        result.is_in_hazard_zone = None
+        result.match_type = "none"
+        result.limitations.insert(
+            0,
+            "Official DWR/DSOD dam inundation layer unavailable — not checked.",
+        )
+    result.limitations = _dedupe_text(
+        result.limitations + (check.get("limitations") or [])
+    )
+    result.sources = _source_payload(result.hazard_type, [
+        *result.specialized_guidance.source_ids,
+        "dwr_dsod_dam_inundation",
         "ready_recovery",
     ])
     return result
@@ -1298,6 +1422,7 @@ def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dic
     fault_check = _not_checked_result()
     earthquake_cgs_checks = []
     tsunami_cgs_checks = []
+    dam_inundation_check = {}
     if location_result.lat is not None and location_result.lon is not None and location_result.formatted_address:
         lat, lon = location_result.lat, location_result.lon
         checks = _collect_location_checks(lat, lon)
@@ -1306,6 +1431,7 @@ def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dic
         fault_check = checks["fault"]
         earthquake_cgs_checks = checks["earthquake_cgs"]
         tsunami_cgs_checks = checks["tsunami_cgs"]
+        dam_inundation_check = checks.get("dam_inundation") or {}
 
     for raw_hazard in hazards:
         hazard = deepcopy(raw_hazard)
@@ -1356,6 +1482,8 @@ def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dic
             result = _apply_cgs_evidence(result, earthquake_cgs_checks)
         elif cgs_hazard_type == "tsunami":
             result = _apply_cgs_evidence(result, tsunami_cgs_checks)
+        if hazard_type in {"dam_failure", "dam-failure"}:
+            result = _apply_dam_inundation_evidence(result, dam_inundation_check)
         results.append(_classify_preparedness_priority(result, user_context))
 
     existing_hazard_ids = {item.hazard_id for item in results}

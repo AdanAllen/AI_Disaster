@@ -96,13 +96,13 @@ class ArcGISFeatureServiceAdapter(GeospatialAdapter):
             return self._unavailable(
                 dataset,
                 checked_at,
-                "The registered CGS dataset is not available for an address check.",
+                "The registered official dataset is not available for an address check.",
             )
         if not dataset.exact_service_or_download_url:
             return self._unavailable(
                 dataset,
                 checked_at,
-                "The registered CGS service URL is missing, so the layer was not checked.",
+                "The registered official service URL is missing, so the layer was not checked.",
             )
         if not allowed_remote_url(dataset.exact_service_or_download_url):
             return self._unavailable(
@@ -130,7 +130,7 @@ class ArcGISFeatureServiceAdapter(GeospatialAdapter):
                 return self._unavailable(
                     dataset,
                     checked_at,
-                    "The official CGS layer is empty, so the address was not checked.",
+                    "The official remote layer is empty, so the address was not checked.",
                 )
             response = requests.get(
                 f"{dataset.exact_service_or_download_url.rstrip('/')}/query",
@@ -143,14 +143,14 @@ class ArcGISFeatureServiceAdapter(GeospatialAdapter):
             return self._unavailable(
                 dataset,
                 checked_at,
-                "The official CGS service was unavailable or unreadable, so the layer was not checked.",
+                "The official remote service was unavailable or unreadable, so the layer was not checked.",
             )
 
         if not isinstance(payload, dict) or payload.get("error") or not isinstance(payload.get("features"), list):
             return self._unavailable(
                 dataset,
                 checked_at,
-                "The official CGS service returned an invalid response, so the layer was not checked.",
+                "The official remote service returned an invalid response, so the layer was not checked.",
             )
 
         matching_features = []
@@ -209,11 +209,11 @@ class ArcGISFeatureServiceAdapter(GeospatialAdapter):
         max_lon: float,
     ) -> dict:
         if dataset.status in {"invalid", "retired", "data_unavailable"}:
-            raise ValueError("The registered CGS dataset is unavailable.")
+            raise ValueError("The registered official dataset is unavailable.")
         if not dataset.exact_service_or_download_url:
-            raise ValueError("The registered CGS service URL is missing.")
+            raise ValueError("The registered official service URL is missing.")
         if not allowed_remote_url(dataset.exact_service_or_download_url):
-            raise ValueError("The registered CGS service host is not allowlisted.")
+            raise ValueError("The registered official service host is not allowlisted.")
 
         envelope = f"{min_lon},{min_lat},{max_lon},{max_lat}"
         count_params = {
@@ -251,7 +251,7 @@ class ArcGISFeatureServiceAdapter(GeospatialAdapter):
             or count_payload.get("error")
             or not isinstance(count_payload.get("count"), int)
         ):
-            raise ValueError("The official CGS map service returned an invalid count.")
+            raise ValueError("The official remote map service returned an invalid count.")
 
         response = requests.get(
             f"{dataset.exact_service_or_download_url.rstrip('/')}/query",
@@ -265,7 +265,7 @@ class ArcGISFeatureServiceAdapter(GeospatialAdapter):
             or payload.get("type") != "FeatureCollection"
             or not isinstance(payload.get("features"), list)
         ):
-            raise ValueError("The official CGS map service returned invalid GeoJSON.")
+            raise ValueError("The official remote map service returned invalid GeoJSON.")
 
         accepted_values = {value.casefold() for value in dataset.match_values}
         if dataset.match_field and accepted_values:

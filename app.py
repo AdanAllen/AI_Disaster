@@ -20,6 +20,8 @@ from functools import lru_cache
 from pathlib import Path
 
 from action_library_service import select_action_ids
+from dam_inundation import DATASET_ID as DAM_INUNDATION_DATASET_ID
+from dam_inundation import SOURCE_AGENCY as DAM_INUNDATION_SOURCE_AGENCY
 from feedback_forms import (
     FEEDBACK_CATEGORIES,
     SAFE_PAGE_CONTEXTS,
@@ -226,6 +228,11 @@ CGS_MAP_LAYERS = {
         "label": "CGS Tsunami Hazard Areas",
         "color": "#2675a8",
     },
+}
+DAM_INUNDATION_MAP_LAYER = {
+    "dataset_id": DAM_INUNDATION_DATASET_ID,
+    "label": "Dam Failure Inundation",
+    "color": "#7b4ab5",
 }
 
 
@@ -1788,6 +1795,7 @@ def map():
         structured_hazards=map_hazards,
         cgs_map_evidence=cgs_map_evidence,
         cgs_map_layers=CGS_MAP_LAYERS,
+        dam_inundation_map_layer=DAM_INUNDATION_MAP_LAYER,
         oakland_hazard_ready=is_oakland_hazard_context(zip_code, address),
     )
 # ---  Page ---
@@ -2215,6 +2223,69 @@ def api_cgs_map_layer(layer_key):
             "data_status": "data_unavailable",
             "message": "Official CGS map layer unavailable — not displayed.",
         })
+
+
+@app.route("/api/dam-inundation-layer")
+@rate_limit(20, 60)
+def api_dam_inundation_layer():
+    unavailable = {
+        "type": "FeatureCollection",
+        "features": [],
+        "source": DAM_INUNDATION_SOURCE_AGENCY,
+        "feature_count": 0,
+        "filtered": True,
+        "data_status": "data_unavailable",
+        "limitations": [
+            "The official DWR/DSOD map service was unavailable, so no boundary is displayed.",
+            "Missing map data does not establish low risk or safety.",
+            "Actual evacuation instructions come from local emergency officials.",
+        ],
+        "message": "Official DWR/DSOD dam inundation layer unavailable — not displayed.",
+    }
+    try:
+        resident_state = get_resident_state()
+        lat = float(resident_state.get("lat"))
+        lon = float(resident_state.get("lon"))
+        if not is_valid_coordinate(lat, lon):
+            raise ValueError("Coordinates are unavailable.")
+        service = GeospatialEvidenceService(project_root=BASE_DIR)
+        payload = service.map_geojson(
+            DAM_INUNDATION_DATASET_ID,
+            lat=lat,
+            lon=lon,
+            radius_degrees=0.08,
+        )
+        dataset = get_default_registry().get(DAM_INUNDATION_DATASET_ID)
+        if dataset is None:
+            raise DatasetRegistryError("DWR/DSOD dataset is not registered.")
+        feature_count = len(payload.get("features", []))
+        partial = bool(payload.get("partial"))
+        payload.update({
+            "source": DAM_INUNDATION_SOURCE_AGENCY,
+            "source_url": dataset.authoritative_landing_url,
+            "service_url": dataset.exact_service_or_download_url,
+            "source_summary": dataset.source_summary or dataset.intended_claim,
+            "limitations": dataset.prohibited_claims,
+            "public_claim_status": "official_provisional",
+            "feature_count": feature_count,
+            "available_feature_count": payload.get("available_feature_count", feature_count),
+            "partial": partial,
+            "filtered": True,
+            "data_status": "partial" if partial else "checked",
+            "message": (
+                (
+                    f"Showing {feature_count} simplified nearby hypothetical dam-failure inundation boundaries. "
+                    "The display is limited for performance; address-point checks use the full official service."
+                    if partial else
+                    f"Showing {feature_count} nearby hypothetical dam-failure inundation boundaries from DWR/DSOD."
+                )
+                if feature_count else
+                "No DWR/DSOD dam-failure inundation polygons were returned for this map window. This is not a safety determination."
+            ),
+        })
+        return jsonify(payload)
+    except (DatasetRegistryError, TypeError, ValueError, requests.RequestException):
+        return jsonify(unavailable)
 
 # ZIP boundary API
 @app.route("/api/zip-boundary/<zip_code>")

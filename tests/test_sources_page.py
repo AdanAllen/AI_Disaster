@@ -49,12 +49,12 @@ class SourceRegistryPresentationTests(unittest.TestCase):
     def test_source_page_payload_separates_registry_categories(self, _supabase):
         payload = source_page_payload()
 
-        self.assertEqual(payload["counts"]["registered"], 25)
-        self.assertEqual(payload["counts"]["mapped"], 7)
+        self.assertEqual(payload["counts"]["registered"], 26)
+        self.assertEqual(payload["counts"]["mapped"], 8)
         self.assertEqual(payload["counts"]["guidance"], 7)
         self.assertEqual(payload["counts"]["plan_records"], 11)
         self.assertEqual(payload["counts"]["jurisdictions"], 15)
-        self.assertEqual(len(payload["sources"]), 14)
+        self.assertEqual(len(payload["sources"]), 15)
         self.assertEqual(len(payload["local_plan_groups"]), 11)
 
     def test_shared_local_plans_are_grouped_once(self):
