@@ -177,8 +177,10 @@ class DamInundationMapTests(unittest.TestCase):
     def test_map_template_has_plain_language_toggle_and_warning(self):
         html = self.client.get("/map").get_data(as_text=True)
         self.assertIn("Dam Failure Inundation", html)
-        self.assertIn("hypothetical dam or critical-structure failure scenarios", html)
-        self.assertIn("not a prediction or live evacuation map", html)
+        self.assertIn("Flood &amp; inundation", html)
+        self.assertIn("Dam failure inundation area", html)
+        self.assertIn("where water could travel if a mapped dam", html)
+        self.assertIn("not predictions or live evacuation maps", html)
 
 
 class DamInundationHazardIntegrationTests(unittest.TestCase):

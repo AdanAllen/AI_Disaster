@@ -17,8 +17,9 @@
                     <div class="layer-toggle zip active" id="zip-toggle" onclick="toggleLayer('zip')"><i class="fas fa-square-check layer-icon"></i><span>ZIP boundary</span></div>
                 </div>
                 <div>
-                    <h3>FEMA Flood</h3>
+                    <h3>Flood &amp; inundation</h3>
                     <div class="layer-toggle flood" id="flood-toggle" onclick="toggleLayer('flood')"><i class="fas fa-square layer-icon"></i><span>Flood Zones</span></div>
+                    <div class="layer-toggle dam-inundation" id="dam-inundation-toggle" onclick="toggleLayer('dam-inundation')"><i class="fas fa-square layer-icon"></i><span>Dam Failure Inundation</span></div>
                 </div>
                 <div>
                     <h3>CAL FIRE</h3>
@@ -41,10 +42,6 @@
                 <div>
                     <h3>Recent activity</h3>
                     <div class="layer-toggle live" id="live-toggle" onclick="toggleLayer('live')"><i class="fas fa-square layer-icon"></i><span>Recent Bay Area Earthquakes</span></div>
-                </div>
-                <div>
-                    <h3>Dam safety planning</h3>
-                    <div class="layer-toggle dam-inundation" id="dam-inundation-toggle" onclick="toggleLayer('dam-inundation')"><i class="fas fa-square layer-icon"></i><span>Dam Failure Inundation</span></div>
                 </div>
             </div>
             <p id="map-loading-status" aria-live="polite">Checking official mapped data only when a layer is opened.</p>
@@ -70,6 +67,7 @@
                     <span><i style="background:#b69b76"></i> Landslide zone</span>
                     <span><i class="line fault"></i> Mapped fault traces</span>
                     <span><i class="line ap"></i> Alquist-Priolo zones</span>
+                    <span><i style="background:#7b4ab5"></i> Dam failure inundation area</span>
                 </aside>
 
                 <aside class="sr-map-help-panel">
@@ -89,7 +87,7 @@
                             <p><strong>CGS landslide:</strong> Slopes where earthquake shaking may trigger landslides.</p>
                             <p><strong>Fault zones:</strong> Surface-fault context; not a forecast of shaking or damage.</p>
                             <p><strong>Tsunami areas:</strong> Coastal hazard and evacuation-planning areas.</p>
-                            <p><strong>Dam failure inundation:</strong> Areas that could be flooded in hypothetical dam or critical-structure failure scenarios approved by DWR/DSOD for emergency planning. This is not a prediction or live evacuation map. Actual evacuation instructions come from local emergency officials.</p>
+                            <p><strong>Dam failure inundation:</strong> A planning boundary showing where water could travel if a mapped dam or critical structure failed. For example, one downstream area may appear in several hypothetical dam scenarios. These boundaries are not predictions or live evacuation maps. Actual evacuation instructions come from local emergency officials.</p>
                             <a href="https://water.ca.gov/programs/all-programs/division-of-safety-of-dams/inundation-maps" target="_blank" rel="noopener noreferrer">Open official DWR/DSOD inundation map source</a>
                             {% for evidence in cgs_map_evidence %}
                             {% if evidence.source_url %}<a data-cgs-legend="{{ evidence.map_layer_key }}" href="{{ evidence.source_url }}" target="_blank" rel="noopener noreferrer">Open official CGS source: {{ evidence.dataset_name }}</a>{% endif %}
