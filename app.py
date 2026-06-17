@@ -1639,7 +1639,7 @@ def risk_summary():
     additional_local_hazards = get_additional_local_hazards(location_context, plan_hazards)
     resident_plan = build_resident_plan(
         location_context,
-        plan_hazards,
+        all_structured_hazards,
         additional_local_hazards,
         session_data={
             "household": resident_state.get("household"),

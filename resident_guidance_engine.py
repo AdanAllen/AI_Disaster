@@ -5,6 +5,7 @@ from functools import lru_cache
 from typing import Dict, List, Optional
 
 from action_library_service import select_actions
+from hazard_priority import rank_hazards_for_risk_summary
 from pydantic_models import LHMPLocationFact
 
 
@@ -601,6 +602,12 @@ def build_resident_plan(location_context: Dict, structured_hazards: List[Dict], 
         _hazard_plan(hazard, location_context, household_context, index + 1)
         for index, hazard in enumerate(structured_hazards[:4])
     ]
+    hazard_priorities = rank_hazards_for_risk_summary(
+        location_context.get("city") or "",
+        structured_hazards,
+        limit=4,
+        coordinates=location_context.get("location_result") or {},
+    )
     check_summary = _check_summary(hazard_plans)
 
     what_to_do_now = []
@@ -645,6 +652,7 @@ def build_resident_plan(location_context: Dict, structured_hazards: List[Dict], 
             "summary": _summary_text(location_context, hazard_plans),
         },
         "hazards": hazard_plans,
+        "hazard_priorities": hazard_priorities,
         "household_context": household_context,
         "household_priorities": household_actions,
         "what_to_do_now": deduped_now[:7],

@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "local_exposure_statuses": [
+    "Direct mapped exposure",
+    "Additional mapped concern",
+    "General citywide exposure",
+    "No mapped exposure identified in checked layers",
+    "Data unavailable",
+    "Not applicable"
+  ],
+  "rules": [
+    {
+      "hazard": "flood",
+      "dataset_match": ["fema", "nfhl", "flood"],
+      "match_status": "Direct mapped exposure",
+      "nonmatch_status": "No mapped exposure identified in checked layers",
+      "unavailable_status": "Data unavailable",
+      "terminology_fields": ["zone", "flood_zone", "name"],
+      "basis_template": "FEMA/local flood layer result preserved from the app GIS output."
+    },
+    {
+      "hazard": "wildfire",
+      "dataset_match": ["calfire", "fhsz", "fire", "wildfire"],
+      "match_status": "Direct mapped exposure",
+      "nonmatch_status": "No mapped exposure identified in checked layers",
+      "unavailable_status": "Data unavailable",
+      "terminology_fields": ["hazard_class", "HAZ_CLASS", "name"],
+      "basis_template": "CAL FIRE Fire Hazard Severity Zone result preserved from the app GIS output."
+    },
+    {
+      "hazard": "earthquake",
+      "dataset_match": ["liquefaction", "alquist-priolo", "fault"],
+      "match_status": "Additional mapped concern",
+      "nonmatch_status": "General citywide exposure",
+      "unavailable_status": "Data unavailable",
+      "terminology_fields": ["result_label", "dataset_name", "name"],
+      "basis_template": "Earthquake local layer result is additional ground-failure or proximity context and does not rewrite citywide earthquake priority."
+    },
+    {
+      "hazard": "landslide",
+      "dataset_match": ["landslide", "earthquake-landslide"],
+      "match_status": "Additional mapped concern",
+      "nonmatch_status": "No mapped exposure identified in checked layers",
+      "unavailable_status": "Data unavailable",
+      "terminology_fields": ["result_label", "dataset_name", "name"],
+      "basis_template": "Official landslide or earthquake-induced landslide layer result preserved from the app GIS output."
+    },
+    {
+      "hazard": "tsunami",
+      "dataset_match": ["tsunami"],
+      "match_status": "Direct mapped exposure",
+      "nonmatch_status": "No mapped exposure identified in checked layers",
+      "unavailable_status": "Data unavailable",
+      "terminology_fields": ["result_label", "dataset_name", "name"],
+      "basis_template": "Official tsunami hazard-area layer result preserved from the app GIS output."
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "sources": {
+    "oakland_lhmp_2026_draft": {
+      "jurisdiction": "oakland",
+      "source_document": "Draft Oakland 2026-2031 Local Hazard Mitigation Plan",
+      "source_path": "data/raw/lhmps/oakland/oakland-draft-lhmp-2026-2031.pdf",
+      "source_url": "https://www.oaklandca.gov/topics/local-hazard-mitigation-plan",
+      "publication_date": "2026",
+      "document_status": "draft",
+      "source_type": "local_hazard_mitigation_plan",
+      "notes": "Draft source. Do not present values as adopted official policy."
+    }
+  }
+}

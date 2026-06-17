@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "jurisdictions": {
+    "oakland": {
+      "sub_area_source_status": "Official boundary dataset available",
+      "source_name": "City of Oakland Plan Area CW",
+      "source_url": "https://gismaps.oaklandca.gov/server/rest/services/Accela/Citywide_202410/MapServer/9",
+      "source_reference": "City of Oakland ArcGIS REST Services, Accela/Citywide_202410 MapServer layer 9, Plan Area CW",
+      "boundary_dataset": "data/hazard_priority/oakland_plan_areas.geojson",
+      "match_field": "OAKLAND_PE",
+      "polygon_version": "Citywide_202410 MapServer layer 9; source layer lists last update June 27, 2018; fetched 2026-06-17",
+      "data_last_checked": "2026-06-17",
+      "sub_areas": [
+        "Central East Oakland",
+        "Coliseum/Airport",
+        "Downtown",
+        "East Oakland Hills",
+        "Eastlake/Fruitvale",
+        "Glenview/Redwood Heights",
+        "North Oakland Hills",
+        "North Oakland/Adams Point",
+        "West Oakland"
+      ],
+      "limitations": [
+        "Sub-area is assigned only by point-in-polygon against the official Oakland plan-area layer.",
+        "Do not infer sub-area from ZIP code, neighborhood name, street name, or nearest-label matching.",
+        "The official layer also contains a West Oakland - Gateway Industrial District (CFD) polygon that is not one of the nine configured LHMP sub-areas; it is not silently merged."
+      ]
+    }
+  }
+}

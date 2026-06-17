@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "priority_order": {
+    "High": 3,
+    "Medium": 2,
+    "Low": 1,
+    "Unknown": 0
+  },
+  "location_evidence_order": {
+    "Direct mapped exposure": 3,
+    "Additional mapped concern": 2,
+    "General citywide exposure": 1,
+    "No mapped exposure identified in checked layers": 0,
+    "Data unavailable": 0,
+    "Not applicable": 0
+  },
+  "confidence_order": {
+    "High": 3,
+    "Medium": 2,
+    "Low": 1
+  },
+  "stable_hazard_order": ["earthquake", "wildfire", "flood", "landslide", "tsunami"],
+  "display_limit": 4,
+  "limitations": ["Internal ordering values are only for deterministic sorting and must not be displayed as a scientific risk score."]
+}

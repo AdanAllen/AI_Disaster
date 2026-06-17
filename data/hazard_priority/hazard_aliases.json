@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "canonical_hazards": ["earthquake", "wildfire", "flood", "landslide", "tsunami"],
+  "aliases": {
+    "earthquake": ["earthquake", "seismic", "liquefaction", "alquist-priolo", "fault"],
+    "wildfire": ["wildfire", "fire", "calfire", "fhsz", "fire hazard severity zone"],
+    "flood": ["flood", "fema", "nfhl", "floodplain", "sfha"],
+    "landslide": ["landslide", "earthquake-landslide", "earthquake_induced_landslide", "slope"],
+    "tsunami": ["tsunami", "tsunami-seiche", "seiche"]
+  }
+}

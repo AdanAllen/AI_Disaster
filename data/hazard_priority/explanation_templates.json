@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "templates": {
+    "citywide_priority": "{methodology} calculates {calculated_priority} from {probability} Probability and {impact} Impact.",
+    "official_difference": "The official LHMP priority is {official_priority}; it differs because the official method uses additional factors beyond StayReady's simplified Probability/Impact matrix.",
+    "local_match": "Official mapped evidence applies at this location: {evidence}.",
+    "local_nonmatch": "No mapped exposure was identified in the checked layer. This does not mean the hazard cannot affect the location.",
+    "local_unavailable": "Official GIS evidence was unavailable, so it was not used to change display relevance.",
+    "sub_area_unavailable": "Sub-area context is not currently available because reliable boundary data is unavailable."
+  }
+}

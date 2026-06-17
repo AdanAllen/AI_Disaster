@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "methodology_name": "StayReady's simplified LHMP-based hazard-priority methodology",
+  "allowed_factor_values": ["Low", "Medium", "High", "Unknown"],
+  "allowed_priority_values": ["Low", "Medium", "High", "Unknown"],
+  "matrix": {
+    "Low": {
+      "Low": "Low",
+      "Medium": "Low",
+      "High": "Medium"
+    },
+    "Medium": {
+      "Low": "Low",
+      "Medium": "Medium",
+      "High": "High"
+    },
+    "High": {
+      "Low": "Medium",
+      "Medium": "High",
+      "High": "High"
+    }
+  },
+  "unknown_rule": "If either Probability or Impact is Unknown and there is no documented official fallback, calculated citywide priority is Unknown.",
+  "limitations": [
+    "This method uses only Probability and Impact.",
+    "It does not reproduce a jurisdiction's full official scoring formula unless that formula also uses only these two factors.",
+    "Official LHMP priority is preserved separately when documented."
+  ]
+}
