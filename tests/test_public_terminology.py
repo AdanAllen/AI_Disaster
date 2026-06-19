@@ -27,9 +27,11 @@ class PublicTerminologyTests(unittest.TestCase):
             "location_mode": "zip",
         })
         html = self.client.get("/risk_summary").get_data(as_text=True)
-        self.assertIn("Priority hazards", html)
-        self.assertIn("The status describes the evidence checked", html)
-        self.assertIn("Regional preparedness priority", html)
+        self.assertIn("Official mapped findings", html)
+        self.assertIn("Important official mapped findings", html)
+        self.assertIn("Map information unavailable", html)
+        self.assertIn("hazard-priority notes from official mapped information", html)
+        self.assertNotIn("Unknown hazard priority", html)
 
     def test_summary_copy_is_not_line_clamped_or_absolutely_positioned(self):
         css = (BASE_DIR / "static" / "css" / "stayready.css").read_text(encoding="utf-8")

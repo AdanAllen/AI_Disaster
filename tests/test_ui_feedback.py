@@ -31,8 +31,10 @@ class UIFeedbackTests(unittest.TestCase):
         html = self.client.get("/risk_summary").get_data(as_text=True)
 
         self.assertIn("Key findings for this location", html)
-        self.assertIn("What this means", html)
-        self.assertIn("What to do next", html)
+        self.assertIn("Important official mapped findings", html)
+        self.assertIn("Other hazards checked", html)
+        self.assertIn("Map information unavailable", html)
+        self.assertIn("Do these first", html)
         self.assertIn("Help with map and evidence terms", html)
         self.assertIn("FEMA Zone X", html)
         self.assertIn("Liquefaction zone", html)

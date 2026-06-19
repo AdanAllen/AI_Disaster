@@ -31,155 +31,125 @@
 
     <section class="sr-summary-main">
         <div class="container">
-            <h2 class="visually-hidden">Priority hazards</h2>
-            <p class="visually-hidden">The status describes the evidence checked; the order helps organize preparedness and is not a safety determination.</p>
+            {% set priority_plans = resident_plan.hazard_priorities | default([]) %}
+            {% set resident_city = resident_plan.address_summary.city | default("") %}
+            {% set city_lower = resident_city | lower %}
+            {% set first_priority = priority_plans | first %}
+            {% set important_findings = priority_plans | selectattr("mapped_finding_status", "equalto", "significant_official_finding") | list %}
+            {% set other_checked = priority_plans | selectattr("mapped_finding_status", "equalto", "successful_check_no_significant_match") | list %}
+            {% set unavailable_findings = priority_plans | selectattr("mapped_finding_status", "equalto", "data_unavailable") | list %}
+            <h2 class="visually-hidden">Official mapped findings</h2>
+            <p class="visually-hidden">The sections separate returned official map findings, checked non-intersections, and unavailable map information.</p>
             <header class="sr-summary-section-heading">
                 <span class="section-eyebrow">Main answer</span>
                 <h2>Key findings for this location</h2>
-                <p>Start with these preparedness priorities. Open details to review address-level evidence, limits, and official sources.</p>
+                <p>These are hazard-priority notes from official mapped information available for this address, not exact personal risk predictions.</p>
             </header>
-            {% set priority_plans = resident_plan.hazard_priorities | default([]) %}
-            {% set grouped_priority_sections = [
-                ("High hazards", priority_plans | selectattr("displayed_hazard_level", "equalto", "High") | list),
-                ("Medium hazards", priority_plans | selectattr("displayed_hazard_level", "equalto", "Medium") | list),
-                ("Lower hazards identified", priority_plans | selectattr("displayed_hazard_level", "equalto", "Low") | list),
-                ("Information unavailable", priority_plans | selectattr("displayed_hazard_level", "equalto", "Unknown") | list)
-            ] %}
-            <div class="sr-summary-hazard-grid" id="top-concerns">
-                {% for group_label, group_plans in grouped_priority_sections %}
-                {% if group_plans %}
-                <div class="sr-summary-hazard-group-label"><h3>{{ group_label }}</h3></div>
-                {% endif %}
-                {% for plan in group_plans %}
-                {% set hazard_lower = plan.hazard | lower %}
-                <article class="sr-summary-hazard-card {% if 'wildfire' in hazard_lower %}is-wildfire{% elif 'flood' in hazard_lower %}is-flood{% elif 'tsunami' in hazard_lower %}is-tsunami{% else %}is-earthquake{% endif %}">
-                    <header>
-                        <span class="sr-summary-hazard-icon">
-                            <i class="fas {% if 'wildfire' in hazard_lower %}fa-fire{% elif 'flood' in hazard_lower %}fa-water{% elif 'tsunami' in hazard_lower %}fa-house-flood-water{% elif 'landslide' in hazard_lower %}fa-mountain{% else %}fa-house-crack{% endif %}"></i>
-                        </span>
-                        <span class="sr-summary-rank" aria-label="{{ plan.displayed_hazard_level }} hazard priority">{{ plan.displayed_hazard_level[:1] if plan.displayed_hazard_level != "Unknown" else "?" }}</span>
+            <aside class="sr-summary-coverage-notice" role="note">
+                <i class="fas fa-circle-info" aria-hidden="true"></i>
+                <div>
+                    {% if city_lower == "oakland" %}
+                    <p>Official Oakland plan-area hazard ratings are currently being verified. The findings below are limited to official mapped information available for this address.</p>
+                    {% if first_priority and first_priority.plan_area and first_priority.plan_area != "Unknown" %}
+                    <p><strong>Plan area:</strong> {{ first_priority.plan_area }}{% if first_priority.boundary_warning %} <span>{{ first_priority.boundary_warning }}</span>{% endif %}</p>
+                    {% endif %}
+                    {% else %}
+                    <p>Local LHMP area ratings are not yet available for {{ resident_city or "this jurisdiction" }}. The findings below are limited to official mapped information available for this address.</p>
+                    {% endif %}
+                </div>
+            </aside>
+
+            {% macro mapped_finding_row(plan) -%}
+            {% set hazard_lower = plan.hazard | lower %}
+            {% set action_plan = (resident_plan.hazards | selectattr("slug", "equalto", plan.slug) | list | first) %}
+            <article class="sr-mapped-finding-row {% if 'wildfire' in hazard_lower %}is-wildfire{% elif 'flood' in hazard_lower %}is-flood{% elif 'tsunami' in hazard_lower %}is-tsunami{% elif 'landslide' in hazard_lower %}is-landslide{% else %}is-earthquake{% endif %}">
+                <header>
+                    <span class="sr-summary-hazard-icon">
+                        <i class="fas {% if 'wildfire' in hazard_lower %}fa-fire{% elif 'flood' in hazard_lower %}fa-water{% elif 'tsunami' in hazard_lower %}fa-house-flood-water{% elif 'landslide' in hazard_lower %}fa-mountain{% else %}fa-house-crack{% endif %}"></i>
+                    </span>
+                    <div>
                         <h3>{{ plan.hazard }}</h3>
-                        <span class="sr-summary-severity">{{ plan.displayed_hazard_level }} hazard priority</span>
-                    </header>
-                    <div class="sr-summary-hazard-matrix" aria-label="{{ plan.hazard }} hazard-priority factors">
-                        <div><span>Oakland LHMP area rating</span><strong>{{ plan.official_lhmp_area_rating }}</strong></div>
-                        <div><span>Oakland plan area</span><strong>{{ plan.plan_area }}</strong></div>
-                        <div><span>Fallback rating</span><strong>{{ plan.stayready_fallback_rating }}</strong></div>
-                        <div><span>Mapped concern</span><strong>{{ plan.physical_exposure_status }}</strong></div>
+                        <span>{{ plan.mapped_finding_category }}</span>
                     </div>
-                    <div class="sr-summary-hazard-copy">
-                        <h4>What this means</h4>
-                        <p><strong>Why this rating?</strong> {{ plan.why_this_rating }}</p>
-                        <small><strong>At this address:</strong> {{ plan.local_evidence_summary }}</small>
-                        <small><strong>Area context:</strong> {{ plan.area_context }}</small>
-                        {% if plan.community_context.status == "Available" %}<small><strong>Community context:</strong> {{ plan.community_context.summary }}</small>{% endif %}
-                    </div>
-                    <h4>What to do next</h4>
-                    <ul>
-                        {% set action_plan = (resident_plan.hazards | selectattr("slug", "equalto", plan.slug) | list | first) %}
-                        {% if action_plan %}
-                        {% for item in (action_plan.before_actions + action_plan.during_actions)[:3] %}
-                        <li>{{ item.instruction }}</li>
-                        {% else %}
-                        <li>Review official preparedness guidance for this hazard.</li>
-                        {% endfor %}
-                        {% else %}
-                        <li>Review official preparedness guidance for this hazard.</li>
-                        {% endif %}
-                    </ul>
-                    <footer>
-                        <span>Source:
-                        {% if plan.sources_used and plan.sources_used[0].url %}
-                        <a href="{{ plan.sources_used[0].url }}" target="_blank" rel="noopener noreferrer">{{ plan.sources_used[0].name }}</a>
-                        {% elif plan.sources_used %}{{ plan.sources_used[0].name }}{% else %}source unavailable{% endif %}
-                        </span>
-                        <details>
-                            <summary>Show details</summary>
-                            <div class="sr-summary-hazard-details">
-                                <strong>{{ plan.displayed_hazard_level }} hazard priority · {{ plan.confidence }} confidence</strong>
-                                <h5>Oakland LHMP area rating</h5>
-                                <p><strong>Combined area rating:</strong> {{ plan.combined_area_rating }}.</p>
-                                <p><strong>Combined method:</strong> {{ plan.combination_explanation }}</p>
-                                <ul>
-                                    {% for scenario in plan.scenario_ratings %}
-                                    <li>{{ scenario.scenario_name }}: {{ scenario.official_rating }}{% if scenario.document_status %} · {{ scenario.document_status | title }}{% endif %}</li>
-                                    {% else %}
-                                    <li>No official scenario rating is available for this matched plan area and hazard.</li>
-                                    {% endfor %}
-                                </ul>
-                                <h5>Fallback probability and impact</h5>
-                                <p><strong>Probability:</strong> {{ plan.probability }}. {{ plan.probability_basis }}</p>
-                                <p><strong>Impact:</strong> {{ plan.impact }}. {{ plan.impact_basis }}</p>
-                                {% if plan.official_priority_differs %}
-                                <p><strong>Official LHMP priority:</strong> {{ plan.official_lhmp_priority }}. {{ plan.official_lhmp_priority_basis }}</p>
-                                {% endif %}
-                                <h5>Address-specific notes</h5>
-                                <p>{{ plan.physical_exposure_status }}. {{ plan.local_exposure.local_exposure_basis }}</p>
-                                <p><strong>Official zone category:</strong> {{ plan.official_zone_category }}</p>
-                                {% if plan.local_exposure.source_specific_terminology %}
-                                <p><strong>Source terminology:</strong> {{ plan.local_exposure.source_specific_terminology | join(" · ") }}</p>
-                                {% endif %}
-                                <h5>Area context</h5>
-                                <p>{{ plan.area_context }}{% if plan.sub_area_context.sub_area_match_status %} · {{ plan.sub_area_context.sub_area_match_status }}{% endif %}</p>
-                                <p>{{ plan.community_context.summary }}</p>
-                                <h5>Sources used</h5>
-                                <ul>
-                                    {% for source in plan.sources_used %}
-                                    <li>{% if source.url %}<a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.name }}</a>{% else %}{{ source.name }}{% endif %}{% if source.reference %}: {{ source.reference }}{% endif %}{% if source.status_label %} · {{ source.status_label }}{% endif %}</li>
-                                    {% endfor %}
-                                </ul>
-                                <h5>During, after, and recovery</h5>
-                                <ul>
-                                    {% if action_plan %}
-                                    {% for item in (action_plan.during_actions + action_plan.after_actions + action_plan.recovery_steps)[:6] %}<li>{{ item.instruction }}</li>{% else %}<li>Use official alerts and local emergency guidance for protective actions.</li>{% endfor %}
-                                    {% else %}
-                                    <li>Use official alerts and local emergency guidance for protective actions.</li>
-                                    {% endif %}
-                                </ul>
-                                <h5>Limits and source details</h5>
-                                <ul>
-                                    <li>This is a hazard priority and mapped concern summary, not an exact personal risk prediction.</li>
-                                    <li>Unknown means the structured sources or supplied GIS evidence were insufficient for a Low, Medium, or High rating.</li>
-                                    {% for limitation in plan.limitations %}<li>{{ limitation }}</li>{% endfor %}
-                                    {% if action_plan %}{% for limitation in action_plan.limitations %}<li>{{ limitation }}</li>{% endfor %}{% endif %}
-                                </ul>
-                                {% if action_plan %}{% for evidence in action_plan.official_mapped_evidence %}
-                                <p><strong>{{ evidence.dataset_name }} · {{ evidence.status_label }}</strong><br>{{ evidence.what_this_means }}<br><small>{{ evidence.what_this_does_not_mean }}</small><br><small>{{ evidence.source_agency or "California Geological Survey" }} · Official source, provisional StayReady integration</small></p>
-                                {% endfor %}{% endif %}
-                            </div>
-                        </details>
-                    </footer>
-                </article>
-                {% endfor %}
-                {% endfor %}
-                {% if not priority_plans %}
-                {% for plan in resident_plan.hazards[:4] %}
-                {% set hazard_lower = plan.hazard | lower %}
-                <article class="sr-summary-hazard-card {% if 'wildfire' in hazard_lower %}is-wildfire{% elif 'flood' in hazard_lower %}is-flood{% elif 'tsunami' in hazard_lower %}is-tsunami{% elif 'landslide' in hazard_lower %}is-landslide{% else %}is-earthquake{% endif %}">
-                    <header>
-                        <span class="sr-summary-hazard-icon">
-                            <i class="fas {% if 'wildfire' in hazard_lower %}fa-fire{% elif 'flood' in hazard_lower %}fa-water{% elif 'tsunami' in hazard_lower %}fa-house-flood-water{% elif 'landslide' in hazard_lower %}fa-mountain{% else %}fa-house-crack{% endif %}"></i>
-                        </span>
-                        <span class="sr-summary-rank" aria-label="Hazard priority unavailable">?</span>
-                        <h3>{{ plan.hazard }}</h3>
-                        <span class="sr-summary-severity">{{ plan.priority_label }}</span>
-                    </header>
-                    <div class="sr-summary-hazard-copy">
-                        <h4>What this means</h4>
-                        <p>{{ plan.why_it_matters }}</p>
-                    </div>
-                    <footer>
-                        <details>
-                            <summary>Show details</summary>
-                            <div class="sr-summary-hazard-details">
-                                <h5>Limits and source details</h5>
-                                <ul>{% for limitation in plan.limitations %}<li>{{ limitation }}</li>{% endfor %}</ul>
-                            </div>
-                        </details>
-                    </footer>
-                </article>
-                {% endfor %}
-                {% endif %}
+                </header>
+                <div class="sr-mapped-finding-main">
+                    <span>Official mapped finding</span>
+                    <strong>{{ plan.mapped_finding_summary }}</strong>
+                    <p><strong>Why this rating?</strong> {{ plan.mapped_finding_interpretation }}</p>
+                    <small>Confidence: {{ plan.mapped_finding_confidence or plan.confidence }}</small>
+                </div>
+                <div class="sr-mapped-finding-source">
+                    <span>Source</span>
+                    <strong>{{ plan.mapped_finding_source_name }}</strong>
+                    {% if plan.local_exposure.data_last_checked %}<small>Last checked: {{ plan.local_exposure.data_last_checked }}</small>{% endif %}
+                </div>
+                <footer>
+                    <details>
+                        <summary>View details</summary>
+                        <div class="sr-summary-hazard-details">
+                            <h5>Exact GIS layers and terms</h5>
+                            <ul>
+                                {% for layer in plan.successful_sources %}<li>{{ layer }}</li>{% else %}<li>No successful GIS layer was reported for this hazard.</li>{% endfor %}
+                                {% for layer in plan.failed_sources %}<li>{{ layer }} — map information unavailable</li>{% endfor %}
+                                {% for term in plan.local_exposure.source_specific_terminology %}<li>Source terminology: {{ term }}</li>{% endfor %}
+                            </ul>
+                            <h5>Address-specific notes</h5>
+                            <p>{{ plan.address_specific_notes }}</p>
+                            {% if city_lower == "oakland" and plan.plan_area and plan.plan_area != "Unknown" %}
+                            <p><strong>Plan-area context:</strong> {{ plan.plan_area }}. Official Oakland plan-area hazard ratings are still being verified and are not used here.{% if plan.boundary_warning %} {{ plan.boundary_warning }}{% endif %}</p>
+                            {% endif %}
+                            {% if action_plan and action_plan.official_mapped_evidence %}
+                            <h5>Official mapped evidence returned by the app</h5>
+                            {% for evidence in action_plan.official_mapped_evidence %}
+                            <p><strong>{{ evidence.dataset_name }} · {{ evidence.status_label }}</strong><br>{{ evidence.what_this_means }}<br><small>{{ evidence.what_this_does_not_mean }}</small><br><small>{{ evidence.source_agency or "California Geological Survey" }} · Official source, provisional StayReady integration</small></p>
+                            {% endfor %}
+                            {% endif %}
+                            <h5>Limits and source details</h5>
+                            <ul>
+                                <li>This is a mapped concern and hazard-priority summary, not an exact personal risk prediction.</li>
+                                <li>Unavailable or unsupported source data is not converted into a Low, Medium, or High rating.</li>
+                                {% for limitation in plan.limitations %}<li>{{ limitation }}</li>{% endfor %}
+                                {% if action_plan %}{% for limitation in action_plan.limitations %}<li>{{ limitation }}</li>{% endfor %}{% endif %}
+                            </ul>
+                            {% if plan.sources_used %}
+                            <h5>Source references</h5>
+                            <ul>
+                                {% for source in plan.sources_used %}
+                                <li>{% if source.url %}<a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.name }}</a>{% else %}{{ source.name }}{% endif %}{% if source.reference %}: {{ source.reference }}{% endif %}{% if source.status_label %} · {{ source.status_label }}{% endif %}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </div>
+                    </details>
+                </footer>
+            </article>
+            {%- endmacro %}
+
+            <div class="sr-mapped-findings" id="top-concerns">
+                <section class="sr-mapped-finding-section">
+                    <header><h3>Important official mapped findings</h3><p>Official map layers that returned a mapped concern for this address.</p></header>
+                    {% for plan in important_findings %}
+                    {{ mapped_finding_row(plan) }}
+                    {% else %}
+                    <p class="sr-mapped-empty">No important official mapped finding was returned by the checked layers.</p>
+                    {% endfor %}
+                </section>
+                <section class="sr-mapped-finding-section">
+                    <header><h3>Other hazards checked</h3><p>Official map layers checked successfully where no significant mapped concern was returned.</p></header>
+                    {% for plan in other_checked %}
+                    {{ mapped_finding_row(plan) }}
+                    {% else %}
+                    <p class="sr-mapped-empty">No successful non-intersection checks were reported.</p>
+                    {% endfor %}
+                </section>
+                <section class="sr-mapped-finding-section">
+                    <header><h3>Map information unavailable</h3><p>Checks that could not be completed. These failures are not used to lower or raise concern.</p></header>
+                    {% for plan in unavailable_findings %}
+                    {{ mapped_finding_row(plan) }}
+                    {% else %}
+                    <p class="sr-mapped-empty">No unavailable official map checks were reported.</p>
+                    {% endfor %}
+                </section>
             </div>
 
             <div class="sr-summary-action-layout">

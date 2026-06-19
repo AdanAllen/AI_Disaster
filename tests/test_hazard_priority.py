@@ -178,9 +178,10 @@ class HazardPriorityRankingTests(unittest.TestCase):
             coordinates=coordinates_for_sub_area("West Oakland"),
         )
         tsunami = next(item for item in ranked if item["slug"] == "tsunami")
-        self.assertTrue(tsunami["is_top_four"])
+        self.assertFalse(tsunami["is_top_four"])
+        self.assertEqual(tsunami["displayed_level_status"], "unsupported")
         self.assertEqual(tsunami["local_exposure_status"], "Direct mapped exposure")
-        self.assertEqual(tsunami["displayed_hazard_level"], "Medium")
+        self.assertEqual(tsunami["displayed_hazard_level"], "Unknown")
 
     def test_hillside_landslide_exposure_can_move_landslide_higher(self):
         ranked = rank_hazards_for_risk_summary(
@@ -191,9 +192,10 @@ class HazardPriorityRankingTests(unittest.TestCase):
             coordinates=coordinates_for_sub_area("East Oakland Hills"),
         )
         landslide = next(item for item in ranked if item["slug"] == "landslide")
-        self.assertTrue(landslide["is_top_four"])
+        self.assertFalse(landslide["is_top_four"])
+        self.assertEqual(landslide["displayed_level_status"], "unsupported")
         self.assertEqual(landslide["local_exposure_status"], "Additional mapped concern")
-        self.assertEqual(landslide["displayed_hazard_level"], "High")
+        self.assertEqual(landslide["displayed_hazard_level"], "Unknown")
 
     def test_all_five_hazards_returned_and_only_four_top(self):
         ranked = rank_hazards_for_risk_summary("Oakland", [])
@@ -269,7 +271,8 @@ class HazardPriorityRankingTests(unittest.TestCase):
         )
         earthquake = next(item for item in ranked if item["slug"] == "earthquake")
         self.assertEqual(earthquake["probability"], "High")
-        self.assertEqual(earthquake["final_rating"], "Medium")
+        self.assertEqual(earthquake["final_rating"], "Unknown")
+        self.assertEqual(earthquake["displayed_level_status"], "unsupported")
         self.assertEqual(earthquake["community_context"]["status"], "Available")
         self.assertIn("community context only", earthquake["community_context"]["summary"])
 
@@ -280,7 +283,8 @@ class HazardPriorityRankingTests(unittest.TestCase):
             coordinates=coordinates_for_sub_area("East Oakland Hills"),
         ) if item["slug"] == "wildfire")
         self.assertEqual(wildfire["probability"], "High")
-        self.assertEqual(wildfire["final_rating"], "High")
+        self.assertEqual(wildfire["final_rating"], "Unknown")
+        self.assertEqual(wildfire["displayed_level_status"], "unsupported")
         self.assertNotEqual(wildfire["final_rating"], "Low")
 
     def test_physical_zone_can_raise_local_level_without_epc(self):
@@ -340,7 +344,7 @@ class HazardPriorityRankingTests(unittest.TestCase):
         self.assertEqual(wildfire["final_rating"], "Low")
         self.assertEqual(wildfire["official_zone_category"], "Very High, CAL FIRE Fire Hazard Severity Zone: Very High")
 
-    def test_all_high_and_medium_hazards_display_without_fixed_top_four(self):
+    def test_unverified_oakland_hazards_are_not_displayed_as_high_or_medium(self):
         ranked = build_hazard_priority_results(
             "Oakland",
             [],
@@ -348,8 +352,8 @@ class HazardPriorityRankingTests(unittest.TestCase):
             display_limit=1,
         )
         high_medium = [item for item in ranked if item["final_rating"] in {"High", "Medium"}]
-        self.assertGreater(len(high_medium), 1)
-        self.assertTrue(all(item["is_top_four"] for item in high_medium))
+        self.assertEqual(high_medium, [])
+        self.assertTrue(all(item["displayed_level_status"] == "unsupported" for item in ranked))
 
     def test_medium_high_high_combines_to_high(self):
         result = combine_scenario_ratings([
@@ -405,17 +409,20 @@ class HazardPriorityRankingTests(unittest.TestCase):
             coordinates=coordinates_for_sub_area("Coliseum/Airport"),
         )
         flood = next(item for item in ranked if item["slug"] == "flood")
-        self.assertEqual(flood["official_lhmp_area_rating"], "Medium")
+        self.assertEqual(flood["official_lhmp_area_rating"], "Unknown")
         self.assertEqual(flood["stayready_fallback_rating"], "High")
-        self.assertEqual(flood["displayed_hazard_level"], "Medium")
+        self.assertEqual(flood["displayed_hazard_level"], "Unknown")
+        self.assertEqual(flood["displayed_level_status"], "unsupported")
 
-    def test_different_plan_areas_can_receive_different_categories(self):
+    def test_different_plan_areas_do_not_display_unverified_categories(self):
         east = rank_hazards_for_risk_summary("Oakland", [], coordinates=coordinates_for_sub_area("East Oakland Hills"))
         west = rank_hazards_for_risk_summary("Oakland", [], coordinates=coordinates_for_sub_area("West Oakland"))
         east_flood = next(item for item in east if item["slug"] == "flood")
         west_flood = next(item for item in west if item["slug"] == "flood")
-        self.assertEqual(east_flood["displayed_hazard_level"], "Low")
-        self.assertEqual(west_flood["displayed_hazard_level"], "Medium")
+        self.assertEqual(east_flood["displayed_hazard_level"], "Unknown")
+        self.assertEqual(west_flood["displayed_hazard_level"], "Unknown")
+        self.assertEqual(east_flood["displayed_level_status"], "unsupported")
+        self.assertEqual(west_flood["displayed_level_status"], "unsupported")
 
     def test_failed_gis_does_not_erase_valid_lhmp_area_rating(self):
         ranked = rank_hazards_for_risk_summary(
@@ -424,7 +431,8 @@ class HazardPriorityRankingTests(unittest.TestCase):
             coordinates=coordinates_for_sub_area("West Oakland"),
         )
         flood = next(item for item in ranked if item["slug"] == "flood")
-        self.assertEqual(flood["displayed_hazard_level"], "Medium")
+        self.assertEqual(flood["displayed_hazard_level"], "Unknown")
+        self.assertEqual(flood["displayed_level_status"], "unsupported")
         self.assertEqual(flood["physical_exposure_status"], "Data unavailable")
 
 

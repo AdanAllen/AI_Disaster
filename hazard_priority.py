@@ -5,6 +5,7 @@ from functools import lru_cache
 from typing import Dict, List, Optional, Tuple
 
 from shapely.geometry import Point, shape
+from shapely.ops import nearest_points
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -18,6 +19,10 @@ LOCAL_ADDITIONAL = "Additional mapped concern"
 LOCAL_NONE = "No mapped exposure identified in checked layers"
 LOCAL_UNAVAILABLE = "Data unavailable"
 LOCAL_NOT_APPLICABLE = "Not applicable"
+MAPPED_SIGNIFICANT = "significant_official_finding"
+MAPPED_NO_SIGNIFICANT = "successful_check_no_significant_match"
+MAPPED_UNAVAILABLE = "data_unavailable"
+MAPPED_NOT_SUPPORTED = "not_supported"
 
 
 def _slug(value: str) -> str:
@@ -123,10 +128,20 @@ def _iter_gis_records(address_gis_results) -> List[Dict]:
                 if isinstance(evidence, dict):
                     records.append({**evidence, "_parent_hazard": parent})
         if isinstance(item.get("geospatial_evidence"), dict):
-            records.append({**item["geospatial_evidence"], "_parent_hazard": parent})
+            evidence = {**item["geospatial_evidence"], "_parent_hazard": parent}
+            records.append(evidence)
+            for feature in evidence.get("matched_features") or []:
+                if isinstance(feature, dict):
+                    records.append({**feature, "_parent_hazard": parent, "_matched_layer": True})
         for layer in item.get("matched_layers") or []:
             if isinstance(layer, dict):
                 records.append({**layer, "_parent_hazard": parent, "_matched_layer": True})
+        for layer in item.get("layers") or []:
+            if isinstance(layer, dict):
+                records.append({**layer, "_parent_hazard": parent, "_matched_layer": True})
+        for feature in item.get("matched_features") or []:
+            if isinstance(feature, dict):
+                records.append({**feature, "_parent_hazard": parent, "_matched_layer": True})
     return records
 
 
@@ -288,6 +303,29 @@ def combine_scenario_ratings(scenario_records: List[Dict]) -> Dict:
     }
 
 
+def _record_is_verified(record: Dict) -> bool:
+    return (
+        record.get("displayed_level_status") == "verified"
+        or record.get("verification_status") == "verified"
+        or record.get("visually_verified") is True
+    ) and bool(record.get("last_verified"))
+
+
+def _unsupported_source_trace(record: Dict, reason: str) -> Dict:
+    return {
+        "source_document": record.get("source_plan") or record.get("source_document") or "",
+        "source_status": record.get("document_status") or "",
+        "source_page": record.get("source_page"),
+        "source_table": record.get("source_table") or "",
+        "source_row": record.get("source_row") or "",
+        "raw_value": record.get("raw_value") or record.get("official_rating") or "",
+        "calculation_steps": [reason],
+        "fallback_used": False,
+        "last_verified": record.get("last_verified") or "",
+        "displayed_level_status": "unsupported",
+    }
+
+
 def _scenario_records_for_area(jurisdiction: str, plan_area: str, hazard: str, status_preference: str = "adopted") -> List[Dict]:
     if not plan_area or plan_area == UNKNOWN:
         return []
@@ -303,12 +341,22 @@ def _scenario_records_for_area(jurisdiction: str, plan_area: str, hazard: str, s
 
 def official_area_rating_for_hazard(jurisdiction: str, plan_area: str, hazard: str) -> Dict:
     records = _scenario_records_for_area(jurisdiction, plan_area, hazard)
-    combined = combine_scenario_ratings(records)
+    verified_records = [record for record in records if _record_is_verified(record)]
+    unsupported_records = [record for record in records if not _record_is_verified(record)]
+    combined = combine_scenario_ratings(verified_records)
     source_statuses = _dedupe([record.get("document_status") for record in records])
     source_plans = _dedupe([record.get("source_plan") for record in records])
+    unsupported_reason = ""
+    if unsupported_records and not verified_records:
+        unsupported_reason = "Official area/scenario records exist in local JSON, but they lack required source-row/raw-value/visual-verification provenance and are fail-closed to Unknown."
+    elif unsupported_records:
+        unsupported_reason = "Some local scenario records were excluded because they lack required verification provenance."
     return {
         **combined,
         "official_lhmp_area_rating": combined["combined_area_rating"],
+        "displayed_level_status": "verified" if combined["valid_scenario_count"] else ("unsupported" if unsupported_records else "unavailable"),
+        "unsupported_reason": unsupported_reason,
+        "unsupported_source_records": [_unsupported_source_trace(record, unsupported_reason) for record in unsupported_records],
         "source_statuses": source_statuses,
         "source_plans": source_plans,
         "sources": [
@@ -320,7 +368,7 @@ def official_area_rating_for_hazard(jurisdiction: str, plan_area: str, hazard: s
                 "status_label": (record.get("document_status") or "unknown").title(),
                 "publication_date": record.get("plan_version") or "",
             }
-            for record in records
+            for record in verified_records
         ],
     }
 
@@ -459,6 +507,8 @@ def _sub_area_context(
             "polygon_version": optional_sub_area_match.get("polygon_version") or "",
             "data_last_checked": optional_sub_area_match.get("data_last_checked") or "",
             "sub_area_limitations": optional_sub_area_match.get("limitations") or [],
+            "boundary_distance_m": optional_sub_area_match.get("boundary_distance_m"),
+            "boundary_warning": optional_sub_area_match.get("boundary_warning") or "",
         }
     jurisdiction_key = _slug(jurisdiction)
     config = (load_priority_data().get("sub_areas", {}).get("jurisdictions") or {}).get(jurisdiction_key, {})
@@ -472,6 +522,8 @@ def _sub_area_context(
         "polygon_version": config.get("polygon_version") or "",
         "data_last_checked": config.get("data_last_checked") or "",
         "sub_area_limitations": config.get("limitations") or ["No reliable boundary dataset is available for sub-area assignment."],
+        "boundary_distance_m": None,
+        "boundary_warning": "",
     }
 
     pair = _coordinate_pair(coordinates)
@@ -490,11 +542,23 @@ def _sub_area_context(
     point = Point(pair[1], pair[0])
     matches = []
     non_lhmp_matches = []
+    nearest_boundary_distance_m = None
     for feature in features:
         try:
             polygon = shape(feature.get("geometry"))
         except Exception:
             continue
+        if not polygon.is_empty:
+            try:
+                _, nearest_on_boundary = nearest_points(point, polygon.boundary)
+                distance_m = point.distance(nearest_on_boundary) * 111_139
+                nearest_boundary_distance_m = (
+                    distance_m
+                    if nearest_boundary_distance_m is None
+                    else min(nearest_boundary_distance_m, distance_m)
+                )
+            except Exception:
+                pass
         if not polygon.contains(point) and not polygon.touches(point):
             continue
         source_term = _normalize_sub_area_name((feature.get("properties") or {}).get(source_field) or "")
@@ -510,10 +574,15 @@ def _sub_area_context(
             "sub_area_match_status": "Matched official Oakland plan-area polygon",
             "sub_area_basis": f"Point-in-polygon match against {config.get('source_name') or 'official boundary dataset'}.",
         })
+        if nearest_boundary_distance_m is not None:
+            base["boundary_distance_m"] = round(nearest_boundary_distance_m, 1)
+            if nearest_boundary_distance_m <= 100:
+                base["boundary_warning"] = "This location may be near a plan-area boundary."
     elif len(matches) > 1:
         base["sub_area_status"] = "Ambiguous official polygon match"
         base["sub_area_match_status"] = "Ambiguous official polygon match"
         base["sub_area_limitations"] = _dedupe(base["sub_area_limitations"] + ["The address point intersected more than one assignable sub-area polygon, so no sub-area was selected."])
+        base["boundary_warning"] = "This location may be near a plan-area boundary."
     elif non_lhmp_matches:
         base["sub_area_status"] = "Matched official polygon outside configured LHMP sub-area list"
         base["sub_area_match_status"] = base["sub_area_status"]
@@ -575,6 +644,170 @@ def _local_evidence_summary(local: Dict) -> str:
     if terms != UNKNOWN:
         return f"{local.get('local_exposure_status')}: {terms}."
     return f"{local.get('local_exposure_status')}. {local.get('local_exposure_basis')}"
+
+
+def _source_name_for_local(hazard: str, local: Dict) -> str:
+    layers = local.get("official_layers_checked") or local.get("successful_layers") or []
+    if layers:
+        return "; ".join(_dedupe(layers[:3]))
+    return {
+        "earthquake": "California Geological Survey earthquake hazard layers",
+        "wildfire": "CAL FIRE Fire Hazard Severity Zone layer",
+        "flood": "FEMA National Flood Hazard Layer snapshot",
+        "landslide": "CGS and local landslide layers",
+        "tsunami": "California Geological Survey tsunami hazard area layer",
+    }.get(hazard, "Official mapped hazard layer")
+
+
+def _has_any_text(local: Dict, *tokens: str) -> bool:
+    text = " ".join(
+        str(item or "")
+        for item in (
+            (local.get("source_specific_terminology") or [])
+            + (local.get("official_layers_checked") or [])
+            + (local.get("successful_layers") or [])
+            + (local.get("polygon_intersections") or [])
+            + (local.get("proximity_results") or [])
+        )
+    ).lower()
+    return any(token.lower() in text for token in tokens)
+
+
+def _mapped_finding_for_hazard(hazard: str, local: Dict) -> Dict:
+    status = local.get("local_exposure_status")
+    source_name = _source_name_for_local(hazard, local)
+    terms = local.get("source_specific_terminology") or []
+    terms_text = " ".join(terms).lower()
+    unavailable = local.get("unavailable_layers") or []
+    checked_layers = local.get("official_layers_checked") or []
+    successful_layers = local.get("successful_layers") or []
+    confidence = "Medium" if checked_layers or successful_layers else "Low"
+
+    if status == LOCAL_UNAVAILABLE or (unavailable and not checked_layers and not successful_layers):
+        return {
+            "mapped_finding_status": MAPPED_UNAVAILABLE,
+            "mapped_finding_category": "Map information unavailable",
+            "mapped_finding_summary": "Address-specific map information is temporarily unavailable.",
+            "mapped_finding_interpretation": "This failed check was kept separate and was not used to lower or raise a hazard priority.",
+            "mapped_finding_source_name": source_name,
+            "mapped_finding_confidence": "Low",
+        }
+
+    if status in {LOCAL_NOT_APPLICABLE, LOCAL_GENERAL} and not checked_layers and not successful_layers:
+        return {
+            "mapped_finding_status": MAPPED_NOT_SUPPORTED,
+            "mapped_finding_category": "Map information unavailable",
+            "mapped_finding_summary": "No address-specific official map result is available for this hazard.",
+            "mapped_finding_interpretation": "StayReady does not infer a mapped concern where address-level source evidence is missing.",
+            "mapped_finding_source_name": source_name,
+            "mapped_finding_confidence": "Low",
+        }
+
+    if hazard == "flood":
+        if status == LOCAL_DIRECT and _has_any_text(local, "special flood hazard", "zone ae", "zone a", "sfha", "1%"):
+            summary = terms[0] if terms else "Mapped Special Flood Hazard Area finding."
+            return {
+                "mapped_finding_status": MAPPED_SIGNIFICANT,
+                "mapped_finding_category": "Official mapped finding",
+                "mapped_finding_summary": summary,
+                "mapped_finding_interpretation": "The checked flood layer indicates Special Flood Hazard Area membership for the address point.",
+                "mapped_finding_source_name": source_name,
+                "mapped_finding_confidence": confidence,
+            }
+        zone = next((term for term in terms if "zone x" in term.lower() or term.strip().lower() == "x"), "")
+        summary = "FEMA Zone X, not identified as a Special Flood Hazard Area." if zone else "No Special Flood Hazard Area match found in the checked layer."
+        return {
+            "mapped_finding_status": MAPPED_NO_SIGNIFICANT,
+            "mapped_finding_category": "Other hazard checked",
+            "mapped_finding_summary": summary,
+            "mapped_finding_interpretation": "This is a checked map result, not a guarantee that flooding or drainage impacts cannot occur.",
+            "mapped_finding_source_name": source_name,
+            "mapped_finding_confidence": confidence,
+        }
+
+    if hazard == "wildfire":
+        if status == LOCAL_DIRECT:
+            summary = next((term for term in terms if "fire hazard severity" in term.lower()), terms[0] if terms else "Mapped Fire Hazard Severity Zone finding.")
+            return {
+                "mapped_finding_status": MAPPED_SIGNIFICANT,
+                "mapped_finding_category": "Official mapped finding",
+                "mapped_finding_summary": summary,
+                "mapped_finding_interpretation": "The address point intersects the checked Fire Hazard Severity Zone layer. This is mapped concern language, not an exact personal risk prediction.",
+                "mapped_finding_source_name": source_name,
+                "mapped_finding_confidence": confidence,
+            }
+
+    if hazard == "earthquake":
+        if _has_any_text(local, "alquist-priolo", "liquefaction zone", "earthquake-induced landslide zone"):
+            ap_match = next((term for term in terms if "alquist-priolo" in term.lower()), "")
+            summary = ap_match or next((term for term in terms if "mapped" in term.lower()), terms[0] if terms else "Official earthquake map finding.")
+            interpretation = "This official mapped finding applies to the address point. Fault proximity, if shown, is separate context and is not the same as an Alquist-Priolo polygon match."
+            return {
+                "mapped_finding_status": MAPPED_SIGNIFICANT,
+                "mapped_finding_category": "Official mapped finding",
+                "mapped_finding_summary": summary,
+                "mapped_finding_interpretation": interpretation,
+                "mapped_finding_source_name": source_name,
+                "mapped_finding_confidence": confidence,
+            }
+        if status == LOCAL_ADDITIONAL:
+            return {
+                "mapped_finding_status": MAPPED_NO_SIGNIFICANT,
+                "mapped_finding_category": "Other hazard checked",
+                "mapped_finding_summary": "Fault proximity context returned by the checked data.",
+                "mapped_finding_interpretation": "This is mapped context for preparedness and is not presented as a personal damage prediction.",
+                "mapped_finding_source_name": source_name,
+                "mapped_finding_confidence": confidence,
+            }
+
+    if hazard == "landslide":
+        if status in {LOCAL_DIRECT, LOCAL_ADDITIONAL} and not _has_any_text(local, "none", "no mapped match"):
+            summary = next((term for term in terms if "landslide" in term.lower()), terms[0] if terms else "Official landslide map finding.")
+            return {
+                "mapped_finding_status": MAPPED_SIGNIFICANT,
+                "mapped_finding_category": "Official mapped finding",
+                "mapped_finding_summary": summary,
+                "mapped_finding_interpretation": "The checked landslide layer returned a mapped concern for the address point.",
+                "mapped_finding_source_name": source_name,
+                "mapped_finding_confidence": confidence,
+            }
+        return {
+            "mapped_finding_status": MAPPED_NO_SIGNIFICANT,
+            "mapped_finding_category": "Other hazard checked",
+            "mapped_finding_summary": "No mapped landslide-zone match found in the checked layers.",
+            "mapped_finding_interpretation": "This result only describes the checked layers and does not replace slope, drainage, or geotechnical review.",
+            "mapped_finding_source_name": source_name,
+            "mapped_finding_confidence": confidence,
+        }
+
+    if hazard == "tsunami":
+        if status == LOCAL_DIRECT and "outside hazard area" not in terms_text and "no mapped match" not in terms_text:
+            summary = next((term for term in terms if "tsunami" in term.lower()), terms[0] if terms else "Official tsunami hazard-area finding.")
+            return {
+                "mapped_finding_status": MAPPED_SIGNIFICANT,
+                "mapped_finding_category": "Official mapped finding",
+                "mapped_finding_summary": summary,
+                "mapped_finding_interpretation": "The checked tsunami hazard-area layer applies to the address point for evacuation and response planning.",
+                "mapped_finding_source_name": source_name,
+                "mapped_finding_confidence": confidence,
+            }
+        return {
+            "mapped_finding_status": MAPPED_NO_SIGNIFICANT,
+            "mapped_finding_category": "Other hazard checked",
+            "mapped_finding_summary": "Outside the official tsunami hazard area.",
+            "mapped_finding_interpretation": "This checked-layer result is not a guarantee of safety and does not replace official instructions during an event.",
+            "mapped_finding_source_name": source_name,
+            "mapped_finding_confidence": confidence,
+        }
+
+    return {
+        "mapped_finding_status": MAPPED_NO_SIGNIFICANT,
+        "mapped_finding_category": "Other hazard checked",
+        "mapped_finding_summary": "No mapped match found in the checked layer.",
+        "mapped_finding_interpretation": "This result only describes the checked official map layer.",
+        "mapped_finding_source_name": source_name,
+        "mapped_finding_confidence": confidence,
+    }
 
 
 def _legacy_local_hazard_level(hazard: str, citywide_priority: str, local: Dict, has_citywide_record: bool) -> Tuple[str, str]:
@@ -661,17 +894,25 @@ def build_hazard_priority_results(
         local = local_exposure_for_hazard(hazard, address_gis_results)
         official_area = official_area_rating_for_hazard(jurisdiction, sub_area["sub_area"], hazard)
         community_context = _community_context_for_hazard(jurisdiction, sub_area["sub_area"], hazard)
+        mapped_finding = _mapped_finding_for_hazard(hazard, local)
         fallback_allowed = not (_slug(jurisdiction) == "oakland" and sub_area["sub_area"] == UNKNOWN)
         fallback_rating = calculated if calculated != UNKNOWN and fallback_allowed else UNKNOWN
         if official_area["valid_scenario_count"]:
             displayed_level = official_area["combined_area_rating"]
             displayed_basis = official_area["combination_explanation"]
+            displayed_status = "verified"
+        elif official_area["displayed_level_status"] == "unsupported":
+            displayed_level = UNKNOWN
+            displayed_basis = official_area["unsupported_reason"]
+            displayed_status = "unsupported"
         elif fallback_rating != UNKNOWN:
             displayed_level = fallback_rating
             displayed_basis = f"No official LHMP area scenario rating is available; using documented StayReady Probability + Impact fallback ({probability} Probability and {impact} Impact)."
+            displayed_status = "fallback"
         else:
             displayed_level = UNKNOWN
             displayed_basis = "No official LHMP area scenario rating is available for the matched plan area, and no defensible fallback is available."
+            displayed_status = "unavailable"
         sources = official_area["sources"] or ([_source_payload(record)] if record else [])
         confidence = (record or {}).get("confidence") or "Low"
         if official_area["valid_scenario_count"]:
@@ -723,7 +964,17 @@ def build_hazard_priority_results(
             "combination_method": official_area["combination_method"],
             "combination_explanation": official_area["combination_explanation"],
             "displayed_hazard_level": displayed_level,
+            "displayed_level": displayed_level,
+            "displayed_level_status": displayed_status,
             "displayed_level_basis": displayed_basis,
+            "source_records": official_area["unsupported_source_records"] if displayed_status == "unsupported" else official_area["scenario_ratings"],
+            "successful_queries": local["successful_layers"],
+            "failed_queries": local["unavailable_layers"],
+            "fallback_used": displayed_status == "fallback",
+            **mapped_finding,
+            "successful_sources": _dedupe(local["official_layers_checked"] + local["successful_layers"]),
+            "failed_sources": local["unavailable_layers"],
+            "area_rating_status": displayed_status,
             "final_rating": displayed_level,
             "lhmp_rating": calculated,
             "why_this_rating": f"{displayed_basis} {_local_evidence_summary(local)}",
@@ -738,6 +989,8 @@ def build_hazard_priority_results(
             "address_specific_notes": local["local_exposure_basis"],
             "sub_area_context": sub_area,
             "plan_area": sub_area["sub_area"],
+            "boundary_warning": sub_area.get("boundary_warning") or "",
+            "boundary_distance_m": sub_area.get("boundary_distance_m"),
             "community_context": community_context,
             "area_context": sub_area["sub_area"] if sub_area["sub_area"] != UNKNOWN else "Not currently available",
             "sources_used": sources,
