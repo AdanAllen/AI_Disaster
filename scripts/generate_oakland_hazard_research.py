@@ -18,6 +18,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "research" / "oakland_hazard_assessment"
 TODAY = date.today().isoformat()
+ADOPTED_PAGE_DIR = "research/oakland_hazard_assessment/page-images/adopted"
 
 PLAN_AREAS = [
     "Central East Oakland",
@@ -102,6 +103,61 @@ def infer_metric(text: str) -> str:
     return "unknown_metric"
 
 
+def review_priority(metric_type: str, text: str) -> str:
+    haystack = text.lower()
+    if metric_type in {
+        "official_hazard_priority",
+        "probability",
+        "impact",
+        "scenario_hazard_rating",
+    } or "risk ranking score" in haystack or "hazard risk rating" in haystack:
+        return "A"
+    if metric_type in {
+        "physical_exposure",
+        "population_exposure",
+        "property_exposure",
+        "modeled_loss",
+    } or "critical facilit" in haystack or "lifeline" in haystack or "shelter" in haystack:
+        return "B"
+    if metric_type in {"EPC_context", "community_vulnerability"}:
+        return "C"
+    if metric_type in {"historical_frequency", "preparedness_context"}:
+        return "D"
+    return "E"
+
+
+def plan_version_for_status(source_status: str) -> str:
+    if source_status == "adopted":
+        return "2021-2026"
+    if source_status == "draft":
+        return "2026-2031"
+    return ""
+
+
+def adopted_page_image(page: int | str | None) -> str:
+    if not page:
+        return ""
+    return f"{ADOPTED_PAGE_DIR}/page-{int(page):04d}.png"
+
+
+def source_pages_for_inventory(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    pages = {}
+    for record in records:
+        page_image = record.get("page_image_reference", "")
+        key = (record["source_document"], record["source_status"], record.get("source_page"), page_image)
+        if not record.get("source_page"):
+            continue
+        pages[key] = {
+            "source_document": record["source_document"],
+            "source_status": record["source_status"],
+            "plan_version": record.get("plan_version", plan_version_for_status(record["source_status"])),
+            "source_page": record.get("source_page"),
+            "page_image_reference": page_image,
+            "page_image_exists": bool(page_image and (ROOT / page_image).exists()),
+        }
+    return sorted(pages.values(), key=lambda item: (item["source_status"], item["source_document"], int(item["source_page"] or 0), item["page_image_reference"]))
+
+
 def source_inventory_from_existing() -> list[dict[str, Any]]:
     records = []
     scenario = load_json("data/hazard_priority/oakland_lhmp_area_scenario_ratings.json")["records"]
@@ -119,18 +175,26 @@ def source_inventory_from_existing() -> list[dict[str, Any]]:
             "denominator": "",
             "source_document": record["source_plan"],
             "source_status": record["document_status"],
+            "plan_version": record.get("plan_version") or "2021-2026",
             "source_page": record.get("source_page"),
             "printed_page": "",
             "chapter": record.get("source_chapter", ""),
             "table_or_figure_number": "",
             "table_or_figure_title": record.get("source_table", ""),
+            "source_table": record.get("source_table", ""),
             "row": record["plan_area"],
+            "source_row": record["plan_area"],
             "column": "official_rating; official_numeric_risk_ranking_value",
+            "source_column": "Risk Ranking Score; Hazard Risk Rating",
             "extracted_text": "",
             "what_the_metric_actually_measures": "Official adopted LHMP scenario rating for one hazard scenario and one Oakland plan area.",
             "permitted_use": "requires_visual_verification_before_assessment",
             "limitations": record.get("limitations", ""),
-            "verification_status": "extracted_unverified",
+            "verification_status": "needs_more_review",
+            "review_priority": "A",
+            "page_image_reference": adopted_page_image(record.get("source_page")),
+            "review_blockers": [] if (ROOT / adopted_page_image(record.get("source_page"))).exists() else ["missing_rendered_page_image"],
+            "review_action_required": True,
         })
 
     for group_name, path in [
@@ -156,21 +220,28 @@ def source_inventory_from_existing() -> list[dict[str, Any]]:
                 "unit": "",
                 "denominator": "",
                 "source_document": item.get("source_document", "oakland-draft-lhmp-2026-2031.pdf"),
-                "source_status": "draft",
-                "source_page": item.get("pdf_page"),
+            "source_status": "draft",
+            "plan_version": "2026-2031",
+            "source_page": item.get("pdf_page"),
                 "printed_page": item.get("page_label", ""),
                 "chapter": item.get("section_heading", ""),
                 "table_or_figure_number": "",
-                "table_or_figure_title": item.get("caption", ""),
-                "row": "",
-                "column": "",
-                "extracted_text": text[:1200],
-                "what_the_metric_actually_measures": "Candidate extracted draft LHMP evidence; requires human interpretation before use.",
-                "permitted_use": "candidate_review_only" if metric != "EPC_context" else "context_only",
-                "limitations": "Machine-extracted candidate. It may be a table-of-contents reference, narrative context, OCR artifact, or incomplete row.",
-                "verification_status": "context_only" if metric == "EPC_context" else "extracted_unverified",
-                "page_image_reference": item.get("page_image_path", ""),
-            })
+            "table_or_figure_title": item.get("caption", ""),
+            "source_table": item.get("caption", ""),
+            "row": "",
+            "source_row": "",
+            "column": "",
+            "source_column": "",
+            "extracted_text": text[:1200],
+            "what_the_metric_actually_measures": "Candidate extracted draft LHMP evidence; requires human interpretation before use.",
+            "permitted_use": "candidate_review_only" if metric != "EPC_context" else "context_only",
+            "limitations": "Machine-extracted candidate. It may be a table-of-contents reference, narrative context, OCR artifact, or incomplete row.",
+            "verification_status": "context_only" if metric == "EPC_context" else "extracted_unverified",
+            "page_image_reference": item.get("page_image_path", ""),
+            "review_priority": review_priority(metric, text),
+            "review_blockers": ["draft_not_adopted", "requires_human_review"],
+            "review_action_required": True,
+        })
     return records
 
 
@@ -293,6 +364,88 @@ def coverage_report(adopted: dict[str, Any], draft: dict[str, Any]) -> dict[str,
     }
 
 
+def triage_report(records: list[dict[str, Any]]) -> dict[str, Any]:
+    by_priority = Counter(record.get("review_priority", "E") for record in records)
+    by_hazard = Counter(record["hazard"] for record in records)
+    by_plan_version = Counter(record.get("plan_version", "") for record in records)
+    by_plan_area = Counter(record.get("plan_area") or "not_area_specific" for record in records)
+    by_metric_type = Counter(record["metric_type"] for record in records)
+    by_verification_status = Counter(record["verification_status"] for record in records)
+    cross = defaultdict(Counter)
+    for record in records:
+        cross[record.get("review_priority", "E")][record["hazard"]] += 1
+    return {
+        "schema_version": 1,
+        "generated_at": TODAY,
+        "priority_definitions": {
+            "A": "assessment-critical",
+            "B": "physical exposure and consequence",
+            "C": "community context",
+            "D": "supporting context",
+            "E": "unclear or unusable",
+        },
+        "counts": {
+            "by_priority": dict(sorted(by_priority.items())),
+            "by_hazard": dict(sorted(by_hazard.items())),
+            "by_plan_version": dict(sorted(by_plan_version.items())),
+            "by_plan_area": dict(sorted(by_plan_area.items())),
+            "by_metric_type": dict(sorted(by_metric_type.items())),
+            "by_verification_status": dict(sorted(by_verification_status.items())),
+            "by_priority_and_hazard": {priority: dict(sorted(counter.items())) for priority, counter in sorted(cross.items())},
+        },
+    }
+
+
+def review_queue(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    priority_order = {"A": 0, "B": 1, "C": 2, "D": 3, "E": 4}
+    return sorted(
+        records,
+        key=lambda record: (
+            priority_order.get(record.get("review_priority", "E"), 9),
+            record.get("source_status", ""),
+            record.get("hazard", ""),
+            record.get("source_page") or 99999,
+            record.get("plan_area", ""),
+        ),
+    )
+
+
+def adopted_draft_comparison(records: list[dict[str, Any]]) -> dict[str, Any]:
+    adopted = [record for record in records if record["source_status"] == "adopted"]
+    draft = [record for record in records if record["source_status"] == "draft"]
+    draft_by_hazard = defaultdict(list)
+    for record in draft:
+        draft_by_hazard[record["hazard"]].append(record)
+    comparisons = []
+    for record in adopted:
+        matches = [
+            draft_record for draft_record in draft_by_hazard.get(record["hazard"], [])
+            if draft_record["metric_type"] == record["metric_type"]
+        ]
+        comparisons.append({
+            "adopted_record_id": record["record_id"],
+            "hazard": record["hazard"],
+            "plan_area": record.get("plan_area", ""),
+            "scenario": record.get("scenario", ""),
+            "adopted_value": record.get("raw_value"),
+            "adopted_category": record.get("raw_category"),
+            "draft_candidate_record_ids": [item["record_id"] for item in matches[:10]],
+            "value_changed": "not_reviewed",
+            "methodology_changed": "not_reviewed",
+            "plan_area_boundaries_changed": "not_reviewed",
+            "scenarios_changed": "not_reviewed",
+            "draft_provides_absent_information": bool(matches),
+        })
+    return {
+        "schema_version": 1,
+        "generated_at": TODAY,
+        "adopted_records_compared": len(adopted),
+        "draft_records_available": len(draft),
+        "status": "comparison_candidates_only_no_draft_recommendation",
+        "comparisons": comparisons,
+    }
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     inventory = source_inventory_from_existing()
@@ -300,36 +453,59 @@ def main() -> None:
     adopted = matrix_for(inventory, "adopted")
     draft = matrix_for(inventory, "draft")
     coverage = coverage_report(adopted, draft)
+    triage = triage_report(inventory)
+    pages = source_pages_for_inventory(inventory)
+    comparison = adopted_draft_comparison(inventory)
     counts = Counter(r["verification_status"] for r in inventory)
     hazard_counts = Counter(r["hazard"] for r in inventory)
 
     write_json("existing_data_audit.json", {"schema_version": 1, "generated_at": TODAY, "records": audit})
     write_json("source_inventory.json", {"schema_version": 1, "generated_at": TODAY, "allowed_metric_types": METRIC_TYPES, "records": inventory})
+    write_json("source_page_catalog.json", {"schema_version": 1, "generated_at": TODAY, "pages": pages})
+    write_json("triage_report.json", triage)
     write_json("visual_verification_queue.json", {
         "schema_version": 1,
         "generated_at": TODAY,
         "eligible_statuses_after_review": ["visually_verified", "corrected_after_visual_review"],
+        "allowed_review_statuses": [
+            "visually_verified",
+            "corrected_after_visual_review",
+            "context_only",
+            "rejected",
+            "superseded",
+            "needs_more_review",
+        ],
         "records": [
             {
                 "record_id": r["record_id"],
+                "review_priority": r.get("review_priority", "E"),
                 "hazard": r["hazard"],
                 "plan_area": r.get("plan_area", ""),
                 "scenario": r.get("scenario", ""),
                 "metric_type": r["metric_type"],
+                "plan_version": r.get("plan_version", ""),
+                "source_status": r.get("source_status", ""),
                 "source_document": r["source_document"],
                 "source_page": r["source_page"],
                 "source_table": r.get("table_or_figure_title", ""),
+                "source_row": r.get("source_row", r.get("row", "")),
+                "source_column": r.get("source_column", r.get("column", "")),
+                "raw_value": r.get("raw_value", ""),
+                "raw_category": r.get("raw_category", ""),
                 "page_image_reference": r.get("page_image_reference", ""),
                 "extracted_text": r.get("extracted_text", ""),
+                "proposed_interpretation": r.get("what_the_metric_actually_measures", ""),
                 "proposed_permitted_use": r.get("permitted_use", ""),
+                "review_blockers": r.get("review_blockers", []),
                 "approval_status": r["verification_status"],
             }
-            for r in inventory
+            for r in review_queue(inventory)
         ],
     })
     write_json("verified_adopted_matrix.json", adopted)
     write_json("verified_draft_matrix.json", draft)
     write_json("matrix_coverage_report.json", coverage)
+    write_json("adopted_draft_comparison.json", comparison)
     write_json("methodology_report.json", {
         "schema_version": 1,
         "generated_at": TODAY,
@@ -387,6 +563,21 @@ def main() -> None:
         "required_coverage": PLAN_AREAS,
         "status": "fixture_collection_pending",
     })
+    write_json("manual_spot_check_plan.json", {
+        "schema_version": 1,
+        "generated_at": TODAY,
+        "status": "pending_human_review",
+        "required_sample": [
+            "at_least_three_verified_records_per_hazard",
+            "every_scenario_type",
+            "every_plan_area",
+            "adopted_and_draft_examples",
+            "corrected_records",
+            "rejected_records",
+            "context_only_records",
+        ],
+        "spot_checked_records": [],
+    })
     write_json("observatory_ave_diagnostic.json", {
         "schema_version": 1,
         "generated_at": TODAY,
@@ -434,12 +625,80 @@ By hazard: {dict(hazard_counts)}
 
 This inventory distinguishes adopted and draft records. Machine-extracted draft candidates remain unverified or context-only until visual review.
 """)
+    write_text("triage_report.md", f"""# Oakland Candidate Triage
+
+Generated: {TODAY}
+
+Priority counts: {triage['counts']['by_priority']}
+
+Records by hazard: {triage['counts']['by_hazard']}
+
+Records by plan version: {triage['counts']['by_plan_version']}
+
+Review order: Priority A adopted records first, then official GIS and agency evidence, then draft records, then context-only evidence.
+""")
     write_text("visual_verification_review.html", """<!doctype html>
 <meta charset="utf-8">
 <title>Oakland Hazard Assessment Visual Review Queue</title>
+<style>
+body { font-family: system-ui, sans-serif; margin: 0; color: #1f2933; }
+header { padding: 16px 24px; border-bottom: 1px solid #d9e2ec; }
+main { display: grid; grid-template-columns: minmax(360px, 1fr) minmax(420px, 0.95fr); gap: 16px; padding: 16px; }
+img { max-width: 100%; border: 1px solid #bcccdc; background: #fff; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f0f4f8; padding: 12px; }
+select, button { font: inherit; }
+.queue { max-height: 84vh; overflow: auto; border: 1px solid #d9e2ec; }
+.record { display: block; width: 100%; text-align: left; padding: 10px; border: 0; border-bottom: 1px solid #d9e2ec; background: white; }
+.record:focus, .record:hover { background: #f0f4f8; }
+.meta { color: #52606d; font-size: 13px; }
+.status { font-weight: 700; }
+</style>
+<header>
 <h1>Oakland Hazard Assessment Visual Review Queue</h1>
-<p>This local review surface is intentionally static. Reviewers compare each record with the referenced PDF page image and then update the JSON record outside production.</p>
-<p>Use <code>visual_verification_queue.json</code> as the source of pending records.</p>
+<p>This research-only page loads <code>visual_verification_queue.json</code>. It does not write approvals. Reviewers must record explicit review actions separately.</p>
+</header>
+<main>
+  <section>
+    <h2>Queue</h2>
+    <div id="queue" class="queue"></div>
+  </section>
+  <section>
+    <h2 id="title">Select a record</h2>
+    <p class="meta" id="meta"></p>
+    <img id="page" alt="PDF page image unavailable">
+    <h3>Extracted text</h3>
+    <pre id="text"></pre>
+    <h3>Structured record</h3>
+    <pre id="json"></pre>
+  </section>
+</main>
+<script>
+async function loadQueue() {
+  const response = await fetch('visual_verification_queue.json');
+  const data = await response.json();
+  const queue = document.getElementById('queue');
+  const title = document.getElementById('title');
+  const meta = document.getElementById('meta');
+  const page = document.getElementById('page');
+  const text = document.getElementById('text');
+  const json = document.getElementById('json');
+  data.records.forEach((record, index) => {
+    const button = document.createElement('button');
+    button.className = 'record';
+    button.innerHTML = `<span class="status">Priority ${record.review_priority}</span> ${record.hazard} ${record.plan_area || 'citywide/candidate'}<br><span class="meta">${record.source_status} ${record.plan_version} page ${record.source_page || 'unknown'} - ${record.approval_status}</span>`;
+    button.addEventListener('click', () => {
+      title.textContent = `${record.record_id}: ${record.hazard}`;
+      meta.textContent = `${record.source_document} | ${record.source_table || 'No table'} | row: ${record.source_row || 'unidentified'} | column: ${record.source_column || 'unidentified'}`;
+      page.src = record.page_image_reference || '';
+      text.textContent = record.extracted_text || '(No extracted text captured for this candidate.)';
+      json.textContent = JSON.stringify(record, null, 2);
+    });
+    queue.appendChild(button);
+    if (index === 0) button.click();
+  });
+}
+loadQueue();
+</script>
 """)
     write_text("matrix_coverage_report.md", f"""# Oakland Matrix Coverage
 
@@ -460,6 +719,20 @@ Recommendation for all five hazards in Phase 1: keep production on mapped findin
 - Flood: keep FEMA/NFHL terms separate from probability and impact.
 - Landslide: keep earthquake-induced landslide and broader landslide evidence separate.
 - Tsunami: do not merge evacuation-area and inundation terminology.
+""")
+    write_text("adopted_draft_comparison.md", f"""# Adopted Versus Draft Comparison
+
+Generated: {TODAY}
+
+Adopted records compared: {comparison['adopted_records_compared']}
+
+Draft records available: {comparison['draft_records_available']}
+
+Status: candidate comparison only. Draft values are not recommended for production and do not overwrite adopted values.
+""")
+    write_text("manual_spot_check_plan.md", """# Manual Spot Check Plan
+
+Manual spot checks are pending. The required sample includes at least three verified records per hazard, every scenario type, every plan area, adopted and draft examples, corrected records, rejected records, and context-only records.
 """)
     write_text("plan_area_geometry_validation.md", """# Oakland Plan-Area Geometry Validation
 

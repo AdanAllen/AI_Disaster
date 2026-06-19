@@ -19,10 +19,12 @@ ACTIVE_VERIFICATION_STATUSES = {
 CONTEXT_ONLY_STATUS = "context_only"
 INACTIVE_VERIFICATION_STATUSES = {
     "extracted_unverified",
+    "needs_more_review",
     "rejected",
     "superseded",
     CONTEXT_ONLY_STATUS,
 }
+ALLOWED_REVIEW_STATUSES = ACTIVE_VERIFICATION_STATUSES | INACTIVE_VERIFICATION_STATUSES
 
 
 def _present(value: Any) -> bool:
@@ -33,6 +35,8 @@ def is_record_eligible_for_research_assessment(record: dict[str, Any]) -> bool:
     """Return True only for visually verified records with complete provenance."""
 
     if record.get("verification_status") not in ACTIVE_VERIFICATION_STATUSES:
+        return False
+    if not _present(record.get("review_action_id")):
         return False
     if record.get("source_status") not in SOURCE_STATUSES:
         return False
@@ -83,6 +87,20 @@ def validate_source_record(record: dict[str, Any]) -> list[str]:
         if not _present(record.get("original_extracted_value")):
             errors.append("corrected_record_missing_original_extracted_value")
     return errors
+
+
+def source_page_reference_key(record: dict[str, Any]) -> tuple[Any, ...]:
+    return (
+        record.get("source_document"),
+        record.get("source_status"),
+        record.get("source_page"),
+        record.get("page_image_reference"),
+    )
+
+
+def source_page_reference_resolves(record: dict[str, Any], source_pages: Iterable[dict[str, Any]]) -> bool:
+    wanted = source_page_reference_key(record)
+    return any(source_page_reference_key(page) == wanted for page in source_pages)
 
 
 def detect_duplicate_records(records: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:

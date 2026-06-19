@@ -3,12 +3,13 @@ import json
 import unittest
 from pathlib import Path
 
-from research.oakland_hazard_assessment import build_research_assessment
+from research.oakland_hazard_assessment import apply_review_action, build_research_assessment
 from research.oakland_hazard_assessment.constants import HAZARDS, PLAN_AREAS
 from research.oakland_hazard_assessment.validators import (
     detect_conflicting_records,
     detect_duplicate_records,
     is_record_eligible_for_research_assessment,
+    source_page_reference_resolves,
     validate_source_record,
 )
 
@@ -43,6 +44,7 @@ def verified_record(**overrides):
         "verified_by": "human-reviewer",
         "verified_date": "2026-06-19",
         "permitted_use": "research_assessment",
+        "review_action_id": "review-action-001",
     }
     record.update(overrides)
     return record
@@ -61,6 +63,13 @@ class OaklandHazardAssessmentResearchTests(unittest.TestCase):
             "verified_draft_matrix.json",
             "matrix_coverage_report.json",
             "matrix_coverage_report.md",
+            "source_page_catalog.json",
+            "triage_report.json",
+            "triage_report.md",
+            "adopted_draft_comparison.json",
+            "adopted_draft_comparison.md",
+            "manual_spot_check_plan.json",
+            "manual_spot_check_plan.md",
             "methodology_report.json",
             "methodology_report.md",
             "plan_area_geometry_validation.json",
@@ -102,8 +111,61 @@ class OaklandHazardAssessmentResearchTests(unittest.TestCase):
         self.assertTrue(all(record["used_by_production"] is False for record in scenario_records))
         self.assertTrue(all(record["legacy_value_must_not_drive_research"] for record in scenario_records))
 
+    def test_triage_classifies_all_candidates_without_self_verification(self):
+        inventory = load_research_json("source_inventory.json")["records"]
+        triage = load_research_json("triage_report.json")["counts"]
+        self.assertEqual(sum(triage["by_priority"].values()), len(inventory))
+        self.assertEqual(triage["by_priority"]["A"], 96)
+        self.assertEqual(triage["by_priority"]["B"], 95)
+        self.assertEqual(triage["by_priority"]["C"], 19)
+        self.assertEqual(triage["by_priority"]["E"], 131)
+        self.assertNotIn("visually_verified", triage["by_verification_status"])
+        self.assertNotIn("corrected_after_visual_review", triage["by_verification_status"])
+
+    def test_adopted_priority_a_records_have_page_images_but_remain_review_pending(self):
+        inventory = load_research_json("source_inventory.json")["records"]
+        source_pages = load_research_json("source_page_catalog.json")["pages"]
+        adopted_priority_a = [
+            record for record in inventory
+            if record["source_status"] == "adopted" and record["review_priority"] == "A"
+        ]
+        self.assertEqual(len(adopted_priority_a), 81)
+        self.assertTrue(all(record["verification_status"] == "needs_more_review" for record in adopted_priority_a))
+        self.assertTrue(all(record["page_image_reference"] for record in adopted_priority_a))
+        self.assertTrue(all(source_page_reference_resolves(record, source_pages) for record in adopted_priority_a))
+        self.assertTrue(all((BASE_DIR / record["page_image_reference"]).exists() for record in adopted_priority_a))
+
+    def test_only_explicit_review_actions_can_create_visually_verified_records(self):
+        candidate = verified_record(
+            verification_status="needs_more_review",
+            verified_by="",
+            verified_date="",
+            review_action_id="",
+            permitted_use="requires_visual_verification_before_assessment",
+        )
+        self.assertFalse(is_record_eligible_for_research_assessment(candidate))
+        reviewed = apply_review_action(candidate, {
+            "review_action_id": "review-action-verified-001",
+            "record_id": candidate["record_id"],
+            "review_status": "visually_verified",
+            "reviewer": "human-reviewer",
+            "review_date": "2026-06-19",
+            "page_image_reference": candidate["page_image_reference"],
+            "source_row": "Downtown",
+            "source_column": "Risk Ranking Score; Hazard Risk Rating",
+            "source_table": candidate["source_table"],
+            "permitted_use": "research_assessment",
+        })
+        self.assertTrue(is_record_eligible_for_research_assessment(reviewed))
+        self.assertEqual(reviewed["review_action_id"], "review-action-verified-001")
+
     def test_records_without_complete_source_page_table_row_provenance_are_ineligible(self):
         record = verified_record(source_row="", source_column="")
+        self.assertFalse(is_record_eligible_for_research_assessment(record))
+        self.assertIn("active_record_missing_complete_visual_provenance", validate_source_record(record))
+
+    def test_missing_review_action_id_prevents_visual_verification(self):
+        record = verified_record(review_action_id="")
         self.assertFalse(is_record_eligible_for_research_assessment(record))
         self.assertIn("active_record_missing_complete_visual_provenance", validate_source_record(record))
 
@@ -138,6 +200,33 @@ class OaklandHazardAssessmentResearchTests(unittest.TestCase):
             raw_category="High",
         )
         self.assertNotIn("corrected_record_missing_original_extracted_value", validate_source_record(corrected))
+
+    def test_apply_corrected_review_action_preserves_original_value(self):
+        candidate = verified_record(
+            verification_status="needs_more_review",
+            raw_value="34",
+            review_action_id="",
+            verified_by="",
+            verified_date="",
+        )
+        reviewed = apply_review_action(candidate, {
+            "review_action_id": "review-action-corrected-001",
+            "record_id": candidate["record_id"],
+            "review_status": "corrected_after_visual_review",
+            "reviewer": "human-reviewer",
+            "review_date": "2026-06-19",
+            "original_extracted_value": "34",
+            "corrected_value": "36",
+            "correction_reason": "High category was in the adjacent official column.",
+            "page_image_reference": candidate["page_image_reference"],
+            "source_row": candidate["source_row"],
+            "source_column": candidate["source_column"],
+            "source_table": candidate["source_table"],
+            "permitted_use": "research_assessment",
+        })
+        self.assertEqual(reviewed["original_extracted_value"], "34")
+        self.assertEqual(reviewed["raw_value"], "36")
+        self.assertTrue(is_record_eligible_for_research_assessment(reviewed))
 
     def test_duplicate_and_conflicting_records_are_detected(self):
         first = verified_record(record_id="a", raw_value="36")
@@ -192,6 +281,25 @@ class OaklandHazardAssessmentResearchTests(unittest.TestCase):
         self.assertEqual(with_method["hazards"]["earthquake"]["assessment_status"], "verified_official")
         self.assertTrue(with_method["hazards"]["earthquake"]["full_provenance"])
 
+    def test_hazard_and_plan_area_records_do_not_cross_feed(self):
+        earthquake_downtown = verified_record(hazard="earthquake", plan_area="Downtown")
+        flood_downtown = verified_record(record_id="flood", hazard="flood", plan_area="Downtown")
+        earthquake_west = verified_record(record_id="west", hazard="earthquake", plan_area="West Oakland")
+        result = build_research_assessment(
+            jurisdiction="oakland",
+            plan_area="Downtown",
+            source_status="adopted",
+            source_records=[earthquake_downtown, flood_downtown, earthquake_west],
+            methodology_config={
+                "earthquake": {"methodology_name": "official_area_rating"},
+                "flood": {"methodology_name": "official_area_rating"},
+            },
+        )
+        earthquake_ids = {item["record_id"] for item in result["hazards"]["earthquake"]["full_provenance"]}
+        flood_ids = {item["record_id"] for item in result["hazards"]["flood"]["full_provenance"]}
+        self.assertEqual(earthquake_ids, {"verified-test-record"})
+        self.assertEqual(flood_ids, {"flood"})
+
     def test_methodology_report_rejects_prohibited_averaging(self):
         report = load_research_json("methodology_report.json")["hazards"]
         for hazard in HAZARDS:
@@ -223,6 +331,27 @@ class OaklandHazardAssessmentResearchTests(unittest.TestCase):
         self.assertTrue(fixture["expected_interpretation"])
         self.assertIn("fixture", fixture["fixture_id"])
         self.assertIn("never masquerade as a live official query", fixture["reason_for_expected_interpretation"])
+
+    def test_adversarial_review_fixtures_are_rejected_or_flagged(self):
+        fixtures = json.loads(
+            (BASE_DIR / "tests" / "fixtures" / "oakland_hazard_assessment" / "adversarial_review_fixtures.json")
+            .read_text(encoding="utf-8")
+        )
+        expected = {
+            "row_shifted_by_one_line",
+            "wrong_table_number",
+            "wrong_pdf_page",
+            "adopted_value_labeled_draft",
+            "draft_value_labeled_adopted",
+            "epc_percentage_mislabeled_probability",
+            "exposed_population_mislabeled_hazard_score",
+            "earthquake_scenario_attached_to_flood",
+            "west_oakland_record_attached_to_downtown",
+            "high_category_from_wrong_column",
+        }
+        self.assertEqual({fixture["case_id"] for fixture in fixtures["fixtures"]}, expected)
+        for fixture in fixtures["fixtures"]:
+            self.assertIn(fixture["expected_validation"], {"reject", "needs_more_review", "normalize_or_reject"})
 
     def test_no_production_feature_flag_is_enabled_for_research(self):
         for path in [BASE_DIR / "app.py", BASE_DIR / "hazard_engine.py", BASE_DIR / "hazard_priority.py"]:

@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "fixtures": [
+    {
+      "case_id": "row_shifted_by_one_line",
+      "expected_validation": "reject",
+      "reason": "The source row does not match the claimed Oakland plan area."
+    },
+    {
+      "case_id": "wrong_table_number",
+      "expected_validation": "reject",
+      "reason": "The claimed table or figure is not the rendered source table."
+    },
+    {
+      "case_id": "wrong_pdf_page",
+      "expected_validation": "reject",
+      "reason": "The page image and source page do not resolve to the same source catalog entry."
+    },
+    {
+      "case_id": "adopted_value_labeled_draft",
+      "expected_validation": "reject",
+      "reason": "Adopted and draft source statuses cannot be swapped."
+    },
+    {
+      "case_id": "draft_value_labeled_adopted",
+      "expected_validation": "reject",
+      "reason": "Draft values cannot enter the adopted matrix."
+    },
+    {
+      "case_id": "epc_percentage_mislabeled_probability",
+      "expected_validation": "reject",
+      "reason": "EPC context cannot become probability."
+    },
+    {
+      "case_id": "exposed_population_mislabeled_hazard_score",
+      "expected_validation": "reject",
+      "reason": "Population exposure cannot become a hazard score."
+    },
+    {
+      "case_id": "earthquake_scenario_attached_to_flood",
+      "expected_validation": "reject",
+      "reason": "One hazard cannot consume another hazard's scenario."
+    },
+    {
+      "case_id": "west_oakland_record_attached_to_downtown",
+      "expected_validation": "normalize_or_reject",
+      "reason": "One plan area's row cannot feed another plan area's matrix cell."
+    },
+    {
+      "case_id": "high_category_from_wrong_column",
+      "expected_validation": "needs_more_review",
+      "reason": "A category from an adjacent column must be corrected by explicit review action."
+    }
+  ]
+}
