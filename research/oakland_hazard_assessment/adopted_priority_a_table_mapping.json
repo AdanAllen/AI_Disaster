@@ -9,6 +9,16 @@
       "candidate_record_count": 9,
       "claimed_page_mismatch_record_ids": [],
       "duplicated_rows": [],
+      "fingerprints": {
+        "batch_json_fingerprint": "cae0e1665f4eb0022b0d98742729a738248f73ccc48d00562cb13920fe3cb3a6",
+        "candidate_payload_fingerprint": "11c4ce1bfcb1745fac604929dc16f954a853ce0346b65e01a93d5fda78b21437",
+        "rendered_page_fingerprint": "d7d8eecc8372d2327fc2a9acf9c000cb59db8c936f65c6e79bd6b19b137d102a",
+        "review_presentation_fingerprint": "88c73dfb06c5bb7560b60c4ac38b1997221b5baf69138f9ca7a2fcec9c3e1228",
+        "semantic_batch_evidence_fingerprint": "00f00f290e9536706ce0d58fee2282d8ca31dba1d6fb7529654f9d5eda9e5610",
+        "source_pdf_fingerprint": "9e36de48ab225762767a79c1e50c83a9286352e8906c709005e9fb32780979ef",
+        "table_crop_fingerprint": null,
+        "table_identifier_fingerprint": "89efd8899002f1d7454f3726658b060e47b39c074c2a74f0c4c264169e82bebc"
+      },
       "metric_type_uncertainty_record_ids": [],
       "missing_expected_rows": [],
       "plan_areas_represented": [
@@ -25,6 +35,14 @@
       "scenarios_represented": [
         "Wildfire Very High and High severity"
       ],
+      "second_pass_sampling": {
+        "batch_evidence_fingerprint": "00f00f290e9536706ce0d58fee2282d8ca31dba1d6fb7529654f9d5eda9e5610",
+        "seed": "oakland-adopted-priority-a-second-pass-v1",
+        "selected_row_ids": [
+          "adopted_page_0472_wildfire_wildfire_very_high_and_high_severity|North Oakland/Adams Point|adopted_scenario_0071"
+        ],
+        "selection_date": "2026-06-19"
+      },
       "unmatched_candidates": []
     },
     {
@@ -32,6 +50,16 @@
       "candidate_record_count": 9,
       "claimed_page_mismatch_record_ids": [],
       "duplicated_rows": [],
+      "fingerprints": {
+        "batch_json_fingerprint": "d701ffc285e503dd636f1c66a279cdc35daa45d409872fb4aa4e82b9793cb917",
+        "candidate_payload_fingerprint": "35c741b2700b651e2c77b6355de739ecceb402d7c554ad4e5ea4f5e8e9fea0af",
+        "rendered_page_fingerprint": "f0b3926b24547bf774e0d68b3521b097f0413bf5ae8e393f4b98d18c06a2e989",
+        "review_presentation_fingerprint": "5c33faaa58082475ddf699e89092701ca1825ab1dc2ae14eb303f9019956db08",
+        "semantic_batch_evidence_fingerprint": "bbf32ffc79493b0d93f25292faa5ac9fd0318333b1971dbb23e0a67da33711f0",
+        "source_pdf_fingerprint": "9e36de48ab225762767a79c1e50c83a9286352e8906c709005e9fb32780979ef",
+        "table_crop_fingerprint": null,
+        "table_identifier_fingerprint": "3fbae0b8634b402cd6be21a1c8ea5617aa18d18e00deee6a53b75d3a848875ad"
+      },
       "metric_type_uncertainty_record_ids": [],
       "missing_expected_rows": [],
       "plan_areas_represented": [
@@ -48,6 +76,14 @@
       "scenarios_represented": [
         "High and Very High landslide susceptibility"
       ],
+      "second_pass_sampling": {
+        "batch_evidence_fingerprint": "bbf32ffc79493b0d93f25292faa5ac9fd0318333b1971dbb23e0a67da33711f0",
+        "seed": "oakland-adopted-priority-a-second-pass-v1",
+        "selected_row_ids": [
+          "adopted_page_0464_landslide_high_and_very_high_landslide_susceptibility|North Oakland Hills|adopted_scenario_0061"
+        ],
+        "selection_date": "2026-06-19"
+      },
       "unmatched_candidates": []
     },
     {
@@ -55,6 +91,16 @@
       "candidate_record_count": 9,
       "claimed_page_mismatch_record_ids": [],
       "duplicated_rows": [],
+      "fingerprints": {
+        "batch_json_fingerprint": "7fb0ee15110766e4c93a5a79224895686a5465f0a281b0e1b76f5e8ba2119d10",
+        "candidate_payload_fingerprint": "fde17f2901896ad986a42c94357f96b2f199f6957b5902b99eb105de2e760301",
+        "rendered_page_fingerprint": "3de0f4a272283241f4596af41ee23cdda857c53d25e19c2c23aaa6feab866ec6",
+        "review_presentation_fingerprint": "b5341296eb6b81fda315ad3a3a42ba5dee136c9c4309a3a83243fe21b4b6f763",
+        "semantic_batch_evidence_fingerprint": "a2d8742649521c849acb2635907912ed9f6440030c3720caf168dd45a83adb7f",
+        "source_pdf_fingerprint": "9e36de48ab225762767a79c1e50c83a9286352e8906c709005e9fb32780979ef",
+        "table_crop_fingerprint": null,
+        "table_identifier_fingerprint": "75110de85dbe5cea95de8f7bbee8639b73cf48eced1e25adeca44311405e00a8"
+      },
       "metric_type_uncertainty_record_ids": [],
       "missing_expected_rows": [],
       "plan_areas_represented": [
@@ -71,6 +117,14 @@
       "scenarios_represented": [
         "Draft Tsunami Hazard Area"
       ],
+      "second_pass_sampling": {
+        "batch_evidence_fingerprint": "a2d8742649521c849acb2635907912ed9f6440030c3720caf168dd45a83adb7f",
+        "seed": "oakland-adopted-priority-a-second-pass-v1",
+        "selected_row_ids": [
+          "adopted_page_0466_tsunami_draft_tsunami_hazard_area|North Oakland Hills|adopted_scenario_0079"
+        ],
+        "selection_date": "2026-06-19"
+      },
       "unmatched_candidates": []
     },
     {
@@ -78,6 +132,16 @@
       "candidate_record_count": 9,
       "claimed_page_mismatch_record_ids": [],
       "duplicated_rows": [],
+      "fingerprints": {
+        "batch_json_fingerprint": "59a55f5fae4f523fab492bf9bff6e94dfabc34ee26ab2013a15e98614d35b6d9",
+        "candidate_payload_fingerprint": "7506cb68d332143adcc73b7f79cd6bd0f01fea21d5804fc7f36eed697bee3af8",
+        "rendered_page_fingerprint": "20eb95571f8cf3fd45ebff8bb31c9a760a8fa9232956e0296a4395b32951a88a",
+        "review_presentation_fingerprint": "bda3e5550b8526033fbfb027ee9b916a93192a5da53fea5c512a2bee571e7865",
+        "semantic_batch_evidence_fingerprint": "4be24a1d5560295c4f477dcca96d19471a0788d3f724232b928ba720216af42d",
+        "source_pdf_fingerprint": "9e36de48ab225762767a79c1e50c83a9286352e8906c709005e9fb32780979ef",
+        "table_crop_fingerprint": null,
+        "table_identifier_fingerprint": "b64b4524a052ed00b83f470445cbe0d97d63b2856236f6aa26922f4d660fef78"
+      },
       "metric_type_uncertainty_record_ids": [],
       "missing_expected_rows": [],
       "plan_areas_represented": [
@@ -94,6 +158,14 @@
       "scenarios_represented": [
         "100-year / 1 percent annual chance flood"
       ],
+      "second_pass_sampling": {
+        "batch_evidence_fingerprint": "4be24a1d5560295c4f477dcca96d19471a0788d3f724232b928ba720216af42d",
+        "seed": "oakland-adopted-priority-a-second-pass-v1",
+        "selected_row_ids": [
+          "adopted_page_0460_flood_100_year_1_percent_annual_chance_flood|East Oakland Hills|adopted_scenario_0040"
+        ],
+        "selection_date": "2026-06-19"
+      },
       "unmatched_candidates": []
     },
     {
@@ -101,6 +173,16 @@
       "candidate_record_count": 9,
       "claimed_page_mismatch_record_ids": [],
       "duplicated_rows": [],
+      "fingerprints": {
+        "batch_json_fingerprint": "00c4a3f7050dd986bd9c0d247249f338c2a8bad5e1d7f5aae0e313387d38f2e8",
+        "candidate_payload_fingerprint": "5eb2e9b47a2a6001b471c222c0a571f3e756f2da9893d69f95a54856cf5535a4",
+        "rendered_page_fingerprint": "d594a1a9b871008ad06aab847607d023b22ca2f23e2f730c631e9f326c24e3a8",
+        "review_presentation_fingerprint": "41ca00158acd7d2f43fcccedfc69f3d7e81136d084c2e5d010fbb353c313c02c",
+        "semantic_batch_evidence_fingerprint": "019f41b9a51ee06e6cc9b6a1fcf05db9afe5281097336c0e6fa50c32b4f01a7c",
+        "source_pdf_fingerprint": "9e36de48ab225762767a79c1e50c83a9286352e8906c709005e9fb32780979ef",
+        "table_crop_fingerprint": null,
+        "table_identifier_fingerprint": "a44bfa2662419188b13ba6ca0c82ae44bacda5fa740288474853017e7a7ffd67"
+      },
       "metric_type_uncertainty_record_ids": [],
       "missing_expected_rows": [],
       "plan_areas_represented": [
@@ -117,6 +199,14 @@
       "scenarios_represented": [
         "500-year / 0.2 percent annual chance flood"
       ],
+      "second_pass_sampling": {
+        "batch_evidence_fingerprint": "019f41b9a51ee06e6cc9b6a1fcf05db9afe5281097336c0e6fa50c32b4f01a7c",
+        "seed": "oakland-adopted-priority-a-second-pass-v1",
+        "selected_row_ids": [
+          "adopted_page_0462_flood_500_year_0_2_percent_annual_chance_flood|North Oakland/Adams Point|adopted_scenario_0053"
+        ],
+        "selection_date": "2026-06-19"
+      },
       "unmatched_candidates": []
     },
     {
@@ -124,6 +214,16 @@
       "candidate_record_count": 9,
       "claimed_page_mismatch_record_ids": [],
       "duplicated_rows": [],
+      "fingerprints": {
+        "batch_json_fingerprint": "b1f5ea28600338ee680f00f14b0a06ff6c5be9fc2d978669ec8575c7434bc4d7",
+        "candidate_payload_fingerprint": "f8241d45bd5e5a6b26a01fa00676762de1f4ad2a14715b93732c34247b712062",
+        "rendered_page_fingerprint": "ecacd4d48edc2f80da73455001f0a91300a810866a1c04cb311bfd7fb2c7f72a",
+        "review_presentation_fingerprint": "c745d44cc8dac7d3a9a485db55a64be1146610e6bf43cedfd768a779a8268c56",
+        "semantic_batch_evidence_fingerprint": "660b6e93fc18b68cfbff8f4c3e866b5637b495662855fe52553c40062ccb231d",
+        "source_pdf_fingerprint": "9e36de48ab225762767a79c1e50c83a9286352e8906c709005e9fb32780979ef",
+        "table_crop_fingerprint": null,
+        "table_identifier_fingerprint": "e2dba1bee99e665b8113bc4c734711b0e6b847ad7d36f0417b04397cbf915063"
+      },
       "metric_type_uncertainty_record_ids": [],
       "missing_expected_rows": [],
       "plan_areas_represented": [
@@ -140,6 +240,14 @@
       "scenarios_represented": [
         "EQ Calaveras M6.86"
       ],
+      "second_pass_sampling": {
+        "batch_evidence_fingerprint": "660b6e93fc18b68cfbff8f4c3e866b5637b495662855fe52553c40062ccb231d",
+        "seed": "oakland-adopted-priority-a-second-pass-v1",
+        "selected_row_ids": [
+          "adopted_page_0474_earthquake_eq_calaveras_m6_86|East Oakland Hills|adopted_scenario_0004"
+        ],
+        "selection_date": "2026-06-19"
+      },
       "unmatched_candidates": []
     },
     {
@@ -147,6 +255,16 @@
       "candidate_record_count": 9,
       "claimed_page_mismatch_record_ids": [],
       "duplicated_rows": [],
+      "fingerprints": {
+        "batch_json_fingerprint": "a9f6924b20fbefcc8c3b338f9e461ba3c4591ced15b38d11e5ab8d3b95000395",
+        "candidate_payload_fingerprint": "789e1aa26e0934789bbe41ff975028b5e2c2bcacf2fccd56d2d9ae3a77e1619e",
+        "rendered_page_fingerprint": "cf6b7096f669acf1a94cd6e6d0508caf4e5c949a7abeb4d11a3e8863f97e0e16",
+        "review_presentation_fingerprint": "b7498b1468057bf09ef4da1f269a844172d109a7f91f95d7e052fc667630c0b5",
+        "semantic_batch_evidence_fingerprint": "bb1f2e0dc6b08ffafe96966b113b773fdfd7cefcefc63f350703bc91faf9829d",
+        "source_pdf_fingerprint": "9e36de48ab225762767a79c1e50c83a9286352e8906c709005e9fb32780979ef",
+        "table_crop_fingerprint": null,
+        "table_identifier_fingerprint": "f329940af6427add8e15a5f35a475f34dde18c728e2722f8d04e2a3a5cd19bf1"
+      },
       "metric_type_uncertainty_record_ids": [],
       "missing_expected_rows": [],
       "plan_areas_represented": [
@@ -163,6 +281,14 @@
       "scenarios_represented": [
         "EQ Haywired M7.05"
       ],
+      "second_pass_sampling": {
+        "batch_evidence_fingerprint": "bb1f2e0dc6b08ffafe96966b113b773fdfd7cefcefc63f350703bc91faf9829d",
+        "seed": "oakland-adopted-priority-a-second-pass-v1",
+        "selected_row_ids": [
+          "adopted_page_0476_earthquake_eq_haywired_m7_05|North Oakland Hills|adopted_scenario_0016"
+        ],
+        "selection_date": "2026-06-19"
+      },
       "unmatched_candidates": []
     },
     {
@@ -170,6 +296,16 @@
       "candidate_record_count": 9,
       "claimed_page_mismatch_record_ids": [],
       "duplicated_rows": [],
+      "fingerprints": {
+        "batch_json_fingerprint": "4c7a91a8e3a96ef6a29ef31e1b2044e99c24b332c6712e4818b21eb733b3de1a",
+        "candidate_payload_fingerprint": "37c49788f14b5ead9c19feb6b7eb77d48c3d546412d1d2d6aa72f7d385b3e15e",
+        "rendered_page_fingerprint": "0d4bb9d26e3bfd79d1b0ab5b346c6f4c388dc9665303e78ed8ddbed87ef607a1",
+        "review_presentation_fingerprint": "b9461e12b35f0ec844e162b6384244f1c6a010958341a5e0312f7f2843d52799",
+        "semantic_batch_evidence_fingerprint": "a97ccf34bc14d3c0c362466a466341b8ffddb9db634e442545ad7edeef2eb449",
+        "source_pdf_fingerprint": "9e36de48ab225762767a79c1e50c83a9286352e8906c709005e9fb32780979ef",
+        "table_crop_fingerprint": null,
+        "table_identifier_fingerprint": "8e9d27e78f5d9a44289a51c03b7a458a27d9bc79ada6797e5dc6d984371424a9"
+      },
       "metric_type_uncertainty_record_ids": [],
       "missing_expected_rows": [],
       "plan_areas_represented": [
@@ -186,6 +322,14 @@
       "scenarios_represented": [
         "EQ San Andreas M7.38"
       ],
+      "second_pass_sampling": {
+        "batch_evidence_fingerprint": "a97ccf34bc14d3c0c362466a466341b8ffddb9db634e442545ad7edeef2eb449",
+        "seed": "oakland-adopted-priority-a-second-pass-v1",
+        "selected_row_ids": [
+          "adopted_page_0478_earthquake_eq_san_andreas_m7_38|Glenview/Redwood Heights|adopted_scenario_0024"
+        ],
+        "selection_date": "2026-06-19"
+      },
       "unmatched_candidates": []
     },
     {
@@ -193,6 +337,16 @@
       "candidate_record_count": 9,
       "claimed_page_mismatch_record_ids": [],
       "duplicated_rows": [],
+      "fingerprints": {
+        "batch_json_fingerprint": "93d8460049908091f4cdbb81e08b386e07099ad3f483a5329dedb5e34fc77471",
+        "candidate_payload_fingerprint": "81e4a1a32326c3fc5671b7f05ecc71e852f1c3e4f35a41a8ba76db3befc047c5",
+        "rendered_page_fingerprint": "e98f6daf9e201db5c650a2010b5371d4d30518bd6481b83141dace9f0e691e47",
+        "review_presentation_fingerprint": "47fae94deca0572a3f4662c33203ac51b5f0c24ebaf47430e004e2eba31bf6ff",
+        "semantic_batch_evidence_fingerprint": "eaa3b7a9fdbaf56c194a0e6a6b8e03a5fa3c44eb0276dbacaadad5b7beb51cb8",
+        "source_pdf_fingerprint": "9e36de48ab225762767a79c1e50c83a9286352e8906c709005e9fb32780979ef",
+        "table_crop_fingerprint": null,
+        "table_identifier_fingerprint": "520b3023840f03d9ac5e30b4d9720dcb1690f9b7739c89b9293855d89492e089"
+      },
       "metric_type_uncertainty_record_ids": [],
       "missing_expected_rows": [],
       "plan_areas_represented": [
@@ -209,6 +363,14 @@
       "scenarios_represented": [
         "EQ 100-yr Prob"
       ],
+      "second_pass_sampling": {
+        "batch_evidence_fingerprint": "eaa3b7a9fdbaf56c194a0e6a6b8e03a5fa3c44eb0276dbacaadad5b7beb51cb8",
+        "seed": "oakland-adopted-priority-a-second-pass-v1",
+        "selected_row_ids": [
+          "adopted_page_0480_earthquake_eq_100_yr_prob|Coliseum/Airport|adopted_scenario_0029"
+        ],
+        "selection_date": "2026-06-19"
+      },
       "unmatched_candidates": []
     }
   ],

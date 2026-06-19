@@ -5,11 +5,17 @@ from __future__ import annotations
 
 import html
 import json
+import sys
 from collections import defaultdict
 from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from research.oakland_hazard_assessment.fingerprints import batch_fingerprints
+from research.oakland_hazard_assessment.second_pass import deterministic_sample_row_ids, required_second_pass_row_ids
+
 RESEARCH = ROOT / "research" / "oakland_hazard_assessment"
 BATCH_DIR = RESEARCH / "table_review_batches"
 TODAY = date.today().isoformat()
@@ -130,6 +136,7 @@ def build_batches() -> list[dict]:
             "full_resolution_page_link": f"page-images/adopted/page-{int(page):04d}.png",
             "page_heading": meta["page_heading"],
             "table_identifier": f"page-{int(page):04d}",
+            "table_crop_reference": "",
             "table_number": "",
             "table_title": meta["table_title"],
             "table_title_status": "visible",
@@ -143,10 +150,19 @@ def build_batches() -> list[dict]:
             "another_page_needed": False,
             "hidden_or_truncated_rows": [],
             "extracted_column_headers": COMMON_COLUMNS,
+            "required_value_columns": ["Risk Ranking Score", "Hazard Risk Rating"],
+            "value_field": "risk_ranking_score",
+            "category_field": "hazard_risk_rating",
             "extracted_rows": rows,
             "candidate_records": [candidate_summary(record) for record in sorted(records, key=lambda item: PLAN_AREAS.index(item["plan_area"]))],
             "candidate_record_count": len(records),
             "plan_areas_represented": [record["plan_area"] for record in sorted(records, key=lambda item: PLAN_AREAS.index(item["plan_area"]))],
+            "expected_row_coverage": {
+                "coverage_type": "complete_oakland_plan_area_rows_expected_from_visible_source",
+                "expected_rows": PLAN_AREAS,
+                "missing_row_policy": "fail_closed",
+                "notes": "Current adopted Priority A pages visibly show all nine official Oakland plan areas. Future tables may document fewer expected rows rather than infer missing rows.",
+            },
             "missing_expected_rows": missing,
             "duplicated_rows": duplicated,
             "unmatched_candidate_record_ids": [],
@@ -174,6 +190,9 @@ def build_batches() -> list[dict]:
             "suggested_review_order": meta["suggested_order"],
             "verification_status_effect": "none_until_human_batch_decision",
         }
+        batch["fingerprints"] = batch_fingerprints(batch, ROOT)
+        batch["second_pass_sampling"] = deterministic_sample_row_ids(batch)
+        batch["second_pass_requirements"] = required_second_pass_row_ids(batch)
         batches.append(batch)
     return sorted(batches, key=lambda item: item["suggested_review_order"])
 
@@ -269,6 +288,8 @@ def main() -> None:
                 "interpretation_confidence": batch["interpretation_confidence"],
                 "suggested_review_decision": batch["suggested_review_decision"],
                 "suggested_review_reason": batch["suggested_review_reason"],
+                "fingerprints": batch["fingerprints"],
+                "second_pass_sampling": batch["second_pass_sampling"],
             }
             for batch in batches
         ],
@@ -302,6 +323,8 @@ def main() -> None:
                 "unmatched_candidates": batch["unmatched_candidate_record_ids"],
                 "claimed_page_mismatch_record_ids": batch["claimed_page_mismatch_record_ids"],
                 "metric_type_uncertainty_record_ids": batch["metric_type_uncertainty_record_ids"],
+                "fingerprints": batch["fingerprints"],
+                "second_pass_sampling": batch["second_pass_sampling"],
             }
             for batch in batches
         ],

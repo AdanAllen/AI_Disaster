@@ -122,11 +122,28 @@
       "verification_status": "needs_more_review"
     }
   ],
+  "category_field": "hazard_risk_rating",
   "chapter": "Appendix E, Detailed Risk Ranking Results",
   "claimed_page_mismatch_record_ids": [],
   "contains_low_medium_high_values": true,
   "created_at": "2026-06-19",
   "duplicated_rows": [],
+  "expected_row_coverage": {
+    "coverage_type": "complete_oakland_plan_area_rows_expected_from_visible_source",
+    "expected_rows": [
+      "Central East Oakland",
+      "Coliseum/Airport",
+      "Downtown",
+      "East Oakland Hills",
+      "Eastlake/Fruitvale",
+      "Glenview/Redwood Heights",
+      "North Oakland Hills",
+      "North Oakland/Adams Point",
+      "West Oakland"
+    ],
+    "missing_row_policy": "fail_closed",
+    "notes": "Current adopted Priority A pages visibly show all nine official Oakland plan areas. Future tables may document fewer expected rows rather than infer missing rows."
+  },
   "extracted_column_headers": [
     "% of Total Value Exposed",
     "Impact on Property: Impact (High, Medium, Low, None)",
@@ -196,6 +213,16 @@
     }
   ],
   "final_category_is_official_hazard_risk_rating": true,
+  "fingerprints": {
+    "batch_json_fingerprint": "4c7a91a8e3a96ef6a29ef31e1b2044e99c24b332c6712e4818b21eb733b3de1a",
+    "candidate_payload_fingerprint": "37c49788f14b5ead9c19feb6b7eb77d48c3d546412d1d2d6aa72f7d385b3e15e",
+    "rendered_page_fingerprint": "0d4bb9d26e3bfd79d1b0ab5b346c6f4c388dc9665303e78ed8ddbed87ef607a1",
+    "review_presentation_fingerprint": "b9461e12b35f0ec844e162b6384244f1c6a010958341a5e0312f7f2843d52799",
+    "semantic_batch_evidence_fingerprint": "a97ccf34bc14d3c0c362466a466341b8ffddb9db634e442545ad7edeef2eb449",
+    "source_pdf_fingerprint": "9e36de48ab225762767a79c1e50c83a9286352e8906c709005e9fb32780979ef",
+    "table_crop_fingerprint": null,
+    "table_identifier_fingerprint": "8e9d27e78f5d9a44289a51c03b7a458a27d9bc79ada6797e5dc6d984371424a9"
+  },
   "full_resolution_page_link": "page-images/adopted/page-0478.png",
   "geographic_unit": "oakland_plan_area",
   "hazard": "earthquake",
@@ -229,9 +256,34 @@
     "Hazard Risk Rating": "Official final category for the scenario and plan-area row.",
     "Risk Ranking Score": "Official scenario-specific risk ranking score from the LHMP table."
   },
+  "required_value_columns": [
+    "Risk Ranking Score",
+    "Hazard Risk Rating"
+  ],
   "review_readiness": "ready_for_human_review",
   "scenario": "EQ San Andreas M7.38",
   "schema_version": 1,
+  "second_pass_requirements": {
+    "batch_evidence_fingerprint": "a97ccf34bc14d3c0c362466a466341b8ffddb9db634e442545ad7edeef2eb449",
+    "required_row_ids": [
+      "adopted_page_0478_earthquake_eq_san_andreas_m7_38|Central East Oakland|adopted_scenario_0019",
+      "adopted_page_0478_earthquake_eq_san_andreas_m7_38|Glenview/Redwood Heights|adopted_scenario_0024",
+      "adopted_page_0478_earthquake_eq_san_andreas_m7_38|West Oakland|adopted_scenario_0027"
+    ],
+    "seed": "oakland-adopted-priority-a-second-pass-v1",
+    "selected_row_ids": [
+      "adopted_page_0478_earthquake_eq_san_andreas_m7_38|Glenview/Redwood Heights|adopted_scenario_0024"
+    ],
+    "selection_date": "2026-06-19"
+  },
+  "second_pass_sampling": {
+    "batch_evidence_fingerprint": "a97ccf34bc14d3c0c362466a466341b8ffddb9db634e442545ad7edeef2eb449",
+    "seed": "oakland-adopted-priority-a-second-pass-v1",
+    "selected_row_ids": [
+      "adopted_page_0478_earthquake_eq_san_andreas_m7_38|Glenview/Redwood Heights|adopted_scenario_0024"
+    ],
+    "selection_date": "2026-06-19"
+  },
   "source_document": "City of Oakland 2021-2026 Local Hazard Mitigation Plan",
   "source_page": 478,
   "source_status": "adopted",
@@ -239,11 +291,13 @@
   "suggested_review_decision": "likely_valid_assessment_table",
   "suggested_review_order": 8,
   "suggested_review_reason": "The rendered page shows a complete Risk Ranking table with all nine official Oakland plan areas, visible headers, Risk Ranking Score, and Hazard Risk Rating columns.",
+  "table_crop_reference": "",
   "table_identifier": "page-0478",
   "table_number": "",
   "table_title": "RISK RANKING-Earthquake - EQ San Andreas M7.38",
   "table_title_status": "visible",
   "unmatched_candidate_record_ids": [],
+  "value_field": "risk_ranking_score",
   "verification_status_effect": "none_until_human_batch_decision",
   "warnings": []
 }

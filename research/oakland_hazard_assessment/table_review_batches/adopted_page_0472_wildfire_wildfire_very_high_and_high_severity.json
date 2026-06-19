@@ -122,11 +122,28 @@
       "verification_status": "needs_more_review"
     }
   ],
+  "category_field": "hazard_risk_rating",
   "chapter": "Appendix E, Detailed Risk Ranking Results",
   "claimed_page_mismatch_record_ids": [],
   "contains_low_medium_high_values": true,
   "created_at": "2026-06-19",
   "duplicated_rows": [],
+  "expected_row_coverage": {
+    "coverage_type": "complete_oakland_plan_area_rows_expected_from_visible_source",
+    "expected_rows": [
+      "Central East Oakland",
+      "Coliseum/Airport",
+      "Downtown",
+      "East Oakland Hills",
+      "Eastlake/Fruitvale",
+      "Glenview/Redwood Heights",
+      "North Oakland Hills",
+      "North Oakland/Adams Point",
+      "West Oakland"
+    ],
+    "missing_row_policy": "fail_closed",
+    "notes": "Current adopted Priority A pages visibly show all nine official Oakland plan areas. Future tables may document fewer expected rows rather than infer missing rows."
+  },
   "extracted_column_headers": [
     "% of Total Value Exposed",
     "Impact on Property: Impact (High, Medium, Low, None)",
@@ -196,6 +213,16 @@
     }
   ],
   "final_category_is_official_hazard_risk_rating": true,
+  "fingerprints": {
+    "batch_json_fingerprint": "cae0e1665f4eb0022b0d98742729a738248f73ccc48d00562cb13920fe3cb3a6",
+    "candidate_payload_fingerprint": "11c4ce1bfcb1745fac604929dc16f954a853ce0346b65e01a93d5fda78b21437",
+    "rendered_page_fingerprint": "d7d8eecc8372d2327fc2a9acf9c000cb59db8c936f65c6e79bd6b19b137d102a",
+    "review_presentation_fingerprint": "88c73dfb06c5bb7560b60c4ac38b1997221b5baf69138f9ca7a2fcec9c3e1228",
+    "semantic_batch_evidence_fingerprint": "00f00f290e9536706ce0d58fee2282d8ca31dba1d6fb7529654f9d5eda9e5610",
+    "source_pdf_fingerprint": "9e36de48ab225762767a79c1e50c83a9286352e8906c709005e9fb32780979ef",
+    "table_crop_fingerprint": null,
+    "table_identifier_fingerprint": "89efd8899002f1d7454f3726658b060e47b39c074c2a74f0c4c264169e82bebc"
+  },
   "full_resolution_page_link": "page-images/adopted/page-0472.png",
   "geographic_unit": "oakland_plan_area",
   "hazard": "wildfire",
@@ -229,9 +256,40 @@
     "Hazard Risk Rating": "Official final category for the scenario and plan-area row.",
     "Risk Ranking Score": "Official scenario-specific risk ranking score from the LHMP table."
   },
+  "required_value_columns": [
+    "Risk Ranking Score",
+    "Hazard Risk Rating"
+  ],
   "review_readiness": "ready_for_human_review",
   "scenario": "Wildfire Very High and High severity",
   "schema_version": 1,
+  "second_pass_requirements": {
+    "batch_evidence_fingerprint": "00f00f290e9536706ce0d58fee2282d8ca31dba1d6fb7529654f9d5eda9e5610",
+    "required_row_ids": [
+      "adopted_page_0472_wildfire_wildfire_very_high_and_high_severity|Central East Oakland|adopted_scenario_0064",
+      "adopted_page_0472_wildfire_wildfire_very_high_and_high_severity|Coliseum/Airport|adopted_scenario_0065",
+      "adopted_page_0472_wildfire_wildfire_very_high_and_high_severity|Downtown|adopted_scenario_0066",
+      "adopted_page_0472_wildfire_wildfire_very_high_and_high_severity|East Oakland Hills|adopted_scenario_0067",
+      "adopted_page_0472_wildfire_wildfire_very_high_and_high_severity|Eastlake/Fruitvale|adopted_scenario_0068",
+      "adopted_page_0472_wildfire_wildfire_very_high_and_high_severity|Glenview/Redwood Heights|adopted_scenario_0069",
+      "adopted_page_0472_wildfire_wildfire_very_high_and_high_severity|North Oakland Hills|adopted_scenario_0070",
+      "adopted_page_0472_wildfire_wildfire_very_high_and_high_severity|North Oakland/Adams Point|adopted_scenario_0071",
+      "adopted_page_0472_wildfire_wildfire_very_high_and_high_severity|West Oakland|adopted_scenario_0072"
+    ],
+    "seed": "oakland-adopted-priority-a-second-pass-v1",
+    "selected_row_ids": [
+      "adopted_page_0472_wildfire_wildfire_very_high_and_high_severity|North Oakland/Adams Point|adopted_scenario_0071"
+    ],
+    "selection_date": "2026-06-19"
+  },
+  "second_pass_sampling": {
+    "batch_evidence_fingerprint": "00f00f290e9536706ce0d58fee2282d8ca31dba1d6fb7529654f9d5eda9e5610",
+    "seed": "oakland-adopted-priority-a-second-pass-v1",
+    "selected_row_ids": [
+      "adopted_page_0472_wildfire_wildfire_very_high_and_high_severity|North Oakland/Adams Point|adopted_scenario_0071"
+    ],
+    "selection_date": "2026-06-19"
+  },
   "source_document": "City of Oakland 2021-2026 Local Hazard Mitigation Plan",
   "source_page": 472,
   "source_status": "adopted",
@@ -239,11 +297,13 @@
   "suggested_review_decision": "likely_valid_assessment_table",
   "suggested_review_order": 1,
   "suggested_review_reason": "The rendered page shows a complete Risk Ranking table with all nine official Oakland plan areas, visible headers, Risk Ranking Score, and Hazard Risk Rating columns.",
+  "table_crop_reference": "",
   "table_identifier": "page-0472",
   "table_number": "",
   "table_title": "RISK RANKING-Wildfire (Very High and High Severity)",
   "table_title_status": "visible",
   "unmatched_candidate_record_ids": [],
+  "value_field": "risk_ranking_score",
   "verification_status_effect": "none_until_human_batch_decision",
   "warnings": []
 }

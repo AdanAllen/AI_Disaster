@@ -122,11 +122,28 @@
       "verification_status": "needs_more_review"
     }
   ],
+  "category_field": "hazard_risk_rating",
   "chapter": "Appendix E, Detailed Risk Ranking Results",
   "claimed_page_mismatch_record_ids": [],
   "contains_low_medium_high_values": true,
   "created_at": "2026-06-19",
   "duplicated_rows": [],
+  "expected_row_coverage": {
+    "coverage_type": "complete_oakland_plan_area_rows_expected_from_visible_source",
+    "expected_rows": [
+      "Central East Oakland",
+      "Coliseum/Airport",
+      "Downtown",
+      "East Oakland Hills",
+      "Eastlake/Fruitvale",
+      "Glenview/Redwood Heights",
+      "North Oakland Hills",
+      "North Oakland/Adams Point",
+      "West Oakland"
+    ],
+    "missing_row_policy": "fail_closed",
+    "notes": "Current adopted Priority A pages visibly show all nine official Oakland plan areas. Future tables may document fewer expected rows rather than infer missing rows."
+  },
   "extracted_column_headers": [
     "% of Total Value Exposed",
     "Impact on Property: Impact (High, Medium, Low, None)",
@@ -196,6 +213,16 @@
     }
   ],
   "final_category_is_official_hazard_risk_rating": true,
+  "fingerprints": {
+    "batch_json_fingerprint": "93d8460049908091f4cdbb81e08b386e07099ad3f483a5329dedb5e34fc77471",
+    "candidate_payload_fingerprint": "81e4a1a32326c3fc5671b7f05ecc71e852f1c3e4f35a41a8ba76db3befc047c5",
+    "rendered_page_fingerprint": "e98f6daf9e201db5c650a2010b5371d4d30518bd6481b83141dace9f0e691e47",
+    "review_presentation_fingerprint": "47fae94deca0572a3f4662c33203ac51b5f0c24ebaf47430e004e2eba31bf6ff",
+    "semantic_batch_evidence_fingerprint": "eaa3b7a9fdbaf56c194a0e6a6b8e03a5fa3c44eb0276dbacaadad5b7beb51cb8",
+    "source_pdf_fingerprint": "9e36de48ab225762767a79c1e50c83a9286352e8906c709005e9fb32780979ef",
+    "table_crop_fingerprint": null,
+    "table_identifier_fingerprint": "520b3023840f03d9ac5e30b4d9720dcb1690f9b7739c89b9293855d89492e089"
+  },
   "full_resolution_page_link": "page-images/adopted/page-0480.png",
   "geographic_unit": "oakland_plan_area",
   "hazard": "earthquake",
@@ -229,9 +256,40 @@
     "Hazard Risk Rating": "Official final category for the scenario and plan-area row.",
     "Risk Ranking Score": "Official scenario-specific risk ranking score from the LHMP table."
   },
+  "required_value_columns": [
+    "Risk Ranking Score",
+    "Hazard Risk Rating"
+  ],
   "review_readiness": "ready_for_human_review",
   "scenario": "EQ 100-yr Prob",
   "schema_version": 1,
+  "second_pass_requirements": {
+    "batch_evidence_fingerprint": "eaa3b7a9fdbaf56c194a0e6a6b8e03a5fa3c44eb0276dbacaadad5b7beb51cb8",
+    "required_row_ids": [
+      "adopted_page_0480_earthquake_eq_100_yr_prob|Central East Oakland|adopted_scenario_0028",
+      "adopted_page_0480_earthquake_eq_100_yr_prob|Coliseum/Airport|adopted_scenario_0029",
+      "adopted_page_0480_earthquake_eq_100_yr_prob|Downtown|adopted_scenario_0030",
+      "adopted_page_0480_earthquake_eq_100_yr_prob|East Oakland Hills|adopted_scenario_0031",
+      "adopted_page_0480_earthquake_eq_100_yr_prob|Eastlake/Fruitvale|adopted_scenario_0032",
+      "adopted_page_0480_earthquake_eq_100_yr_prob|Glenview/Redwood Heights|adopted_scenario_0033",
+      "adopted_page_0480_earthquake_eq_100_yr_prob|North Oakland Hills|adopted_scenario_0034",
+      "adopted_page_0480_earthquake_eq_100_yr_prob|North Oakland/Adams Point|adopted_scenario_0035",
+      "adopted_page_0480_earthquake_eq_100_yr_prob|West Oakland|adopted_scenario_0036"
+    ],
+    "seed": "oakland-adopted-priority-a-second-pass-v1",
+    "selected_row_ids": [
+      "adopted_page_0480_earthquake_eq_100_yr_prob|Coliseum/Airport|adopted_scenario_0029"
+    ],
+    "selection_date": "2026-06-19"
+  },
+  "second_pass_sampling": {
+    "batch_evidence_fingerprint": "eaa3b7a9fdbaf56c194a0e6a6b8e03a5fa3c44eb0276dbacaadad5b7beb51cb8",
+    "seed": "oakland-adopted-priority-a-second-pass-v1",
+    "selected_row_ids": [
+      "adopted_page_0480_earthquake_eq_100_yr_prob|Coliseum/Airport|adopted_scenario_0029"
+    ],
+    "selection_date": "2026-06-19"
+  },
   "source_document": "City of Oakland 2021-2026 Local Hazard Mitigation Plan",
   "source_page": 480,
   "source_status": "adopted",
@@ -239,11 +297,13 @@
   "suggested_review_decision": "likely_valid_assessment_table",
   "suggested_review_order": 9,
   "suggested_review_reason": "The rendered page shows a complete Risk Ranking table with all nine official Oakland plan areas, visible headers, Risk Ranking Score, and Hazard Risk Rating columns.",
+  "table_crop_reference": "",
   "table_identifier": "page-0480",
   "table_number": "",
   "table_title": "RISK RANKING-Earthquake - EQ 100-yr Prob",
   "table_title_status": "visible",
   "unmatched_candidate_record_ids": [],
+  "value_field": "risk_ranking_score",
   "verification_status_effect": "none_until_human_batch_decision",
   "warnings": [
     "Scenario label includes probability wording, but table columns still show risk ranking score and Hazard Risk Rating; reviewer must confirm metric meaning."

@@ -5,14 +5,24 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from research.oakland_hazard_assessment.table_review import validate_table_batch_decision
-
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from research.oakland_hazard_assessment.table_review import validate_table_batch_decision
+from research.oakland_hazard_assessment.review_history import (
+    EVENTS_DIR,
+    build_decision_event,
+    load_events,
+    validate_history,
+    write_event_atomic,
+)
+from research.oakland_hazard_assessment.second_pass import required_second_pass_row_ids
+
 RESEARCH = ROOT / "research" / "oakland_hazard_assessment"
-DECISIONS = RESEARCH / "table_review_decisions"
 
 
 def parse_correction(value: str) -> tuple[str, dict]:
@@ -38,6 +48,8 @@ def main() -> None:
         "context_only",
         "reject_table_for_assessment",
         "needs_more_review",
+        "second_pass_approved",
+        "second_pass_rejected",
     ])
     parser.add_argument("--reviewer", required=True)
     parser.add_argument("--reason", required=True)
@@ -49,6 +61,12 @@ def main() -> None:
         type=parse_correction,
         help="Record correction as record_id|original_extracted_value|corrected_value|correction_reason",
     )
+    parser.add_argument(
+        "--reviewed-row-id",
+        action="append",
+        default=[],
+        help="Row id reviewed in a second-pass decision.",
+    )
     args = parser.parse_args()
 
     batch_path = RESEARCH / "table_review_batches" / f"{args.batch_id}.json"
@@ -57,22 +75,38 @@ def main() -> None:
     batch = json.loads(batch_path.read_text(encoding="utf-8"))
     reviewed_at = args.reviewed_at or datetime.now(timezone.utc).isoformat()
     corrections = {record_id: correction for record_id, correction in args.correction}
-    decision = {
-        "schema_version": 1,
-        "decision_id": f"{args.batch_id}_{reviewed_at.replace(':', '').replace('.', '')}",
-        "batch_id": args.batch_id,
-        "decision": args.decision,
-        "reviewer": args.reviewer,
-        "reviewed_at": reviewed_at,
-        "reason": args.reason,
-        "corrections": corrections,
-    }
-    errors = validate_table_batch_decision(batch, decision, ROOT)
-    if errors:
-        raise SystemExit(f"Decision did not pass validation: {', '.join(errors)}")
-    DECISIONS.mkdir(parents=True, exist_ok=True)
-    decision_path = DECISIONS / f"{args.batch_id}.json"
-    decision_path.write_text(json.dumps(decision, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    events_dir = ROOT / EVENTS_DIR
+    history = validate_history(load_events(events_dir, args.batch_id), batch)
+    if not history.valid:
+        raise SystemExit(f"Existing review history is malformed: {', '.join(history.errors)}")
+    previous_decision_id = history.latest_event.get("decision_id") if history.latest_event else ""
+    extra = {}
+    if args.decision.startswith("second_pass"):
+        required = set(required_second_pass_row_ids(batch)["required_row_ids"])
+        reviewed = set(args.reviewed_row_id)
+        if not required.issubset(reviewed):
+            missing = ", ".join(sorted(required - reviewed))
+            raise SystemExit(f"Second-pass decision is missing required rows: {missing}")
+        extra = {
+            "reviewed_row_ids": sorted(reviewed),
+            "batch_evidence_fingerprint": batch.get("fingerprints", {}).get("semantic_batch_evidence_fingerprint", ""),
+            "outcome": args.decision,
+        }
+    event = build_decision_event(
+        batch=batch,
+        decision=args.decision,
+        reviewer=args.reviewer,
+        reason=args.reason,
+        previous_decision_id=previous_decision_id,
+        corrections=corrections,
+        reviewed_at=reviewed_at,
+        extra_fields=extra,
+    )
+    if not args.decision.startswith("second_pass"):
+        errors = validate_table_batch_decision(batch, event, ROOT)
+        if errors:
+            raise SystemExit(f"Decision did not pass validation: {', '.join(errors)}")
+    decision_path = write_event_atomic(events_dir, event)
     print(decision_path)
 
 
