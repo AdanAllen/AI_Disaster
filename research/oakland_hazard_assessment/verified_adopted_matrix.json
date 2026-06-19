@@ -1,0 +1,854 @@
+{
+  "cells": [
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "earthquake",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": true,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Central East Oakland",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0001",
+        "adopted_scenario_0010",
+        "adopted_scenario_0019",
+        "adopted_scenario_0028"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "wildfire",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Central East Oakland",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0064"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "flood",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": true,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Central East Oakland",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0037",
+        "adopted_scenario_0046"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "landslide",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Central East Oakland",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0055"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "tsunami",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Central East Oakland",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0073"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "earthquake",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": true,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Coliseum/Airport",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0002",
+        "adopted_scenario_0011",
+        "adopted_scenario_0020",
+        "adopted_scenario_0029"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "wildfire",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Coliseum/Airport",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0065"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "flood",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": true,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Coliseum/Airport",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0038",
+        "adopted_scenario_0047"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "landslide",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Coliseum/Airport",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0056"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "tsunami",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Coliseum/Airport",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0074"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "earthquake",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": true,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Downtown",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0003",
+        "adopted_scenario_0012",
+        "adopted_scenario_0021",
+        "adopted_scenario_0030"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "wildfire",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Downtown",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0066"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "flood",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": true,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Downtown",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0039",
+        "adopted_scenario_0048"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "landslide",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Downtown",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0057"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "tsunami",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Downtown",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0075"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "earthquake",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": true,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "East Oakland Hills",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0004",
+        "adopted_scenario_0013",
+        "adopted_scenario_0022",
+        "adopted_scenario_0031"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "wildfire",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "East Oakland Hills",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0067"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "flood",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": true,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "East Oakland Hills",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0040",
+        "adopted_scenario_0049"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "landslide",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "East Oakland Hills",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0058"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "tsunami",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "East Oakland Hills",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0076"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "earthquake",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": true,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Eastlake/Fruitvale",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0005",
+        "adopted_scenario_0014",
+        "adopted_scenario_0023",
+        "adopted_scenario_0032"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "wildfire",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Eastlake/Fruitvale",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0068"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "flood",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": true,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Eastlake/Fruitvale",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0041",
+        "adopted_scenario_0050"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "landslide",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Eastlake/Fruitvale",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0059"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "tsunami",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Eastlake/Fruitvale",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0077"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "earthquake",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": true,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Glenview/Redwood Heights",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0006",
+        "adopted_scenario_0015",
+        "adopted_scenario_0024",
+        "adopted_scenario_0033"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "wildfire",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Glenview/Redwood Heights",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0069"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "flood",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": true,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Glenview/Redwood Heights",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0042",
+        "adopted_scenario_0051"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "landslide",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Glenview/Redwood Heights",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0060"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "tsunami",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "Glenview/Redwood Heights",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0078"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "earthquake",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": true,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "North Oakland Hills",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0007",
+        "adopted_scenario_0016",
+        "adopted_scenario_0025",
+        "adopted_scenario_0034"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "wildfire",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "North Oakland Hills",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0070"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "flood",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": true,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "North Oakland Hills",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0043",
+        "adopted_scenario_0052"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "landslide",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "North Oakland Hills",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0061"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "tsunami",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "North Oakland Hills",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0079"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "earthquake",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": true,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "North Oakland/Adams Point",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0008",
+        "adopted_scenario_0017",
+        "adopted_scenario_0026",
+        "adopted_scenario_0035"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "wildfire",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "North Oakland/Adams Point",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0071"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "flood",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": true,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "North Oakland/Adams Point",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0044",
+        "adopted_scenario_0053"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "landslide",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "North Oakland/Adams Point",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0062"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "tsunami",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "North Oakland/Adams Point",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0080"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "earthquake",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": true,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "West Oakland",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0009",
+        "adopted_scenario_0018",
+        "adopted_scenario_0027",
+        "adopted_scenario_0036"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "wildfire",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "West Oakland",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0072"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "flood",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": true,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "West Oakland",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0045",
+        "adopted_scenario_0054"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "landslide",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "West Oakland",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0063"
+      ]
+    },
+    {
+      "conflicts": [],
+      "future_user_facing_assessment_supportable": false,
+      "hazard": "tsunami",
+      "impact_exists": false,
+      "missing_evidence": [
+        "visual_verification",
+        "complete_row_column_provenance"
+      ],
+      "multiple_scenarios_exist": false,
+      "official_area_rating_exists": true,
+      "only_exposure_or_context_exists": false,
+      "plan_area": "West Oakland",
+      "probability_exists": false,
+      "source_provenance_record_ids": [
+        "adopted_scenario_0081"
+      ]
+    }
+  ],
+  "generated_at": "2026-06-19",
+  "jurisdiction": "oakland",
+  "schema_version": 1,
+  "source_status": "adopted"
+}

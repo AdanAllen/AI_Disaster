@@ -1,0 +1,28 @@
+{
+  "fail_closed_rules": [
+    "failed_gis_is_data_unavailable_not_low",
+    "non_intersection_is_not_guaranteed_safety",
+    "fault_proximity_is_not_fault_zone_intersection",
+    "urban_unzoned_is_not_no_wildfire_risk",
+    "tsunami_evacuation_and_inundation_terms_remain_separate"
+  ],
+  "generated_at": "2026-06-19",
+  "hazards": {
+    "earthquake": {
+      "validation_status": "source_semantics_documented_tests_pending_live_review"
+    },
+    "flood": {
+      "validation_status": "source_semantics_documented_tests_pending_live_review"
+    },
+    "landslide": {
+      "validation_status": "source_semantics_documented_tests_pending_live_review"
+    },
+    "tsunami": {
+      "validation_status": "source_semantics_documented_tests_pending_live_review"
+    },
+    "wildfire": {
+      "validation_status": "source_semantics_documented_tests_pending_live_review"
+    }
+  },
+  "schema_version": 1
+}

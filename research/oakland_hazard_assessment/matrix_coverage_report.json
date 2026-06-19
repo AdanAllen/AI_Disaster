@@ -1,0 +1,36 @@
+{
+  "by_hazard": {
+    "earthquake": {
+      "candidate_or_context_only": 9,
+      "missing": 9
+    },
+    "flood": {
+      "candidate_or_context_only": 9,
+      "missing": 9
+    },
+    "landslide": {
+      "candidate_or_context_only": 9,
+      "missing": 9
+    },
+    "tsunami": {
+      "candidate_or_context_only": 9,
+      "missing": 9
+    },
+    "wildfire": {
+      "candidate_or_context_only": 9,
+      "missing": 9
+    }
+  },
+  "counts": {
+    "candidate_or_context_only": 45,
+    "missing": 45
+  },
+  "generated_at": "2026-06-19",
+  "note": "No generated cell is supportable until records are visually verified by a human reviewer.",
+  "percentages": {
+    "candidate_or_context_only": 50.0,
+    "missing": 50.0
+  },
+  "schema_version": 1,
+  "total_cells": 90
+}

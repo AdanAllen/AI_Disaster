@@ -1,0 +1,25 @@
+{
+  "fail_closed_rules": [
+    "zip_only_input_cannot_assign_area",
+    "multiple_match_requires_warning",
+    "outside_oakland_returns_no_area",
+    "invalid_geometry_disables_area_assignment"
+  ],
+  "generated_at": "2026-06-19",
+  "geometry_version": "Citywide_202410 MapServer layer 9; fetched in existing repo metadata 2026-06-17",
+  "layer_id": 9,
+  "official_feature_names": [
+    "Central East Oakland",
+    "Coliseum/Airport",
+    "Downtown",
+    "East Oakland Hills",
+    "Eastlake/Fruitvale",
+    "Glenview/Redwood Heights",
+    "North Oakland Hills",
+    "North Oakland/Adams Point",
+    "West Oakland"
+  ],
+  "schema_version": 1,
+  "source_service": "https://gismaps.oaklandca.gov/server/rest/services/Accela/Citywide_202410/MapServer/9",
+  "validation_status": "fixture_pending"
+}

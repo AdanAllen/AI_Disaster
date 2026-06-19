@@ -1,0 +1,76 @@
+{
+  "generated_at": "2026-06-19",
+  "hazards": {
+    "earthquake": {
+      "documented_combination_method": "not_approved",
+      "impact_varies_geographically": "not_determined",
+      "multiple_scenarios_found": true,
+      "official_citywide_rating_found": "unknown_pending_inventory_review",
+      "plan_area_ratings_found": true,
+      "probability_varies_geographically": "not_determined",
+      "prohibited_methods": [
+        "scenario_averaging_without_scale_confirmation",
+        "combining_adopted_and_draft_records",
+        "using_context_only_metrics_as_hazard_categories"
+      ],
+      "recommendation": "mapped_findings_only_until_visual_verification_and_method_approval"
+    },
+    "flood": {
+      "documented_combination_method": "not_approved",
+      "impact_varies_geographically": "not_determined",
+      "multiple_scenarios_found": false,
+      "official_citywide_rating_found": "unknown_pending_inventory_review",
+      "plan_area_ratings_found": false,
+      "probability_varies_geographically": "not_determined",
+      "prohibited_methods": [
+        "scenario_averaging_without_scale_confirmation",
+        "combining_adopted_and_draft_records",
+        "using_context_only_metrics_as_hazard_categories"
+      ],
+      "recommendation": "mapped_findings_only_until_visual_verification_and_method_approval"
+    },
+    "landslide": {
+      "documented_combination_method": "not_approved",
+      "impact_varies_geographically": "not_determined",
+      "multiple_scenarios_found": false,
+      "official_citywide_rating_found": "unknown_pending_inventory_review",
+      "plan_area_ratings_found": false,
+      "probability_varies_geographically": "not_determined",
+      "prohibited_methods": [
+        "scenario_averaging_without_scale_confirmation",
+        "combining_adopted_and_draft_records",
+        "using_context_only_metrics_as_hazard_categories"
+      ],
+      "recommendation": "mapped_findings_only_until_visual_verification_and_method_approval"
+    },
+    "tsunami": {
+      "documented_combination_method": "not_approved",
+      "impact_varies_geographically": "not_determined",
+      "multiple_scenarios_found": false,
+      "official_citywide_rating_found": "unknown_pending_inventory_review",
+      "plan_area_ratings_found": false,
+      "probability_varies_geographically": "not_determined",
+      "prohibited_methods": [
+        "scenario_averaging_without_scale_confirmation",
+        "combining_adopted_and_draft_records",
+        "using_context_only_metrics_as_hazard_categories"
+      ],
+      "recommendation": "mapped_findings_only_until_visual_verification_and_method_approval"
+    },
+    "wildfire": {
+      "documented_combination_method": "not_approved",
+      "impact_varies_geographically": "not_determined",
+      "multiple_scenarios_found": false,
+      "official_citywide_rating_found": "unknown_pending_inventory_review",
+      "plan_area_ratings_found": false,
+      "probability_varies_geographically": "not_determined",
+      "prohibited_methods": [
+        "scenario_averaging_without_scale_confirmation",
+        "combining_adopted_and_draft_records",
+        "using_context_only_metrics_as_hazard_categories"
+      ],
+      "recommendation": "mapped_findings_only_until_visual_verification_and_method_approval"
+    }
+  },
+  "schema_version": 1
+}
