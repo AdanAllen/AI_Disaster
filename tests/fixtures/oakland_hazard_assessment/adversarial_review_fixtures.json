@@ -50,6 +50,56 @@
       "case_id": "high_category_from_wrong_column",
       "expected_validation": "needs_more_review",
       "reason": "A category from an adjacent column must be corrected by explicit review action."
+    },
+    {
+      "case_id": "correct_page_wrong_table",
+      "expected_validation": "reject",
+      "reason": "A correct PDF page cannot verify a candidate if the table identifier is wrong."
+    },
+    {
+      "case_id": "correct_table_wrong_row",
+      "expected_validation": "reject",
+      "reason": "A visible table cannot verify a value attached to the wrong plan-area row."
+    },
+    {
+      "case_id": "correct_row_wrong_scenario_column",
+      "expected_validation": "reject",
+      "reason": "A value from one scenario cannot verify another scenario."
+    },
+    {
+      "case_id": "table_continuation_omitted",
+      "expected_validation": "reject",
+      "reason": "A batch missing a required continuation page cannot be approved."
+    },
+    {
+      "case_id": "table_title_cropped_out",
+      "expected_validation": "reject",
+      "reason": "A cropped source image without the table title cannot support verification."
+    },
+    {
+      "case_id": "footnote_changes_category_meaning",
+      "expected_validation": "needs_more_review",
+      "reason": "A footnote that changes metric meaning requires semantic review before value approval."
+    },
+    {
+      "case_id": "plan_area_alias_wrong_area",
+      "expected_validation": "normalize_or_reject",
+      "reason": "Plan-area aliases must map explicitly to the official area or be rejected."
+    },
+    {
+      "case_id": "high_value_from_neighboring_row",
+      "expected_validation": "reject",
+      "reason": "A category copied from a neighboring plan-area row is a row mismatch."
+    },
+    {
+      "case_id": "final_rating_confused_with_intermediate_score",
+      "expected_validation": "reject",
+      "reason": "Risk Ranking Score and Hazard Risk Rating must remain distinct columns."
+    },
+    {
+      "case_id": "adopted_page_confused_with_draft_page",
+      "expected_validation": "reject",
+      "reason": "Adopted table batches cannot use draft source pages or draft page images."
     }
   ]
 }

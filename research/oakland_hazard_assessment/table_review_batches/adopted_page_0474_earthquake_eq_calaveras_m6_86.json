@@ -1,0 +1,249 @@
+{
+  "another_page_needed": false,
+  "assessment_eligible": true,
+  "batch_id": "adopted_page_0474_earthquake_eq_calaveras_m6_86",
+  "candidate_record_count": 9,
+  "candidate_records": [
+    {
+      "hazard": "earthquake",
+      "metric_type": "scenario_hazard_rating",
+      "plan_area": "Central East Oakland",
+      "raw_category": "Medium",
+      "raw_value": 34,
+      "record_id": "adopted_scenario_0001",
+      "scenario": "EQ Calaveras M6.86",
+      "source_column": "Risk Ranking Score; Hazard Risk Rating",
+      "source_page": 474,
+      "source_row": "Central East Oakland",
+      "verification_status": "needs_more_review"
+    },
+    {
+      "hazard": "earthquake",
+      "metric_type": "scenario_hazard_rating",
+      "plan_area": "Coliseum/Airport",
+      "raw_category": "High",
+      "raw_value": 36,
+      "record_id": "adopted_scenario_0002",
+      "scenario": "EQ Calaveras M6.86",
+      "source_column": "Risk Ranking Score; Hazard Risk Rating",
+      "source_page": 474,
+      "source_row": "Coliseum/Airport",
+      "verification_status": "needs_more_review"
+    },
+    {
+      "hazard": "earthquake",
+      "metric_type": "scenario_hazard_rating",
+      "plan_area": "Downtown",
+      "raw_category": "Medium",
+      "raw_value": 34,
+      "record_id": "adopted_scenario_0003",
+      "scenario": "EQ Calaveras M6.86",
+      "source_column": "Risk Ranking Score; Hazard Risk Rating",
+      "source_page": 474,
+      "source_row": "Downtown",
+      "verification_status": "needs_more_review"
+    },
+    {
+      "hazard": "earthquake",
+      "metric_type": "scenario_hazard_rating",
+      "plan_area": "East Oakland Hills",
+      "raw_category": "Medium",
+      "raw_value": 32,
+      "record_id": "adopted_scenario_0004",
+      "scenario": "EQ Calaveras M6.86",
+      "source_column": "Risk Ranking Score; Hazard Risk Rating",
+      "source_page": 474,
+      "source_row": "East Oakland Hills",
+      "verification_status": "needs_more_review"
+    },
+    {
+      "hazard": "earthquake",
+      "metric_type": "scenario_hazard_rating",
+      "plan_area": "Eastlake/Fruitvale",
+      "raw_category": "Medium",
+      "raw_value": 34,
+      "record_id": "adopted_scenario_0005",
+      "scenario": "EQ Calaveras M6.86",
+      "source_column": "Risk Ranking Score; Hazard Risk Rating",
+      "source_page": 474,
+      "source_row": "Eastlake/Fruitvale",
+      "verification_status": "needs_more_review"
+    },
+    {
+      "hazard": "earthquake",
+      "metric_type": "scenario_hazard_rating",
+      "plan_area": "Glenview/Redwood Heights",
+      "raw_category": "Medium",
+      "raw_value": 34,
+      "record_id": "adopted_scenario_0006",
+      "scenario": "EQ Calaveras M6.86",
+      "source_column": "Risk Ranking Score; Hazard Risk Rating",
+      "source_page": 474,
+      "source_row": "Glenview/Redwood Heights",
+      "verification_status": "needs_more_review"
+    },
+    {
+      "hazard": "earthquake",
+      "metric_type": "scenario_hazard_rating",
+      "plan_area": "North Oakland Hills",
+      "raw_category": "Medium",
+      "raw_value": 32,
+      "record_id": "adopted_scenario_0007",
+      "scenario": "EQ Calaveras M6.86",
+      "source_column": "Risk Ranking Score; Hazard Risk Rating",
+      "source_page": 474,
+      "source_row": "North Oakland Hills",
+      "verification_status": "needs_more_review"
+    },
+    {
+      "hazard": "earthquake",
+      "metric_type": "scenario_hazard_rating",
+      "plan_area": "North Oakland/Adams Point",
+      "raw_category": "Medium",
+      "raw_value": 34,
+      "record_id": "adopted_scenario_0008",
+      "scenario": "EQ Calaveras M6.86",
+      "source_column": "Risk Ranking Score; Hazard Risk Rating",
+      "source_page": 474,
+      "source_row": "North Oakland/Adams Point",
+      "verification_status": "needs_more_review"
+    },
+    {
+      "hazard": "earthquake",
+      "metric_type": "scenario_hazard_rating",
+      "plan_area": "West Oakland",
+      "raw_category": "Medium",
+      "raw_value": 34,
+      "record_id": "adopted_scenario_0009",
+      "scenario": "EQ Calaveras M6.86",
+      "source_column": "Risk Ranking Score; Hazard Risk Rating",
+      "source_page": 474,
+      "source_row": "West Oakland",
+      "verification_status": "needs_more_review"
+    }
+  ],
+  "chapter": "Appendix E, Detailed Risk Ranking Results",
+  "claimed_page_mismatch_record_ids": [],
+  "contains_low_medium_high_values": true,
+  "created_at": "2026-06-19",
+  "duplicated_rows": [],
+  "extracted_column_headers": [
+    "% of Total Value Exposed",
+    "Impact on Property: Impact (High, Medium, Low, None)",
+    "Impact on Property: Impact Factor",
+    "Impact on Property: Weighted Impact Factor",
+    "% of Total Value Damaged",
+    "Impact on Economy: Impact (High, Medium, Low, None)",
+    "Impact on Economy: Impact Factor",
+    "Impact on Economy: Weighted Impact Factor",
+    "Risk Ranking Score",
+    "Hazard Risk Rating"
+  ],
+  "extracted_rows": [
+    {
+      "candidate_record_id": "adopted_scenario_0001",
+      "hazard_risk_rating": "Medium",
+      "plan_area": "Central East Oakland",
+      "risk_ranking_score": 34
+    },
+    {
+      "candidate_record_id": "adopted_scenario_0002",
+      "hazard_risk_rating": "High",
+      "plan_area": "Coliseum/Airport",
+      "risk_ranking_score": 36
+    },
+    {
+      "candidate_record_id": "adopted_scenario_0003",
+      "hazard_risk_rating": "Medium",
+      "plan_area": "Downtown",
+      "risk_ranking_score": 34
+    },
+    {
+      "candidate_record_id": "adopted_scenario_0004",
+      "hazard_risk_rating": "Medium",
+      "plan_area": "East Oakland Hills",
+      "risk_ranking_score": 32
+    },
+    {
+      "candidate_record_id": "adopted_scenario_0005",
+      "hazard_risk_rating": "Medium",
+      "plan_area": "Eastlake/Fruitvale",
+      "risk_ranking_score": 34
+    },
+    {
+      "candidate_record_id": "adopted_scenario_0006",
+      "hazard_risk_rating": "Medium",
+      "plan_area": "Glenview/Redwood Heights",
+      "risk_ranking_score": 34
+    },
+    {
+      "candidate_record_id": "adopted_scenario_0007",
+      "hazard_risk_rating": "Medium",
+      "plan_area": "North Oakland Hills",
+      "risk_ranking_score": 32
+    },
+    {
+      "candidate_record_id": "adopted_scenario_0008",
+      "hazard_risk_rating": "Medium",
+      "plan_area": "North Oakland/Adams Point",
+      "risk_ranking_score": 34
+    },
+    {
+      "candidate_record_id": "adopted_scenario_0009",
+      "hazard_risk_rating": "Medium",
+      "plan_area": "West Oakland",
+      "risk_ranking_score": 34
+    }
+  ],
+  "final_category_is_official_hazard_risk_rating": true,
+  "full_resolution_page_link": "page-images/adopted/page-0474.png",
+  "geographic_unit": "oakland_plan_area",
+  "hazard": "earthquake",
+  "headers_status": "visible",
+  "hidden_or_truncated_rows": [],
+  "interpretation_confidence": "medium",
+  "interpretation_reason": "The final columns are explicitly labeled Risk Ranking Score and Hazard Risk Rating; intermediate exposure and impact columns must not be used as probability.",
+  "methodology_source_page": 474,
+  "metric_interpretation": "The table reports scenario-specific Oakland LHMP risk ranking score and official Hazard Risk Rating by Oakland plan area, with property exposure and economy impact inputs shown as intermediate columns.",
+  "metric_type": "scenario_hazard_rating",
+  "metric_type_uncertainty_record_ids": [],
+  "missing_expected_rows": [],
+  "page_heading": "EQ Calaveras M6.86",
+  "page_image_reference": "research/oakland_hazard_assessment/page-images/adopted/page-0474.png",
+  "permitted_use": "research_assessment_after_explicit_human_table_approval",
+  "plan_areas_represented": [
+    "Central East Oakland",
+    "Coliseum/Airport",
+    "Downtown",
+    "East Oakland Hills",
+    "Eastlake/Fruitvale",
+    "Glenview/Redwood Heights",
+    "North Oakland Hills",
+    "North Oakland/Adams Point",
+    "West Oakland"
+  ],
+  "printed_page": "",
+  "proposed_column_interpretations": {
+    "% of Total Value Damaged": "Modeled damage/loss input, not probability.",
+    "% of Total Value Exposed": "Physical/property exposure input, not probability.",
+    "Hazard Risk Rating": "Official final category for the scenario and plan-area row.",
+    "Risk Ranking Score": "Official scenario-specific risk ranking score from the LHMP table."
+  },
+  "review_readiness": "ready_for_human_review",
+  "scenario": "EQ Calaveras M6.86",
+  "schema_version": 1,
+  "source_document": "City of Oakland 2021-2026 Local Hazard Mitigation Plan",
+  "source_page": 474,
+  "source_status": "adopted",
+  "source_url_or_local_file": "data/raw/lhmps/oakland/oakland-lhmp-2021-2026-adopted.pdf",
+  "suggested_review_decision": "likely_valid_assessment_table",
+  "suggested_review_order": 6,
+  "suggested_review_reason": "The rendered page shows a complete Risk Ranking table with all nine official Oakland plan areas, visible headers, Risk Ranking Score, and Hazard Risk Rating columns.",
+  "table_identifier": "page-0474",
+  "table_number": "",
+  "table_title": "RISK RANKING-Earthquake - EQ Calaveras M6.86",
+  "table_title_status": "visible",
+  "unmatched_candidate_record_ids": [],
+  "verification_status_effect": "none_until_human_batch_decision",
+  "warnings": []
+}

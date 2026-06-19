@@ -1,10 +1,16 @@
 import ast
 import json
+import subprocess
 import unittest
+from copy import deepcopy
 from pathlib import Path
 
 from research.oakland_hazard_assessment import apply_review_action, build_research_assessment
 from research.oakland_hazard_assessment.constants import HAZARDS, PLAN_AREAS
+from research.oakland_hazard_assessment.table_review import (
+    derive_record_updates_from_batch,
+    validate_table_batch_decision,
+)
 from research.oakland_hazard_assessment.validators import (
     detect_conflicting_records,
     detect_duplicate_records,
@@ -50,6 +56,24 @@ def verified_record(**overrides):
     return record
 
 
+def load_batch():
+    catalog = load_research_json("adopted_priority_a_table_catalog.json")
+    first_id = catalog["tables"][0]["batch_id"]
+    return json.loads((RESEARCH_DIR / "table_review_batches" / f"{first_id}.json").read_text(encoding="utf-8"))
+
+
+def valid_batch_decision(batch):
+    return {
+        "decision_id": f"{batch['batch_id']}-test-approval",
+        "batch_id": batch["batch_id"],
+        "decision": "approve_table_extraction",
+        "reviewer": "human-reviewer",
+        "reviewed_at": "2026-06-19T12:00:00Z",
+        "reason": "Reviewed rendered table, headers, rows, and values.",
+        "corrections": {},
+    }
+
+
 class OaklandHazardAssessmentResearchTests(unittest.TestCase):
     def test_generated_phase1_artifacts_exist(self):
         required = [
@@ -70,6 +94,11 @@ class OaklandHazardAssessmentResearchTests(unittest.TestCase):
             "adopted_draft_comparison.md",
             "manual_spot_check_plan.json",
             "manual_spot_check_plan.md",
+            "adopted_priority_a_table_catalog.json",
+            "adopted_priority_a_table_catalog.md",
+            "adopted_priority_a_table_mapping.json",
+            "adopted_priority_a_table_mapping.md",
+            "adopted_priority_a_table_review_index.html",
             "methodology_report.json",
             "methodology_report.md",
             "plan_area_geometry_validation.json",
@@ -80,6 +109,39 @@ class OaklandHazardAssessmentResearchTests(unittest.TestCase):
         ]
         for name in required:
             self.assertTrue((RESEARCH_DIR / name).exists(), name)
+
+    def test_adopted_table_batches_identify_pages_and_map_candidates(self):
+        catalog = load_research_json("adopted_priority_a_table_catalog.json")
+        mapping = load_research_json("adopted_priority_a_table_mapping.json")
+        self.assertEqual(catalog["table_count"], 9)
+        self.assertEqual(mapping["adopted_priority_a_candidate_count"], 81)
+        self.assertEqual(mapping["mapped_candidate_count"], 81)
+        self.assertEqual(mapping["unmatched_candidate_record_ids"], [])
+        self.assertEqual(
+            [table["hazard"] for table in catalog["tables"]],
+            ["wildfire", "landslide", "tsunami", "flood", "flood", "earthquake", "earthquake", "earthquake", "earthquake"],
+        )
+        for table in catalog["tables"]:
+            self.assertEqual(table["review_readiness"], "ready_for_human_review")
+            self.assertIn("risk ranking", table["table_title"].lower())
+
+    def test_table_review_packages_exist_for_every_catalog_entry(self):
+        catalog = load_research_json("adopted_priority_a_table_catalog.json")
+        for table in catalog["tables"]:
+            json_path = RESEARCH_DIR / "table_review_batches" / f"{table['batch_id']}.json"
+            html_path = RESEARCH_DIR / "table_review_batches" / f"{table['batch_id']}.html"
+            self.assertTrue(json_path.exists(), json_path)
+            self.assertTrue(html_path.exists(), html_path)
+            batch = json.loads(json_path.read_text(encoding="utf-8"))
+            self.assertEqual(len(batch["extracted_rows"]), 9)
+            self.assertEqual([row["plan_area"] for row in batch["extracted_rows"]], PLAN_AREAS)
+            self.assertTrue((BASE_DIR / batch["page_image_reference"]).exists())
+
+    def test_batch_suggestions_do_not_verify_records(self):
+        batch = load_batch()
+        self.assertEqual(batch["suggested_review_decision"], "likely_valid_assessment_table")
+        self.assertEqual(batch["verification_status_effect"], "none_until_human_batch_decision")
+        self.assertTrue(all(record["verification_status"] == "needs_more_review" for record in batch["candidate_records"]))
 
     def test_production_code_does_not_import_research_assessment(self):
         production_roots = [
@@ -348,10 +410,118 @@ class OaklandHazardAssessmentResearchTests(unittest.TestCase):
             "earthquake_scenario_attached_to_flood",
             "west_oakland_record_attached_to_downtown",
             "high_category_from_wrong_column",
+            "correct_page_wrong_table",
+            "correct_table_wrong_row",
+            "correct_row_wrong_scenario_column",
+            "table_continuation_omitted",
+            "table_title_cropped_out",
+            "footnote_changes_category_meaning",
+            "plan_area_alias_wrong_area",
+            "high_value_from_neighboring_row",
+            "final_rating_confused_with_intermediate_score",
+            "adopted_page_confused_with_draft_page",
         }
         self.assertEqual({fixture["case_id"] for fixture in fixtures["fixtures"]}, expected)
         for fixture in fixtures["fixtures"]:
             self.assertIn(fixture["expected_validation"], {"reject", "needs_more_review", "normalize_or_reject"})
+
+    def test_batch_approval_requires_reviewer_and_timestamp(self):
+        batch = load_batch()
+        decision = valid_batch_decision(batch)
+        self.assertEqual(validate_table_batch_decision(batch, decision, BASE_DIR), [])
+        no_reviewer = {**decision, "reviewer": ""}
+        no_timestamp = {**decision, "reviewed_at": ""}
+        self.assertIn("missing_reviewer", validate_table_batch_decision(batch, no_reviewer, BASE_DIR))
+        self.assertIn("missing_review_timestamp", validate_table_batch_decision(batch, no_timestamp, BASE_DIR))
+
+    def test_batch_approval_requires_adopted_source_and_identified_table(self):
+        batch = load_batch()
+        decision = valid_batch_decision(batch)
+        draft_batch = {**batch, "source_status": "draft"}
+        cropped_title = {**batch, "table_title_status": "cropped"}
+        hidden_headers = {**batch, "headers_status": "cropped"}
+        self.assertIn("source_is_not_adopted", validate_table_batch_decision(draft_batch, decision, BASE_DIR))
+        self.assertIn("table_title_not_visible", validate_table_batch_decision(cropped_title, decision, BASE_DIR))
+        self.assertIn("headers_not_visible", validate_table_batch_decision(hidden_headers, decision, BASE_DIR))
+
+    def test_missing_continuation_or_hidden_row_blocks_batch_approval(self):
+        batch = load_batch()
+        decision = valid_batch_decision(batch)
+        continuation = {**batch, "another_page_needed": True}
+        truncated = {**batch, "hidden_or_truncated_rows": ["West Oakland"]}
+        self.assertIn("missing_continuation_page", validate_table_batch_decision(continuation, decision, BASE_DIR))
+        self.assertIn("hidden_or_truncated_rows", validate_table_batch_decision(truncated, decision, BASE_DIR))
+
+    def test_value_plan_area_hazard_and_scenario_mismatches_block_batch_approval(self):
+        batch = load_batch()
+        decision = valid_batch_decision(batch)
+        value_mismatch = deepcopy(batch)
+        value_mismatch["extracted_rows"][0]["risk_ranking_score"] = "999"
+        plan_area_mismatch = deepcopy(batch)
+        plan_area_mismatch["candidate_records"][0]["plan_area"] = "Made Up Area"
+        hazard_mismatch = deepcopy(batch)
+        hazard_mismatch["candidate_records"][0]["hazard"] = "earthquake"
+        scenario_mismatch = deepcopy(batch)
+        scenario_mismatch["candidate_records"][0]["scenario"] = "Wrong scenario"
+        self.assertIn("candidate_value_mismatch", validate_table_batch_decision(value_mismatch, decision, BASE_DIR))
+        self.assertIn("candidate_plan_area_mismatch", validate_table_batch_decision(plan_area_mismatch, decision, BASE_DIR))
+        self.assertIn("candidate_hazard_mismatch", validate_table_batch_decision(hazard_mismatch, decision, BASE_DIR))
+        self.assertIn("candidate_scenario_mismatch", validate_table_batch_decision(scenario_mismatch, decision, BASE_DIR))
+
+    def test_context_or_exposure_table_cannot_produce_assessment_records(self):
+        batch = load_batch()
+        decision = valid_batch_decision(batch)
+        context_batch = {**batch, "assessment_eligible": False}
+        population_batch = {**batch, "metric_type": "population_exposure"}
+        epc_batch = {**batch, "metric_type": "EPC_context"}
+        self.assertIn("table_not_assessment_eligible", validate_table_batch_decision(context_batch, decision, BASE_DIR))
+        self.assertIn("context_or_exposure_metric_not_assessment_category", validate_table_batch_decision(population_batch, decision, BASE_DIR))
+        self.assertIn("context_or_exposure_metric_not_assessment_category", validate_table_batch_decision(epc_batch, decision, BASE_DIR))
+
+    def test_approved_batch_derives_visible_verified_record_updates(self):
+        batch = load_batch()
+        decision = valid_batch_decision(batch)
+        updates = derive_record_updates_from_batch(batch, decision, BASE_DIR)
+        self.assertEqual(len(updates), 9)
+        for update in updates:
+            self.assertEqual(update["verification_status"], "visually_verified")
+            self.assertEqual(update["approved_table_batch_id"], batch["batch_id"])
+            self.assertEqual(update["source_column"], "Risk Ranking Score; Hazard Risk Rating")
+            self.assertIn(update["source_row"], PLAN_AREAS)
+
+    def test_corrected_batch_preserves_original_values(self):
+        batch = load_batch()
+        decision = valid_batch_decision(batch)
+        first = batch["candidate_records"][0]
+        decision["decision"] = "approve_with_corrections"
+        decision["corrections"] = {
+            first["record_id"]: {
+                "original_extracted_value": first["raw_value"],
+                "corrected_value": first["raw_value"],
+                "correction_reason": "No numeric change; correction fixture proves preservation.",
+            }
+        }
+        updates = derive_record_updates_from_batch(batch, decision, BASE_DIR)
+        corrected = next(update for update in updates if update["record_id"] == first["record_id"])
+        self.assertEqual(corrected["verification_status"], "corrected_after_visual_review")
+        self.assertIn("original_extracted_value", corrected)
+        self.assertIn("correction_reason", corrected)
+
+    def test_regenerating_table_batches_does_not_erase_review_decisions(self):
+        decision_dir = RESEARCH_DIR / "table_review_decisions"
+        decision_dir.mkdir(exist_ok=True)
+        sentinel = decision_dir / "sentinel_test_decision.json"
+        sentinel.write_text('{"keep": true}\n', encoding="utf-8")
+        self.addCleanup(lambda: sentinel.exists() and sentinel.unlink())
+        subprocess.run(
+            ["venv/bin/python", "scripts/generate_oakland_table_review_batches.py"],
+            cwd=BASE_DIR,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        self.assertEqual(sentinel.read_text(encoding="utf-8"), '{"keep": true}\n')
 
     def test_no_production_feature_flag_is_enabled_for_research(self):
         for path in [BASE_DIR / "app.py", BASE_DIR / "hazard_engine.py", BASE_DIR / "hazard_priority.py"]:
