@@ -126,7 +126,7 @@
   "chapter": "Appendix E, Detailed Risk Ranking Results",
   "claimed_page_mismatch_record_ids": [],
   "contains_low_medium_high_values": true,
-  "created_at": "2026-06-19",
+  "created_at": "2026-06-22",
   "duplicated_rows": [],
   "expected_row_coverage": {
     "coverage_type": "complete_oakland_plan_area_rows_expected_from_visible_source",
@@ -279,7 +279,7 @@
     "selected_row_ids": [
       "adopted_page_0464_landslide_high_and_very_high_landslide_susceptibility|North Oakland Hills|adopted_scenario_0061"
     ],
-    "selection_date": "2026-06-19"
+    "selection_date": "2026-06-22"
   },
   "second_pass_sampling": {
     "batch_evidence_fingerprint": "bbf32ffc79493b0d93f25292faa5ac9fd0318333b1971dbb23e0a67da33711f0",
@@ -287,7 +287,7 @@
     "selected_row_ids": [
       "adopted_page_0464_landslide_high_and_very_high_landslide_susceptibility|North Oakland Hills|adopted_scenario_0061"
     ],
-    "selection_date": "2026-06-19"
+    "selection_date": "2026-06-22"
   },
   "source_document": "City of Oakland 2021-2026 Local Hazard Mitigation Plan",
   "source_page": 464,

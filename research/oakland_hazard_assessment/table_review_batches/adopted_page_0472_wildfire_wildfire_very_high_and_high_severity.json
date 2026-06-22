@@ -126,7 +126,7 @@
   "chapter": "Appendix E, Detailed Risk Ranking Results",
   "claimed_page_mismatch_record_ids": [],
   "contains_low_medium_high_values": true,
-  "created_at": "2026-06-19",
+  "created_at": "2026-06-22",
   "duplicated_rows": [],
   "expected_row_coverage": {
     "coverage_type": "complete_oakland_plan_area_rows_expected_from_visible_source",
@@ -280,7 +280,7 @@
     "selected_row_ids": [
       "adopted_page_0472_wildfire_wildfire_very_high_and_high_severity|North Oakland/Adams Point|adopted_scenario_0071"
     ],
-    "selection_date": "2026-06-19"
+    "selection_date": "2026-06-22"
   },
   "second_pass_sampling": {
     "batch_evidence_fingerprint": "00f00f290e9536706ce0d58fee2282d8ca31dba1d6fb7529654f9d5eda9e5610",
@@ -288,7 +288,7 @@
     "selected_row_ids": [
       "adopted_page_0472_wildfire_wildfire_very_high_and_high_severity|North Oakland/Adams Point|adopted_scenario_0071"
     ],
-    "selection_date": "2026-06-19"
+    "selection_date": "2026-06-22"
   },
   "source_document": "City of Oakland 2021-2026 Local Hazard Mitigation Plan",
   "source_page": 472,

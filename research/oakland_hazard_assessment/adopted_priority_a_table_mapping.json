@@ -1,6 +1,6 @@
 {
   "adopted_priority_a_candidate_count": 81,
-  "generated_at": "2026-06-19",
+  "generated_at": "2026-06-22",
   "mapped_candidate_count": 81,
   "schema_version": 1,
   "tables": [
@@ -41,7 +41,7 @@
         "selected_row_ids": [
           "adopted_page_0472_wildfire_wildfire_very_high_and_high_severity|North Oakland/Adams Point|adopted_scenario_0071"
         ],
-        "selection_date": "2026-06-19"
+        "selection_date": "2026-06-22"
       },
       "unmatched_candidates": []
     },
@@ -82,7 +82,7 @@
         "selected_row_ids": [
           "adopted_page_0464_landslide_high_and_very_high_landslide_susceptibility|North Oakland Hills|adopted_scenario_0061"
         ],
-        "selection_date": "2026-06-19"
+        "selection_date": "2026-06-22"
       },
       "unmatched_candidates": []
     },
@@ -123,7 +123,7 @@
         "selected_row_ids": [
           "adopted_page_0466_tsunami_draft_tsunami_hazard_area|North Oakland Hills|adopted_scenario_0079"
         ],
-        "selection_date": "2026-06-19"
+        "selection_date": "2026-06-22"
       },
       "unmatched_candidates": []
     },
@@ -164,7 +164,7 @@
         "selected_row_ids": [
           "adopted_page_0460_flood_100_year_1_percent_annual_chance_flood|East Oakland Hills|adopted_scenario_0040"
         ],
-        "selection_date": "2026-06-19"
+        "selection_date": "2026-06-22"
       },
       "unmatched_candidates": []
     },
@@ -205,7 +205,7 @@
         "selected_row_ids": [
           "adopted_page_0462_flood_500_year_0_2_percent_annual_chance_flood|North Oakland/Adams Point|adopted_scenario_0053"
         ],
-        "selection_date": "2026-06-19"
+        "selection_date": "2026-06-22"
       },
       "unmatched_candidates": []
     },
@@ -246,7 +246,7 @@
         "selected_row_ids": [
           "adopted_page_0474_earthquake_eq_calaveras_m6_86|East Oakland Hills|adopted_scenario_0004"
         ],
-        "selection_date": "2026-06-19"
+        "selection_date": "2026-06-22"
       },
       "unmatched_candidates": []
     },
@@ -287,7 +287,7 @@
         "selected_row_ids": [
           "adopted_page_0476_earthquake_eq_haywired_m7_05|North Oakland Hills|adopted_scenario_0016"
         ],
-        "selection_date": "2026-06-19"
+        "selection_date": "2026-06-22"
       },
       "unmatched_candidates": []
     },
@@ -328,7 +328,7 @@
         "selected_row_ids": [
           "adopted_page_0478_earthquake_eq_san_andreas_m7_38|Glenview/Redwood Heights|adopted_scenario_0024"
         ],
-        "selection_date": "2026-06-19"
+        "selection_date": "2026-06-22"
       },
       "unmatched_candidates": []
     },
@@ -369,7 +369,7 @@
         "selected_row_ids": [
           "adopted_page_0480_earthquake_eq_100_yr_prob|Coliseum/Airport|adopted_scenario_0029"
         ],
-        "selection_date": "2026-06-19"
+        "selection_date": "2026-06-22"
       },
       "unmatched_candidates": []
     }

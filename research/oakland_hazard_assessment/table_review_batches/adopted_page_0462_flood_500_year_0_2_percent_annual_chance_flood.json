@@ -126,7 +126,7 @@
   "chapter": "Appendix E, Detailed Risk Ranking Results",
   "claimed_page_mismatch_record_ids": [],
   "contains_low_medium_high_values": true,
-  "created_at": "2026-06-19",
+  "created_at": "2026-06-22",
   "duplicated_rows": [],
   "expected_row_coverage": {
     "coverage_type": "complete_oakland_plan_area_rows_expected_from_visible_source",
@@ -278,7 +278,7 @@
     "selected_row_ids": [
       "adopted_page_0462_flood_500_year_0_2_percent_annual_chance_flood|North Oakland/Adams Point|adopted_scenario_0053"
     ],
-    "selection_date": "2026-06-19"
+    "selection_date": "2026-06-22"
   },
   "second_pass_sampling": {
     "batch_evidence_fingerprint": "019f41b9a51ee06e6cc9b6a1fcf05db9afe5281097336c0e6fa50c32b4f01a7c",
@@ -286,7 +286,7 @@
     "selected_row_ids": [
       "adopted_page_0462_flood_500_year_0_2_percent_annual_chance_flood|North Oakland/Adams Point|adopted_scenario_0053"
     ],
-    "selection_date": "2026-06-19"
+    "selection_date": "2026-06-22"
   },
   "source_document": "City of Oakland 2021-2026 Local Hazard Mitigation Plan",
   "source_page": 462,

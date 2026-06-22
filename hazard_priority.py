@@ -188,7 +188,12 @@ def _record_direct_match(record: Dict) -> bool:
 def _record_proximity_match(record: Dict) -> bool:
     if record.get("near") is True:
         return True
-    return record.get("match_type") == "near_fault"
+    if record.get("match_type") == "near_fault":
+        return True
+    return record.get("matched") is True and (
+        record.get("claim_type") == "proximity"
+        or record.get("status") == "proximity_context"
+    )
 
 
 def _record_checked(record: Dict) -> bool:
@@ -381,7 +386,9 @@ def local_exposure_for_hazard(hazard: str, address_gis_results) -> Dict:
     proximity_matches = []
     checked_nonmatches = []
     unavailable = []
-    terms = []
+    direct_match_terms = []
+    proximity_match_terms = []
+    checked_nonmatch_terms = []
     checked_layers = []
     successful_layers = []
     last_checked = []
@@ -397,19 +404,29 @@ def local_exposure_for_hazard(hazard: str, address_gis_results) -> Dict:
             or "Official checked layer"
         )
         checked_layers.append(layer_name)
-        terms.extend(_terms(record, rule.get("terminology_fields", [])))
+        record_terms = _terms(record, rule.get("terminology_fields", []))
         if record.get("checked_at"):
             last_checked.append(str(record["checked_at"]))
-        if _record_direct_match(record):
-            direct_matches.append(layer_name)
-            successful_layers.append(layer_name)
-        elif hazard == "earthquake" and _record_proximity_match(record):
+        if hazard == "earthquake" and _record_proximity_match(record):
             proximity_matches.append(layer_name)
             successful_layers.append(layer_name)
+            proximity_match_terms.extend(record_terms)
+        elif _record_direct_match(record):
+            direct_matches.append(layer_name)
+            successful_layers.append(layer_name)
+            direct_match_terms.extend(record_terms)
+            if hazard in {"flood", "wildfire"}:
+                for nested_key in ("matched_layers", "layers"):
+                    for nested_record in record.get(nested_key) or []:
+                        if isinstance(nested_record, dict):
+                            direct_match_terms.extend(
+                                _terms(nested_record, rule.get("terminology_fields", []))
+                            )
         elif _record_unavailable(record):
             unavailable.append(layer_name)
         elif _record_checked(record):
             checked_nonmatches.append(layer_name)
+            checked_nonmatch_terms.extend(record_terms)
 
     if direct_matches:
         status = rule.get("match_status") or LOCAL_DIRECT
@@ -423,6 +440,15 @@ def local_exposure_for_hazard(hazard: str, address_gis_results) -> Dict:
         status = LOCAL_GENERAL
     else:
         status = LOCAL_NOT_APPLICABLE
+
+    if direct_matches:
+        terms = direct_match_terms
+    elif proximity_matches:
+        terms = proximity_match_terms
+    elif checked_nonmatches:
+        terms = checked_nonmatch_terms
+    else:
+        terms = []
 
     if status == LOCAL_DIRECT:
         basis = "Official polygon intersection found in checked layer."
@@ -647,7 +673,7 @@ def _local_evidence_summary(local: Dict) -> str:
 
 
 def _source_name_for_local(hazard: str, local: Dict) -> str:
-    layers = local.get("official_layers_checked") or local.get("successful_layers") or []
+    layers = local.get("successful_layers") or local.get("official_layers_checked") or []
     if layers:
         return "; ".join(_dedupe(layers[:3]))
     return {
@@ -738,7 +764,12 @@ def _mapped_finding_for_hazard(hazard: str, local: Dict) -> Dict:
             }
 
     if hazard == "earthquake":
-        if _has_any_text(local, "alquist-priolo", "liquefaction zone", "earthquake-induced landslide zone"):
+        if local.get("polygon_intersections") and _has_any_text(
+            local,
+            "alquist-priolo",
+            "liquefaction zone",
+            "earthquake-induced landslide zone",
+        ):
             ap_match = next((term for term in terms if "alquist-priolo" in term.lower()), "")
             summary = ap_match or next((term for term in terms if "mapped" in term.lower()), terms[0] if terms else "Official earthquake map finding.")
             interpretation = "This official mapped finding applies to the address point. Fault proximity, if shown, is separate context and is not the same as an Alquist-Priolo polygon match."

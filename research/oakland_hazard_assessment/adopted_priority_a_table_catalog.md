@@ -1,6 +1,6 @@
 # Adopted Priority A Table Catalog
 
-Generated: 2026-06-19
+Generated: 2026-06-22
 
 Identified adopted Priority A tables: 9
 

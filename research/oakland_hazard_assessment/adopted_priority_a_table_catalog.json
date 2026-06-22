@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-19",
+  "generated_at": "2026-06-22",
   "schema_version": 1,
   "source_document": "City of Oakland 2021-2026 Local Hazard Mitigation Plan",
   "source_status": "adopted",
@@ -52,7 +52,7 @@
         "selected_row_ids": [
           "adopted_page_0472_wildfire_wildfire_very_high_and_high_severity|North Oakland/Adams Point|adopted_scenario_0071"
         ],
-        "selection_date": "2026-06-19"
+        "selection_date": "2026-06-22"
       },
       "source_page": 472,
       "suggested_review_decision": "likely_valid_assessment_table",
@@ -107,7 +107,7 @@
         "selected_row_ids": [
           "adopted_page_0464_landslide_high_and_very_high_landslide_susceptibility|North Oakland Hills|adopted_scenario_0061"
         ],
-        "selection_date": "2026-06-19"
+        "selection_date": "2026-06-22"
       },
       "source_page": 464,
       "suggested_review_decision": "likely_valid_assessment_table",
@@ -162,7 +162,7 @@
         "selected_row_ids": [
           "adopted_page_0466_tsunami_draft_tsunami_hazard_area|North Oakland Hills|adopted_scenario_0079"
         ],
-        "selection_date": "2026-06-19"
+        "selection_date": "2026-06-22"
       },
       "source_page": 466,
       "suggested_review_decision": "likely_valid_assessment_table",
@@ -217,7 +217,7 @@
         "selected_row_ids": [
           "adopted_page_0460_flood_100_year_1_percent_annual_chance_flood|East Oakland Hills|adopted_scenario_0040"
         ],
-        "selection_date": "2026-06-19"
+        "selection_date": "2026-06-22"
       },
       "source_page": 460,
       "suggested_review_decision": "likely_valid_assessment_table",
@@ -272,7 +272,7 @@
         "selected_row_ids": [
           "adopted_page_0462_flood_500_year_0_2_percent_annual_chance_flood|North Oakland/Adams Point|adopted_scenario_0053"
         ],
-        "selection_date": "2026-06-19"
+        "selection_date": "2026-06-22"
       },
       "source_page": 462,
       "suggested_review_decision": "likely_valid_assessment_table",
@@ -327,7 +327,7 @@
         "selected_row_ids": [
           "adopted_page_0474_earthquake_eq_calaveras_m6_86|East Oakland Hills|adopted_scenario_0004"
         ],
-        "selection_date": "2026-06-19"
+        "selection_date": "2026-06-22"
       },
       "source_page": 474,
       "suggested_review_decision": "likely_valid_assessment_table",
@@ -382,7 +382,7 @@
         "selected_row_ids": [
           "adopted_page_0476_earthquake_eq_haywired_m7_05|North Oakland Hills|adopted_scenario_0016"
         ],
-        "selection_date": "2026-06-19"
+        "selection_date": "2026-06-22"
       },
       "source_page": 476,
       "suggested_review_decision": "likely_valid_assessment_table",
@@ -437,7 +437,7 @@
         "selected_row_ids": [
           "adopted_page_0478_earthquake_eq_san_andreas_m7_38|Glenview/Redwood Heights|adopted_scenario_0024"
         ],
-        "selection_date": "2026-06-19"
+        "selection_date": "2026-06-22"
       },
       "source_page": 478,
       "suggested_review_decision": "likely_valid_assessment_table",
@@ -492,7 +492,7 @@
         "selected_row_ids": [
           "adopted_page_0480_earthquake_eq_100_yr_prob|Coliseum/Airport|adopted_scenario_0029"
         ],
-        "selection_date": "2026-06-19"
+        "selection_date": "2026-06-22"
       },
       "source_page": 480,
       "suggested_review_decision": "likely_valid_assessment_table",
