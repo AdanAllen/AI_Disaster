@@ -121,6 +121,8 @@ def _iter_gis_records(address_gis_results) -> List[Dict]:
     for item in candidates or []:
         if not isinstance(item, dict):
             continue
+        if item.get("scope") == "zip_estimate" or item.get("basis") == "zip_csv_heuristic":
+            continue
         parent = item.get("slug") or item.get("hazard_id") or item.get("hazard") or item.get("hazard_type")
         records.append({**item, "_parent_hazard": parent})
         for key in ("additional_geospatial_evidence", "official_mapped_evidence", "normalized_mapped_evidence"):

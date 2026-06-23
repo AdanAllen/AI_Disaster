@@ -21,16 +21,17 @@ class PublicTerminologyTests(unittest.TestCase):
         self.assertEqual(display_data_status("not_checked"), "Not checked")
         self.assertEqual(display_data_status("fallback_used"), "Regional preparedness priority")
 
-    def test_risk_summary_separates_evidence_from_priority(self):
+    def test_zip_risk_summary_separates_fallback_from_mapped_evidence(self):
         set_test_resident_state(self.client, {
             "zip_code": "94619",
             "location_mode": "zip",
         })
         html = self.client.get("/risk_summary").get_data(as_text=True)
-        self.assertIn("Official mapped findings", html)
-        self.assertIn("Important official mapped findings", html)
-        self.assertIn("Map information unavailable", html)
-        self.assertIn("hazard-priority notes from official mapped information", html)
+        self.assertIn("Official mapped findings are unavailable for ZIP fallback", html)
+        self.assertIn("broad ZIP-level preparedness priorities", html)
+        self.assertIn("No address-level official map checks were completed", html)
+        self.assertNotIn("Important official mapped findings", html)
+        self.assertNotIn("hazard-priority notes from official mapped information", html)
         self.assertNotIn("Unknown hazard priority", html)
 
     def test_summary_copy_is_not_line_clamped_or_absolutely_positioned(self):

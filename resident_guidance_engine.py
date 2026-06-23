@@ -6,6 +6,7 @@ from typing import Dict, List, Optional
 
 from action_library_service import select_actions
 from hazard_priority import rank_hazards_for_risk_summary
+from risk_summary_view_model import build_canonical_risk_summary
 from pydantic_models import LHMPLocationFact
 
 
@@ -653,6 +654,11 @@ def build_resident_plan(location_context: Dict, structured_hazards: List[Dict], 
         },
         "hazards": hazard_plans,
         "hazard_priorities": hazard_priorities,
+        "canonical_summary": build_canonical_risk_summary(
+            location_context,
+            structured_hazards,
+            hazard_priorities,
+        ),
         "household_context": household_context,
         "household_priorities": household_actions,
         "what_to_do_now": deduped_now[:7],

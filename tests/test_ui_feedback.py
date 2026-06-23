@@ -25,12 +25,17 @@ class UIFeedbackTests(unittest.TestCase):
 
     def test_summary_has_scan_first_sections_and_plain_language_help(self):
         set_test_resident_state(self.client, {
-            "zip_code": "94619",
-            "location_mode": "zip",
+            "zip_code": "94704",
+            "lat": 37.8696,
+            "lon": -122.2727,
+            "address": "Berkeley City Hall, Berkeley, CA 94704",
+            "city": "Berkeley",
+            "county": "Alameda County",
+            "location_mode": "address",
         })
         html = self.client.get("/risk_summary").get_data(as_text=True)
 
-        self.assertIn("Key findings for this location", html)
+        self.assertIn("Hazard overview", html)
         self.assertIn("Important official mapped findings", html)
         self.assertIn("Other hazards checked", html)
         self.assertIn("Map information unavailable", html)
