@@ -61,7 +61,7 @@
                     {% if is_zip_fallback %}
                     <p>ZIP fallback values are broad-area ranking context only. They do not show whether an address intersects an official hazard map.</p>
                     {% elif city_lower == "oakland" %}
-                    <p>Official Oakland plan-area hazard ratings are currently being verified. The findings below are limited to official mapped information available for this address.</p>
+                    <p>Oakland sub-area statistics come from the Draft 2026–2031 LHMP. They are planning context, not property-risk ratings, and remain separate from citywide priority and address map findings.</p>
                     {% if first_priority and first_priority.plan_area and first_priority.plan_area != "Unknown" %}
                     <p><strong>Plan area:</strong> {{ first_priority.plan_area }}{% if first_priority.boundary_warning %} <span>{{ first_priority.boundary_warning }}</span>{% endif %}</p>
                     {% endif %}
@@ -107,7 +107,7 @@
                             <h5>Address-specific notes</h5>
                             <p>{{ plan.address_specific_notes }}</p>
                             {% if city_lower == "oakland" and plan.plan_area and plan.plan_area != "Unknown" %}
-                            <p><strong>Plan-area context:</strong> {{ plan.plan_area }}. Official Oakland plan-area hazard ratings are still being verified and are not used here.{% if plan.boundary_warning %} {{ plan.boundary_warning }}{% endif %}</p>
+                            <p><strong>Sub-area:</strong> {{ plan.plan_area }}. Draft LHMP sub-area statistics are shown separately in the hazard overview and do not rate this property.{% if plan.boundary_warning %} {{ plan.boundary_warning }}{% endif %}</p>
                             {% endif %}
                         </section>
                         <section>
@@ -174,6 +174,7 @@
                             <tr>
                                 <th scope="col">Hazard</th>
                                 <th scope="col">Regional / city context</th>
+                                <th scope="col">Oakland sub-area context</th>
                                 <th scope="col">What we found at your address</th>
                                 <th scope="col">Building &amp; household vulnerability</th>
                                 <th scope="col">Why this matters / what to do</th>
@@ -196,6 +197,18 @@
                                     <small>{{ hazard.regional_context.explanation }}</small>
                                     <em class="sr-review-status">{{ hazard.regional_context.source_status | replace('_', ' ') | title }}</em>
                                 </td>
+                                <td data-label="Oakland sub-area context">
+                                    {% if hazard.subarea_context.status == "available" %}
+                                    <strong class="sr-scope-label">{{ hazard.subarea_context.subarea_name }}</strong>
+                                    {% for finding in hazard.subarea_context.findings[:1] %}<span>{{ finding.text }}</span>{% endfor %}
+                                    {% if hazard.subarea_context.findings %}<small>{{ hazard.subarea_context.findings[0].reference }}</small>{% endif %}
+                                    <small>Draft Oakland 2026–2031 LHMP sub-area planning context; not a property-risk rating.</small>
+                                    <em class="sr-review-status">Draft · reviewed source claim</em>
+                                    {% else %}
+                                    <strong class="sr-scope-label">Not available</strong>
+                                    <small>{{ hazard.subarea_context.summary }}</small>
+                                    {% endif %}
+                                </td>
                                 <td data-label="What we found at your address">
                                     <strong class="sr-address-outcome is-{{ hazard.address_evidence.outcome }}">{{ hazard.address_evidence.label }}</strong>
                                     {% for finding in hazard.address_evidence.findings[:2] %}<span>{{ finding }}</span>{% endfor %}
@@ -210,9 +223,9 @@
                                     {% set immediate_actions = hazard.actions.before %}
                                     {% for action in immediate_actions[:1] %}<span>{{ action.instruction }}</span>{% endfor %}
                                     <a class="sr-risk-detail-link" href="{{ hazard.detail_url }}">View evidence and actions <i class="fas fa-chevron-right" aria-hidden="true"></i></a>
-                                    {% if hazard.address_evidence.claims or hazard.regional_context.claims %}
+                                    {% if hazard.address_evidence.claims or hazard.subarea_context.claims or hazard.regional_context.claims %}
                                     <details class="sr-claim-details"><summary>Sources for these claims</summary>
-                                        {% for claim in hazard.address_evidence.claims + hazard.regional_context.claims %}
+                                        {% for claim in hazard.address_evidence.claims + hazard.subarea_context.claims + hazard.regional_context.claims %}
                                         <p><strong>{{ claim.claim }}</strong><br><small>{{ claim.geographic_scope }} · {{ claim.review_status | replace('_', ' ') | title }}{% if claim.dataset_or_document %} · {{ claim.dataset_or_document }}{% endif %}{% if claim.reference %} · {{ claim.reference }}{% endif %}</small>{% if claim.url %}<br><a href="{{ claim.url }}" target="_blank" rel="noopener noreferrer">Official source</a>{% endif %}</p>
                                         {% endfor %}
                                     </details>
@@ -220,11 +233,35 @@
                                 </td>
                             </tr>
                         {% else %}
-                            <tr><td colspan="5">No normalized hazard evidence is available for this location.</td></tr>
+                            <tr><td colspan="6">No normalized hazard evidence is available for this location.</td></tr>
                         {% endfor %}
                         </tbody>
                     </table>
                 </div>
+                {% if city_lower == "oakland" %}
+                <details class="sr-subarea-evidence-details">
+                    <summary>Oakland sub-area evidence details</summary>
+                    <div class="sr-subarea-evidence-grid">
+                    {% for hazard in summary_hazards %}
+                        {% if hazard.subarea_context.status == "available" %}
+                        <section>
+                            <h3>{{ hazard.hazard_name }} · {{ hazard.subarea_context.subarea_name }}</h3>
+                            <p><strong>Draft plan context—not a property rating.</strong></p>
+                            {% for finding in hazard.subarea_context.findings %}
+                            <p>{{ finding.text }}</p>
+                            {% endfor %}
+                            {% for claim in hazard.subarea_context.claims %}
+                            <p><small>{{ claim.dataset_or_document }} · {{ claim.reference }} · {{ claim.review_status | replace('_', ' ') | title }}</small>{% if claim.url %}<br><a href="{{ claim.url }}" target="_blank" rel="noopener noreferrer">Draft Oakland LHMP source</a>{% endif %}</p>
+                            {% endfor %}
+                            <ul>{% for limitation in hazard.subarea_context.limitations %}<li>{{ limitation }}</li>{% endfor %}</ul>
+                        </section>
+                        {% endif %}
+                    {% else %}
+                        <p>No reviewed Oakland sub-area evidence is available.</p>
+                    {% endfor %}
+                    </div>
+                </details>
+                {% endif %}
                 <details class="sr-address-evidence-details">
                     <summary>Address-level evidence details</summary>
                     <section class="sr-mapped-finding-section">

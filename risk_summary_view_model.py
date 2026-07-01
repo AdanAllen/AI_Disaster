@@ -7,6 +7,8 @@ attention, action, and claim-citation scopes.
 
 from typing import Dict, Iterable, List, Optional
 
+from hazard_priority import reviewed_subarea_context_for_hazard
+
 
 ADDRESS_OUTCOMES = {
     "mapped_match",
@@ -123,6 +125,59 @@ def _regional_context(hazard: Dict, priority: Dict, location_context: Dict) -> D
         "limitations": _dedupe((priority.get("limitations") or []) + [
             "Jurisdiction categories describe planning context and do not determine risk for an individual address."
         ]),
+    }
+
+
+def _subarea_context(hazard: Dict, priority: Dict, location_context: Dict, matched_area: Dict) -> Dict:
+    jurisdiction = location_context.get("city") or ""
+    subarea_name = matched_area.get("sub_area") or ""
+    if jurisdiction.strip().lower() != "oakland" or not subarea_name or subarea_name == "Unknown":
+        return {
+            "status": "not_applicable" if jurisdiction.strip().lower() != "oakland" else "unavailable",
+            "subarea_name": "",
+            "source_status": "",
+            "summary": "Oakland sub-area context does not apply to this location." if jurisdiction.strip().lower() != "oakland" else "No reliable Oakland sub-area match is available.",
+            "findings": [],
+            "claims": [],
+            "limitations": [],
+        }
+
+    context = reviewed_subarea_context_for_hazard(jurisdiction, subarea_name, _slug(hazard))
+    records = context.get("records") or []
+    findings = []
+    claims = []
+    for record in records:
+        text = record.get("display_text") or record.get("source_claim") or ""
+        if not text:
+            continue
+        findings.append({
+            "text": text,
+            "metric_type": record.get("metric_type") or "",
+            "scenario": record.get("scenario") or "",
+            "unit": record.get("unit") or "",
+            "draft": record.get("document_status") == "draft",
+            "reference": f"{record.get('table')}; PDF page {record.get('page')}",
+        })
+        claims.append({
+            "claim": text,
+            "agency": "City of Oakland",
+            "dataset_or_document": record.get("source_document") or "",
+            "reference": f"{record.get('table')}; PDF page {record.get('page')}",
+            "geographic_scope": f"Oakland sub-area: {subarea_name}",
+            "review_status": record.get("review_status") or "unknown",
+            "source_id": "oakland_draft_lhmp_subarea",
+            "url": "https://www.oaklandca.gov/topics/local-hazard-mitigation-plan",
+        })
+    status = "available" if findings else "unavailable"
+    return {
+        "status": status,
+        "subarea_name": subarea_name,
+        "source_status": "draft" if findings else "",
+        "boundary_warning": matched_area.get("boundary_warning") or "",
+        "summary": context.get("summary") or "No reviewed sub-area metric is available for this hazard.",
+        "findings": findings,
+        "claims": claims,
+        "limitations": context.get("limitations") or [],
     }
 
 
@@ -290,11 +345,13 @@ def _actions(hazard: Dict) -> Dict:
     return {key: value[:3] for key, value in groups.items()}
 
 
-def _attention(hazard: Dict, regional: Dict, address: Dict) -> Dict:
+def _attention(hazard: Dict, regional: Dict, subarea: Dict, address: Dict) -> Dict:
     if address["outcome"] == "mapped_match":
         category, label = "address_finding", "Address finding"
     elif address["outcome"] == "proximity_context":
         category, label = "address_finding", "Nearby mapped feature"
+    elif subarea["status"] == "available":
+        category, label = "subarea_context", "Sub-area context"
     elif regional["status"] == "available":
         category, label = "regional_priority", "Regional priority"
     elif address["outcome"] in {"data_unavailable", "not_checked"}:
@@ -303,6 +360,7 @@ def _attention(hazard: Dict, regional: Dict, address: Dict) -> Dict:
         category, label = "preparedness_context", "Preparedness context"
     based_on = _dedupe(
         [claim.get("claim") for claim in address["claims"]]
+        + [claim.get("claim") for claim in subarea["claims"]]
         + [claim.get("claim") for claim in regional["claims"]]
     )
     return {
@@ -315,6 +373,14 @@ def _attention(hazard: Dict, regional: Dict, address: Dict) -> Dict:
 
 def build_canonical_risk_summary(location_context: Dict, hazards: List[Dict], hazard_priorities: List[Dict]) -> Dict:
     priorities = {item.get("slug"): item for item in hazard_priorities or []}
+    matched_area = next(
+        (
+            item.get("sub_area_context") for item in hazard_priorities or []
+            if isinstance(item.get("sub_area_context"), dict)
+            and item["sub_area_context"].get("sub_area") not in (None, "", "Unknown")
+        ),
+        {},
+    )
     normalized = []
     for raw_hazard in hazards or []:
         hazard = {**(raw_hazard.get("structured_result") or {}), **raw_hazard}
@@ -323,6 +389,7 @@ def build_canonical_risk_summary(location_context: Dict, hazards: List[Dict], ha
             continue
         priority = priorities.get(hazard_id) or priorities.get(hazard_id.replace("-seiche", "")) or {}
         regional = _regional_context(hazard, priority, location_context)
+        subarea = _subarea_context(hazard, priority, location_context, matched_area)
         address = _address_evidence(hazard, location_context)
         vulnerability = {
             "status": "unknown",
@@ -330,13 +397,14 @@ def build_canonical_risk_summary(location_context: Dict, hazards: List[Dict], ha
             "explanation": "StayReady has not assessed building construction, retrofit status, insurance, or household-specific vulnerability.",
         }
         actions = _actions(hazard)
-        attention = _attention(hazard, regional, address)
+        attention = _attention(hazard, regional, subarea, address)
         normalized.append({
             "hazard_id": hazard_id,
             "hazard_name": hazard.get("name") or hazard.get("label") or hazard_id.replace("-", " ").title(),
             "descriptor": DESCRIPTORS.get(hazard_id, "Preparedness and response context"),
             "detail_url": f"/hazards/{hazard_id}",
             "regional_context": regional,
+            "subarea_context": subarea,
             "address_evidence": address,
             "vulnerability": vulnerability,
             "attention": attention,

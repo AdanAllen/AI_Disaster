@@ -633,11 +633,18 @@ def _community_context_for_hazard(jurisdiction: str, sub_area: str, hazard: str)
             "limitations": ["Sub-area EPC and exposure tables are community context only and are not used to assign a personal hazard priority."],
         }
 
+    review_gate = load_priority_data().get("sub_area_evidence", {}).get("review_gate") or {}
+    production_statuses = set(review_gate.get("production_statuses") or ["reviewed"])
+    required_fields = review_gate.get("required_fields") or []
+    hazard_key = _canonical_hazard(hazard)
     records = [
         record for record in load_priority_data().get("sub_area_evidence", {}).get("records", [])
         if _slug(record.get("jurisdiction")) == _slug(jurisdiction)
-        and _canonical_hazard(record.get("hazard")) == hazard
-        and _normalize_sub_area_name(record.get("sub_area")) == _normalize_sub_area_name(sub_area)
+        and _canonical_hazard(record.get("hazard_id") or record.get("hazard")) == hazard_key
+        and _normalize_sub_area_name(record.get("subarea_name") or record.get("sub_area")) == _normalize_sub_area_name(sub_area)
+        and record.get("review_status") in production_statuses
+        and record.get("permitted_use") == "subarea_context_only"
+        and all(record.get(field) not in (None, "", []) for field in required_fields)
     ]
     if not records:
         return {
@@ -646,18 +653,21 @@ def _community_context_for_hazard(jurisdiction: str, sub_area: str, hazard: str)
             "records": [],
             "limitations": ["Missing sub-area table data is not replaced with an inferred value."],
         }
-    summaries = []
-    for record in records[:3]:
-        metric = record.get("metric_name") or "Sub-area metric"
-        value = record.get("value")
-        unit = record.get("unit") or ""
-        summaries.append(f"{metric}: {value} {unit}".strip())
+    summaries = [record.get("display_text") or record.get("source_claim") for record in records[:2]]
     return {
         "status": "Available",
-        "summary": "; ".join(summaries) + ". These values are community context only and do not change Probability, Impact, or local mapped concern.",
+        "summary": " ".join(_dedupe(summaries)) + " These draft-plan values are community context only and do not change citywide priority or address-level mapped evidence.",
         "records": records,
-        "limitations": _dedupe([record.get("limitations") for record in records] + ["EPC exposure values describe community vulnerability context only. Zero EPC exposure is not a zero-hazard finding."]),
+        "limitations": _dedupe(
+            [item for record in records for item in (record.get("limitations") or [])]
+            + ["A zero sub-area value is not a zero-hazard or property-safety finding."]
+        ),
     }
+
+
+def reviewed_subarea_context_for_hazard(jurisdiction: str, sub_area: str, hazard: str) -> Dict:
+    """Return only review-gated sub-area context; never derive a rating."""
+    return _community_context_for_hazard(jurisdiction, sub_area, _canonical_hazard(hazard))
 
 
 def _official_zone_category(local: Dict) -> str:

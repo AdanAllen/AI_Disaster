@@ -1,7 +1,9 @@
 import re
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
+import hazard_priority
 from risk_summary_view_model import build_canonical_risk_summary
 
 
@@ -70,6 +72,12 @@ def oakland_priority():
             "document_status": "draft",
         }],
         "limitations": ["Draft source."],
+        "sub_area_context": {
+            "sub_area": "Downtown",
+            "sub_area_status": "Matched official Oakland plan-area polygon",
+            "sub_area_match_status": "Matched official Oakland plan-area polygon",
+            "boundary_warning": "",
+        },
     }
 
 
@@ -92,6 +100,46 @@ class CanonicalRiskSummaryTests(unittest.TestCase):
         self.assertIn("citywide", item["regional_context"]["explanation"])
         self.assertEqual(item["address_evidence"]["outcome"], "checked_no_match")
         self.assertNotIn("High", item["address_evidence"]["label"])
+
+    def test_oakland_subarea_context_is_separate_reviewed_and_cited(self):
+        record = evidence(matched=False, dataset="CGS Liquefaction Zones", label="No mapped match found.")
+        item = build_canonical_risk_summary(location("Oakland"), [hazard(records=[record])], [oakland_priority()])["hazards"][0]
+        self.assertEqual(item["subarea_context"]["status"], "available")
+        self.assertEqual(item["subarea_context"]["subarea_name"], "Downtown")
+        self.assertEqual(item["subarea_context"]["source_status"], "draft")
+        self.assertIn("Hayward M7.05 scenario", item["subarea_context"]["findings"][0]["text"])
+        self.assertIn("Table 9-6", item["subarea_context"]["findings"][0]["reference"])
+        self.assertIn("Table 9-6", item["subarea_context"]["claims"][0]["reference"])
+        self.assertIn("PDF page 186", item["subarea_context"]["claims"][0]["reference"])
+        self.assertEqual(item["regional_context"]["priority_label"], "High")
+        self.assertEqual(item["address_evidence"]["outcome"], "checked_no_match")
+        self.assertNotRegex(str(item["subarea_context"]), re.compile(r"property.{0,12}(High|Medium|Low)", re.I))
+
+    def test_positive_address_finding_outranks_subarea_attention(self):
+        record = evidence(matched=True, dataset="CGS Liquefaction Zones", label="Inside a CGS mapped liquefaction zone.")
+        item = build_canonical_risk_summary(
+            location("Oakland"),
+            [hazard(exposure="mapped_match", data_status="checked", records=[record])],
+            [oakland_priority()],
+        )["hazards"][0]
+        self.assertEqual(item["attention"]["label"], "Address finding")
+        self.assertEqual(item["subarea_context"]["status"], "available")
+
+    def test_unreviewed_subarea_value_is_withheld(self):
+        source = hazard_priority.load_priority_data()
+        fake = {**source, "sub_area_evidence": {
+            "review_gate": {"production_statuses": ["reviewed"], "required_fields": ["reviewer"]},
+            "records": [{
+                "jurisdiction": "Oakland", "subarea_name": "Downtown", "hazard_id": "earthquake",
+                "review_status": "candidate", "reviewer": "", "permitted_use": "subarea_context_only",
+                "display_text": "Invented candidate value.",
+            }],
+        }}
+        hazard_priority._community_context_for_hazard.__globals__["load_priority_data"].cache_clear()
+        with patch("hazard_priority.load_priority_data", return_value=fake):
+            result = hazard_priority.reviewed_subarea_context_for_hazard("Oakland", "Downtown", "earthquake")
+        self.assertEqual(result["status"], "Unavailable")
+        self.assertNotIn("Invented", str(result))
 
     def test_positive_flood_preserves_official_category_without_overall_score(self):
         record = evidence(matched=True, dataset="FEMA NFHL", label="Special Flood Hazard Area, Zone AE")
@@ -135,17 +183,19 @@ class CanonicalRiskSummaryTests(unittest.TestCase):
         self.assertEqual(item["address_evidence"]["findings"], [])
         self.assertEqual(item["address_evidence"]["claims"], [])
 
-    def test_template_and_css_define_five_columns_and_mobile_cards(self):
+    def test_template_and_css_define_separate_subarea_column_and_mobile_cards(self):
         template = (BASE_DIR / "templates" / "_risk_summary_reference.html").read_text(encoding="utf-8")
         css = (BASE_DIR / "static" / "css" / "stayready.css").read_text(encoding="utf-8")
         for label in (
             "Regional / city context",
+            "Oakland sub-area context",
             "What we found at your address",
             "Building &amp; household vulnerability",
             "Why this matters / what to do",
         ):
             self.assertIn(label, template)
         self.assertIn("hazard.vulnerability.label", template)
+        self.assertIn("hazard.subarea_context", template)
         self.assertIn("hazard.detail_url", template)
         self.assertIn(".sr-risk-table thead { display: none; }", css)
         self.assertIn('content: attr(data-label)', css)

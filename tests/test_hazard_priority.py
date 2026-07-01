@@ -397,6 +397,23 @@ class HazardPriorityRankingTests(unittest.TestCase):
         self.assertEqual(sub_areas, {"East Oakland Hills"})
         self.assertEqual(ranked[0]["sub_area_context"]["sub_area_match_status"], "Matched official Oakland plan-area polygon")
 
+    def test_shared_boundary_coordinate_fails_closed_as_ambiguous(self):
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "hazard_priority", "oakland_plan_areas.geojson")
+        with open(path, "r", encoding="utf-8") as source:
+            features = json.load(source)["features"]
+        configured = [
+            shape(item["geometry"]) for item in features
+            if item["properties"].get("OAKLAND_PE") in {"Downtown", "West Oakland"}
+        ]
+        shared = configured[0].boundary.intersection(configured[1].boundary)
+        self.assertFalse(shared.is_empty)
+        point = shared.representative_point()
+        earthquake = next(item for item in rank_hazards_for_risk_summary(
+            "Oakland", [], coordinates={"lat": point.y, "lon": point.x}
+        ) if item["slug"] == "earthquake")
+        self.assertEqual(earthquake["sub_area_context"]["sub_area"], "Unknown")
+        self.assertEqual(earthquake["sub_area_context"]["sub_area_match_status"], "Ambiguous official polygon match")
+
     def test_outside_official_polygons_keeps_sub_area_unknown(self):
         earthquake = next(item for item in rank_hazards_for_risk_summary(
             "Oakland",

@@ -175,7 +175,8 @@ class RiskSummaryMappedFindingsTests(unittest.TestCase):
 
     def test_summary_notices_and_plan_area_are_jurisdiction_scoped(self):
         oakland = _render("Oakland")
-        self.assertIn("Official Oakland plan-area hazard ratings are currently being verified.", oakland)
+        self.assertIn("Oakland sub-area statistics come from the Draft 2026–2031 LHMP.", oakland)
+        self.assertIn("They are planning context, not property-risk ratings", oakland)
         self.assertIn("Plan area:</strong> Glenview/Redwood Heights", oakland)
         self.assertIn("This location may be near a plan-area boundary.", oakland)
 

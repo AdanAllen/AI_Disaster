@@ -3675,11 +3675,12 @@ body.sr-is-preparing-summary {
     text-transform: uppercase;
     letter-spacing: 0.025em;
 }
-.sr-risk-table thead th:nth-child(1) { width: 18%; }
-.sr-risk-table thead th:nth-child(2) { width: 19%; }
-.sr-risk-table thead th:nth-child(3) { width: 21%; }
-.sr-risk-table thead th:nth-child(4) { width: 19%; }
-.sr-risk-table thead th:nth-child(5) { width: 23%; border-right: 0; }
+.sr-risk-table thead th:nth-child(1) { width: 15%; }
+.sr-risk-table thead th:nth-child(2) { width: 16%; }
+.sr-risk-table thead th:nth-child(3) { width: 18%; }
+.sr-risk-table thead th:nth-child(4) { width: 18%; }
+.sr-risk-table thead th:nth-child(5) { width: 15%; }
+.sr-risk-table thead th:nth-child(6) { width: 18%; border-right: 0; }
 .sr-risk-table tbody th,
 .sr-risk-table tbody td {
     min-width: 0;
@@ -3703,6 +3704,36 @@ body.sr-is-preparing-summary {
     margin-top: 0.3rem;
     color: var(--ref-muted);
 }
+
+.sr-subarea-evidence-details {
+    margin-top: 1rem;
+    border: 1px solid var(--sr-border, #d9e2ec);
+    border-radius: 0.75rem;
+    background: #fff;
+}
+
+.sr-subarea-evidence-details > summary {
+    padding: 0.9rem 1rem;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.sr-subarea-evidence-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+    padding: 0 1rem 1rem;
+}
+
+.sr-subarea-evidence-grid section {
+    min-width: 0;
+    padding: 0.9rem;
+    border: 1px solid var(--sr-border, #d9e2ec);
+    border-radius: 0.65rem;
+    background: #f8fafc;
+}
+
+.sr-subarea-evidence-grid h3 { font-size: 1rem; }
 .sr-risk-hazard {
     display: grid;
     grid-template-columns: 42px minmax(0, 1fr);
@@ -4149,6 +4180,8 @@ body.sr-is-preparing-summary {
         letter-spacing: 0.035em;
         text-transform: uppercase;
     }
+
+    .sr-subarea-evidence-grid { grid-template-columns: 1fr; }
     .sr-map-layer-groups { grid-template-columns: repeat(3, 1fr); gap: 1rem 0; }
     .sr-map-layer-groups > div:nth-child(3n) { border-right: 0; }
     .sr-map-stage { grid-template-columns: 1fr; }
