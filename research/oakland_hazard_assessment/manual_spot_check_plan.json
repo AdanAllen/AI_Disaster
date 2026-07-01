@@ -1,0 +1,15 @@
+{
+  "generated_at": "2026-06-19",
+  "required_sample": [
+    "at_least_three_verified_records_per_hazard",
+    "every_scenario_type",
+    "every_plan_area",
+    "adopted_and_draft_examples",
+    "corrected_records",
+    "rejected_records",
+    "context_only_records"
+  ],
+  "schema_version": 1,
+  "spot_checked_records": [],
+  "status": "pending_human_review"
+}

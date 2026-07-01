@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "fixtures": [
+    {
+      "case_id": "row_shifted_by_one_line",
+      "expected_validation": "reject",
+      "reason": "The source row does not match the claimed Oakland plan area."
+    },
+    {
+      "case_id": "wrong_table_number",
+      "expected_validation": "reject",
+      "reason": "The claimed table or figure is not the rendered source table."
+    },
+    {
+      "case_id": "wrong_pdf_page",
+      "expected_validation": "reject",
+      "reason": "The page image and source page do not resolve to the same source catalog entry."
+    },
+    {
+      "case_id": "adopted_value_labeled_draft",
+      "expected_validation": "reject",
+      "reason": "Adopted and draft source statuses cannot be swapped."
+    },
+    {
+      "case_id": "draft_value_labeled_adopted",
+      "expected_validation": "reject",
+      "reason": "Draft values cannot enter the adopted matrix."
+    },
+    {
+      "case_id": "epc_percentage_mislabeled_probability",
+      "expected_validation": "reject",
+      "reason": "EPC context cannot become probability."
+    },
+    {
+      "case_id": "exposed_population_mislabeled_hazard_score",
+      "expected_validation": "reject",
+      "reason": "Population exposure cannot become a hazard score."
+    },
+    {
+      "case_id": "earthquake_scenario_attached_to_flood",
+      "expected_validation": "reject",
+      "reason": "One hazard cannot consume another hazard's scenario."
+    },
+    {
+      "case_id": "west_oakland_record_attached_to_downtown",
+      "expected_validation": "normalize_or_reject",
+      "reason": "One plan area's row cannot feed another plan area's matrix cell."
+    },
+    {
+      "case_id": "high_category_from_wrong_column",
+      "expected_validation": "needs_more_review",
+      "reason": "A category from an adjacent column must be corrected by explicit review action."
+    },
+    {
+      "case_id": "correct_page_wrong_table",
+      "expected_validation": "reject",
+      "reason": "A correct PDF page cannot verify a candidate if the table identifier is wrong."
+    },
+    {
+      "case_id": "correct_table_wrong_row",
+      "expected_validation": "reject",
+      "reason": "A visible table cannot verify a value attached to the wrong plan-area row."
+    },
+    {
+      "case_id": "correct_row_wrong_scenario_column",
+      "expected_validation": "reject",
+      "reason": "A value from one scenario cannot verify another scenario."
+    },
+    {
+      "case_id": "table_continuation_omitted",
+      "expected_validation": "reject",
+      "reason": "A batch missing a required continuation page cannot be approved."
+    },
+    {
+      "case_id": "table_title_cropped_out",
+      "expected_validation": "reject",
+      "reason": "A cropped source image without the table title cannot support verification."
+    },
+    {
+      "case_id": "footnote_changes_category_meaning",
+      "expected_validation": "needs_more_review",
+      "reason": "A footnote that changes metric meaning requires semantic review before value approval."
+    },
+    {
+      "case_id": "plan_area_alias_wrong_area",
+      "expected_validation": "normalize_or_reject",
+      "reason": "Plan-area aliases must map explicitly to the official area or be rejected."
+    },
+    {
+      "case_id": "high_value_from_neighboring_row",
+      "expected_validation": "reject",
+      "reason": "A category copied from a neighboring plan-area row is a row mismatch."
+    },
+    {
+      "case_id": "final_rating_confused_with_intermediate_score",
+      "expected_validation": "reject",
+      "reason": "Risk Ranking Score and Hazard Risk Rating must remain distinct columns."
+    },
+    {
+      "case_id": "adopted_page_confused_with_draft_page",
+      "expected_validation": "reject",
+      "reason": "Adopted table batches cannot use draft source pages or draft page images."
+    }
+  ]
+}

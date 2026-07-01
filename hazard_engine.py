@@ -1416,6 +1416,10 @@ def _earthquake_address_result(hazard: Dict, location_result, fault_check: Dict,
 
 
 def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dict, user_context: Optional[Dict] = None) -> List[HazardResult]:
+    # A geocoded street address must never inherit broad legacy ZIP ranking.
+    # Keep the snapshot only for the explicit ZIP-only result path.
+    if location_result.formatted_address and location_result.lat is not None and location_result.lon is not None:
+        zip_snapshot = {}
     results = []
     flood_check = _not_checked_result()
     wildfire_check = _not_checked_result()
@@ -1443,6 +1447,8 @@ def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dic
             result = _wildfire_address_result(hazard, location_result, wildfire_check, zip_snapshot, user_context)
         elif hazard_type == "earthquake" and fault_check.get("checked"):
             result = _earthquake_address_result(hazard, location_result, fault_check, zip_snapshot, user_context)
+        elif location_result.zip_code and zip_snapshot and not location_result.formatted_address:
+            result = _zip_result(hazard, location_result, zip_snapshot, user_context)
         elif location_result.city or location_result.county:
             result = _jurisdiction_result(hazard, location_result, zip_snapshot, user_context)
             check = {
@@ -1472,8 +1478,6 @@ def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dic
                         "The app has not completed an address-level GIS check for this hazard yet."
                     )
                 )
-        elif location_result.zip_code and zip_snapshot:
-            result = _zip_result(hazard, location_result, zip_snapshot, user_context)
         else:
             result = _county_result(hazard)
 

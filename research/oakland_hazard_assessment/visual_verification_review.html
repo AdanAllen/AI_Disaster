@@ -1,0 +1,62 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Oakland Hazard Assessment Visual Review Queue</title>
+<style>
+body { font-family: system-ui, sans-serif; margin: 0; color: #1f2933; }
+header { padding: 16px 24px; border-bottom: 1px solid #d9e2ec; }
+main { display: grid; grid-template-columns: minmax(360px, 1fr) minmax(420px, 0.95fr); gap: 16px; padding: 16px; }
+img { max-width: 100%; border: 1px solid #bcccdc; background: #fff; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f0f4f8; padding: 12px; }
+select, button { font: inherit; }
+.queue { max-height: 84vh; overflow: auto; border: 1px solid #d9e2ec; }
+.record { display: block; width: 100%; text-align: left; padding: 10px; border: 0; border-bottom: 1px solid #d9e2ec; background: white; }
+.record:focus, .record:hover { background: #f0f4f8; }
+.meta { color: #52606d; font-size: 13px; }
+.status { font-weight: 700; }
+</style>
+<header>
+<h1>Oakland Hazard Assessment Visual Review Queue</h1>
+<p>This research-only page loads <code>visual_verification_queue.json</code>. It does not write approvals. Reviewers must record explicit review actions separately.</p>
+</header>
+<main>
+  <section>
+    <h2>Queue</h2>
+    <div id="queue" class="queue"></div>
+  </section>
+  <section>
+    <h2 id="title">Select a record</h2>
+    <p class="meta" id="meta"></p>
+    <img id="page" alt="PDF page image unavailable">
+    <h3>Extracted text</h3>
+    <pre id="text"></pre>
+    <h3>Structured record</h3>
+    <pre id="json"></pre>
+  </section>
+</main>
+<script>
+async function loadQueue() {
+  const response = await fetch('visual_verification_queue.json');
+  const data = await response.json();
+  const queue = document.getElementById('queue');
+  const title = document.getElementById('title');
+  const meta = document.getElementById('meta');
+  const page = document.getElementById('page');
+  const text = document.getElementById('text');
+  const json = document.getElementById('json');
+  data.records.forEach((record, index) => {
+    const button = document.createElement('button');
+    button.className = 'record';
+    button.innerHTML = `<span class="status">Priority ${record.review_priority}</span> ${record.hazard} ${record.plan_area || 'citywide/candidate'}<br><span class="meta">${record.source_status} ${record.plan_version} page ${record.source_page || 'unknown'} - ${record.approval_status}</span>`;
+    button.addEventListener('click', () => {
+      title.textContent = `${record.record_id}: ${record.hazard}`;
+      meta.textContent = `${record.source_document} | ${record.source_table || 'No table'} | row: ${record.source_row || 'unidentified'} | column: ${record.source_column || 'unidentified'}`;
+      page.src = record.page_image_reference || '';
+      text.textContent = record.extracted_text || '(No extracted text captured for this candidate.)';
+      json.textContent = JSON.stringify(record, null, 2);
+    });
+    queue.appendChild(button);
+    if (index === 0) button.click();
+  });
+}
+loadQueue();
+</script>

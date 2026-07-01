@@ -1,0 +1,27 @@
+{
+  "fixture_id": "oakland_gis_semantics_fixture_minimal_001",
+  "source_version": "test-fixture-v1",
+  "retrieval_date": "2026-06-19",
+  "source_agency": "California Geological Survey",
+  "service_url": "https://example.test/arcgis/rest/services/cgs-test/FeatureServer/0/query",
+  "layer_id": 0,
+  "raw_response": {
+    "features": [
+      {
+        "attributes": {
+          "ZONE": "test liquefaction zone"
+        },
+        "geometry": {
+          "rings": []
+        }
+      }
+    ]
+  },
+  "expected_interpretation": {
+    "spatial_relationship": "intersects",
+    "interpreted_result": "matched_official_polygon",
+    "hazard": "earthquake",
+    "claim_type": "liquefaction_zone"
+  },
+  "reason_for_expected_interpretation": "A fixture must retain the raw official-style response, source version, retrieval date, and the explicit interpretation being tested. It must never masquerade as a live official query."
+}

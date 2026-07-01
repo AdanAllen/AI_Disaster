@@ -1,0 +1,308 @@
+{
+  "another_page_needed": false,
+  "assessment_eligible": true,
+  "batch_id": "adopted_page_0464_landslide_high_and_very_high_landslide_susceptibility",
+  "candidate_record_count": 9,
+  "candidate_records": [
+    {
+      "hazard": "landslide",
+      "metric_type": "scenario_hazard_rating",
+      "plan_area": "Central East Oakland",
+      "raw_category": "Medium",
+      "raw_value": 27,
+      "record_id": "adopted_scenario_0055",
+      "scenario": "High and Very High landslide susceptibility",
+      "source_column": "Risk Ranking Score; Hazard Risk Rating",
+      "source_page": 464,
+      "source_row": "Central East Oakland",
+      "verification_status": "needs_more_review"
+    },
+    {
+      "hazard": "landslide",
+      "metric_type": "scenario_hazard_rating",
+      "plan_area": "Coliseum/Airport",
+      "raw_category": "Low",
+      "raw_value": 0,
+      "record_id": "adopted_scenario_0056",
+      "scenario": "High and Very High landslide susceptibility",
+      "source_column": "Risk Ranking Score; Hazard Risk Rating",
+      "source_page": 464,
+      "source_row": "Coliseum/Airport",
+      "verification_status": "needs_more_review"
+    },
+    {
+      "hazard": "landslide",
+      "metric_type": "scenario_hazard_rating",
+      "plan_area": "Downtown",
+      "raw_category": "Medium",
+      "raw_value": 18,
+      "record_id": "adopted_scenario_0057",
+      "scenario": "High and Very High landslide susceptibility",
+      "source_column": "Risk Ranking Score; Hazard Risk Rating",
+      "source_page": 464,
+      "source_row": "Downtown",
+      "verification_status": "needs_more_review"
+    },
+    {
+      "hazard": "landslide",
+      "metric_type": "scenario_hazard_rating",
+      "plan_area": "East Oakland Hills",
+      "raw_category": "High",
+      "raw_value": 51,
+      "record_id": "adopted_scenario_0058",
+      "scenario": "High and Very High landslide susceptibility",
+      "source_column": "Risk Ranking Score; Hazard Risk Rating",
+      "source_page": 464,
+      "source_row": "East Oakland Hills",
+      "verification_status": "needs_more_review"
+    },
+    {
+      "hazard": "landslide",
+      "metric_type": "scenario_hazard_rating",
+      "plan_area": "Eastlake/Fruitvale",
+      "raw_category": "High",
+      "raw_value": 45,
+      "record_id": "adopted_scenario_0059",
+      "scenario": "High and Very High landslide susceptibility",
+      "source_column": "Risk Ranking Score; Hazard Risk Rating",
+      "source_page": 464,
+      "source_row": "Eastlake/Fruitvale",
+      "verification_status": "needs_more_review"
+    },
+    {
+      "hazard": "landslide",
+      "metric_type": "scenario_hazard_rating",
+      "plan_area": "Glenview/Redwood Heights",
+      "raw_category": "High",
+      "raw_value": 54,
+      "record_id": "adopted_scenario_0060",
+      "scenario": "High and Very High landslide susceptibility",
+      "source_column": "Risk Ranking Score; Hazard Risk Rating",
+      "source_page": 464,
+      "source_row": "Glenview/Redwood Heights",
+      "verification_status": "needs_more_review"
+    },
+    {
+      "hazard": "landslide",
+      "metric_type": "scenario_hazard_rating",
+      "plan_area": "North Oakland Hills",
+      "raw_category": "High",
+      "raw_value": 54,
+      "record_id": "adopted_scenario_0061",
+      "scenario": "High and Very High landslide susceptibility",
+      "source_column": "Risk Ranking Score; Hazard Risk Rating",
+      "source_page": 464,
+      "source_row": "North Oakland Hills",
+      "verification_status": "needs_more_review"
+    },
+    {
+      "hazard": "landslide",
+      "metric_type": "scenario_hazard_rating",
+      "plan_area": "North Oakland/Adams Point",
+      "raw_category": "High",
+      "raw_value": 36,
+      "record_id": "adopted_scenario_0062",
+      "scenario": "High and Very High landslide susceptibility",
+      "source_column": "Risk Ranking Score; Hazard Risk Rating",
+      "source_page": 464,
+      "source_row": "North Oakland/Adams Point",
+      "verification_status": "needs_more_review"
+    },
+    {
+      "hazard": "landslide",
+      "metric_type": "scenario_hazard_rating",
+      "plan_area": "West Oakland",
+      "raw_category": "Low",
+      "raw_value": 0,
+      "record_id": "adopted_scenario_0063",
+      "scenario": "High and Very High landslide susceptibility",
+      "source_column": "Risk Ranking Score; Hazard Risk Rating",
+      "source_page": 464,
+      "source_row": "West Oakland",
+      "verification_status": "needs_more_review"
+    }
+  ],
+  "category_field": "hazard_risk_rating",
+  "chapter": "Appendix E, Detailed Risk Ranking Results",
+  "claimed_page_mismatch_record_ids": [],
+  "contains_low_medium_high_values": true,
+  "created_at": "2026-06-22",
+  "duplicated_rows": [],
+  "expected_row_coverage": {
+    "coverage_type": "complete_oakland_plan_area_rows_expected_from_visible_source",
+    "expected_rows": [
+      "Central East Oakland",
+      "Coliseum/Airport",
+      "Downtown",
+      "East Oakland Hills",
+      "Eastlake/Fruitvale",
+      "Glenview/Redwood Heights",
+      "North Oakland Hills",
+      "North Oakland/Adams Point",
+      "West Oakland"
+    ],
+    "missing_row_policy": "fail_closed",
+    "notes": "Current adopted Priority A pages visibly show all nine official Oakland plan areas. Future tables may document fewer expected rows rather than infer missing rows."
+  },
+  "extracted_column_headers": [
+    "% of Total Value Exposed",
+    "Impact on Property: Impact (High, Medium, Low, None)",
+    "Impact on Property: Impact Factor",
+    "Impact on Property: Weighted Impact Factor",
+    "% of Total Value Damaged",
+    "Impact on Economy: Impact (High, Medium, Low, None)",
+    "Impact on Economy: Impact Factor",
+    "Impact on Economy: Weighted Impact Factor",
+    "Risk Ranking Score",
+    "Hazard Risk Rating"
+  ],
+  "extracted_rows": [
+    {
+      "candidate_record_id": "adopted_scenario_0055",
+      "hazard_risk_rating": "Medium",
+      "plan_area": "Central East Oakland",
+      "risk_ranking_score": 27
+    },
+    {
+      "candidate_record_id": "adopted_scenario_0056",
+      "hazard_risk_rating": "Low",
+      "plan_area": "Coliseum/Airport",
+      "risk_ranking_score": 0
+    },
+    {
+      "candidate_record_id": "adopted_scenario_0057",
+      "hazard_risk_rating": "Medium",
+      "plan_area": "Downtown",
+      "risk_ranking_score": 18
+    },
+    {
+      "candidate_record_id": "adopted_scenario_0058",
+      "hazard_risk_rating": "High",
+      "plan_area": "East Oakland Hills",
+      "risk_ranking_score": 51
+    },
+    {
+      "candidate_record_id": "adopted_scenario_0059",
+      "hazard_risk_rating": "High",
+      "plan_area": "Eastlake/Fruitvale",
+      "risk_ranking_score": 45
+    },
+    {
+      "candidate_record_id": "adopted_scenario_0060",
+      "hazard_risk_rating": "High",
+      "plan_area": "Glenview/Redwood Heights",
+      "risk_ranking_score": 54
+    },
+    {
+      "candidate_record_id": "adopted_scenario_0061",
+      "hazard_risk_rating": "High",
+      "plan_area": "North Oakland Hills",
+      "risk_ranking_score": 54
+    },
+    {
+      "candidate_record_id": "adopted_scenario_0062",
+      "hazard_risk_rating": "High",
+      "plan_area": "North Oakland/Adams Point",
+      "risk_ranking_score": 36
+    },
+    {
+      "candidate_record_id": "adopted_scenario_0063",
+      "hazard_risk_rating": "Low",
+      "plan_area": "West Oakland",
+      "risk_ranking_score": 0
+    }
+  ],
+  "final_category_is_official_hazard_risk_rating": true,
+  "fingerprints": {
+    "batch_json_fingerprint": "d701ffc285e503dd636f1c66a279cdc35daa45d409872fb4aa4e82b9793cb917",
+    "candidate_payload_fingerprint": "35c741b2700b651e2c77b6355de739ecceb402d7c554ad4e5ea4f5e8e9fea0af",
+    "rendered_page_fingerprint": "f0b3926b24547bf774e0d68b3521b097f0413bf5ae8e393f4b98d18c06a2e989",
+    "review_presentation_fingerprint": "5c33faaa58082475ddf699e89092701ca1825ab1dc2ae14eb303f9019956db08",
+    "semantic_batch_evidence_fingerprint": "bbf32ffc79493b0d93f25292faa5ac9fd0318333b1971dbb23e0a67da33711f0",
+    "source_pdf_fingerprint": "9e36de48ab225762767a79c1e50c83a9286352e8906c709005e9fb32780979ef",
+    "table_crop_fingerprint": null,
+    "table_identifier_fingerprint": "3fbae0b8634b402cd6be21a1c8ea5617aa18d18e00deee6a53b75d3a848875ad"
+  },
+  "full_resolution_page_link": "page-images/adopted/page-0464.png",
+  "geographic_unit": "oakland_plan_area",
+  "hazard": "landslide",
+  "headers_status": "visible",
+  "hidden_or_truncated_rows": [],
+  "interpretation_confidence": "medium",
+  "interpretation_reason": "The final columns are explicitly labeled Risk Ranking Score and Hazard Risk Rating; intermediate exposure and impact columns must not be used as probability.",
+  "methodology_source_page": 464,
+  "metric_interpretation": "The table reports scenario-specific Oakland LHMP risk ranking score and official Hazard Risk Rating by Oakland plan area, with property exposure and economy impact inputs shown as intermediate columns.",
+  "metric_type": "scenario_hazard_rating",
+  "metric_type_uncertainty_record_ids": [],
+  "missing_expected_rows": [],
+  "page_heading": "Landslide Susceptibility (Categories Very High & High)",
+  "page_image_reference": "research/oakland_hazard_assessment/page-images/adopted/page-0464.png",
+  "permitted_use": "research_assessment_after_explicit_human_table_approval",
+  "plan_areas_represented": [
+    "Central East Oakland",
+    "Coliseum/Airport",
+    "Downtown",
+    "East Oakland Hills",
+    "Eastlake/Fruitvale",
+    "Glenview/Redwood Heights",
+    "North Oakland Hills",
+    "North Oakland/Adams Point",
+    "West Oakland"
+  ],
+  "printed_page": "",
+  "proposed_column_interpretations": {
+    "% of Total Value Damaged": "Modeled damage/loss input, not probability.",
+    "% of Total Value Exposed": "Physical/property exposure input, not probability.",
+    "Hazard Risk Rating": "Official final category for the scenario and plan-area row.",
+    "Risk Ranking Score": "Official scenario-specific risk ranking score from the LHMP table."
+  },
+  "required_value_columns": [
+    "Risk Ranking Score",
+    "Hazard Risk Rating"
+  ],
+  "review_readiness": "ready_for_human_review",
+  "scenario": "High and Very High landslide susceptibility",
+  "schema_version": 1,
+  "second_pass_requirements": {
+    "batch_evidence_fingerprint": "bbf32ffc79493b0d93f25292faa5ac9fd0318333b1971dbb23e0a67da33711f0",
+    "required_row_ids": [
+      "adopted_page_0464_landslide_high_and_very_high_landslide_susceptibility|Central East Oakland|adopted_scenario_0055",
+      "adopted_page_0464_landslide_high_and_very_high_landslide_susceptibility|Coliseum/Airport|adopted_scenario_0056",
+      "adopted_page_0464_landslide_high_and_very_high_landslide_susceptibility|East Oakland Hills|adopted_scenario_0058",
+      "adopted_page_0464_landslide_high_and_very_high_landslide_susceptibility|Eastlake/Fruitvale|adopted_scenario_0059",
+      "adopted_page_0464_landslide_high_and_very_high_landslide_susceptibility|Glenview/Redwood Heights|adopted_scenario_0060",
+      "adopted_page_0464_landslide_high_and_very_high_landslide_susceptibility|North Oakland Hills|adopted_scenario_0061",
+      "adopted_page_0464_landslide_high_and_very_high_landslide_susceptibility|North Oakland/Adams Point|adopted_scenario_0062",
+      "adopted_page_0464_landslide_high_and_very_high_landslide_susceptibility|West Oakland|adopted_scenario_0063"
+    ],
+    "seed": "oakland-adopted-priority-a-second-pass-v1",
+    "selected_row_ids": [
+      "adopted_page_0464_landslide_high_and_very_high_landslide_susceptibility|North Oakland Hills|adopted_scenario_0061"
+    ],
+    "selection_date": "2026-06-22"
+  },
+  "second_pass_sampling": {
+    "batch_evidence_fingerprint": "bbf32ffc79493b0d93f25292faa5ac9fd0318333b1971dbb23e0a67da33711f0",
+    "seed": "oakland-adopted-priority-a-second-pass-v1",
+    "selected_row_ids": [
+      "adopted_page_0464_landslide_high_and_very_high_landslide_susceptibility|North Oakland Hills|adopted_scenario_0061"
+    ],
+    "selection_date": "2026-06-22"
+  },
+  "source_document": "City of Oakland 2021-2026 Local Hazard Mitigation Plan",
+  "source_page": 464,
+  "source_status": "adopted",
+  "source_url_or_local_file": "data/raw/lhmps/oakland/oakland-lhmp-2021-2026-adopted.pdf",
+  "suggested_review_decision": "likely_valid_assessment_table",
+  "suggested_review_order": 2,
+  "suggested_review_reason": "The rendered page shows a complete Risk Ranking table with all nine official Oakland plan areas, visible headers, Risk Ranking Score, and Hazard Risk Rating columns.",
+  "table_crop_reference": "",
+  "table_identifier": "page-0464",
+  "table_number": "",
+  "table_title": "RISK RANKING-Landslide Susceptibility (Categories Very High & High)",
+  "table_title_status": "visible",
+  "unmatched_candidate_record_ids": [],
+  "value_field": "risk_ranking_score",
+  "verification_status_effect": "none_until_human_batch_decision",
+  "warnings": []
+}

@@ -121,6 +121,8 @@ def _iter_gis_records(address_gis_results) -> List[Dict]:
     for item in candidates or []:
         if not isinstance(item, dict):
             continue
+        if item.get("scope") == "zip_estimate" or item.get("basis") == "zip_csv_heuristic":
+            continue
         parent = item.get("slug") or item.get("hazard_id") or item.get("hazard") or item.get("hazard_type")
         records.append({**item, "_parent_hazard": parent})
         for key in ("additional_geospatial_evidence", "official_mapped_evidence", "normalized_mapped_evidence"):
@@ -188,7 +190,12 @@ def _record_direct_match(record: Dict) -> bool:
 def _record_proximity_match(record: Dict) -> bool:
     if record.get("near") is True:
         return True
-    return record.get("match_type") == "near_fault"
+    if record.get("match_type") == "near_fault":
+        return True
+    return record.get("matched") is True and (
+        record.get("claim_type") == "proximity"
+        or record.get("status") == "proximity_context"
+    )
 
 
 def _record_checked(record: Dict) -> bool:
@@ -381,7 +388,9 @@ def local_exposure_for_hazard(hazard: str, address_gis_results) -> Dict:
     proximity_matches = []
     checked_nonmatches = []
     unavailable = []
-    terms = []
+    direct_match_terms = []
+    proximity_match_terms = []
+    checked_nonmatch_terms = []
     checked_layers = []
     successful_layers = []
     last_checked = []
@@ -397,19 +406,29 @@ def local_exposure_for_hazard(hazard: str, address_gis_results) -> Dict:
             or "Official checked layer"
         )
         checked_layers.append(layer_name)
-        terms.extend(_terms(record, rule.get("terminology_fields", [])))
+        record_terms = _terms(record, rule.get("terminology_fields", []))
         if record.get("checked_at"):
             last_checked.append(str(record["checked_at"]))
-        if _record_direct_match(record):
-            direct_matches.append(layer_name)
-            successful_layers.append(layer_name)
-        elif hazard == "earthquake" and _record_proximity_match(record):
+        if hazard == "earthquake" and _record_proximity_match(record):
             proximity_matches.append(layer_name)
             successful_layers.append(layer_name)
+            proximity_match_terms.extend(record_terms)
+        elif _record_direct_match(record):
+            direct_matches.append(layer_name)
+            successful_layers.append(layer_name)
+            direct_match_terms.extend(record_terms)
+            if hazard in {"flood", "wildfire"}:
+                for nested_key in ("matched_layers", "layers"):
+                    for nested_record in record.get(nested_key) or []:
+                        if isinstance(nested_record, dict):
+                            direct_match_terms.extend(
+                                _terms(nested_record, rule.get("terminology_fields", []))
+                            )
         elif _record_unavailable(record):
             unavailable.append(layer_name)
         elif _record_checked(record):
             checked_nonmatches.append(layer_name)
+            checked_nonmatch_terms.extend(record_terms)
 
     if direct_matches:
         status = rule.get("match_status") or LOCAL_DIRECT
@@ -423,6 +442,15 @@ def local_exposure_for_hazard(hazard: str, address_gis_results) -> Dict:
         status = LOCAL_GENERAL
     else:
         status = LOCAL_NOT_APPLICABLE
+
+    if direct_matches:
+        terms = direct_match_terms
+    elif proximity_matches:
+        terms = proximity_match_terms
+    elif checked_nonmatches:
+        terms = checked_nonmatch_terms
+    else:
+        terms = []
 
     if status == LOCAL_DIRECT:
         basis = "Official polygon intersection found in checked layer."
@@ -605,11 +633,18 @@ def _community_context_for_hazard(jurisdiction: str, sub_area: str, hazard: str)
             "limitations": ["Sub-area EPC and exposure tables are community context only and are not used to assign a personal hazard priority."],
         }
 
+    review_gate = load_priority_data().get("sub_area_evidence", {}).get("review_gate") or {}
+    production_statuses = set(review_gate.get("production_statuses") or ["reviewed"])
+    required_fields = review_gate.get("required_fields") or []
+    hazard_key = _canonical_hazard(hazard)
     records = [
         record for record in load_priority_data().get("sub_area_evidence", {}).get("records", [])
         if _slug(record.get("jurisdiction")) == _slug(jurisdiction)
-        and _canonical_hazard(record.get("hazard")) == hazard
-        and _normalize_sub_area_name(record.get("sub_area")) == _normalize_sub_area_name(sub_area)
+        and _canonical_hazard(record.get("hazard_id") or record.get("hazard")) == hazard_key
+        and _normalize_sub_area_name(record.get("subarea_name") or record.get("sub_area")) == _normalize_sub_area_name(sub_area)
+        and record.get("review_status") in production_statuses
+        and record.get("permitted_use") == "subarea_context_only"
+        and all(record.get(field) not in (None, "", []) for field in required_fields)
     ]
     if not records:
         return {
@@ -618,18 +653,21 @@ def _community_context_for_hazard(jurisdiction: str, sub_area: str, hazard: str)
             "records": [],
             "limitations": ["Missing sub-area table data is not replaced with an inferred value."],
         }
-    summaries = []
-    for record in records[:3]:
-        metric = record.get("metric_name") or "Sub-area metric"
-        value = record.get("value")
-        unit = record.get("unit") or ""
-        summaries.append(f"{metric}: {value} {unit}".strip())
+    summaries = [record.get("display_text") or record.get("source_claim") for record in records[:2]]
     return {
         "status": "Available",
-        "summary": "; ".join(summaries) + ". These values are community context only and do not change Probability, Impact, or local mapped concern.",
+        "summary": " ".join(_dedupe(summaries)) + " These draft-plan values are community context only and do not change citywide priority or address-level mapped evidence.",
         "records": records,
-        "limitations": _dedupe([record.get("limitations") for record in records] + ["EPC exposure values describe community vulnerability context only. Zero EPC exposure is not a zero-hazard finding."]),
+        "limitations": _dedupe(
+            [item for record in records for item in (record.get("limitations") or [])]
+            + ["A zero sub-area value is not a zero-hazard or property-safety finding."]
+        ),
     }
+
+
+def reviewed_subarea_context_for_hazard(jurisdiction: str, sub_area: str, hazard: str) -> Dict:
+    """Return only review-gated sub-area context; never derive a rating."""
+    return _community_context_for_hazard(jurisdiction, sub_area, _canonical_hazard(hazard))
 
 
 def _official_zone_category(local: Dict) -> str:
@@ -647,7 +685,7 @@ def _local_evidence_summary(local: Dict) -> str:
 
 
 def _source_name_for_local(hazard: str, local: Dict) -> str:
-    layers = local.get("official_layers_checked") or local.get("successful_layers") or []
+    layers = local.get("successful_layers") or local.get("official_layers_checked") or []
     if layers:
         return "; ".join(_dedupe(layers[:3]))
     return {
@@ -738,7 +776,12 @@ def _mapped_finding_for_hazard(hazard: str, local: Dict) -> Dict:
             }
 
     if hazard == "earthquake":
-        if _has_any_text(local, "alquist-priolo", "liquefaction zone", "earthquake-induced landslide zone"):
+        if local.get("polygon_intersections") and _has_any_text(
+            local,
+            "alquist-priolo",
+            "liquefaction zone",
+            "earthquake-induced landslide zone",
+        ):
             ap_match = next((term for term in terms if "alquist-priolo" in term.lower()), "")
             summary = ap_match or next((term for term in terms if "mapped" in term.lower()), terms[0] if terms else "Official earthquake map finding.")
             interpretation = "This official mapped finding applies to the address point. Fault proximity, if shown, is separate context and is not the same as an Alquist-Priolo polygon match."

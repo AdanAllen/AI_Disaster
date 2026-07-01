@@ -1,0 +1,878 @@
+{
+  "generated_at": "2026-06-19",
+  "pages": [
+    {
+      "page_image_exists": true,
+      "page_image_reference": "research/oakland_hazard_assessment/page-images/adopted/page-0460.png",
+      "plan_version": "2021-2026",
+      "source_document": "City of Oakland 2021-2026 Local Hazard Mitigation Plan",
+      "source_page": 460,
+      "source_status": "adopted"
+    },
+    {
+      "page_image_exists": true,
+      "page_image_reference": "research/oakland_hazard_assessment/page-images/adopted/page-0462.png",
+      "plan_version": "2021-2026",
+      "source_document": "City of Oakland 2021-2026 Local Hazard Mitigation Plan",
+      "source_page": 462,
+      "source_status": "adopted"
+    },
+    {
+      "page_image_exists": true,
+      "page_image_reference": "research/oakland_hazard_assessment/page-images/adopted/page-0464.png",
+      "plan_version": "2021-2026",
+      "source_document": "City of Oakland 2021-2026 Local Hazard Mitigation Plan",
+      "source_page": 464,
+      "source_status": "adopted"
+    },
+    {
+      "page_image_exists": true,
+      "page_image_reference": "research/oakland_hazard_assessment/page-images/adopted/page-0466.png",
+      "plan_version": "2021-2026",
+      "source_document": "City of Oakland 2021-2026 Local Hazard Mitigation Plan",
+      "source_page": 466,
+      "source_status": "adopted"
+    },
+    {
+      "page_image_exists": true,
+      "page_image_reference": "research/oakland_hazard_assessment/page-images/adopted/page-0472.png",
+      "plan_version": "2021-2026",
+      "source_document": "City of Oakland 2021-2026 Local Hazard Mitigation Plan",
+      "source_page": 472,
+      "source_status": "adopted"
+    },
+    {
+      "page_image_exists": true,
+      "page_image_reference": "research/oakland_hazard_assessment/page-images/adopted/page-0474.png",
+      "plan_version": "2021-2026",
+      "source_document": "City of Oakland 2021-2026 Local Hazard Mitigation Plan",
+      "source_page": 474,
+      "source_status": "adopted"
+    },
+    {
+      "page_image_exists": true,
+      "page_image_reference": "research/oakland_hazard_assessment/page-images/adopted/page-0476.png",
+      "plan_version": "2021-2026",
+      "source_document": "City of Oakland 2021-2026 Local Hazard Mitigation Plan",
+      "source_page": 476,
+      "source_status": "adopted"
+    },
+    {
+      "page_image_exists": true,
+      "page_image_reference": "research/oakland_hazard_assessment/page-images/adopted/page-0478.png",
+      "plan_version": "2021-2026",
+      "source_document": "City of Oakland 2021-2026 Local Hazard Mitigation Plan",
+      "source_page": 478,
+      "source_status": "adopted"
+    },
+    {
+      "page_image_exists": true,
+      "page_image_reference": "research/oakland_hazard_assessment/page-images/adopted/page-0480.png",
+      "plan_version": "2021-2026",
+      "source_document": "City of Oakland 2021-2026 Local Hazard Mitigation Plan",
+      "source_page": 480,
+      "source_status": "adopted"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 5,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 7,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 8,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 11,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": true,
+      "page_image_reference": "data/lhmp/extracted/oakland/page-images/page-0011.png",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 11,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 12,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": true,
+      "page_image_reference": "data/lhmp/extracted/oakland/page-images/page-0012.png",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 12,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 13,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": true,
+      "page_image_reference": "data/lhmp/extracted/oakland/page-images/page-0013.png",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 13,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": true,
+      "page_image_reference": "data/lhmp/extracted/oakland/page-images/page-0014.png",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 14,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 15,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": true,
+      "page_image_reference": "data/lhmp/extracted/oakland/page-images/page-0015.png",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 15,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 25,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 29,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 30,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 32,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 33,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 34,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 36,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 37,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 41,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 47,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 50,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 51,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 52,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 54,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 55,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 64,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 65,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 71,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 76,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 77,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 78,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 80,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 82,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 83,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 84,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 86,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 87,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 91,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 92,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 105,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 165,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 175,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 176,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 180,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 181,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 183,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 186,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 187,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 188,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 189,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 192,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 193,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 194,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 203,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 205,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 209,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 211,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 212,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 213,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 214,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 215,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 216,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 217,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 218,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 219,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 220,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 222,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 228,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 229,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 230,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 232,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 233,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 234,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 235,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 236,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 237,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 284,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 286,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 287,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 288,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 289,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 290,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 291,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 301,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 302,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 305,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 306,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 307,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 308,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 309,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 310,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 311,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 317,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 329,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 335,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 337,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 339,
+      "source_status": "draft"
+    },
+    {
+      "page_image_exists": false,
+      "page_image_reference": "",
+      "plan_version": "2026-2031",
+      "source_document": "oakland-draft-lhmp-2026-2031.pdf",
+      "source_page": 346,
+      "source_status": "draft"
+    }
+  ],
+  "schema_version": 1
+}

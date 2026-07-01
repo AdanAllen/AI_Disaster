@@ -118,6 +118,158 @@ class HazardPriorityRankingTests(unittest.TestCase):
         self.assertEqual(earthquake["calculated_citywide_priority"], "High")
         self.assertEqual(earthquake["local_exposure_status"], "General citywide exposure")
 
+    def test_checked_alquist_priolo_nonmatch_is_not_a_mapped_finding(self):
+        ranked = rank_hazards_for_risk_summary(
+            "Berkeley",
+            [hazard_result("earthquake", additional_geospatial_evidence=[
+                cgs_evidence("cgs_alquist_priolo_remote", "alquist-priolo", matched=False)
+            ])],
+        )
+        earthquake = next(item for item in ranked if item["slug"] == "earthquake")
+        self.assertEqual(earthquake["mapped_finding_status"], "successful_check_no_significant_match")
+        self.assertEqual(earthquake["local_exposure"]["polygon_intersections"], [])
+
+    def test_checked_liquefaction_nonmatch_is_not_a_mapped_finding(self):
+        evidence = cgs_evidence("cgs_liquefaction_remote", "liquefaction", matched=False)
+        evidence["dataset_name"] = "CGS Liquefaction Zones"
+        ranked = rank_hazards_for_risk_summary(
+            "Berkeley",
+            [hazard_result("earthquake", additional_geospatial_evidence=[
+                evidence
+            ])],
+        )
+        earthquake = next(item for item in ranked if item["slug"] == "earthquake")
+        self.assertEqual(earthquake["mapped_finding_status"], "successful_check_no_significant_match")
+        self.assertNotIn("applies to the address point", earthquake["mapped_finding_interpretation"])
+
+    def test_checked_earthquake_landslide_nonmatch_is_not_a_mapped_finding(self):
+        evidence = cgs_evidence(
+            "cgs_earthquake_landslide_remote",
+            "earthquake-induced landslide",
+            matched=False,
+        )
+        evidence["dataset_name"] = "CGS Earthquake-Induced Landslide Zones"
+        ranked = rank_hazards_for_risk_summary(
+            "Berkeley",
+            [hazard_result("earthquake", additional_geospatial_evidence=[
+                evidence
+            ])],
+        )
+        landslide = next(item for item in ranked if item["slug"] == "landslide")
+        self.assertEqual(landslide["mapped_finding_status"], "successful_check_no_significant_match")
+        self.assertEqual(landslide["local_exposure"]["polygon_intersections"], [])
+
+    def test_checked_alquist_priolo_match_remains_a_mapped_finding(self):
+        ranked = rank_hazards_for_risk_summary(
+            "Berkeley",
+            [hazard_result("earthquake", additional_geospatial_evidence=[
+                cgs_evidence("cgs_alquist_priolo_remote", "alquist-priolo", matched=True)
+            ])],
+        )
+        earthquake = next(item for item in ranked if item["slug"] == "earthquake")
+        self.assertEqual(earthquake["mapped_finding_status"], "significant_official_finding")
+        self.assertEqual(
+            earthquake["local_exposure"]["polygon_intersections"],
+            ["CGS alquist-priolo"],
+        )
+
+    def test_mixed_earthquake_records_use_only_positive_match_details(self):
+        ranked = rank_hazards_for_risk_summary(
+            "Berkeley",
+            [hazard_result("earthquake", additional_geospatial_evidence=[
+                cgs_evidence("cgs_alquist_priolo_remote", "alquist-priolo", matched=True),
+                cgs_evidence("cgs_liquefaction_remote", "liquefaction", matched=False),
+            ])],
+        )
+        earthquake = next(item for item in ranked if item["slug"] == "earthquake")
+        self.assertEqual(earthquake["mapped_finding_status"], "significant_official_finding")
+        self.assertEqual(
+            earthquake["local_exposure"]["successful_layers"],
+            ["CGS alquist-priolo"],
+        )
+        self.assertNotIn("liquefaction", earthquake["mapped_finding_source_name"].lower())
+        self.assertNotIn(
+            "No mapped match found.",
+            earthquake["local_exposure"]["source_specific_terminology"],
+        )
+
+    def test_unavailable_earthquake_record_is_neither_match_nor_low_risk(self):
+        unavailable = cgs_evidence(
+            "cgs_alquist_priolo_remote",
+            "alquist-priolo",
+            matched=False,
+        )
+        unavailable.update({
+            "checked": False,
+            "data_available": False,
+            "data_status": "data_unavailable",
+        })
+        ranked = rank_hazards_for_risk_summary(
+            "Berkeley",
+            [hazard_result("earthquake", additional_geospatial_evidence=[unavailable])],
+        )
+        earthquake = next(item for item in ranked if item["slug"] == "earthquake")
+        self.assertEqual(earthquake["mapped_finding_status"], "data_unavailable")
+        self.assertEqual(earthquake["displayed_hazard_level"], "Unknown")
+        self.assertEqual(earthquake["local_exposure"]["polygon_intersections"], [])
+
+    def test_regional_earthquake_rating_is_not_an_address_mapped_finding(self):
+        earthquake = next(
+            item
+            for item in rank_hazards_for_risk_summary("Oakland", [])
+            if item["slug"] == "earthquake"
+        )
+        self.assertEqual(earthquake["calculated_citywide_priority"], "High")
+        self.assertEqual(earthquake["mapped_finding_status"], "not_supported")
+        self.assertEqual(earthquake["local_exposure"]["polygon_intersections"], [])
+
+    def test_fault_proximity_match_is_not_polygon_membership(self):
+        proximity = {
+            "dataset_id": "usgs_cgs_faults_local",
+            "dataset_name": "Loaded mapped fault traces",
+            "checked": True,
+            "matched": True,
+            "claim_type": "proximity",
+            "status": "proximity_context",
+        }
+        ranked = rank_hazards_for_risk_summary(
+            "Berkeley",
+            [hazard_result(
+                "earthquake",
+                match_type="near_fault",
+                normalized_mapped_evidence=[proximity],
+            )],
+        )
+        earthquake = next(item for item in ranked if item["slug"] == "earthquake")
+        self.assertEqual(earthquake["mapped_finding_status"], "successful_check_no_significant_match")
+        self.assertEqual(earthquake["local_exposure"]["polygon_intersections"], [])
+        self.assertEqual(
+            earthquake["local_exposure"]["proximity_results"],
+            ["Loaded mapped fault traces"],
+        )
+
+    def test_fault_proximity_nonmatch_is_not_local_mapped_context(self):
+        proximity = {
+            "dataset_id": "usgs_cgs_faults_local",
+            "dataset_name": "Loaded mapped fault traces",
+            "checked": True,
+            "matched": False,
+            "claim_type": "proximity",
+            "status": "proximity_context",
+        }
+        ranked = rank_hazards_for_risk_summary(
+            "Oakland",
+            [hazard_result(
+                "earthquake",
+                match_type="fault_proximity_context",
+                normalized_mapped_evidence=[proximity],
+            )],
+        )
+        earthquake = next(item for item in ranked if item["slug"] == "earthquake")
+        self.assertEqual(earthquake["mapped_finding_status"], "successful_check_no_significant_match")
+        self.assertEqual(earthquake["local_exposure"]["polygon_intersections"], [])
+        self.assertEqual(earthquake["local_exposure"]["proximity_results"], [])
+
     def test_liquefaction_intersection_adds_local_earthquake_concern(self):
         ranked = rank_hazards_for_risk_summary(
             "Oakland",
@@ -244,6 +396,23 @@ class HazardPriorityRankingTests(unittest.TestCase):
         sub_areas = {item["sub_area_context"]["sub_area"] for item in ranked}
         self.assertEqual(sub_areas, {"East Oakland Hills"})
         self.assertEqual(ranked[0]["sub_area_context"]["sub_area_match_status"], "Matched official Oakland plan-area polygon")
+
+    def test_shared_boundary_coordinate_fails_closed_as_ambiguous(self):
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "hazard_priority", "oakland_plan_areas.geojson")
+        with open(path, "r", encoding="utf-8") as source:
+            features = json.load(source)["features"]
+        configured = [
+            shape(item["geometry"]) for item in features
+            if item["properties"].get("OAKLAND_PE") in {"Downtown", "West Oakland"}
+        ]
+        shared = configured[0].boundary.intersection(configured[1].boundary)
+        self.assertFalse(shared.is_empty)
+        point = shared.representative_point()
+        earthquake = next(item for item in rank_hazards_for_risk_summary(
+            "Oakland", [], coordinates={"lat": point.y, "lon": point.x}
+        ) if item["slug"] == "earthquake")
+        self.assertEqual(earthquake["sub_area_context"]["sub_area"], "Unknown")
+        self.assertEqual(earthquake["sub_area_context"]["sub_area_match_status"], "Ambiguous official polygon match")
 
     def test_outside_official_polygons_keeps_sub_area_unknown(self):
         earthquake = next(item for item in rank_hazards_for_risk_summary(

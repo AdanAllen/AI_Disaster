@@ -1,0 +1,19 @@
+{
+  "addresses": [],
+  "generated_at": "2026-06-19",
+  "mode": "development_only",
+  "production_connected": false,
+  "required_coverage": [
+    "Central East Oakland",
+    "Coliseum/Airport",
+    "Downtown",
+    "East Oakland Hills",
+    "Eastlake/Fruitvale",
+    "Glenview/Redwood Heights",
+    "North Oakland Hills",
+    "North Oakland/Adams Point",
+    "West Oakland"
+  ],
+  "schema_version": 1,
+  "status": "fixture_collection_pending"
+}

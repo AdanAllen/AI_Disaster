@@ -1,0 +1,88 @@
+{
+  "counts": {
+    "by_hazard": {
+      "earthquake": 111,
+      "flood": 104,
+      "landslide": 39,
+      "tsunami": 45,
+      "wildfire": 42
+    },
+    "by_metric_type": {
+      "EPC_context": 19,
+      "impact": 12,
+      "modeled_loss": 12,
+      "physical_exposure": 12,
+      "population_exposure": 16,
+      "probability": 2,
+      "property_exposure": 41,
+      "scenario_hazard_rating": 82,
+      "unknown_metric": 145
+    },
+    "by_plan_area": {
+      "Central East Oakland": 9,
+      "Coliseum/Airport": 9,
+      "Downtown": 9,
+      "East Oakland Hills": 9,
+      "Eastlake/Fruitvale": 9,
+      "Glenview/Redwood Heights": 9,
+      "North Oakland Hills": 9,
+      "North Oakland/Adams Point": 9,
+      "West Oakland": 9,
+      "not_area_specific": 260
+    },
+    "by_plan_version": {
+      "2021-2026": 81,
+      "2026-2031": 260
+    },
+    "by_priority": {
+      "A": 96,
+      "B": 95,
+      "C": 19,
+      "E": 131
+    },
+    "by_priority_and_hazard": {
+      "A": {
+        "earthquake": 40,
+        "flood": 21,
+        "landslide": 9,
+        "tsunami": 12,
+        "wildfire": 14
+      },
+      "B": {
+        "earthquake": 26,
+        "flood": 29,
+        "landslide": 13,
+        "tsunami": 20,
+        "wildfire": 7
+      },
+      "C": {
+        "earthquake": 10,
+        "flood": 3,
+        "landslide": 2,
+        "tsunami": 1,
+        "wildfire": 3
+      },
+      "E": {
+        "earthquake": 35,
+        "flood": 51,
+        "landslide": 15,
+        "tsunami": 12,
+        "wildfire": 18
+      }
+    },
+    "by_verification_status": {
+      "context_only": 19,
+      "extracted_unverified": 241,
+      "needs_more_review": 81
+    }
+  },
+  "generated_at": "2026-06-19",
+  "priority_definitions": {
+    "A": "assessment-critical",
+    "B": "physical exposure and consequence",
+    "C": "community context",
+    "D": "supporting context",
+    "E": "unclear or unusable"
+  },
+  "schema_version": 1
+}

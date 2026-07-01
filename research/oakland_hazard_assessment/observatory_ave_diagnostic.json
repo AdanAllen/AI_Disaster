@@ -1,0 +1,24 @@
+{
+  "address": "4183 Observatory Ave, Oakland, CA",
+  "generated_at": "2026-06-19",
+  "production_connected": false,
+  "required_trace_fields": [
+    "normalized_address",
+    "geocoder_coordinates",
+    "matched_plan_area",
+    "boundary_distance",
+    "AP_zone_result",
+    "fault_proximity",
+    "liquefaction_result",
+    "earthquake_induced_landslide_result",
+    "wildfire_FHSZ",
+    "FEMA_result",
+    "tsunami_result",
+    "verified_LHMP_records",
+    "proposed_assessment",
+    "provenance",
+    "warnings"
+  ],
+  "schema_version": 1,
+  "status": "permanent_regression_case_created_fixture_pending"
+}

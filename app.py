@@ -463,9 +463,26 @@ def get_zip_risk_snapshot(zip_code):
             "level": get_fallback_priority_band(score),
             "explanation": data.get(explanation_key, RISK_DATA_WARNING),
             "limitation": ZIP_FALLBACK_LIMITATION,
+            "evidence_scope": "zip_fallback",
         }
 
     return snapshot
+
+
+def get_zip_risk_snapshot_for_context(location_context):
+    """Return legacy ZIP context only for an explicit ZIP-only search."""
+    location_context = location_context or {}
+    if location_context.get("location_mode") != "zip":
+        return {}
+    return get_zip_risk_snapshot(location_context.get("zip_code"))
+
+
+def get_zip_risk_row_for_context(location_context):
+    """Return the raw compatibility row only for an explicit ZIP-only search."""
+    location_context = location_context or {}
+    if location_context.get("location_mode") != "zip":
+        return {}
+    return zip_risk_data.get(str(location_context.get("zip_code") or ""), {})
 
 
 def personalize_hazard(hazard, user, location_context=None):
@@ -480,7 +497,11 @@ def personalize_hazard(hazard, user, location_context=None):
 
     user = normalize_user_profile(user)
     location_context = location_context or {}
-    zip_risk_snapshot = location_context.get("zip_risk_snapshot") or {}
+    zip_risk_snapshot = (
+        location_context.get("zip_risk_snapshot") or {}
+        if location_context.get("location_mode") == "zip"
+        else {}
+    )
     local_risk = zip_risk_snapshot.get(personalized.get("slug"))
 
     if local_risk:
@@ -524,8 +545,7 @@ def personalize_hazard(hazard, user, location_context=None):
 def get_all_hazards(user=None, location_context=None):
     user = normalize_user_profile(user)
     location_context = location_context or get_session_location_context()
-    if "zip_risk_snapshot" not in location_context:
-        location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
+    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot_for_context(location_context)
 
     hazards = [personalize_hazard(hazard, user, location_context) for hazard in hazard_dataset.get("hazards", [])]
     location_result = location_from_session({
@@ -1579,7 +1599,7 @@ def save_hazard_profile():
 def hazards_dashboard():
     user_profile = get_saved_hazard_profile()
     location_context = get_session_location_context()
-    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
+    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot_for_context(location_context)
     hazards = get_all_hazards(user_profile, location_context)
     additional_hazards = get_additional_local_hazards(location_context, hazards)
     return safe_render(
@@ -1592,7 +1612,7 @@ def hazards_dashboard():
 def hazard_detail(name):
     user_profile = get_saved_hazard_profile()
     location_context = get_session_location_context()
-    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
+    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot_for_context(location_context)
     hazard = get_hazard_by_name(name, user_profile, location_context)
     if not hazard:
         return safe_render(
@@ -1632,7 +1652,7 @@ def risk_summary():
         )
     warning_message = None
     location_context = get_session_location_context()
-    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
+    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot_for_context(location_context)
     all_structured_hazards = get_all_hazards(get_saved_hazard_profile(), location_context)
     plan_hazards = all_structured_hazards[:4]
     structured_hazards = plan_hazards[:3]
@@ -1649,7 +1669,7 @@ def risk_summary():
     )
 
     try:
-        data = zip_risk_data.get(zip_code, {})
+        data = get_zip_risk_row_for_context(location_context)
         if data:
             hazards = [
                 ("Earthquake", data.get("Earthquake_Risk_Score", 0), data.get("Earthquake_Risk_Explanation", "")),
@@ -1682,10 +1702,13 @@ def risk_summary():
                         for item in primary_structured.get("recommended_actions", [])
                     ] or get_action_steps(highest_hazard_name, highest_risk_level),
                 }
-        else:
+        elif location_context.get("location_mode") == "zip":
             hazards_sorted = get_default_hazards()
             recommended_actions = get_default_recommended_actions()
             warning_message = RISK_DATA_WARNING
+        else:
+            hazards_sorted = get_default_hazards()
+            recommended_actions = get_default_recommended_actions()
     except Exception:
         logger.exception("Risk summary failed for ZIP %s", zip_code)
         hazards_sorted = get_default_hazards()
@@ -1724,7 +1747,7 @@ def map():
     zip_code = resident_state.get("zip_code", "94601")
     address = resident_state.get("address")
     location_context = get_session_location_context()
-    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
+    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot_for_context(location_context)
     # Map overlays are loaded independently on demand. Do not run address-level
     # hazard checks here; the FEMA snapshot is intentionally excluded from map
     # page request handling because its raw parse can exhaust small instances.
@@ -1754,7 +1777,7 @@ def map():
         if not is_valid_coordinate(lat, lon):
             lat, lon = DEFAULT_LAT, DEFAULT_LON
 
-        data = zip_risk_data.get(zip_code, {})
+        data = get_zip_risk_row_for_context(location_context)
         risk_scores = {
             'wildfire': {
                 'score': float(data.get("Wildfire_Risk_Score", 0) or 0),
@@ -1769,7 +1792,7 @@ def map():
                 'explanation': data.get("Flood_Risk_Explanation", RISK_DATA_WARNING)
             }
         }
-        if not data:
+        if not data and location_context.get("location_mode") == "zip":
             map_notice = RISK_DATA_WARNING
     except Exception:
         logger.exception("Map route failed for ZIP %s", zip_code)
@@ -1892,7 +1915,7 @@ def api_local_plans():
 @app.route("/api/hazards")
 def api_hazards():
     location_context = get_session_location_context()
-    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
+    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot_for_context(location_context)
     hazards = get_all_hazards(get_saved_hazard_profile(), location_context)
     return jsonify({
         "location": location_context.get("location_result"),
@@ -1906,7 +1929,7 @@ def api_hazard(name):
     if slugify_hazard_name(name) not in ALLOWED_HAZARD_SLUGS:
         return jsonify({"error": "Hazard not found"}), 404
     location_context = get_session_location_context()
-    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
+    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot_for_context(location_context)
     hazard = get_hazard_by_name(name, get_saved_hazard_profile(), location_context)
     if not hazard:
         return jsonify({"error": "Hazard not found"}), 404
@@ -1916,7 +1939,7 @@ def api_hazard(name):
 @app.route("/api/top-risks")
 def api_top_risks():
     location_context = get_session_location_context()
-    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
+    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot_for_context(location_context)
     hazards = get_top_hazards_sorted_by_priority(get_saved_hazard_profile(), location_context)
     return jsonify({
         "location": location_context.get("location_result"),
@@ -1935,7 +1958,7 @@ def api_explain_hazard():
         return jsonify({"error": "Hazard not found"}), 404
 
     location_context = get_session_location_context()
-    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot(location_context.get("zip_code"))
+    location_context["zip_risk_snapshot"] = get_zip_risk_snapshot_for_context(location_context)
     hazard = get_hazard_by_name(hazard_name, get_saved_hazard_profile(), location_context)
     if not hazard:
         return jsonify({"error": "Hazard not found"}), 404

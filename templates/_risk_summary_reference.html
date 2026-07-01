@@ -16,11 +16,16 @@
         </div>
     </main>
 {% else %}
+    {% set is_zip_fallback = location_context is defined and (location_context.location_mode | default("")) == "zip" %}
     <section class="sr-summary-header">
         <div class="container">
             {% if warning_message %}<div class="sr-alert sr-alert-warning mb-4" role="status" data-analytics-unavailable><strong>Some information could not be checked.</strong> {{ warning_message }} The summary below shows only information that was returned.</div>{% endif %}
             <h1>Your preparedness summary</h1>
+            {% if is_zip_fallback %}
+            <p>This summary uses broad ZIP-level fallback context. It is not an address or property finding.</p>
+            {% else %}
             <p>This independent educational summary uses official public sources and the address you selected in Alameda County.</p>
+            {% endif %}
             <div class="sr-summary-address">
                 <i class="fas fa-location-dot" aria-hidden="true"></i>
                 <strong>{{ resident_plan.address_summary.display_name }}</strong>
@@ -38,18 +43,25 @@
             {% set important_findings = priority_plans | selectattr("mapped_finding_status", "equalto", "significant_official_finding") | list %}
             {% set other_checked = priority_plans | selectattr("mapped_finding_status", "equalto", "successful_check_no_significant_match") | list %}
             {% set unavailable_findings = priority_plans | selectattr("mapped_finding_status", "equalto", "data_unavailable") | list %}
-            <h2 class="visually-hidden">Official mapped findings</h2>
-            <p class="visually-hidden">The sections separate returned official map findings, checked non-intersections, and unavailable map information.</p>
-            <header class="sr-summary-section-heading">
-                <span class="section-eyebrow">Main answer</span>
-                <h2>Key findings for this location</h2>
+            {% set canonical_summary = resident_plan.canonical_summary | default({}) %}
+            {% set summary_hazards = canonical_summary.hazards | default([]) %}
+            <h2 class="visually-hidden">{% if is_zip_fallback %}Official mapped findings are unavailable for ZIP fallback{% else %}Official mapped findings{% endif %}</h2>
+            <p class="visually-hidden">{% if is_zip_fallback %}No address-level mapped finding is inferred from ZIP fallback information.{% else %}The sections separate returned official map findings, checked non-intersections, and unavailable map information.{% endif %}</p>
+            <header class="sr-summary-section-heading sr-overview-heading">
+                <h2>Hazard overview</h2>
+                {% if is_zip_fallback %}
+                <p>These are broad ZIP-level preparedness priorities, not address-level mapped findings or personal risk predictions.</p>
+                {% else %}
                 <p>These are hazard-priority notes from official mapped information available for this address, not exact personal risk predictions.</p>
+                {% endif %}
             </header>
             <aside class="sr-summary-coverage-notice" role="note">
                 <i class="fas fa-circle-info" aria-hidden="true"></i>
                 <div>
-                    {% if city_lower == "oakland" %}
-                    <p>Official Oakland plan-area hazard ratings are currently being verified. The findings below are limited to official mapped information available for this address.</p>
+                    {% if is_zip_fallback %}
+                    <p>ZIP fallback values are broad-area ranking context only. They do not show whether an address intersects an official hazard map.</p>
+                    {% elif city_lower == "oakland" %}
+                    <p>Oakland sub-area statistics come from the Draft 2026–2031 LHMP. They are planning context, not property-risk ratings, and remain separate from citywide priority and address map findings.</p>
                     {% if first_priority and first_priority.plan_area and first_priority.plan_area != "Unknown" %}
                     <p><strong>Plan area:</strong> {{ first_priority.plan_area }}{% if first_priority.boundary_warning %} <span>{{ first_priority.boundary_warning }}</span>{% endif %}</p>
                     {% endif %}
@@ -72,7 +84,7 @@
                         <span>{{ plan.mapped_finding_category }}</span>
                     </div>
                     <div class="sr-mapped-finding-main">
-                        <span>Official mapped finding</span>
+                        <span>{% if plan.mapped_finding_status == "significant_official_finding" %}Official mapped finding{% elif plan.mapped_finding_status == "successful_check_no_significant_match" %}Checked map result{% else %}Map information unavailable{% endif %}</span>
                         <strong>{{ plan.mapped_finding_summary }}</strong>
                         <p><strong>Why this rating?</strong> {{ plan.mapped_finding_interpretation }}</p>
                         <small>Confidence: {{ plan.mapped_finding_confidence or plan.confidence }}</small>
@@ -95,7 +107,7 @@
                             <h5>Address-specific notes</h5>
                             <p>{{ plan.address_specific_notes }}</p>
                             {% if city_lower == "oakland" and plan.plan_area and plan.plan_area != "Unknown" %}
-                            <p><strong>Plan-area context:</strong> {{ plan.plan_area }}. Official Oakland plan-area hazard ratings are still being verified and are not used here.{% if plan.boundary_warning %} {{ plan.boundary_warning }}{% endif %}</p>
+                            <p><strong>Sub-area:</strong> {{ plan.plan_area }}. Draft LHMP sub-area statistics are shown separately in the hazard overview and do not rate this property.{% if plan.boundary_warning %} {{ plan.boundary_warning }}{% endif %}</p>
                             {% endif %}
                         </section>
                         <section>
@@ -149,31 +161,135 @@
             {%- endmacro %}
 
             <div class="sr-mapped-findings" id="top-concerns">
+                {% if is_zip_fallback %}
                 <section class="sr-mapped-finding-section">
-                    <header><h3>Important official mapped findings</h3><p>Official map layers that returned a mapped concern for this address.</p></header>
-                    {% for plan in important_findings %}
-                    {{ mapped_finding_row(plan) }}
-                    {% else %}
-                    <p class="sr-mapped-empty">No important official mapped finding was returned by the checked layers.</p>
-                    {% endfor %}
+                    <header><h3>ZIP-level fallback context</h3><p>No address-level official map checks were completed from this ZIP-only search.</p></header>
+                    <p class="sr-mapped-empty">Legacy ZIP values are used only for broad preparedness ranking and are not mapped intersections or property findings.</p>
                 </section>
-                <section class="sr-mapped-finding-section">
-                    <header><h3>Other hazards checked</h3><p>Official map layers checked successfully where no significant mapped concern was returned.</p></header>
-                    {% for plan in other_checked %}
-                    {{ mapped_finding_row(plan) }}
+                {% else %}
+                <div class="sr-risk-table-wrap">
+                    <table class="sr-risk-table">
+                        <caption class="visually-hidden">Hazard overview separating regional context, address evidence, unknown vulnerability, and preparedness actions.</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Hazard</th>
+                                <th scope="col">Regional / city context</th>
+                                <th scope="col">Oakland sub-area context</th>
+                                <th scope="col">What we found at your address</th>
+                                <th scope="col">Building &amp; household vulnerability</th>
+                                <th scope="col">Why this matters / what to do</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for hazard in summary_hazards[:6] %}
+                            <tr class="sr-risk-row is-{{ hazard.hazard_id }}">
+                                <th scope="row" data-label="Hazard">
+                                    <div class="sr-risk-hazard">
+                                        <span class="sr-risk-icon" aria-hidden="true"><i class="fas {% if 'wildfire' in hazard.hazard_id %}fa-fire{% elif 'flood' in hazard.hazard_id %}fa-water{% elif 'tsunami' in hazard.hazard_id %}fa-house-flood-water{% elif 'landslide' in hazard.hazard_id %}fa-mountain{% elif 'dam' in hazard.hazard_id %}fa-bridge-water{% else %}fa-house-crack{% endif %}"></i></span>
+                                        <span><strong>{{ hazard.hazard_name }}</strong><small>{{ hazard.descriptor }}</small><em class="sr-attention-badge is-{{ hazard.attention.category }}">{{ hazard.attention.label }}</em></span>
+                                    </div>
+                                </th>
+                                <td data-label="Regional / city context">
+                                    <strong class="sr-scope-label">{{ hazard.regional_context.scope_label }}</strong>
+                                    {% if hazard.regional_context.priority_label %}<span class="sr-source-category">Priority: {{ hazard.regional_context.priority_label }}</span>{% endif %}
+                                    {% if hazard.regional_context.probability_label %}<span>Probability: {{ hazard.regional_context.probability_label }}</span>{% endif %}
+                                    {% if hazard.regional_context.impact_label %}<span>Impact: {{ hazard.regional_context.impact_label }}</span>{% endif %}
+                                    <small>{{ hazard.regional_context.explanation }}</small>
+                                    <em class="sr-review-status">{{ hazard.regional_context.source_status | replace('_', ' ') | title }}</em>
+                                </td>
+                                <td data-label="Oakland sub-area context">
+                                    {% if hazard.subarea_context.status == "available" %}
+                                    <strong class="sr-scope-label">{{ hazard.subarea_context.subarea_name }}</strong>
+                                    {% for finding in hazard.subarea_context.findings[:1] %}<span>{{ finding.text }}</span>{% endfor %}
+                                    {% if hazard.subarea_context.findings %}<small>{{ hazard.subarea_context.findings[0].reference }}</small>{% endif %}
+                                    <small>Draft Oakland 2026–2031 LHMP sub-area planning context; not a property-risk rating.</small>
+                                    <em class="sr-review-status">Draft · reviewed source claim</em>
+                                    {% else %}
+                                    <strong class="sr-scope-label">Not available</strong>
+                                    <small>{{ hazard.subarea_context.summary }}</small>
+                                    {% endif %}
+                                </td>
+                                <td data-label="What we found at your address">
+                                    <strong class="sr-address-outcome is-{{ hazard.address_evidence.outcome }}">{{ hazard.address_evidence.label }}</strong>
+                                    {% for finding in hazard.address_evidence.findings[:2] %}<span>{{ finding }}</span>{% endfor %}
+                                    <small>{{ hazard.address_evidence.explanation }}</small>
+                                </td>
+                                <td data-label="Building &amp; household vulnerability">
+                                    <strong class="sr-vulnerability"><i class="fas fa-circle-question" aria-hidden="true"></i> {{ hazard.vulnerability.label }}</strong>
+                                    <small>{{ hazard.vulnerability.explanation }}</small>
+                                </td>
+                                <td data-label="Why this matters / what to do">
+                                    <strong>{{ hazard.attention.explanation }}</strong>
+                                    {% set immediate_actions = hazard.actions.before %}
+                                    {% for action in immediate_actions[:1] %}<span>{{ action.instruction }}</span>{% endfor %}
+                                    <a class="sr-risk-detail-link" href="{{ hazard.detail_url }}">View evidence and actions <i class="fas fa-chevron-right" aria-hidden="true"></i></a>
+                                    {% if hazard.address_evidence.claims or hazard.subarea_context.claims or hazard.regional_context.claims %}
+                                    <details class="sr-claim-details"><summary>Sources for these claims</summary>
+                                        {% for claim in hazard.address_evidence.claims + hazard.subarea_context.claims + hazard.regional_context.claims %}
+                                        <p><strong>{{ claim.claim }}</strong><br><small>{{ claim.geographic_scope }} · {{ claim.review_status | replace('_', ' ') | title }}{% if claim.dataset_or_document %} · {{ claim.dataset_or_document }}{% endif %}{% if claim.reference %} · {{ claim.reference }}{% endif %}</small>{% if claim.url %}<br><a href="{{ claim.url }}" target="_blank" rel="noopener noreferrer">Official source</a>{% endif %}</p>
+                                        {% endfor %}
+                                    </details>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="6">No normalized hazard evidence is available for this location.</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if city_lower == "oakland" %}
+                <details class="sr-subarea-evidence-details">
+                    <summary>Oakland sub-area evidence details</summary>
+                    <div class="sr-subarea-evidence-grid">
+                    {% for hazard in summary_hazards %}
+                        {% if hazard.subarea_context.status == "available" %}
+                        <section>
+                            <h3>{{ hazard.hazard_name }} · {{ hazard.subarea_context.subarea_name }}</h3>
+                            <p><strong>Draft plan context—not a property rating.</strong></p>
+                            {% for finding in hazard.subarea_context.findings %}
+                            <p>{{ finding.text }}</p>
+                            {% endfor %}
+                            {% for claim in hazard.subarea_context.claims %}
+                            <p><small>{{ claim.dataset_or_document }} · {{ claim.reference }} · {{ claim.review_status | replace('_', ' ') | title }}</small>{% if claim.url %}<br><a href="{{ claim.url }}" target="_blank" rel="noopener noreferrer">Draft Oakland LHMP source</a>{% endif %}</p>
+                            {% endfor %}
+                            <ul>{% for limitation in hazard.subarea_context.limitations %}<li>{{ limitation }}</li>{% endfor %}</ul>
+                        </section>
+                        {% endif %}
                     {% else %}
-                    <p class="sr-mapped-empty">No successful non-intersection checks were reported.</p>
+                        <p>No reviewed Oakland sub-area evidence is available.</p>
                     {% endfor %}
-                </section>
-                <section class="sr-mapped-finding-section">
-                    <header><h3>Map information unavailable</h3><p>Checks that could not be completed. These failures are not used to lower or raise concern.</p></header>
-                    {% for plan in unavailable_findings %}
-                    {{ mapped_finding_row(plan) }}
-                    {% else %}
-                    <p class="sr-mapped-empty">No unavailable official map checks were reported.</p>
-                    {% endfor %}
-                </section>
+                    </div>
+                </details>
+                {% endif %}
+                <details class="sr-address-evidence-details">
+                    <summary>Address-level evidence details</summary>
+                    <section class="sr-mapped-finding-section">
+                        <header><h3>Important official mapped findings</h3><p>Official map layers that returned a mapped concern for this address.</p></header>
+                        {% for plan in important_findings %}{{ mapped_finding_row(plan) }}{% else %}<p class="sr-mapped-empty">No important official mapped finding was returned by the checked layers.</p>{% endfor %}
+                    </section>
+                    <section class="sr-mapped-finding-section">
+                        <header><h3>Other hazards checked</h3><p>Official map layers checked successfully where no significant mapped concern was returned.</p></header>
+                        {% for plan in other_checked %}{{ mapped_finding_row(plan) }}{% else %}<p class="sr-mapped-empty">No successful non-intersection checks were reported.</p>{% endfor %}
+                    </section>
+                    <section class="sr-mapped-finding-section">
+                        <header><h3>Map information unavailable</h3><p>Checks that could not be completed. These failures are not used to lower or raise concern.</p></header>
+                        {% for plan in unavailable_findings %}{{ mapped_finding_row(plan) }}{% else %}<p class="sr-mapped-empty">No unavailable official map checks were reported.</p>{% endfor %}
+                    </section>
+                </details>
+                {% endif %}
             </div>
+
+            {% if not is_zip_fallback %}
+            <section class="sr-phase-guidance" aria-labelledby="phase-guidance-title">
+                <header><h2 id="phase-guidance-title">Preparedness, response, and recovery</h2><p>Reviewed actions remain separate from hazard evidence and ratings.</p></header>
+                <div>
+                    <section><h3>Before</h3>{% for hazard in summary_hazards %}{% for action in hazard.actions.before[:1] %}<p><strong>{{ hazard.hazard_name }}:</strong> {{ action.instruction }}</p>{% endfor %}{% endfor %}</section>
+                    <section><h3>During</h3>{% for hazard in summary_hazards %}{% for action in hazard.actions.during[:1] %}<p><strong>{{ hazard.hazard_name }}:</strong> {{ action.instruction }}</p>{% endfor %}{% endfor %}</section>
+                    <section><h3>Recovery</h3>{% for hazard in summary_hazards %}{% for action in hazard.actions.recovery[:1] %}<p><strong>{{ hazard.hazard_name }}:</strong> {{ action.instruction }}</p>{% endfor %}{% endfor %}</section>
+                </div>
+            </section>
+            {% endif %}
 
             <div class="sr-summary-action-layout">
                 <section class="sr-summary-now">
