@@ -281,9 +281,113 @@ def _unavailable_result() -> Dict:
     }
 
 
-def check_flood_layer(lat: Optional[float], lon: Optional[float]) -> Dict:
+def _flood_evidence_payload(*, checked_at: str = "", matched_features: Optional[List[Dict]] = None) -> Dict:
+    return {
+        "dataset_id": "fema_nfhl_local",
+        "dataset_version": "processed-zip-slice",
+        "hazard_type": "flood",
+        "evidence_status": "checked",
+        "matched": bool(matched_features),
+        "checked_at": checked_at,
+        "effective_date": None,
+        "claim_type": "regulatory_zone",
+        "precision": "address_point",
+        "public_claim_status": "official_provisional",
+        "source_agency": "Federal Emergency Management Agency",
+        "source_url": get_source("fema_nfhl").url,
+        "matched_features": matched_features or [],
+        "limitations": [
+            "A non-match does not establish overall flood risk for the property.",
+            "This is not a parcel, insurance, elevation-certificate, or building-specific determination.",
+        ],
+        "provenance": {
+            "dataset_id": "fema_nfhl_local",
+            "dataset_name": "National Flood Hazard Layer ZIP-filtered local snapshot",
+            "source_summary": "FEMA flood polygons filtered to the saved ZIP code to avoid loading the full local snapshot.",
+        },
+    }
+
+
+def _flood_feature_payload(feature: Dict) -> Dict:
+    properties = feature.get("properties") or {}
+    return {
+        "layer_id": properties.get("FLD_AR_ID")
+        or properties.get("SOURCE_CIT")
+        or "fema_flood_layer",
+        "name": f"FEMA flood zone {properties.get('FLD_ZONE', 'unknown')}",
+        "zone": properties.get("FLD_ZONE", "Unknown"),
+        "source_citation": properties.get("SOURCE_CIT", ""),
+        "sfha": properties.get("SFHA_TF", ""),
+    }
+
+
+def _check_flood_zip_slice(lat: float, lon: float, zip_code: str) -> Optional[Dict]:
+    safe_zip = str(zip_code or "").strip()
+    if not safe_zip.isdigit() or len(safe_zip) != 5:
+        return None
+    path = os.path.join(BASE_DIR, "static", "processed", "flood_by_zip", f"{safe_zip}.geojson")
+    if not os.path.exists(path):
+        return None
+    try:
+        if os.path.getsize(path) > 4_000_000:
+            return _unavailable_result()
+        with open(path, "r", encoding="utf-8") as source:
+            data = json.load(source)
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return _unavailable_result()
+    features = data.get("features") if isinstance(data, dict) else None
+    if data.get("type") != "FeatureCollection" or not isinstance(features, list):
+        return _unavailable_result()
+
+    point = Point(float(lon), float(lat))
+    layers = []
+    valid_features = 0
+    for feature in features:
+        geometry = feature.get("geometry")
+        if not geometry:
+            continue
+        try:
+            polygon = shape(geometry)
+        except Exception:
+            continue
+        if (
+            polygon.is_empty
+            or not polygon.is_valid
+            or polygon.geom_type not in {"Polygon", "MultiPolygon"}
+        ):
+            continue
+        valid_features += 1
+        if polygon.contains(point) or polygon.touches(point):
+            layers.append(_flood_feature_payload(feature))
+
+    if valid_features == 0 and features:
+        return _unavailable_result()
+
+    sfha_layers = [layer for layer in layers if _fema_layer_is_sfha(layer)]
+    checked_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    return {
+        "checked": True,
+        "data_status": "checked" if sfha_layers else "not_in_layer",
+        "message": "",
+        "inside": bool(sfha_layers),
+        "polygon_match": bool(layers),
+        "sfha_match": bool(sfha_layers),
+        "sfha_layers": sfha_layers,
+        "layers": layers,
+        "geospatial_evidence": _flood_evidence_payload(
+            checked_at=checked_at,
+            matched_features=layers,
+        ),
+    }
+
+
+def check_flood_layer(lat: Optional[float], lon: Optional[float], zip_code: Optional[str] = None) -> Dict:
     if lat is None or lon is None:
         return _not_checked_result()
+    if zip_code:
+        zip_result = _check_flood_zip_slice(float(lat), float(lon), zip_code)
+        if zip_result is not None:
+            return zip_result
     try:
         evidence = GeospatialEvidenceService(project_root=BASE_DIR).check_point(
             "fema_nfhl_local",
@@ -605,12 +709,13 @@ def clear_location_check_cache():
         _LOCATION_CHECK_CACHE.clear()
 
 
-def _collect_location_checks(lat: float, lon: float) -> Dict:
+def _collect_location_checks(lat: float, lon: float, zip_code: Optional[str] = None) -> Dict:
     # Coordinates are held only in short-lived process memory and rounded to
     # roughly meter scale. Full addresses are never part of this cache key.
     cache_key = (
         round(float(lat), 5),
         round(float(lon), 5),
+        str(zip_code or ""),
         id(check_flood_layer),
         id(check_wildfire_layer),
         id(check_fault_layer),
@@ -624,7 +729,7 @@ def _collect_location_checks(lat: float, lon: float) -> Dict:
             return deepcopy(cached["payload"])
 
     with ThreadPoolExecutor(max_workers=6) as executor:
-        flood_future = executor.submit(check_flood_layer, lat, lon)
+        flood_future = executor.submit(check_flood_layer, lat, lon, zip_code)
         wildfire_future = executor.submit(check_wildfire_layer, lat, lon)
         fault_future = executor.submit(check_fault_layer, lat, lon)
         earthquake_cgs_future = executor.submit(
@@ -1429,7 +1534,7 @@ def build_hazard_results(hazards: List[Dict], location_result, zip_snapshot: Dic
     dam_inundation_check = {}
     if location_result.lat is not None and location_result.lon is not None and location_result.formatted_address:
         lat, lon = location_result.lat, location_result.lon
-        checks = _collect_location_checks(lat, lon)
+        checks = _collect_location_checks(lat, lon, location_result.zip_code)
         flood_check = checks["flood"]
         wildfire_check = checks["wildfire"]
         fault_check = checks["fault"]

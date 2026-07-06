@@ -105,6 +105,41 @@ class GISAvailabilityTests(unittest.TestCase):
         self.assertFalse(result["checked"])
         self.assertEqual(result["data_status"], "data_unavailable")
 
+    def test_flood_zip_slice_avoids_raw_fema_snapshot(self):
+        processed_dir = Path(self.temp_dir.name, "static", "processed", "flood_by_zip")
+        processed_dir.mkdir(parents=True)
+        Path(processed_dir, "94612.geojson").write_text(
+            json.dumps({
+                "type": "FeatureCollection",
+                "features": [{
+                    "type": "Feature",
+                    "properties": {
+                        "FLD_AR_ID": "test-zone",
+                        "FLD_ZONE": "AE",
+                        "SFHA_TF": "T",
+                    },
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[
+                            [-122.30, 37.70],
+                            [-122.10, 37.70],
+                            [-122.10, 37.90],
+                            [-122.30, 37.90],
+                            [-122.30, 37.70],
+                        ]],
+                    },
+                }],
+            }),
+            encoding="utf-8",
+        )
+        with patch("hazard_engine.GeospatialEvidenceService") as service:
+            result = check_flood_layer(37.8, -122.2, "94612")
+        service.assert_not_called()
+        self.assertTrue(result["checked"])
+        self.assertEqual(result["data_status"], "checked")
+        self.assertTrue(result["inside"])
+        self.assertEqual(result["layers"][0]["zone"], "AE")
+
     def test_unavailable_layer_does_not_create_low_exposure(self):
         location = LocationResult(
             input_address="1 Test Street",
