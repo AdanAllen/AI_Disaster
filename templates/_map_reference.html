@@ -18,12 +18,12 @@
                 </div>
                 <div>
                     <h3>Flood &amp; inundation</h3>
-                    <div class="layer-toggle flood" id="flood-toggle" onclick="toggleLayer('flood')"><i class="fas fa-square layer-icon"></i><span>Flood Zones</span></div>
-                    <div class="layer-toggle dam-inundation" id="dam-inundation-toggle" onclick="toggleLayer('dam-inundation')"><i class="fas fa-square layer-icon"></i><span>Dam Failure Inundation</span></div>
+                    <div class="layer-toggle flood{% if 'flood' in summary_map_layers %} is-summary-relevant{% endif %}" id="flood-toggle" onclick="toggleLayer('flood')"><i class="fas fa-square layer-icon"></i><span>FEMA Flood Zones</span></div>
+                    <div class="layer-toggle dam-inundation{% if 'dam-inundation' in summary_map_layers %} is-summary-relevant{% endif %}" id="dam-inundation-toggle" onclick="toggleLayer('dam-inundation')"><i class="fas fa-square layer-icon"></i><span>Dam Failure Inundation</span></div>
                 </div>
                 <div>
                     <h3>CAL FIRE</h3>
-                    <div class="layer-toggle wildfire" id="wildfire-toggle" onclick="toggleLayer('wildfire')"><i class="fas fa-square layer-icon"></i><span>Wildfire Zones</span></div>
+                    <div class="layer-toggle wildfire{% if 'wildfire' in summary_map_layers %} is-summary-relevant{% endif %}" id="wildfire-toggle" onclick="toggleLayer('wildfire')"><i class="fas fa-square layer-icon"></i><span>CAL FIRE Hazard Severity Zones</span></div>
                 </div>
                 <div>
                     <h3>CGS Earthquake Zones</h3>
@@ -32,7 +32,7 @@
                 </div>
                 <div>
                     <h3>Faults</h3>
-                    <div class="layer-toggle earthquake" id="earthquake-toggle" onclick="toggleLayer('earthquake')"><i class="fas fa-square layer-icon"></i><span>Fault Lines</span></div>
+                    <div class="layer-toggle earthquake{% if 'earthquake' in summary_map_layers %} is-summary-relevant{% endif %}" id="earthquake-toggle" onclick="toggleLayer('earthquake')"><i class="fas fa-square layer-icon"></i><span>Mapped Fault Traces</span></div>
                     <div class="layer-toggle cgs{% if cgs_map_evidence | selectattr('map_layer_key', 'equalto', 'alquist-priolo') | selectattr('matched', 'equalto', true) | list %} active{% endif %}" id="cgs-alquist-priolo-toggle" data-cgs-layer="alquist-priolo" data-cgs-legend="alquist-priolo" onclick="toggleLayer('cgs-alquist-priolo')"><i class="fas fa-square layer-icon"></i><span>CGS Alquist-Priolo Fault Zones</span></div>
                 </div>
                 <div>

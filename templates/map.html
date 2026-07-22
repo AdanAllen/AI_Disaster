@@ -845,6 +845,8 @@
         'cgs-tsunami': null
     };
     const matchedCGSLayers = {{ cgs_map_evidence | selectattr('matched', 'equalto', true) | map(attribute='map_layer_key') | list | tojson }};
+    const summaryMapLayers = {{ summary_map_layers | default([]) | tojson }};
+    const requestedHazard = {{ requested_hazard | default('') | tojson }};
     const cgsLayerColors = {
         {% for layer_key, layer in cgs_map_layers.items() %}
         '{{ layer_key }}': '{{ layer.color }}'{% if not loop.last %},{% endif %}
@@ -1563,6 +1565,27 @@
 
             map.setView([userLat, userLon], 14);
         }
+
+        const requestedLayerMap = {
+            flood: ['flood'],
+            wildfire: ['wildfire'],
+            earthquake: ['earthquake', ...summaryMapLayers.filter(item => item.startsWith('cgs-'))],
+            landslide: ['cgs-earthquake-landslide'],
+            tsunami: ['cgs-tsunami'],
+            'tsunami-seiche': ['cgs-tsunami'],
+            'dam-failure': ['dam-inundation']
+        };
+        const initialLayers = requestedHazard
+            ? (requestedLayerMap[requestedHazard] || [])
+            : summaryMapLayers;
+        window.setTimeout(() => {
+            [...new Set(initialLayers)].forEach(layerType => {
+                const toggle = document.getElementById(`${layerType}-toggle`);
+                if (toggle && !toggle.classList.contains('active')) {
+                    toggleLayer(layerType);
+                }
+            });
+        }, 350);
 
         // Auto-focus on highest risk after a short delay
         setTimeout(autoFocusHighestRisk, 3000);

@@ -64,7 +64,9 @@ class SEOContractTests(unittest.TestCase):
 
     def test_homepage_has_visible_independent_tool_disclaimer(self):
         html = self.client.get("/").get_data(as_text=True)
-        self.assertGreaterEqual(html.count(TRUST_NOTICE), 2)
+        self.assertGreaterEqual(html.count(TRUST_NOTICE), 1)
+        self.assertIn('class="sr-civic-note" role="note"', html)
+        self.assertIn("StayReady is an independent educational tool using official public data.", html)
 
     def test_static_public_pages_have_unique_canonical_urls(self):
         for path in (

@@ -15,13 +15,13 @@ class PublicAdviceSurfaceTests(unittest.TestCase):
         app.config.update(TESTING=True)
         self.client = app.test_client()
 
-    def test_homepage_examples_are_action_library_records(self):
+    def test_homepage_does_not_present_unsourced_sample_actions(self):
         response = self.client.get("/")
         html = response.get_data(as_text=True)
         self.assertEqual(response.status_code, 200)
-        self.assertIn('data-action-id="portable_go_bag"', html)
-        self.assertIn('data-action-id="protect_critical_documents"', html)
-        self.assertIn("Source note:", html)
+        self.assertNotIn('data-action-id="portable_go_bag"', html)
+        self.assertNotIn('data-action-id="protect_critical_documents"', html)
+        self.assertIn("Practical actions with a clear reason for appearing", html)
         self.assertNotIn(
             "Build a go-bag, alert plan, and utility safety plan.",
             html,

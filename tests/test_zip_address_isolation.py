@@ -210,9 +210,9 @@ class ZipAddressIsolationTests(unittest.TestCase):
             "household_tags": [],
         })
         html = client.get("/risk_summary").get_data(as_text=True)
-        self.assertIn("broad ZIP-level fallback context", html)
-        self.assertIn("not an address or property finding", html)
-        self.assertIn("do not show whether an address intersects", html)
+        self.assertIn("Broad ZIP fallback context only", html)
+        self.assertIn("ZIP fallback cannot identify a property or map intersection", html)
+        self.assertIn("no address-point intersections were inferred", html)
 
     @patch("hazard_engine._collect_location_checks")
     def test_legitimate_address_gis_match_is_unchanged(self, collect):

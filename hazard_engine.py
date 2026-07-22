@@ -787,7 +787,13 @@ def _collect_location_checks(lat: float, lon: float, zip_code: Optional[str] = N
 def _apply_cgs_evidence(result: HazardResult, checks: List[Dict]) -> HazardResult:
     if not checks:
         return result
-    result.additional_geospatial_evidence = checks
+    # CGS polygon checks complement fault-trace proximity. Keep both evidence
+    # types so a successful/non-matching zone check cannot erase a valid
+    # distance calculation.
+    result.additional_geospatial_evidence = [
+        *result.additional_geospatial_evidence,
+        *checks,
+    ]
     checked = [item for item in checks if item.get("checked")]
     matched = [item for item in checked if item.get("matched")]
     unavailable = [item for item in checks if not item.get("data_available")]
@@ -936,19 +942,27 @@ def _build_normalized_evidence(result: HazardResult) -> List[Dict]:
             claim_type="hazard_zone",
             source_agency="California Department of Forestry and Fire Protection",
             source_url=result.source_url,
-            details={"matched_layers": result.matched_layers},
+            details={
+                "matched_layers": result.matched_layers,
+                "public_claim_status": result.public_claim_status or "official_provisional",
+            },
         ))
     if result.hazard_type == "earthquake":
-        records.append(_normalized_evidence_record(
-            dataset_id="usgs_cgs_faults_local",
-            label="Loaded mapped fault traces",
-            status="proximity_context" if result.match_type == "near_fault" else "checked",
-            matched=result.match_type == "near_fault",
-            claim_type="proximity",
-            source_agency="United States Geological Survey and contributing California Geological Survey records",
-            source_url=get_source("usgs_faults").url,
-            details={"matched_layers": result.matched_layers},
-        ))
+        has_fault_record = any(
+            item.get("dataset_id") == "usgs_cgs_faults_local"
+            for item in result.additional_geospatial_evidence
+        )
+        if not has_fault_record:
+            records.append(_normalized_evidence_record(
+                dataset_id="usgs_cgs_faults_local",
+                label="Loaded mapped fault traces",
+                status="proximity_context" if result.match_type == "near_fault" else "checked",
+                matched=None,
+                claim_type="proximity",
+                source_agency="United States Geological Survey and contributing California Geological Survey records",
+                source_url=get_source("usgs_faults").url,
+                details={"matched_layers": result.matched_layers},
+            ))
     for evidence in result.additional_geospatial_evidence:
         records.append(_normalized_evidence_record(
             dataset_id=evidence.get("dataset_id", ""),
@@ -1486,6 +1500,38 @@ def _earthquake_address_result(hazard: Dict, location_result, fault_check: Dict,
     if nearest and not near:
         limitations.append(f"The nearest loaded mapped fault line is {nearest.get('distance_km')} km away: {nearest.get('name')}.")
 
+    proximity_evidence = []
+    if nearest:
+        distance_km = nearest.get("distance_km")
+        distance_miles = round(float(distance_km) * 0.621371, 1) if distance_km is not None else None
+        distance_text = (
+            f"Approximately {distance_miles:g} miles from {nearest.get('name') or 'the nearest loaded mapped fault trace'}."
+            if distance_miles is not None
+            else "Distance to the nearest loaded mapped fault trace was not available."
+        )
+        proximity_evidence.append({
+            "dataset_id": "usgs_cgs_faults_local",
+            "dataset_name": "Loaded USGS/CGS mapped fault traces",
+            "checked": True,
+            "data_available": True,
+            # Proximity is deliberately not represented as polygon membership.
+            "matched": None,
+            "near": near,
+            "exposure": "proximity_context",
+            "result_label": distance_text,
+            "status_label": "Near a mapped feature" if near else "Proximity calculated",
+            "claim_type": "proximity",
+            "precision": "address_point",
+            "source_agency": "United States Geological Survey and contributing California Geological Survey records",
+            "source_url": get_source("usgs_faults").url,
+            "public_claim_status": "official_provisional",
+            "matched_features": [nearest],
+            "limitations": [
+                "Distance to a mapped fault trace is proximity context, not Alquist-Priolo zone membership.",
+                "Fault distance does not predict shaking intensity or building damage.",
+            ],
+        })
+
     return HazardResult(
         hazard_id=hazard_type,
         hazard_type=hazard_type,
@@ -1498,6 +1544,7 @@ def _earthquake_address_result(hazard: Dict, location_result, fault_check: Dict,
         is_in_hazard_zone=None,
         match_type="near_fault" if near else "fault_proximity_context",
         matched_layers=layers,
+        additional_geospatial_evidence=proximity_evidence,
         source_url=get_source("usgs_faults").url,
         confidence="mixed_support",
         review_status="draft_reviewed",

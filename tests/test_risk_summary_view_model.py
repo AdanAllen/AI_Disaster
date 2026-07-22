@@ -122,7 +122,7 @@ class CanonicalRiskSummaryTests(unittest.TestCase):
             [hazard(exposure="mapped_match", data_status="checked", records=[record])],
             [oakland_priority()],
         )["hazards"][0]
-        self.assertEqual(item["attention"]["label"], "Address finding")
+        self.assertEqual(item["attention"]["label"], "Direct mapped concern")
         self.assertEqual(item["subarea_context"]["status"], "available")
 
     def test_unreviewed_subarea_value_is_withheld(self):
@@ -147,7 +147,7 @@ class CanonicalRiskSummaryTests(unittest.TestCase):
         self.assertEqual(item["address_evidence"]["outcome"], "mapped_match")
         self.assertIn("Zone AE", item["address_evidence"]["findings"][0])
         self.assertEqual(item["address_evidence"]["claims"][0]["dataset_or_document"], "FEMA NFHL")
-        self.assertEqual(item["attention"]["label"], "Address finding")
+        self.assertEqual(item["attention"]["label"], "Direct mapped concern")
         self.assertNotIn("risk", item["address_evidence"]["label"].lower())
         self.assertEqual(len(item["address_evidence"]["findings"]), 1)
 
@@ -157,6 +157,66 @@ class CanonicalRiskSummaryTests(unittest.TestCase):
         self.assertIn("Very High Fire Hazard Severity Zone", item["address_evidence"]["findings"])
         self.assertIn("fire-hazard-severity", item["address_evidence"]["explanation"])
         self.assertIn("does not estimate personal annual wildfire probability", item["address_evidence"]["explanation"].lower())
+
+    def test_production_normalized_shape_preserves_exact_official_category(self):
+        record = {
+            "dataset_id": "fema_nfhl_local",
+            "label": "National Flood Hazard Layer ZIP-filtered local snapshot",
+            "matched": True,
+            "claim_type": "regulatory_zone",
+            "source_agency": "Federal Emergency Management Agency",
+            "source_url": "https://www.fema.gov/flood-maps/national-flood-hazard-layer",
+            "details": {
+                "matched_layers": [{"name": "Special Flood Hazard Area, Zone AE"}],
+                "public_claim_status": "official_provisional",
+            },
+        }
+        item = build_canonical_risk_summary(
+            location(),
+            [hazard("flood", exposure="mapped_match", data_status="checked", records=[record])],
+            [],
+        )["hazards"][0]
+        self.assertEqual(item["address_evidence"]["findings"], ["Special Flood Hazard Area, Zone AE"])
+        self.assertEqual(item["address_evidence"]["records"][0]["review_status"], "official_provisional")
+
+    def test_valid_match_and_failed_source_remain_visible_together(self):
+        matched = evidence(matched=True, dataset="FEMA NFHL", label="Special Flood Hazard Area, Zone AE")
+        unavailable = {
+            "dataset_id": "secondary_flood_source",
+            "dataset_name": "Secondary official flood source",
+            "checked": False,
+            "data_available": False,
+            "claim_type": "regulatory_zone",
+            "source_agency": "Official test agency",
+        }
+        item = build_canonical_risk_summary(
+            location(),
+            [hazard("flood", exposure="mapped_match", data_status="checked", records=[matched, unavailable])],
+            [],
+        )["hazards"][0]
+        self.assertEqual(item["address_evidence"]["outcome"], "mapped_match")
+        self.assertTrue(item["address_evidence"]["has_source_failures"])
+        self.assertEqual(
+            {record["status"] for record in item["address_evidence"]["records"]},
+            {"mapped_match", "data_unavailable"},
+        )
+
+    def test_result_quality_counts_completed_and_unavailable_sources(self):
+        matched = evidence(matched=True, dataset="FEMA NFHL", label="Special Flood Hazard Area, Zone AE")
+        unavailable = {
+            "dataset_id": "secondary_flood_source",
+            "dataset_name": "Secondary official flood source",
+            "checked": False,
+            "data_available": False,
+        }
+        model = build_canonical_risk_summary(
+            location(),
+            [hazard("flood", exposure="mapped_match", data_status="checked", records=[matched, unavailable])],
+            [],
+        )
+        self.assertEqual(model["result_quality"]["completed_check_count"], 1)
+        self.assertEqual(model["result_quality"]["unavailable_check_count"], 1)
+        self.assertIn("unavailable", model["result_quality"]["status_label"])
 
     def test_fault_proximity_preserves_distance_without_zone_membership(self):
         record = evidence(matched=True, dataset="USGS fault traces", label="Hayward Fault — 0.4 km away", claim_type="proximity")
@@ -181,24 +241,24 @@ class CanonicalRiskSummaryTests(unittest.TestCase):
         item = build_canonical_risk_summary(location(), [hazard(records=[contradictory])], [])["hazards"][0]
         self.assertEqual(item["address_evidence"]["outcome"], "checked_no_match")
         self.assertEqual(item["address_evidence"]["findings"], [])
-        self.assertEqual(item["address_evidence"]["claims"], [])
+        self.assertEqual(item["address_evidence"]["claims"][0]["review_status"], "official_provisional")
 
-    def test_template_and_css_define_separate_subarea_column_and_mobile_cards(self):
+    def test_template_and_css_define_adaptive_evidence_cards(self):
         template = (BASE_DIR / "templates" / "_risk_summary_reference.html").read_text(encoding="utf-8")
         css = (BASE_DIR / "static" / "css" / "stayready.css").read_text(encoding="utf-8")
         for label in (
-            "Regional / city context",
-            "Oakland sub-area context",
-            "What we found at your address",
-            "Building &amp; household vulnerability",
-            "Why this matters / what to do",
+            "Your main hazard picture",
+            "Address point",
+            "Local planning context",
+            "StayReady interpretation",
+            "What StayReady cannot determine",
         ):
             self.assertIn(label, template)
-        self.assertIn("hazard.vulnerability.label", template)
         self.assertIn("hazard.subarea_context", template)
         self.assertIn("hazard.detail_url", template)
-        self.assertIn(".sr-risk-table thead { display: none; }", css)
-        self.assertIn('content: attr(data-label)', css)
+        self.assertIn(".sr-hazard-evidence-list", css)
+        self.assertIn(".sr-hazard-evidence-grid", css)
+        self.assertIn("grid-template-columns: 1fr;", css)
 
 
 if __name__ == "__main__":

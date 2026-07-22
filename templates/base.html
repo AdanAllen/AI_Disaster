@@ -775,6 +775,7 @@
     {% block head %}{% endblock %}
 </head>
 <body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
 <div class="page-shell">
     <nav class="navbar navbar-expand-lg site-navbar">
         <div class="container">
@@ -797,38 +798,30 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-lg-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('home') }}">
-                            <i class="fas fa-house"></i><span>Home</span>
+                        <a class="nav-link" href="{{ url_for('home') }}"{% if request.endpoint == 'home' %} aria-current="page"{% endif %}>
+                            <i class="fas fa-location-dot"></i><span>Check address</span>
                         </a>
                     </li>
+                    {% if has_resident_result %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('risk_summary') }}">
-                            <i class="fas fa-chart-line"></i><span>Summary</span>
+                        <a class="nav-link" href="{{ url_for('risk_summary') }}"{% if request.endpoint == 'risk_summary' %} aria-current="page"{% endif %}>
+                            <i class="fas fa-chart-line"></i><span>My summary</span>
                         </a>
                     </li>
+                    {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('map') }}">
+                        <a class="nav-link" href="{{ url_for('map') }}"{% if request.endpoint == 'map' %} aria-current="page"{% endif %}>
                             <i class="fas fa-layer-group"></i><span>Map</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('hazards_dashboard') }}">
-                            <i class="fas fa-triangle-exclamation"></i><span>Hazards</span>
+                        <a class="nav-link" href="{{ url_for('resources') }}"{% if request.endpoint == 'resources' %} aria-current="page"{% endif %}>
+                            <i class="fas fa-list-check"></i><span>Prepare</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('resources') }}">
-                            <i class="fas fa-book-open"></i><span>Resources</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('sources') }}">
+                        <a class="nav-link" href="{{ url_for('sources') }}"{% if request.endpoint == 'sources' %} aria-current="page"{% endif %}>
                             <i class="fas fa-database"></i><span>Sources</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('about') }}">
-                            <i class="fas fa-circle-info"></i><span>About</span>
                         </a>
                     </li>
                 </ul>
@@ -836,7 +829,7 @@
         </div>
     </nav>
 
-    <main class="site-main">
+    <main class="site-main" id="main-content" tabindex="-1">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div class="container mt-3">

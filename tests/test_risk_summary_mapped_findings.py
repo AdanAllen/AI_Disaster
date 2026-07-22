@@ -64,10 +64,72 @@ def _priority(slug, label, status, summary, interpretation, source="Official tes
 
 
 def _resident_plan(city="Oakland"):
+    def card(slug, label, outcome, finding, dataset, *, unavailable=False):
+        status = "data_unavailable" if unavailable else ("mapped_match" if outcome == "mapped_match" else "checked_no_match")
+        attention = "information-unavailable" if unavailable else ("direct-mapped-concern" if outcome == "mapped_match" else "prepare-despite-no-match")
+        return {
+            "hazard_id": slug,
+            "hazard_name": label,
+            "descriptor": "Official map evidence and reviewed preparedness context.",
+            "attention": {
+                "category": attention,
+                "label": "Information unavailable" if unavailable else ("Direct mapped concern" if outcome == "mapped_match" else "Prepare despite no mapped match"),
+            },
+            "address_evidence": {
+                "outcome": status,
+                "label": "Information unavailable" if unavailable else ("Official mapped match found" if outcome == "mapped_match" else "Checked, no mapped match found"),
+                "findings": [] if unavailable else [finding],
+                "explanation": finding,
+                "proximity": [],
+                "has_source_failures": unavailable,
+                "records": [{
+                    "status": status,
+                    "status_label": "Data unavailable" if unavailable else ("Official mapped match found" if outcome == "mapped_match" else "Checked, no mapped match found"),
+                    "geographic_scope": "Address point",
+                    "dataset_name": dataset,
+                    "finding": finding,
+                    "source_agency": "Official test agency",
+                    "review_status": "official_provisional",
+                    "source_url": "https://example.gov/source",
+                }],
+            },
+            "subarea_context": ({
+                "status": "available",
+                "subarea_name": "Glenview/Redwood Heights",
+                "findings": [{"text": "Reviewed Oakland planning-area context.", "reference": "Draft LHMP table"}],
+                "claims": [],
+            } if city == "Oakland" else {"status": "unavailable", "claims": []}),
+            "regional_context": {"status": "unavailable", "claims": []},
+            "vulnerability": {"label": "Unknown"},
+            "interpretation": "Use this exact map result with the stated source limits.",
+            "actions": {"before": [{"instruction": "Use official alert channels for emergency instructions."}]},
+            "detail_url": f"/hazards/{slug}",
+        }
+
+    cards = [
+        card("earthquake", "Earthquake", "mapped_match", "Inside a CGS mapped Alquist-Priolo fault rupture zone.", "CGS Alquist-Priolo Earthquake Fault Zones"),
+        card("wildfire", "Wildfire", "mapped_match", "CAL FIRE Fire Hazard Severity Zone: Very High", "CAL FIRE Fire Hazard Severity Zone layer"),
+        card("flood", "Flood", "checked_no_match", "FEMA Zone X, not identified as a Special Flood Hazard Area.", "FEMA National Flood Hazard Layer snapshot"),
+        card("tsunami", "Tsunami", "checked_no_match", "Outside the official tsunami hazard area.", "California Geological Survey tsunami hazard area layer"),
+        card("landslide", "Landslide", "data_unavailable", "Address-specific map information is temporarily unavailable.", "CGS and local landslide layers", unavailable=True),
+    ]
     return {
         "address_summary": {
             "display_name": "4183 Observatory Ave, Oakland, CA",
             "city": city,
+            "county": "Alameda County",
+            "zip_code": "94619",
+            "precision_label": "Address point",
+        },
+        "canonical_summary": {
+            "hazards": cards,
+            "unknowns": ["Building construction and condition"],
+            "result_quality": {
+                "precision_label": "Address point",
+                "status_label": "4 checks returned; 1 unavailable",
+                "unavailable_check_count": 1,
+                "geocoding_note": "Address geocoding is a point approximation.",
+            },
         },
         "hazard_priorities": [
             _priority(
@@ -142,6 +204,7 @@ def _render(city="Oakland"):
         return render_template(
             "risk_summary.html",
             resident_plan=_resident_plan(city),
+            location_context={"location_mode": "address"},
             warning_message=None,
             empty_state=False,
         )
@@ -164,9 +227,10 @@ class RiskSummaryMappedFindingsTests(unittest.TestCase):
 
     def test_summary_separates_significant_checked_and_unavailable_results(self):
         html = _render()
-        self.assertIn("Important official mapped findings", html)
-        self.assertIn("Other hazards checked", html)
-        self.assertIn("Map information unavailable", html)
+        self.assertIn("Your main hazard picture", html)
+        self.assertIn("Direct mapped concern", html)
+        self.assertIn("Checked, no mapped match found", html)
+        self.assertIn("Information unavailable", html)
         self.assertIn("Inside a CGS mapped Alquist-Priolo fault rupture zone.", html)
         self.assertIn("CAL FIRE Fire Hazard Severity Zone: Very High", html)
         self.assertIn("FEMA Zone X, not identified as a Special Flood Hazard Area.", html)
@@ -175,79 +239,56 @@ class RiskSummaryMappedFindingsTests(unittest.TestCase):
 
     def test_summary_notices_and_plan_area_are_jurisdiction_scoped(self):
         oakland = _render("Oakland")
-        self.assertIn("Oakland sub-area statistics come from the Draft 2026–2031 LHMP.", oakland)
-        self.assertIn("They are planning context, not property-risk ratings", oakland)
-        self.assertIn("Plan area:</strong> Glenview/Redwood Heights", oakland)
-        self.assertIn("This location may be near a plan-area boundary.", oakland)
+        self.assertIn("Oakland planning area · Glenview/Redwood Heights", oakland)
+        self.assertIn("Draft 2026–2031 LHMP planning context; reviewed claim, not a property rating.", oakland)
 
         hayward = _render("Hayward")
-        self.assertIn("Local LHMP area ratings are not yet available for Hayward.", hayward)
-        self.assertNotIn("Official Oakland plan-area hazard ratings", hayward)
-        self.assertNotIn("Plan area:</strong>", hayward)
+        self.assertIn("No eligible, exactly cited local-plan category is available", hayward)
+        self.assertNotIn("Oakland planning area", hayward)
 
     def test_failed_or_unknown_data_does_not_erase_valid_mapped_findings(self):
         html = _render()
-        important_section = html.split("Important official mapped findings", 1)[1].split("Other hazards checked", 1)[0]
-        unavailable_section = html.split("Map information unavailable", 1)[1]
-        self.assertIn("Alquist-Priolo", important_section)
-        self.assertIn("Very High", important_section)
-        self.assertIn("Address-specific map information is temporarily unavailable.", unavailable_section)
+        self.assertIn("Alquist-Priolo", html)
+        self.assertIn("Very High", html)
+        self.assertIn("Address-specific map information is temporarily unavailable.", html)
+        self.assertIn("Another map source was unavailable; it was not treated as a safer result.", html)
 
     def test_actions_are_consolidated_not_repeated_in_rows(self):
         html = _render()
-        self.assertEqual(html.count("Do these first"), 1)
+        self.assertEqual(html.count("Start with these high-impact actions"), 1)
         self.assertNotIn("What to do next", html)
         self.assertNotIn("During, after, and recovery", html)
 
     def test_mapped_finding_details_are_native_summary_siblings(self):
         html = _render()
-        self.assertIn('<details class="sr-mapped-finding-row', html)
-        self.assertIn('<summary class="sr-mapped-finding-summary">', html)
-        self.assertIn('class="sr-summary-hazard-details sr-mapped-finding-details"', html)
-        self.assertLess(
-            html.index('<summary class="sr-mapped-finding-summary">'),
-            html.index('class="sr-summary-hazard-details sr-mapped-finding-details"'),
-        )
-        row_fragment = html.split('<details class="sr-mapped-finding-row', 1)[1].split("</details>", 1)[0]
+        self.assertIn('<details class="sr-evidence-details">', html)
+        self.assertIn("Official source details and all returned checks", html)
+        self.assertIn('class="sr-evidence-record-list"', html)
+        row_fragment = html.split('<details class="sr-evidence-details">', 1)[1].split("</details>", 1)[0]
         self.assertEqual(row_fragment.count("<summary"), 1)
-        self.assertNotIn("<footer>", row_fragment)
+        self.assertIn("Address point", row_fragment)
 
     def test_mapped_finding_details_css_contract(self):
         css = (BASE_DIR / "static" / "css" / "stayready.css").read_text(encoding="utf-8")
-        row_rule = css.split(".sr-mapped-finding-row {", 1)[1].split("}", 1)[0]
-        summary_rule = css.split(".sr-mapped-finding-summary {", 1)[1].split("}", 1)[0]
-        details_rule = css.split(".sr-mapped-finding-details {", 1)[1].split("}", 1)[0]
-        details_grid_rule = next(
-            rule for rule in re.findall(r"\.sr-mapped-finding-details-grid\s*\{([^}]*)\}", css)
-            if "repeat(2" in rule
-        )
-        source_url_rule = css.split(".sr-source-url {", 1)[1].split("}", 1)[0]
-
-        self.assertIn("display: block", row_rule)
-        self.assertNotIn("grid-template-columns", row_rule)
-        self.assertIn("display: grid", summary_rule)
-        self.assertIn("minmax(300px", summary_rule)
-        self.assertIn("auto", summary_rule)
-        self.assertIn("display: block", details_rule)
-        self.assertIn("width: 100%", details_rule)
-        self.assertIn("repeat(2, minmax(0, 1fr))", details_grid_rule)
-        self.assertIn("overflow-wrap: anywhere", source_url_rule)
-        self.assertNotIn(".sr-mapped-finding-row details[open]", css)
-        self.assertNotIn("word-break: break-all", css)
+        card_rule = css.split(".sr-hazard-evidence-card {", 1)[1].split("}", 1)[0]
+        grid_rule = css.split(".sr-hazard-evidence-grid {", 1)[1].split("}", 1)[0]
+        self.assertIn("border", card_rule)
+        self.assertIn("display: grid", grid_rule)
+        self.assertIn("1.05fr 1fr 1.3fr", grid_rule)
 
     def test_mapped_finding_responsive_details_rules_exist(self):
         css = (BASE_DIR / "static" / "css" / "stayready.css").read_text(encoding="utf-8")
         self.assertRegex(
             css,
             re.compile(
-                r"@media \(max-width: 991px\).*?\.sr-mapped-finding-details-grid\s*\{[^}]*grid-template-columns: 1fr",
+                r"@media \(max-width: 991px\).*?\.sr-hazard-evidence-grid\s*\{[^}]*grid-template-columns: 1fr",
                 re.S,
             ),
         )
         self.assertRegex(
             css,
             re.compile(
-                r"@media \(max-width: 575px\).*?\.sr-mapped-finding-summary\s*\{[^}]*display: flex[^}]*flex-direction: column",
+                r"@media \(max-width: 575px\).*?\.sr-hazard-evidence-card > header\s*\{[^}]*grid-template-columns: 40px 1fr",
                 re.S,
             ),
         )

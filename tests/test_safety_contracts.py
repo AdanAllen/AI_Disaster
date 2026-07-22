@@ -443,6 +443,7 @@ class RenderedLimitationsTests(unittest.TestCase):
             "sources": [],
             "limits": [],
         }
+        resident_plan["limits"] = ["Official layer unavailable — not checked."]
         with app.test_request_context("/risk_summary"):
             session["zip_code"] = "94601"
             html = render_template(
@@ -451,7 +452,7 @@ class RenderedLimitationsTests(unittest.TestCase):
                 warning_message=None,
                 empty_state=False,
             )
-        self.assertIn("Limits and source details", html)
+        self.assertIn("Complete evidence coverage, other hazards, and limitations", html)
         self.assertIn("Important limits", html)
         self.assertIn("Official layer unavailable", html)
 

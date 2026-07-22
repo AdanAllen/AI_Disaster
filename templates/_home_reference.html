@@ -3,11 +3,11 @@
         <div class="container">
             <div class="sr-home-hero-grid">
                 <div class="sr-home-hero-copy">
-                    <h1 id="home-hero-title">Know your risks.<br>Take action with confidence.</h1>
-                    <p>StayReady helps Alameda County residents understand local hazards and take practical steps using official public data in plain language.</p>
+                    <h1 id="home-hero-title">What hazards affect your address?</h1>
+                    <p>Check an Alameda County street address to see official mapped findings, reviewed local-plan context, important unknowns, and the first actions your household can take.</p>
                     <div class="sr-civic-note" role="note">
-                        <strong>Independent educational tool.</strong>
-                        StayReady is an independent educational tool using official public data. It is not an official emergency service and does not replace AC Alert, evacuation orders, 911, or instructions from public agencies.
+                        <strong>StayReady is an independent educational tool using official public data.</strong>
+                        It is not an official emergency service and does not replace AC Alert, evacuation orders, 911, or instructions from public agencies.
                     </div>
 
                     <!-- Exact address and household selections must never be recorded or autocaptured by PostHog. -->
@@ -18,7 +18,7 @@
                                 <input type="radio" class="btn-check" name="search_type" id="address_search" autocomplete="off" checked>
                                 <label class="btn btn-outline-primary" for="address_search">Street address</label>
                                 <input type="radio" class="btn-check" name="search_type" id="zip_search" autocomplete="off">
-                                <label class="btn btn-outline-primary" for="zip_search">ZIP fallback</label>
+                                <label class="btn btn-outline-primary" for="zip_search">Use ZIP instead</label>
                             </div>
                         </div>
 
@@ -32,7 +32,7 @@
                                 <button class="btn sr-home-locate" type="button" id="locate-me-btn" aria-label="Use my current location">
                                     <i class="fas fa-location-arrow" aria-hidden="true"></i>
                                 </button>
-                                <button type="submit" class="btn sr-primary-action">See my risks</button>
+                                <button type="submit" class="btn sr-primary-action">Check this address</button>
                             </div>
                             <div id="address-suggestions" class="list-group mt-2" style="display: none;"></div>
                         </div>
@@ -90,7 +90,7 @@
                         </details>
                         <div id="form-messages" class="mt-3" style="display: none;"></div>
                     </form>
-                    <p class="sr-home-privacy"><i class="fas fa-lock" aria-hidden="true"></i> Your address is used only to generate local hazard information. <a href="{{ url_for('privacy_basics') }}">Privacy basics</a></p>
+                    <p class="sr-home-privacy"><i class="fas fa-lock" aria-hidden="true"></i> Your address and optional selections stay in short-lived server state. <a href="{{ url_for('privacy_basics') }}">Privacy basics</a></p>
                 </div>
 
                 <div class="sr-home-illustration" aria-hidden="true">
@@ -103,56 +103,23 @@
     <section class="sr-home-pillars" aria-label="Why use StayReady">
         <div class="container">
             <div class="sr-home-pillar-grid">
-                <article><span><i class="fas fa-shield-halved"></i></span><div><h2>Official public sources</h2><p>Used by StayReady as an independent educational tool, including FEMA, CAL FIRE, USGS, CGS, and reviewed local plans.</p></div></article>
-                <article><span><i class="fas fa-message"></i></span><div><h2>Plain-language guidance</h2><p>Clear steps to help you prepare, respond, and recover.</p></div></article>
-                <article><span><i class="fas fa-location-dot"></i></span><div><h2>Local hazard context</h2><p>See the hazards and mapped evidence available for your location.</p></div></article>
+                <article><span><i class="fas fa-location-crosshairs"></i></span><div><h2>Address-point checks</h2><p>See exact categories returned by the available FEMA, CAL FIRE, CGS, and DWR/DSOD layers.</p></div></article>
+                <article><span><i class="fas fa-map-location-dot"></i></span><div><h2>Local planning context</h2><p>Understand what reviewed city, planning-area, or county hazard plans add—and what they do not say about a property.</p></div></article>
+                <article><span><i class="fas fa-list-check"></i></span><div><h2>Actions tied to findings</h2><p>Start with deduplicated, source-backed steps selected from the returned evidence and optional household needs.</p></div></article>
             </div>
         </div>
     </section>
 
-    <section class="sr-home-previews" aria-label="StayReady previews">
+    <section class="sr-home-previews" aria-labelledby="home-result-title">
         <div class="container">
-            <div class="sr-home-preview-grid">
-                <article class="sr-home-preview-card">
-                    <header><div><h2>Your risk summary</h2><p>Example Alameda County location</p></div><span>Sample view</span></header>
-                    <div class="sr-home-risk-rows">
-                        <a href="{{ url_for('risk_summary') }}"><i class="fas fa-water"></i><span><strong>Flood</strong><small>Mapped and local context</small></span><b>Review</b><i class="fas fa-chevron-right"></i></a>
-                        <a href="{{ url_for('risk_summary') }}"><i class="fas fa-fire"></i><span><strong>Wildfire</strong><small>Fire hazard information</small></span><b>Review</b><i class="fas fa-chevron-right"></i></a>
-                        <a href="{{ url_for('risk_summary') }}"><i class="fas fa-house-crack"></i><span><strong>Earthquake</strong><small>Fault and shaking context</small></span><b>Review</b><i class="fas fa-chevron-right"></i></a>
-                    </div>
-                    <a class="sr-home-preview-link" href="{{ url_for('risk_summary') }}">View full summary <i class="fas fa-arrow-right"></i></a>
-                    <details class="sr-home-example-sources">
-                        <summary>Example cited actions</summary>
-                        <div>{% for action in homepage_action_examples %}{{ action_item(action) }}{% endfor %}</div>
-                    </details>
-                </article>
-
-                <article class="sr-home-preview-card sr-home-map-preview">
-                    <header><div><h2>Your area on the map</h2><p>Official layers remain independently selectable</p></div><span>Sample view</span></header>
-                    <div class="sr-home-map-canvas">
-                        <div class="sr-home-map-water"></div><div class="sr-home-map-roads"></div>
-                        <div class="sr-home-map-zone"></div><i class="fas fa-location-dot"></i>
-                        <div class="sr-home-map-key">
-                            <strong>Map layers</strong>
-                            <span><i style="background:#74aee8"></i> Flood zones</span>
-                            <span><i style="background:#e49b36"></i> Wildfire hazard</span>
-                            <span><i style="background:#759d78"></i> Liquefaction zones</span>
-                            <span><i style="background:#9a62c7"></i> Fault zones</span>
-                        </div>
-                    </div>
-                    <a class="sr-home-preview-link" href="{{ url_for('map') }}">Open full map <i class="fas fa-arrow-right"></i></a>
-                </article>
+            <header class="sr-home-result-heading"><span class="sr-section-kicker">One useful result</span><h2 id="home-result-title">Your summary separates evidence that should never be blended</h2></header>
+            <div class="sr-home-result-grid">
+                <article><span>1</span><h3>At the address</h3><p>Official polygon matches, returned categories, non-matches, failed checks, and fault proximity.</p></article>
+                <article><span>2</span><h3>In the local plan</h3><p>Reviewed planning-area, city, or county context labeled at its real geographic scope.</p></article>
+                <article><span>3</span><h3>What remains unknown</h3><p>Building condition, retrofit status, household vulnerability, and future damage probability.</p></article>
+                <article><span>4</span><h3>What to do next</h3><p>Practical actions with a clear reason for appearing, plus relevant map layers and sources.</p></article>
             </div>
-        </div>
-    </section>
-
-    <section class="sr-home-audiences">
-        <div class="container">
-            <div class="sr-home-audience-grid">
-                <article><span><i class="fas fa-people-roof"></i></span><div><h2>For families</h2><p>Build a household plan, review alerts, and find practical preparedness checklists.</p><a href="{{ url_for('resources') }}">Explore family resources <i class="fas fa-arrow-right"></i></a></div></article>
-                <article><span><i class="fas fa-graduation-cap"></i></span><div><h2>For schools &amp; community groups</h2><p>Use planning resources and source-backed guidance to support community readiness.</p><a href="{{ url_for('resources') }}">Explore community resources <i class="fas fa-arrow-right"></i></a></div></article>
-            </div>
-            <div class="sr-home-safety-note"><strong><i class="fas fa-star"></i> Prepared today. Safer tomorrow.</strong><span>StayReady is educational and does not replace official alerts or emergency instructions.</span><a href="#get-started">Start preparing <i class="fas fa-chevron-right"></i></a></div>
+            <div class="sr-home-secondary-links"><a href="{{ url_for('map') }}">Explore the county map</a><a href="{{ url_for('resources') }}">Browse preparedness guidance</a><a href="{{ url_for('sources') }}">Review official sources</a></div>
         </div>
     </section>
 

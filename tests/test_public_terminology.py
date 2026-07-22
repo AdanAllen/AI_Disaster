@@ -27,9 +27,9 @@ class PublicTerminologyTests(unittest.TestCase):
             "location_mode": "zip",
         })
         html = self.client.get("/risk_summary").get_data(as_text=True)
-        self.assertIn("Official mapped findings are unavailable for ZIP fallback", html)
-        self.assertIn("broad ZIP-level preparedness priorities", html)
-        self.assertIn("No address-level official map checks were completed", html)
+        self.assertIn("Broad ZIP fallback context only", html)
+        self.assertIn("ZIP fallback cannot identify a property or map intersection", html)
+        self.assertIn("no address-point intersections were inferred", html)
         self.assertNotIn("Important official mapped findings", html)
         self.assertNotIn("hazard-priority notes from official mapped information", html)
         self.assertNotIn("Unknown hazard priority", html)
@@ -45,9 +45,9 @@ class PublicTerminologyTests(unittest.TestCase):
 
     def test_summary_navigation_and_empty_state_are_stable(self):
         html = self.client.get("/risk_summary").get_data(as_text=True)
-        self.assertIn(">Summary<", html)
+        self.assertNotIn(">My summary<", html)
         self.assertIn(
-            "Enter an Alameda County address to generate your preparedness summary.",
+            "Check an address to see local hazard evidence",
             html,
         )
 

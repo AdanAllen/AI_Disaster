@@ -1411,10 +1411,6 @@ def home():
         location_context=location_context,
         update_form=UpdateInterestForm(prefix="updates"),
         update_status=request.args.get("updates", ""),
-        homepage_action_examples=get_action_items([
-            "portable_go_bag",
-            "protect_critical_documents",
-        ]),
     )
 
 
@@ -1654,6 +1650,34 @@ def risk_summary():
     location_context = get_session_location_context()
     location_context["zip_risk_snapshot"] = get_zip_risk_snapshot_for_context(location_context)
     all_structured_hazards = get_all_hazards(get_saved_hazard_profile(), location_context)
+    summary_map_layers = []
+    for hazard in all_structured_hazards:
+        hazard_id = hazard.get("slug") or hazard.get("hazard_id")
+        if hazard.get("hazard_exposure") in {"mapped_match", "proximity_context"}:
+            summary_map_layers.append({
+                "flood": "flood",
+                "wildfire": "wildfire",
+                "earthquake": "earthquake",
+                "dam-failure": "dam-inundation",
+                "dam_failure": "dam-inundation",
+            }.get(hazard_id, ""))
+        # A returned address check remains map-relevant even when it is a
+        # non-match. Relevance means "this layer informed the summary," not
+        # "the address is inside the layer."
+        for evidence in hazard.get("normalized_mapped_evidence") or []:
+            dataset_id = str(evidence.get("dataset_id") or "").lower()
+            if "fema" in dataset_id:
+                summary_map_layers.append("flood")
+            elif "calfire" in dataset_id or "cal_fire" in dataset_id:
+                summary_map_layers.append("wildfire")
+            elif "fault" in dataset_id and evidence.get("status") != "data_unavailable":
+                summary_map_layers.append("earthquake")
+        for evidence in hazard.get("additional_geospatial_evidence") or []:
+            if evidence.get("matched") is True and evidence.get("map_layer_key"):
+                summary_map_layers.append(f"cgs-{evidence['map_layer_key']}")
+    update_resident_state({
+        "summary_map_layers": [item for item in dict.fromkeys(summary_map_layers) if item],
+    })
     plan_hazards = all_structured_hazards[:4]
     structured_hazards = plan_hazards[:3]
     additional_local_hazards = get_additional_local_hazards(location_context, plan_hazards)
@@ -1748,6 +1772,13 @@ def map():
     address = resident_state.get("address")
     location_context = get_session_location_context()
     location_context["zip_risk_snapshot"] = get_zip_risk_snapshot_for_context(location_context)
+    requested_hazard = slugify_hazard_name(request.args.get("hazard", ""))
+    if requested_hazard not in {
+        "earthquake", "flood", "wildfire", "landslide", "tsunami-seiche",
+        "tsunami", "dam-failure",
+    }:
+        requested_hazard = ""
+    summary_map_layers = resident_state.get("summary_map_layers") or []
     # Map overlays are loaded independently on demand. Do not run address-level
     # hazard checks here; the FEMA snapshot is intentionally excluded from map
     # page request handling because its raw parse can exhaust small instances.
@@ -1759,7 +1790,7 @@ def map():
         if dataset:
             cgs_map_evidence.append({
                 "map_layer_key": layer_key,
-                "matched": False,
+                "matched": f"cgs-{layer_key}" in summary_map_layers,
                 "dataset_name": dataset.dataset_name,
                 "source_url": dataset.authoritative_landing_url,
             })
@@ -1819,6 +1850,8 @@ def map():
         cgs_map_evidence=cgs_map_evidence,
         cgs_map_layers=CGS_MAP_LAYERS,
         dam_inundation_map_layer=DAM_INUNDATION_MAP_LAYER,
+        requested_hazard=requested_hazard,
+        summary_map_layers=summary_map_layers,
         oakland_hazard_ready=is_oakland_hazard_context(zip_code, address),
     )
 # ---  Page ---

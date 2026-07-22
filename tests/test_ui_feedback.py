@@ -14,10 +14,10 @@ class UIFeedbackTests(unittest.TestCase):
 
         self.assertIn('id="sr-summary-loading"', html)
         self.assertIn("Finding address…", html)
-        self.assertIn("Checking mapped hazard zones…", html)
-        self.assertIn("Checking FEMA flood data…", html)
-        self.assertIn("Checking CAL FIRE wildfire data…", html)
-        self.assertIn("Loading local plan facts…", html)
+        self.assertIn("Preparing available official map checks…", html)
+        self.assertIn("Waiting for mapped-source responses…", html)
+        self.assertIn("Keeping unavailable checks separate…", html)
+        self.assertIn("Organizing reviewed local-plan context…", html)
         self.assertIn(
             "show findings only after the available source checks return",
             html,
@@ -35,22 +35,20 @@ class UIFeedbackTests(unittest.TestCase):
         })
         html = self.client.get("/risk_summary").get_data(as_text=True)
 
-        self.assertIn("Hazard overview", html)
-        self.assertIn("Important official mapped findings", html)
-        self.assertIn("Other hazards checked", html)
-        self.assertIn("Map information unavailable", html)
-        self.assertIn("Do these first", html)
-        self.assertIn("Help with map and evidence terms", html)
-        self.assertIn("FEMA Zone X", html)
-        self.assertIn("Liquefaction zone", html)
-        self.assertIn("Mapped match found", html)
+        self.assertIn("Your main hazard picture", html)
+        self.assertIn("What deserves your attention", html)
+        self.assertIn("Official source details and all returned checks", html)
+        self.assertIn("What StayReady cannot determine", html)
+        self.assertIn("Start with these high-impact actions", html)
+        self.assertIn("FEMA flood zone X", html)
+        self.assertIn("CGS Liquefaction Zones", html)
         self.assertIn("No mapped match found", html)
         self.assertIn("Not checked", html)
 
     def test_empty_summary_does_not_imply_checks_have_run(self):
         html = self.client.get("/risk_summary").get_data(as_text=True)
         self.assertIn(
-            "No source-backed findings are shown until StayReady has a location to check.",
+            "Check an address to see local hazard evidence",
             html,
         )
 
@@ -83,6 +81,22 @@ class UIFeedbackTests(unittest.TestCase):
         self.assertIn("const isContextZone = category.startsWith('Zone X');", html)
         self.assertIn("fillOpacity: isContextZone ? 0.08 : 0.58", html)
         self.assertIn("weight: isContextZone ? 1 : 2", html)
+
+    def test_summary_address_checks_mark_corresponding_map_layers_relevant(self):
+        set_test_resident_state(self.client, {
+            "zip_code": "94704",
+            "lat": 37.8696,
+            "lon": -122.2727,
+            "address": "Berkeley City Hall, Berkeley, CA 94704",
+            "city": "Berkeley",
+            "county": "Alameda County",
+            "location_mode": "address",
+        })
+        self.client.get("/risk_summary")
+        html = self.client.get("/map?hazard=flood").get_data(as_text=True)
+        self.assertIn('layer-toggle flood is-summary-relevant', html)
+        self.assertIn('const requestedHazard = "flood";', html)
+        self.assertIn("requestedLayerMap[requestedHazard]", html)
 
 
 if __name__ == "__main__":
