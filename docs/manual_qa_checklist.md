@@ -2,6 +2,12 @@
 
 Use public landmarks, approximate streets, or clearly fake Alameda County examples. Do not save or publish private residential addresses.
 
+Record each critical journey at 320, 375, 430, 768, 1024, and 1440 CSS pixels.
+Repeat with keyboard only, 200% zoom, reduced motion, high contrast, print
+preview, and a throttled slow network. Test English and professionally reviewed
+Spanish separately; an untranslated or machine-translated safety journey is a
+launch blocker.
+
 For every scenario, confirm:
 - The homepage address flow works and keeps ZIP labeled as fallback.
 - `/risk_summary` shows a resident guidance plan, not only technical evidence.
@@ -32,7 +38,7 @@ For every scenario, confirm:
 - Should not claim: building safety or retrofit status.
 
 5. Fremont residential scenario
-- Expected top hazards: earthquake, flood, wildfire/fire context from Tri-City planning where reviewed/draft-reviewed source data exists.
+- Expected top hazards: earthquake, flood, and wildfire/fire context from Tri-City planning only where a named external reviewer has approved the claim.
 - Expected guidance: if local structured facts are missing, county fallback language should be visible.
 - Should not claim: city-specific neighborhood risk without reviewed facts.
 
@@ -71,6 +77,14 @@ For every scenario, confirm:
 - With `SUPABASE_ENABLED=false`, local JSON fallback still works.
 - No React, Next.js, Vite, Tailwind, or shadcn dependencies are added.
 - Supabase keys are not committed.
+- Address search offers ambiguity instead of silently picking a candidate.
+- Expired opaque results recover without exposing an address or coordinates.
+- A simulated failure in one GIS source leaves the other findings and the
+  source-specific unavailable state usable.
+- Disabling JavaScript leaves emergency boundaries, privacy information, and
+  source/findings text understandable.
+- The map is never required to understand a finding, non-match, limitation, or
+  unavailable result.
 
 ## Feedback And Interest Sprint
 

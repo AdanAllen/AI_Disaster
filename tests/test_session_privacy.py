@@ -3,6 +3,25 @@ from pathlib import Path
 from unittest.mock import patch
 
 import app as stayready
+from pydantic_models import ResolvedLocation
+
+
+def resolved_berkeley():
+    return ResolvedLocation(
+        match_id="county-match-berkeley",
+        normalized_display_address=(
+            "1020 Sierra Street, Berkeley, Alameda County, California, 94707, United States"
+        ),
+        latitude=37.89,
+        longitude=-122.27,
+        zip_code="94707",
+        incorporated_jurisdiction="Berkeley",
+        match_type="address_point",
+        match_score=100,
+        precision="address_point",
+        provider="alameda_county_address_points",
+        boundary_version="city:test;unincorporated:test",
+    )
 
 
 class SessionPrivacyTests(unittest.TestCase):
@@ -24,13 +43,8 @@ class SessionPrivacyTests(unittest.TestCase):
         )
 
     @patch(
-        "app.geocode_address",
-        return_value=(
-            37.89,
-            -122.27,
-            "94707",
-            "1020 Sierra Street, Berkeley, Alameda County, California, 94707, United States",
-        ),
+        "app.resolve_address_input",
+        return_value=resolved_berkeley(),
     )
     def test_sensitive_values_are_not_stored_in_flask_cookie_session(self, _geocode):
         response = self.submit_address()
@@ -61,13 +75,8 @@ class SessionPrivacyTests(unittest.TestCase):
         self.assertNotIn("special_needs", resident_state)
 
     @patch(
-        "app.geocode_address",
-        return_value=(
-            37.89,
-            -122.27,
-            "94707",
-            "1020 Sierra Street, Berkeley, Alameda County, California, 94707, United States",
-        ),
+        "app.resolve_address_input",
+        return_value=resolved_berkeley(),
     )
     @patch("app.get_all_hazards", return_value=[])
     def test_summary_and_map_work_with_opaque_result_token(self, _hazards, _geocode):
@@ -92,7 +101,8 @@ class SessionPrivacyTests(unittest.TestCase):
         for expected in (
             "not an official government site",
             "not an emergency alert system",
-            "Nominatim",
+            "Alameda County Address Points",
+            "authenticated ArcGIS World Geocoding fallback",
             "does not save raw addresses",
             "random result token",
             "Call 911",

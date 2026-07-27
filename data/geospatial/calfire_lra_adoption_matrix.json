@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-07-27",
+  "policy": "CAL FIRE's 2025 LRA polygons are recommendations. A jurisdiction is never marked adopted without ordinance-level evidence from that jurisdiction. Automated checks are not human approval.",
+  "recommendation_service": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSALRA25_v1_All/FeatureServer/0",
+  "adoption_submission_service": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSZLRA_Submittal_PUBLIC_VIEW/FeatureServer",
+  "adoption_submission_service_limitation": "The public endpoint is configured for submissions and does not support a public query suitable for automated adoption verification.",
+  "jurisdictions": [
+    {"jurisdiction_id": "alameda", "jurisdiction": "Alameda", "official_jurisdiction_url": "https://www.alamedaca.gov/", "adoption_status": "ordinance_not_verified", "adoption_date": null, "ordinance_or_resolution": null, "adoption_evidence_url": null},
+    {"jurisdiction_id": "albany", "jurisdiction": "Albany", "official_jurisdiction_url": "https://www.albanyca.gov/", "adoption_status": "ordinance_not_verified", "adoption_date": null, "ordinance_or_resolution": null, "adoption_evidence_url": null},
+    {"jurisdiction_id": "berkeley", "jurisdiction": "Berkeley", "official_jurisdiction_url": "https://berkeleyca.gov/", "adoption_status": "ordinance_not_verified", "adoption_date": null, "ordinance_or_resolution": null, "adoption_evidence_url": null},
+    {"jurisdiction_id": "dublin", "jurisdiction": "Dublin", "official_jurisdiction_url": "https://www.dublin.ca.gov/", "adoption_status": "ordinance_not_verified", "adoption_date": null, "ordinance_or_resolution": null, "adoption_evidence_url": null},
+    {"jurisdiction_id": "emeryville", "jurisdiction": "Emeryville", "official_jurisdiction_url": "https://www.emeryville.org/", "adoption_status": "ordinance_not_verified", "adoption_date": null, "ordinance_or_resolution": null, "adoption_evidence_url": null},
+    {"jurisdiction_id": "fremont", "jurisdiction": "Fremont", "official_jurisdiction_url": "https://www.fremont.gov/", "adoption_status": "ordinance_not_verified", "adoption_date": null, "ordinance_or_resolution": null, "adoption_evidence_url": null},
+    {"jurisdiction_id": "hayward", "jurisdiction": "Hayward", "official_jurisdiction_url": "https://www.hayward-ca.gov/", "adoption_status": "ordinance_not_verified", "adoption_date": null, "ordinance_or_resolution": null, "adoption_evidence_url": null},
+    {"jurisdiction_id": "livermore", "jurisdiction": "Livermore", "official_jurisdiction_url": "https://www.livermoreca.gov/", "adoption_status": "ordinance_not_verified", "adoption_date": null, "ordinance_or_resolution": null, "adoption_evidence_url": null},
+    {"jurisdiction_id": "newark", "jurisdiction": "Newark", "official_jurisdiction_url": "https://www.newarkca.gov/", "adoption_status": "ordinance_not_verified", "adoption_date": null, "ordinance_or_resolution": null, "adoption_evidence_url": null},
+    {"jurisdiction_id": "oakland", "jurisdiction": "Oakland", "official_jurisdiction_url": "https://www.oaklandca.gov/", "adoption_status": "ordinance_not_verified", "adoption_date": null, "ordinance_or_resolution": null, "adoption_evidence_url": null},
+    {"jurisdiction_id": "piedmont", "jurisdiction": "Piedmont", "official_jurisdiction_url": "https://piedmont.ca.gov/", "adoption_status": "ordinance_not_verified", "adoption_date": null, "ordinance_or_resolution": null, "adoption_evidence_url": null},
+    {"jurisdiction_id": "pleasanton", "jurisdiction": "Pleasanton", "official_jurisdiction_url": "https://www.cityofpleasantonca.gov/", "adoption_status": "ordinance_not_verified", "adoption_date": null, "ordinance_or_resolution": null, "adoption_evidence_url": null},
+    {"jurisdiction_id": "san_leandro", "jurisdiction": "San Leandro", "official_jurisdiction_url": "https://www.sanleandro.org/", "adoption_status": "ordinance_not_verified", "adoption_date": null, "ordinance_or_resolution": null, "adoption_evidence_url": null},
+    {"jurisdiction_id": "union_city", "jurisdiction": "Union City", "official_jurisdiction_url": "https://www.unioncity.org/", "adoption_status": "ordinance_not_verified", "adoption_date": null, "ordinance_or_resolution": null, "adoption_evidence_url": null},
+    {"jurisdiction_id": "unincorporated_alameda_county", "jurisdiction": "Unincorporated Alameda County", "official_jurisdiction_url": "https://www.acgov.org/", "adoption_status": "ordinance_not_verified", "adoption_date": null, "ordinance_or_resolution": null, "adoption_evidence_url": null}
+  ],
+  "permitted_claim": "CAL FIRE's 2025 recommendation returned a severity category at the point; local adoption has not been verified.",
+  "prohibited_interpretations": [
+    "Do not call a recommendation locally adopted without ordinance evidence.",
+    "Do not combine SRA, LRA, and FRA into one undifferentiated authority.",
+    "Do not describe Fire Hazard Severity Zone as complete wildfire risk."
+  ]
+}

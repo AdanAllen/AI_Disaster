@@ -3,7 +3,7 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from flask import Flask, render_template, session
 from pydantic import ValidationError
@@ -105,7 +105,7 @@ class GISAvailabilityTests(unittest.TestCase):
         self.assertFalse(result["checked"])
         self.assertEqual(result["data_status"], "data_unavailable")
 
-    def test_flood_zip_slice_avoids_raw_fema_snapshot(self):
+    def test_display_only_flood_zip_slice_never_drives_address_evidence(self):
         processed_dir = Path(self.temp_dir.name, "static", "processed", "flood_by_zip")
         processed_dir.mkdir(parents=True)
         Path(processed_dir, "94612.geojson").write_text(
@@ -132,13 +132,28 @@ class GISAvailabilityTests(unittest.TestCase):
             }),
             encoding="utf-8",
         )
+        evidence = Mock(
+            evidence_status="checked",
+            matched=True,
+            matched_features=[
+                {
+                    "layer_id": "official-current",
+                    "name": "FEMA flood zone X",
+                    "zone": "X",
+                    "source_citation": "06001C_FIRM1",
+                    "sfha": "F",
+                }
+            ],
+        )
+        evidence.model_dump.return_value = {"dataset_id": "fema_nfhl_local"}
         with patch("hazard_engine.GeospatialEvidenceService") as service:
+            service.return_value.check_point.return_value = evidence
             result = check_flood_layer(37.8, -122.2, "94612")
-        service.assert_not_called()
+        service.return_value.check_point.assert_called_once()
         self.assertTrue(result["checked"])
-        self.assertEqual(result["data_status"], "checked")
-        self.assertTrue(result["inside"])
-        self.assertEqual(result["layers"][0]["zone"], "AE")
+        self.assertEqual(result["data_status"], "not_in_layer")
+        self.assertFalse(result["inside"])
+        self.assertEqual(result["layers"][0]["zone"], "X")
 
     def test_unavailable_layer_does_not_create_low_exposure(self):
         location = LocationResult(
@@ -223,6 +238,53 @@ class GISAvailabilityTests(unittest.TestCase):
         self.assertFalse(result.is_in_hazard_zone)
         self.assertIn("not a safety determination", result.why_shown.lower())
         self.assertIn("smoke", " ".join(result.limitations).lower())
+
+    def test_urban_unzoned_polygon_is_not_a_fire_severity_zone_match(self):
+        polygon = {
+            "type": "Polygon",
+            "coordinates": [[
+                [-122.30, 37.70],
+                [-122.10, 37.70],
+                [-122.10, 37.90],
+                [-122.30, 37.90],
+                [-122.30, 37.70],
+            ]],
+        }
+        self.write_layer(
+            "FireResponsibilityAreas.geojson",
+            {
+                "type": "FeatureCollection",
+                "features": [{
+                    "type": "Feature",
+                    "properties": {"SRA": "LRA"},
+                    "geometry": polygon,
+                }],
+            },
+        )
+        self.write_layer("FireHazSRA.geojson", {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "properties": {"FHSZ_Description": "High", "SRA": "SRA"},
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[[-121.9, 37.5], [-121.8, 37.5], [-121.8, 37.6], [-121.9, 37.6], [-121.9, 37.5]]],
+                },
+            }],
+        })
+        self.write_layer("FireHazLRARecommended.geojson", {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "properties": {"FHSZ_Description": "NonWildland", "SRA": "LRA"},
+                "geometry": polygon,
+            }],
+        })
+        result = hazard_engine.check_wildfire_layer(37.8, -122.2)
+        self.assertTrue(result["checked"])
+        self.assertFalse(result["inside"])
+        self.assertEqual(result["data_status"], "not_in_layer")
+        self.assertEqual(result["layers"], [])
 
     def test_fault_proximity_is_not_zone_membership(self):
         self.write_layer(

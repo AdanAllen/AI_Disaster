@@ -1,30 +1,30 @@
 {
   "schema_version": 1,
   "city": "piedmont",
-  "source_document": "piedmont-lhmp-2019.pdf",
-  "source_pdf_path": "data/raw/lhmps/piedmont/piedmont-lhmp-2019.pdf",
+  "source_document": "piedmont-lhmp-2026-public-review-draft.pdf",
+  "source_pdf_path": "data/raw/lhmps/piedmont/piedmont-lhmp-2026-public-review-draft.pdf",
   "markdown_path": "",
-  "source_url": "https://piedmont.ca.gov/government/departments/public_safety/emergency_preparedness",
-  "source_pdf_sha256": "49fbdfe314be18fa7732656490dffccdcf6113d29058ce8879505b3162bc9139",
-  "source_pdf_size_bytes": 17342192,
-  "pdf_page_count": 426,
-  "extracted_at": "2026-06-13T04:18:25.794189Z",
+  "source_url": "https://piedmont.ca.gov/UserFiles/Servers/Server_13659739/File/Government/Departments/Planning%20Division/Hazard%20Mitigation/City%20of%20Piedmont%20LHMP%20Update%20Public%20Review%20Draft%20Complete.pdf",
+  "source_pdf_sha256": "1cfef32d8332be3f616f3dd51d1b54d4867ba85aa6427233369d6266b4e833f6",
+  "source_pdf_size_bytes": 36805731,
+  "pdf_page_count": 721,
+  "extracted_at": "2026-07-27T20:17:45.236659Z",
   "extractor_version": "1.0.0",
   "pymupdf_version": "1.27.2.3",
   "hazard_filter": null,
   "rendered_pdf_pages": [
-    3,
+    2,
+    4,
     5,
-    7,
+    8,
     11,
-    22,
-    25,
-    26,
-    27
+    18,
+    20,
+    23
   ],
   "warnings": [
     "Evidence candidate limit reached (300); remaining snippets were skipped.",
-    "Visual page limit reached (8); 137 likely pages were not rendered."
+    "Visual page limit reached (8); 229 likely pages were not rendered."
   ],
   "review_status": "candidate"
 }

@@ -17,11 +17,18 @@ class UIFeedbackTests(unittest.TestCase):
         self.assertIn("Preparing available official map checks…", html)
         self.assertIn("Waiting for mapped-source responses…", html)
         self.assertIn("Keeping unavailable checks separate…", html)
-        self.assertIn("Organizing reviewed local-plan context…", html)
+        self.assertIn("Checking eligible local-plan context…", html)
         self.assertIn(
             "show findings only after the available source checks return",
             html,
         )
+
+    def test_home_does_not_steal_initial_keyboard_focus(self):
+        html = self.client.get("/").get_data(as_text=True)
+
+        self.assertIn('class="skip-link"', html)
+        self.assertNotIn("addressInput.focus()", html)
+        self.assertLess(html.index('class="skip-link"'), html.index('id="address"'))
 
     def test_summary_has_scan_first_sections_and_plain_language_help(self):
         set_test_resident_state(self.client, {

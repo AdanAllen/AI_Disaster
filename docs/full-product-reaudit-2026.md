@@ -2,6 +2,11 @@
 
 Date: 2026-07-21
 
+> Historical audit baseline. The county-authoritative location contract,
+> shared production state, fail-closed dataset registry, map controls, and
+> privacy changes described in `customer-ready-implementation.md` supersede
+> implementation details in this document. Findings are retained for traceability.
+
 ## Executive assessment
 
 StayReady has a stronger safety foundation than its previous interface suggested. The application already isolates address and ZIP flows, keeps resident inputs in short-lived server-side state behind an opaque token, runs GIS sources independently, blocks candidate LHMP extraction from the reviewed repository, and contains explicit prohibitions against unsupported address-risk ratings. The baseline suite passed 312 tests.

@@ -442,8 +442,12 @@ class HazardPriorityRankingTests(unittest.TestCase):
         self.assertEqual(earthquake["probability"], "High")
         self.assertEqual(earthquake["final_rating"], "Unknown")
         self.assertEqual(earthquake["displayed_level_status"], "unsupported")
-        self.assertEqual(earthquake["community_context"]["status"], "Available")
-        self.assertIn("community context only", earthquake["community_context"]["summary"])
+        self.assertEqual(earthquake["community_context"]["status"], "Unavailable")
+        self.assertEqual(earthquake["community_context"]["records"], [])
+        self.assertIn(
+            "No extracted LHMP sub-area table record",
+            earthquake["community_context"]["summary"],
+        )
 
     def test_epc_zero_does_not_create_low_rating(self):
         wildfire = next(item for item in rank_hazards_for_risk_summary(

@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: stayready-staging
+    runtime: python
+    plan: starter
+    region: oregon
+    buildCommand: pip install -r requirements.txt && python scripts/preprocess_fema_flood.py
+    startCommand: gunicorn --workers 2 --threads 4 --timeout 30 --graceful-timeout 30 app:app
+    healthCheckPath: /api/health
+    maxShutdownDelaySeconds: 45
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: DEPLOYMENT_ENV
+        value: staging
+      - key: FLASK_SECRET_KEY
+        generateValue: true
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: stayready-staging-state
+          property: connectionString
+      - key: STAYREADY_REQUIRE_VERIFIED_DATASETS
+        value: "1"
+      - key: ARCGIS_GEOCODING_TOKEN
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+
+  - type: keyvalue
+    name: stayready-staging-state
+    plan: starter
+    region: oregon
+    ipAllowList: []
+    maxmemoryPolicy: volatile-ttl
+    persistenceMode: off

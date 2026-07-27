@@ -76,9 +76,12 @@ def _regional_context(hazard: Dict, priority: Dict, location_context: Dict) -> D
 
     # Draft categories may be displayed only as exact, visibly draft citywide
     # source statements. They are never promoted into address ratings.
-    show_categories = has_record and has_exact_source and document_status in {
-        "draft", "reviewed", "draft_reviewed", "adopted"
-    }
+    show_categories = (
+        priority.get("claim_record_publishable") is True
+        and has_record
+        and has_exact_source
+        and document_status in {"draft", "reviewed", "draft_reviewed", "adopted"}
+    )
     probability_label = probability if show_categories and probability in {"Low", "Medium", "High"} else ""
     impact_label = impact if show_categories and impact in {"Low", "Medium", "High"} else ""
     priority_label = official_priority if show_categories and official_priority in {"Low", "Medium", "High"} else ""

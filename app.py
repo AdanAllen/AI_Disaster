@@ -1,17 +1,14 @@
 from flask import Flask, flash, render_template, request, redirect, url_for, session, jsonify
-from cachelib import FileSystemCache
-from geopy.geocoders import Nominatim
 import requests
 from dotenv import load_dotenv
 import os, json
 import resource
-import tempfile
 from shapely.geometry import Point, mapping, shape
 import pandas as pd
-from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 from jinja2 import TemplateNotFound
 import logging
 from flask import send_from_directory
+from flask_wtf.csrf import CSRFProtect
 import re
 import secrets
 from copy import deepcopy
@@ -20,6 +17,15 @@ from functools import lru_cache
 from pathlib import Path
 
 from action_library_service import select_action_ids
+from county_location_service import (
+    LocationCandidate,
+    LocationServiceError,
+    UnsupportedLocationInput,
+    nearest_address_candidate,
+    resolve_candidate,
+    resolve_jurisdiction,
+    suggest_locations,
+)
 from dam_inundation import DATASET_ID as DAM_INUNDATION_DATASET_ID
 from dam_inundation import SOURCE_AGENCY as DAM_INUNDATION_SOURCE_AGENCY
 from feedback_forms import (
@@ -49,6 +55,7 @@ from submission_repository import (
     save_email_interest,
     save_feedback_submission,
 )
+from state_store import create_ephemeral_store, store_backend_name, store_is_ready
 from supabase_repository import supabase_health as get_supabase_health
 from security_utils import (
     ALLOWED_CGS_LAYER_KEYS,
@@ -78,15 +85,17 @@ app.config.update(
     SESSION_COOKIE_SECURE=IS_PRODUCTION,
     SESSION_COOKIE_NAME="stayready_session",
     WTF_CSRF_TIME_LIMIT=3600,
+    WTF_CSRF_CHECK_DEFAULT=False,
 )
+csrf = CSRFProtect(app)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_LAT = 37.75
 DEFAULT_LON = -122.2
 COVERAGE_BOUNDS = {
-    "min_lat": 37.0,
-    "max_lat": 38.5,
-    "min_lon": -123.0,
-    "max_lon": -121.0,
+    "min_lat": 37.45,
+    "max_lat": 37.91,
+    "min_lon": -122.38,
+    "max_lon": -121.46,
 }
 RISK_DATA_WARNING = "Risk data is temporarily unavailable, but general preparedness guidance is still shown."
 ZIP_FALLBACK_LIMITATION = (
@@ -114,9 +123,23 @@ def apply_security_headers(response):
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Permissions-Policy"] = "geolocation=(self), camera=(), microphone=()"
     response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+    response.headers["Content-Security-Policy-Report-Only"] = (
+        "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; "
+        "form-action 'self'; img-src 'self' data: https:; font-src 'self' data:; "
+        "style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' "
+        "https://e.stayreadynow.org; connect-src 'self' https://e.stayreadynow.org "
+        "https://*.arcgis.com https://*.fire.ca.gov https://*.conservation.ca.gov "
+        "https://earthquake.usgs.gov; report-uri /api/csp-report"
+    )
     if IS_PRODUCTION:
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     return response
+
+
+@app.before_request
+def protect_state_changes():
+    if request.method in {"POST", "PUT", "PATCH", "DELETE"} and not app.testing:
+        csrf.protect()
 
 DATA_SOURCES = [
     {
@@ -152,11 +175,8 @@ DATA_SOURCES = [
 HAZARD_DATA_PATH = os.path.join(BASE_DIR, "oakland.json")
 RESULT_TOKEN_SESSION_KEY = "resident_result_token"
 RESIDENT_STATE_TTL_SECONDS = 30 * 60
-RESIDENT_STATE_CACHE = FileSystemCache(
-    cache_dir=os.path.join(tempfile.gettempdir(), "stayready-resident-state"),
-    threshold=1000,
-    default_timeout=RESIDENT_STATE_TTL_SECONDS,
-)
+LOCATION_CANDIDATE_TTL_SECONDS = 10 * 60
+RESIDENT_STATE_CACHE = create_ephemeral_store(RESIDENT_STATE_TTL_SECONDS)
 HAZARD_LOCATION_OPTIONS = [
     {"value": "flatlands", "label": "Flatlands"},
     {"value": "hills", "label": "Hills"},
@@ -354,6 +374,58 @@ def save_resident_state(state):
     return token
 
 
+def save_location_candidate(candidate):
+    """Store candidate coordinates server-side; the browser receives only an opaque ID."""
+    key = f"location-candidate:{candidate.candidate_id}"
+    RESIDENT_STATE_CACHE.set(
+        key,
+        candidate.stored_payload(),
+        timeout=LOCATION_CANDIDATE_TTL_SECONDS,
+    )
+    return candidate.candidate_id
+
+
+def get_location_candidate(candidate_id):
+    if not re.fullmatch(r"[A-Za-z0-9_-]{16,80}", str(candidate_id or "")):
+        return None
+    payload = RESIDENT_STATE_CACHE.get(f"location-candidate:{candidate_id}")
+    if not isinstance(payload, dict):
+        return None
+    try:
+        return LocationCandidate.from_stored_payload(payload)
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def save_resolved_location(resolved, extra_state=None):
+    """Persist the full internal location contract for no more than 30 minutes."""
+    state = {
+        "zip_code": resolved.zip_code,
+        "lat": resolved.latitude,
+        "lon": resolved.longitude,
+        "address": resolved.normalized_display_address,
+        "input_address": resolved.normalized_display_address,
+        "county": "Alameda County",
+        "city": resolved.incorporated_jurisdiction,
+        "unincorporated_community": resolved.unincorporated_community,
+        "is_unincorporated": resolved.is_unincorporated,
+        "jurisdiction": resolved.jurisdiction,
+        "location_mode": "address" if resolved.match_type != "map_pin" else "map_pin",
+        "location_match_type": resolved.match_type,
+        "location_match_score": resolved.match_score,
+        "location_precision": resolved.precision,
+        "location_provider": resolved.provider,
+        "boundary_version": resolved.boundary_version,
+        "location_limitations": list(resolved.limitations),
+        "household": "",
+        "preparedness": "",
+        "household_tags": [],
+        "hazard_user_profile": {},
+    }
+    state.update(extra_state or {})
+    return save_resident_state(state)
+
+
 def update_resident_state(updates):
     state = get_resident_state()
     if not state:
@@ -406,23 +478,40 @@ def get_session_location_context():
     zip_code = resident_state.get("zip_code")
     address = resident_state.get("address")
     location_mode = resident_state.get("location_mode", "zip" if zip_code else "")
+    authoritative_city = (
+        resident_state.get("city")
+        or resident_state.get("unincorporated_community")
+        or (
+            "Unincorporated Alameda County"
+            if resident_state.get("is_unincorporated")
+            else ""
+        )
+    )
     location_result = location_from_session({
         "input_address": resident_state.get("input_address"),
         "address": address,
         "zip_code": zip_code,
         "lat": resident_state.get("lat"),
         "lon": resident_state.get("lon"),
-        "city": resident_state.get("city"),
+        "city": authoritative_city,
         "county": resident_state.get("county"),
         "neighborhood": resident_state.get("neighborhood"),
         "census_tract": resident_state.get("census_tract"),
         "location_mode": location_mode,
     })
     has_precise_location = (
-        location_mode == "address" and
+        location_mode in {"address", "map_pin"} and
         address and
         is_valid_coordinate(resident_state.get("lat"), resident_state.get("lon"))
     )
+    if location_mode == "map_pin":
+        precision_label = "Resident-placed map point"
+    elif has_precise_location:
+        precision_label = "Address point"
+    elif zip_code:
+        precision_label = "ZIP estimate"
+    else:
+        precision_label = "County fallback"
     return {
         "zip_code": zip_code,
         "address": address,
@@ -433,7 +522,7 @@ def get_session_location_context():
         "location_result": location_result.model_dump(),
         "city": location_result.city,
         "county": location_result.county,
-        "precision_label": "Address point" if has_precise_location else "ZIP estimate" if zip_code else "County fallback",
+        "precision_label": precision_label,
         "gis_status": "Address point ready for GIS checks" if has_precise_location else "No address-level GIS check available from ZIP-only input",
     }
 
@@ -612,6 +701,16 @@ def normalize_plan_name(value):
 def get_local_plan_for_context(location_context):
     city = (location_context or {}).get("city") or ""
     city_key = normalize_plan_name(city)
+    if city_key in {
+        "ashland",
+        "castro_valley",
+        "cherryland",
+        "fairview",
+        "hayward_acres",
+        "san_lorenzo",
+        "sunol",
+    }:
+        city_key = "unincorporated_alameda_county"
     if not city_key:
         return {}
     for plan in load_local_plans():
@@ -622,7 +721,12 @@ def get_local_plan_for_context(location_context):
 
 def get_additional_local_hazards(location_context, shown_hazards=None, limit=6):
     plan = get_local_plan_for_context(location_context)
-    if not plan or plan.get("review_status") not in {"reviewed", "draft_reviewed"}:
+    if (
+        not plan
+        or plan.get("review_status") != "externally_reviewed"
+        or not plan.get("human_reviewer")
+        or not plan.get("human_reviewed_at")
+    ):
         return []
 
     shown_hazards = {
@@ -648,8 +752,8 @@ def get_additional_local_hazards(location_context, shown_hazards=None, limit=6):
             "review_status": plan.get("review_status", "draft"),
             "plan_name": plan.get("plan_name"),
             "plan_url": plan.get("url"),
-            "why_shown": f"{label} is included because {city}'s reviewed local plan lists it as a hazard or planning concern.",
-            "limitations": "This is not one of the current address-level GIS checks. It should be treated as local source context until an official layer or reviewed location rule is added.",
+            "why_shown": f"{label} is included because a named external reviewer approved the cited local-plan claim for {city}.",
+            "limitations": "This is not one of the current address-level GIS checks. It is local source context, not a property finding.",
             "next_step": ADDITIONAL_HAZARD_CONTEXT.get(normalized, "Review the local plan source and official guidance before making address-level claims."),
             "priority_rank": priority_index.get(normalized, 999),
         })
@@ -659,9 +763,29 @@ def get_additional_local_hazards(location_context, shown_hazards=None, limit=6):
 
 
 def get_data_sources_context():
-    """Centralized source metadata so it can become dynamic later."""
+    """Expose separate provenance clocks; never collapse them into one date."""
+    try:
+        datasets = get_default_registry().all()
+    except DatasetRegistryError:
+        datasets = []
+    source_checked_dates = [
+        item.source_checked_at for item in datasets if item.source_checked_at
+    ]
+    reviewed_dates = [
+        item.human_reviewed_at for item in datasets if item.human_reviewed_at
+    ]
     return {
-        "last_updated": "March 2026",
+        "source_checked_at": (
+            max(source_checked_dates).strftime("%B %-d, %Y")
+            if source_checked_dates
+            else "Not yet recorded"
+        ),
+        "dataset_effective_date": "Varies by dataset; open the source registry",
+        "human_reviewed_at": (
+            max(reviewed_dates).strftime("%B %-d, %Y")
+            if reviewed_dates
+            else "Mapped datasets not yet approved"
+        ),
         "data_sources": DATA_SOURCES,
     }
 
@@ -801,7 +925,7 @@ def canonicalize_geocoded_address(input_address, geocoder_address, verified_zip)
     if input_house and raw_house:
         components[0] = input_house.group(1)
 
-    # Nominatim commonly separates the house number and street into components.
+    # Some legacy geocoder responses separate the house number and street.
     if len(components) > 1 and re.fullmatch(r"\d+[A-Za-z]?", components[0]):
         components[0] = f"{components[0]} {components[1]}"
         del components[1]
@@ -823,99 +947,52 @@ def canonicalize_geocoded_address(input_address, geocoder_address, verified_zip)
     return ", ".join(components)
 
 
-# --- Geocoding fallback ---
+# --- County-authoritative location compatibility helpers ---
 def geocode_zip(zip_code):
-    geolocator = Nominatim(user_agent="disaster_app")
+    """Return the local ZIP polygon centroid without contacting a geocoder."""
     try:
-        location = geolocator.geocode({"postalcode": zip_code, "country": "US"})
-        if location and is_valid_coordinate(location.latitude, location.longitude):
-            return (location.latitude, location.longitude)
+        with open(os.path.join(BASE_DIR, "static", "zipbound.geojson"), "r", encoding="utf-8") as file:
+            payload = json.load(file)
+        for feature in payload.get("features", []):
+            properties = feature.get("properties") or {}
+            value = next(
+                (
+                    properties.get(field)
+                    for field in ("ZCTA5CE10", "ZIP", "ZIPCODE", "zip_code", "ZIP_CODE")
+                    if properties.get(field)
+                ),
+                None,
+            )
+            if str(value or "") == str(zip_code):
+                center = shape(feature["geometry"]).representative_point()
+                return center.y, center.x
     except Exception:
-        logger.exception("ZIP geocoding failed for %s.", zip_code)
+        logger.exception("Local ZIP centroid lookup failed.")
     return (DEFAULT_LAT, DEFAULT_LON)
+
+
 def geocode_address(address_query):
     """
-    Convert address to coordinates and ZIP code
-    Returns: (lat, lon, zip_code, formatted_address) or None
+    Compatibility adapter for internal callers.
+
+    It deliberately returns no result for ambiguous input. New clients should
+    use the candidate/resolve APIs and require resident confirmation.
     """
-    geolocator = Nominatim(user_agent="disaster_app", timeout=10)
-    
     try:
-        # Check if input looks like coordinates (lat, lon)
-        coord_pattern = r'^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)(?:,.*)?$'
-        coord_match = re.match(coord_pattern, address_query.strip())
-        
-        if coord_match:
-            # Handle coordinate input with reverse geocoding
-            lat, lon = float(coord_match.group(1)), float(coord_match.group(2))
-            
-            # Verify coordinates are in reasonable range for Bay Area
-            if not is_valid_coordinate(lat, lon):
-                logger.info("Submitted coordinates were outside coverage bounds.")
-                return None
-            
-            # Reverse geocode to get address and ZIP
-            location = geolocator.reverse((lat, lon), exactly_one=True)
-            if location:
-                zip_code = get_zip_from_coordinates(lat, lon) or extract_zip_from_address(location.address)
-                display_address = canonicalize_geocoded_address(address_query, location.address, zip_code)
-                return (lat, lon, zip_code, display_address)
-            else:
-                return None
-        
-        # Handle regular address input
-        clean_address = clean_address_input(address_query)
-        
-        # Try geocoding with different variations
-        location = None
-        
-        # First try: exact input with Alameda County
-        location = geolocator.geocode(clean_address + ", Alameda County, CA, USA")
-        
-        # Second try: without county specification
-        if not location:
-            location = geolocator.geocode(clean_address + ", CA, USA")
-        
-        # Third try: with Oakland area fallback
-        if not location and "oakland" not in clean_address.lower():
-            location = geolocator.geocode(clean_address + ", Oakland, CA, USA")
-        
-        # Fourth try: just the address as-is
-        if not location:
-            location = geolocator.geocode(clean_address)
-            
-        if location:
-            lat, lon = location.latitude, location.longitude
-            if not is_valid_coordinate(lat, lon):
-                logger.info("Geocoded address was outside coverage bounds.")
-                return None
-
-            # Get correct ZIP from your GeoJSON boundaries
-            zip_code = get_zip_from_coordinates(lat, lon)
-
-            # If not found, fall back to Nominatim
-            if not zip_code:
-                zip_code = extract_zip_from_address(location.address)
-
-            display_address = canonicalize_geocoded_address(
-                address_query,
-                location.address,
-                zip_code,
-            )
-            return (
-                lat,
-                lon,
-                zip_code,
-                display_address,
-            )
-    
-    except (GeocoderTimedOut, GeocoderServiceError) as e:
-        logger.exception("Geocoding service error.")
-    except ValueError as e:
-        logger.exception("Coordinate parsing error.")
+        candidates = suggest_locations(address_query, limit=2)
+        if len(candidates) != 1:
+            return None
+        resolved = resolve_candidate(candidates[0])
+        return (
+            resolved.latitude,
+            resolved.longitude,
+            resolved.zip_code,
+            resolved.normalized_display_address,
+        )
+    except (LocationServiceError, UnsupportedLocationInput):
+        logger.info("County-authoritative address lookup did not produce a safe match.")
     except Exception:
-        logger.exception("Unexpected address geocoding error.")
-        
+        logger.exception("Unexpected county address lookup error.")
     return None
 
 def clean_address_input(address):
@@ -943,6 +1020,29 @@ def extract_zip_from_address(full_address):
     if zip_match:
         return zip_match.group(1)
     return None
+
+
+class AmbiguousLocationInput(ValueError):
+    pass
+
+
+def resolve_address_input(address, candidate_id=""):
+    """Resolve a confirmed candidate or require confirmation for ambiguity."""
+    candidate = get_location_candidate(candidate_id) if candidate_id else None
+    if candidate is None:
+        candidates = suggest_locations(address, limit=5)
+        if len(candidates) > 1:
+            for item in candidates:
+                save_location_candidate(item)
+            raise AmbiguousLocationInput(
+                "More than one address matches. Choose a suggested address before continuing."
+            )
+        candidate = candidates[0] if candidates else None
+    if candidate is None:
+        raise UnsupportedLocationInput(
+            "No county address-point match was found. Use ZIP fallback or place a map pin."
+        )
+    return resolve_candidate(candidate)
 
 @app.route("/form", methods=["POST"])
 @rate_limit(20, 60)
@@ -973,20 +1073,27 @@ def process_form():
                 set_form_error("Invalid address. Please enter a proper street address.")
                 return redirect(url_for("home"))
 
-            result = geocode_address(address)
-            if not result:
-                set_form_error("Could not find a valid address in the supported service area.")
+            try:
+                resolved_location = resolve_address_input(
+                    address,
+                    request.form.get("location_candidate_id", "").strip(),
+                )
+            except (UnsupportedLocationInput, AmbiguousLocationInput) as error:
+                set_form_error(str(error))
+                return redirect(url_for("home"))
+            except LocationServiceError:
+                set_form_error(
+                    "Official boundary verification is temporarily unavailable. No result was created."
+                )
                 return redirect(url_for("home"))
 
-            lat, lon, zip_from_address, formatted_address = result
-            zip_from_address = (zip_from_address or "").split("-")[0]
+            lat = resolved_location.latitude
+            lon = resolved_location.longitude
+            zip_from_address = resolved_location.zip_code
+            formatted_address = resolved_location.normalized_display_address
 
             if not zip_from_address:
                 set_form_error("We found the location, but could not verify a supported ZIP code.")
-                return redirect(url_for("home"))
-
-            if zip_risk_data and zip_from_address not in zip_risk_data:
-                set_form_error(f"The address ZIP ({zip_from_address}) is not covered.")
                 return redirect(url_for("home"))
 
             final_zip = zip_from_address
@@ -1010,7 +1117,7 @@ def process_form():
         if not is_valid_coordinate(lat, lon):
             lat, lon = geocode_zip(final_zip) if final_zip else (DEFAULT_LAT, DEFAULT_LON)
 
-        save_resident_state({
+        extra_state = {
             "zip_code": final_zip,
             "lat": lat,
             "lon": lon,
@@ -1023,7 +1130,11 @@ def process_form():
             "preparedness": preparedness,
             "household_tags": household_tags,
             "hazard_user_profile": {},
-        })
+        }
+        if location_mode == "address":
+            save_resolved_location(resolved_location, extra_state)
+        else:
+            save_resident_state(extra_state)
 
         return redirect(url_for("risk_summary"))
     except Exception:
@@ -1074,67 +1185,146 @@ def handle_unexpected_error(error):
 @app.route("/search-address", methods=["POST"])
 @rate_limit(20, 60)
 def search_address():
-    """Handle address search and convert to ZIP code"""
-    try:
-        address_query = request.form.get("address", "").strip()
-
-        if not valid_address(address_query):
-            return jsonify({"error": "A valid address is required."}), 400
-
-        result = geocode_address(address_query)
-
-        if not result:
-            return jsonify({
-                "error": "Address not found or outside service area",
-                "suggestion": "Please try a more specific address or use ZIP code search"
-            }), 404
-
-        lat, lon, zip_code, formatted_address = result
-
-        if zip_code and zip_risk_data and zip_code not in zip_risk_data:
-            return jsonify({
-                "error": f"ZIP code {zip_code} is outside our coverage area",
-                "found_address": formatted_address,
-                "suggestion": "This tool covers Alameda County ZIP codes"
-            }), 404
-
-        return jsonify({
-            "success": True,
-            "zip_code": zip_code,
-            "coordinates": [lat, lon],
-            "formatted_address": formatted_address,
-            "message": f"Found address in ZIP {zip_code}"
-        })
-    except Exception:
-        logger.exception("Address search failed.")
-        return jsonify({
-            "error": "Address lookup is temporarily unavailable",
-            "suggestion": "Please try ZIP code search instead"
-        }), 503
+    """Deprecated coordinate-free adapter for pre-v2 clients."""
+    response = address_suggestions()
+    if isinstance(response, tuple):
+        body, status = response
+        body.headers["Deprecation"] = "true"
+        body.headers["Link"] = '</api/location/suggestions>; rel="successor-version"'
+        return body, status
+    response.headers["Deprecation"] = "true"
+    response.headers["Link"] = '</api/location/suggestions>; rel="successor-version"'
+    return response
 
 
 # API endpoint for address suggestions (optional autocomplete)
 @app.route("/api/address-suggestions")
 def address_suggestions():
-    """Simple address validation/suggestions"""
-    query = request.args.get("q", "").strip()
-    
-    if not valid_short_query(query) or len(query) < 3:
-        return jsonify([])
-    
-    # Basic suggestions based on common Alameda County cities
-    alameda_cities = [
-        "Oakland", "Berkeley", "Fremont", "Hayward", "Alameda", 
-        "San Leandro", "Union City", "Newark", "Dublin", "Pleasanton",
-        "Livermore", "Castro Valley", "San Lorenzo", "Emeryville"
-    ]
-    
-    suggestions = []
-    for city in alameda_cities:
-        if query.lower() in city.lower():
-            suggestions.append(f"{query}, {city}, CA")
-    
-    return jsonify(suggestions[:5])
+    response = location_suggestions()
+    if isinstance(response, tuple):
+        body, status = response
+        body.headers["Deprecation"] = "true"
+        body.headers["Link"] = '</api/location/suggestions>; rel="successor-version"'
+        return body, status
+    response.headers["Deprecation"] = "true"
+    response.headers["Link"] = '</api/location/suggestions>; rel="successor-version"'
+    return response
+
+
+@app.get("/api/location/suggestions")
+@rate_limit(30, 60)
+def location_suggestions():
+    query = (
+        request.args.get("q")
+        or request.form.get("address")
+        or ""
+    ).strip()
+    if not valid_address(query):
+        return jsonify({"candidates": [], "error": "Enter a complete street address."}), 400
+    try:
+        candidates = suggest_locations(query, limit=5)
+    except UnsupportedLocationInput as error:
+        return jsonify({
+            "candidates": [],
+            "error": str(error),
+            "fallbacks": ["zip"],
+        }), 422
+    except (LocationServiceError, requests.RequestException):
+        logger.exception("County address suggestions are unavailable.")
+        return jsonify({
+            "candidates": [],
+            "error": "Address lookup is temporarily unavailable.",
+            "fallbacks": ["zip", "map_pin"],
+        }), 503
+    for candidate in candidates:
+        save_location_candidate(candidate)
+    return jsonify({
+        "candidates": [candidate.public_payload() for candidate in candidates],
+        "requires_selection": len(candidates) != 1,
+        "fallbacks": ["zip", "map_pin"] if not candidates else [],
+    })
+
+
+@app.post("/api/location/resolve")
+@rate_limit(20, 60)
+def location_resolve():
+    payload = request.get_json(silent=True) or {}
+    candidate = get_location_candidate(payload.get("candidate_id"))
+    if candidate is None and payload.get("mode") == "map_pin":
+        coordinates = valid_coordinate_pair(
+            payload.get("latitude"),
+            payload.get("longitude"),
+            COVERAGE_BOUNDS,
+        )
+        if not coordinates:
+            return jsonify({"error": "A valid map pin is required."}), 400
+        lat, lon = coordinates
+        candidate = LocationCandidate(
+            candidate_id=secrets.token_urlsafe(18),
+            display_label="Resident-confirmed map pin",
+            latitude=lat,
+            longitude=lon,
+            zip_code=get_zip_from_coordinates(lat, lon) or "",
+            provider="resident_map_pin",
+            match_type="map_pin",
+            match_score=100,
+            limitations=(
+                "This result uses a resident-placed point, not a verified street address.",
+            ),
+        )
+    if candidate is None:
+        return jsonify({
+            "error": "That address match expired. Search and confirm the address again."
+        }), 410
+    try:
+        resolved = resolve_candidate(candidate)
+    except UnsupportedLocationInput as error:
+        return jsonify({"error": str(error), "fallbacks": ["zip"]}), 422
+    except (LocationServiceError, requests.RequestException):
+        logger.exception("Official jurisdiction boundary verification failed.")
+        return jsonify({
+            "error": "Jurisdiction verification is temporarily unavailable. No result was created."
+        }), 503
+    result_token = save_resolved_location(resolved)
+    return jsonify({
+        "result_token": result_token,
+        "display_label": resolved.normalized_display_address,
+        "precision": resolved.precision,
+        "jurisdiction": resolved.jurisdiction,
+    })
+
+
+@app.post("/api/location/reverse")
+@rate_limit(10, 60)
+def location_reverse():
+    payload = request.get_json(silent=True) or {}
+    coordinates = valid_coordinate_pair(
+        payload.get("latitude"),
+        payload.get("longitude"),
+        COVERAGE_BOUNDS,
+    )
+    if not coordinates:
+        return jsonify({"error": "Current location is outside the supported area."}), 400
+    try:
+        candidate = nearest_address_candidate(*coordinates)
+        if candidate is None:
+            # Verify the point is in-county before offering map-pin placement.
+            resolve_jurisdiction(*coordinates)
+            return jsonify({
+                "candidate": None,
+                "map_pin_available": True,
+                "message": "No county address point was found within 150 meters.",
+            }), 404
+    except UnsupportedLocationInput as error:
+        return jsonify({"error": str(error)}), 422
+    except (LocationServiceError, requests.RequestException):
+        logger.exception("Backend reverse location lookup failed.")
+        return jsonify({"error": "Location lookup is temporarily unavailable."}), 503
+    save_location_candidate(candidate)
+    return jsonify({
+        "candidate": candidate.public_payload(),
+        "requires_selection": True,
+    })
 def get_risk_level(score):
     """Legacy action-selection band; never use this as a public exposure claim."""
     if score >= 7:
@@ -1897,7 +2087,14 @@ def resources():
 
 @app.route("/sources")
 def sources():
-    return safe_render("sources.html", **source_page_payload())
+    context = source_page_payload()
+    try:
+        context["mapped_dataset_registry"] = [
+            item.model_dump(mode="json") for item in get_default_registry().all()
+        ]
+    except DatasetRegistryError:
+        context["mapped_dataset_registry"] = []
+    return safe_render("sources.html", **context)
 
 # --- API Endpoints ---
 
@@ -1913,11 +2110,45 @@ def api_health():
         "source_count": len(source_records_payload()),
         "local_plan_count": len(load_local_plans()),
         "resident_guidance_count": len(load_resident_guidance_chunks()),
+        "ephemeral_state_backend": store_backend_name(RESIDENT_STATE_CACHE),
         "submission_backend": {
             "configured": submission_status["configured"],
             "credential_type": submission_status["credential_type"],
         },
     })
+
+
+@app.route("/api/ready")
+def api_ready():
+    checks = {
+        "ephemeral_state": store_is_ready(RESIDENT_STATE_CACHE),
+        "shared_state": (
+            store_backend_name(RESIDENT_STATE_CACHE) == "redis"
+            if IS_PRODUCTION
+            else True
+        ),
+        "source_registry": False,
+        "required_local_artifacts": False,
+    }
+    try:
+        datasets = get_default_registry().all()
+        checks["source_registry"] = bool(datasets)
+        checks["required_local_artifacts"] = all(
+            not item.local_path or (Path(BASE_DIR) / item.local_path).is_file()
+            for item in datasets
+        )
+    except DatasetRegistryError:
+        logger.exception("Readiness source registry check failed.")
+    ready = all(checks.values())
+    return jsonify({"ready": ready, "checks": checks}), 200 if ready else 503
+
+
+@app.post("/api/csp-report")
+@csrf.exempt
+def csp_report():
+    # Reports are intentionally not persisted because page URLs may contain
+    # unexpected data. Aggregate reporting can be added through an allowlist.
+    return "", 204
 
 
 @app.route("/api/supabase-health")
@@ -1927,8 +2158,15 @@ def api_supabase_health():
 
 @app.route("/api/sources")
 def api_sources():
+    try:
+        mapped_datasets = [
+            item.model_dump(mode="json") for item in get_default_registry().all()
+        ]
+    except DatasetRegistryError:
+        mapped_datasets = []
     return jsonify({
         "sources": source_records_payload(),
+        "mapped_datasets": mapped_datasets,
         "hazards": load_hazard_registry(),
         "jurisdictions": load_jurisdictions(),
         "local_plans": load_local_plans(),
@@ -1941,7 +2179,7 @@ def api_local_plans():
     return jsonify({
         "plans": load_local_plans(),
         "count": len(load_local_plans()),
-        "review_note": "City-specific hazard claims are only used when the plan/chunk has reviewed or draft-reviewed status.",
+        "review_note": "City-specific hazard claims are published only after a named external reviewer approves the claim.",
     })
 
 
@@ -2104,11 +2342,15 @@ def api_wildfire_zones():
         )
         filtered = filter_geojson_by_bounds(data, filter_bounds, simplify=True)
         filtered.update({
-            "source": "CAL FIRE Fire Hazard Severity Zones",
+            "source": "CAL FIRE effective SRA zones and 2025 LRA recommendations",
             "feature_count": len(filtered.get("features", [])),
             "filtered": bool(filter_bounds),
             "data_status": "checked",
-            "message": "Showing nearby wildfire hazard polygons from the loaded CAL FIRE layer.",
+            "message": (
+                "Showing nearby CAL FIRE polygons. SRA polygons are effective state "
+                "zones; LRA polygons are 2025 recommendations and are not presented "
+                "as locally adopted zones."
+            ),
         })
         return jsonify(filtered)
     return jsonify({

@@ -22,7 +22,7 @@
         </div>
     </header>
 
-    <main class="sr-hazard-guide-main">
+    <div class="sr-hazard-guide-main">
         <div class="container">
             <div class="sr-hazard-guide-layout">
                 <div class="sr-hazard-guide-content">
@@ -46,7 +46,7 @@
                             <h2 id="current-location-title">{{ guide.location.display_name }}</h2>
                             <p>
                                 {{ guide.location.message }}
-                                Use your Risk Summary for ranked priorities.
+                                Use your hazard findings summary for preparedness priorities.
                             </p>
                             {% else %}
                             <h2 id="current-location-title">Add an address for available local checks</h2>
@@ -55,7 +55,7 @@
                         </div>
                         <div class="sr-hazard-location-actions">
                             {% if guide.location.active %}
-                            <a class="btn sr-button sr-button-primary" href="{{ url_for('risk_summary') }}">View Risk Summary</a>
+                            <a class="btn sr-button sr-button-primary" href="{{ url_for('risk_summary') }}">View hazard findings</a>
                             <a class="btn sr-button sr-button-secondary" href="{{ url_for('map') }}">View on Map</a>
                             {% else %}
                             <a class="btn sr-button sr-button-primary" href="{{ url_for('home') }}#location">Check my address</a>
@@ -165,7 +165,7 @@
                     <span class="section-eyebrow">Guide navigation</span>
                     <nav>
                         <a href="{{ url_for('hazards_dashboard') }}"><i class="fas fa-arrow-left"></i> Back to Hazards</a>
-                        <a href="{{ url_for('risk_summary') }}"><i class="fas fa-list-check"></i> View Risk Summary</a>
+                        <a href="{{ url_for('risk_summary') }}"><i class="fas fa-list-check"></i> View hazard findings</a>
                         <a href="{{ url_for('map') }}"><i class="fas fa-map"></i> View Map</a>
                         <a href="{{ url_for('sources') }}"><i class="fas fa-book-open"></i> Sources and methodology</a>
                         <a href="/feedback?category=incorrect_source&amp;page_context=hazards"><i class="fas fa-flag"></i> Report an issue</a>
@@ -173,7 +173,7 @@
                 </aside>
             </div>
         </div>
-    </main>
+    </div>
 </div>
 {% endblock %}
 

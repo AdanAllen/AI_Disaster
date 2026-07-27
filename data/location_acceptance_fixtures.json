@@ -1,0 +1,23 @@
+[
+  {"address": "2263 Santa Clara Ave, Alameda, CA 94501", "jurisdiction": "Alameda", "community": "", "fixture_type": "city_hall"},
+  {"address": "1000 San Pablo Ave, Albany, CA 94706", "jurisdiction": "Albany", "community": "", "fixture_type": "city_hall"},
+  {"address": "2180 Milvia St, Berkeley, CA 94704", "jurisdiction": "Berkeley", "community": "", "fixture_type": "city_hall"},
+  {"address": "100 Civic Plz, Dublin, CA 94568", "jurisdiction": "Dublin", "community": "", "fixture_type": "city_hall"},
+  {"address": "1333 Park Ave, Emeryville, CA 94608", "jurisdiction": "Emeryville", "community": "", "fixture_type": "city_hall"},
+  {"address": "3300 Capitol Ave, Fremont, CA 94538", "jurisdiction": "Fremont", "community": "", "fixture_type": "city_hall"},
+  {"address": "777 B St, Hayward, CA 94541", "jurisdiction": "Hayward", "community": "", "fixture_type": "city_hall"},
+  {"address": "1052 S Livermore Ave, Livermore, CA 94550", "jurisdiction": "Livermore", "community": "", "fixture_type": "city_hall"},
+  {"address": "37101 Newark Blvd, Newark, CA 94560", "jurisdiction": "Newark", "community": "", "fixture_type": "city_hall"},
+  {"address": "1 Frank H Ogawa Plz, Oakland, CA 94612", "jurisdiction": "Oakland", "community": "", "fixture_type": "city_hall"},
+  {"address": "120 Vista Ave, Piedmont, CA 94611", "jurisdiction": "Piedmont", "community": "", "fixture_type": "city_hall"},
+  {"address": "123 Main St, Pleasanton, CA 94566", "jurisdiction": "Pleasanton", "community": "", "fixture_type": "city_hall"},
+  {"address": "835 E 14th St, San Leandro, CA 94577", "jurisdiction": "San Leandro", "community": "", "fixture_type": "city_hall"},
+  {"address": "34009 Alvarado Niles Rd, Union City, CA 94587", "jurisdiction": "Union City", "community": "", "fixture_type": "city_hall"},
+  {"address": "16335 E 14th St, San Leandro, CA 94578", "jurisdiction": "Unincorporated Alameda County", "community": "Ashland", "fixture_type": "public_library"},
+  {"address": "3600 Norbridge Ave, Castro Valley, CA 94546", "jurisdiction": "Unincorporated Alameda County", "community": "Castro Valley", "fixture_type": "public_library"},
+  {"address": "278 Hampton Rd, Hayward, CA 94541", "jurisdiction": "Unincorporated Alameda County", "community": "Cherryland", "fixture_type": "community_center"},
+  {"address": "23515 Maud Ave, Hayward, CA 94541", "jurisdiction": "Unincorporated Alameda County", "community": "Fairview", "fixture_type": "public_park"},
+  {"address": "20450 Royal Ave, Hayward, CA 94541", "jurisdiction": "Unincorporated Alameda County", "community": "Hayward Acres", "fixture_type": "public_school"},
+  {"address": "395 Paseo Grande, San Lorenzo, CA 94580", "jurisdiction": "Unincorporated Alameda County", "community": "San Lorenzo", "fixture_type": "public_library"},
+  {"address": "11601 Main St, Sunol, CA 94586", "jurisdiction": "Unincorporated Alameda County", "community": "Sunol", "fixture_type": "public_school"}
+]

@@ -10,38 +10,39 @@
             <div class="sr-map-layer-panel-head">
                 <h2 id="map-layer-title">Map layers</h2>
                 <button type="button" onclick="document.querySelectorAll('.sr-map-layer-panel .layer-toggle:not(.active)').forEach((item) => item.click())">Show all</button>
+                <button type="button" id="map-pin-mode" aria-pressed="false"><i class="fas fa-location-crosshairs" aria-hidden="true"></i> Place a location point</button>
             </div>
             <div class="sr-map-layer-groups">
                 <div>
                     <h3>Location</h3>
-                    <div class="layer-toggle zip active" id="zip-toggle" onclick="toggleLayer('zip')"><i class="fas fa-square-check layer-icon"></i><span>ZIP boundary</span></div>
+                    <button type="button" class="layer-toggle zip active" id="zip-toggle" aria-pressed="true" onclick="toggleLayer('zip')"><i class="fas fa-square-check layer-icon"></i><span>ZIP boundary</span></button>
                 </div>
                 <div>
                     <h3>Flood &amp; inundation</h3>
-                    <div class="layer-toggle flood{% if 'flood' in summary_map_layers %} is-summary-relevant{% endif %}" id="flood-toggle" onclick="toggleLayer('flood')"><i class="fas fa-square layer-icon"></i><span>FEMA Flood Zones</span></div>
-                    <div class="layer-toggle dam-inundation{% if 'dam-inundation' in summary_map_layers %} is-summary-relevant{% endif %}" id="dam-inundation-toggle" onclick="toggleLayer('dam-inundation')"><i class="fas fa-square layer-icon"></i><span>Dam Failure Inundation</span></div>
+                    <button type="button" class="layer-toggle flood{% if 'flood' in summary_map_layers %} is-summary-relevant{% endif %}" id="flood-toggle" aria-pressed="false" onclick="toggleLayer('flood')"><i class="fas fa-square layer-icon"></i><span>FEMA Flood Zones</span></button>
+                    <button type="button" class="layer-toggle dam-inundation{% if 'dam-inundation' in summary_map_layers %} is-summary-relevant{% endif %}" id="dam-inundation-toggle" aria-pressed="false" onclick="toggleLayer('dam-inundation')"><i class="fas fa-square layer-icon"></i><span>Dam Failure Inundation</span></button>
                 </div>
                 <div>
                     <h3>CAL FIRE</h3>
-                    <div class="layer-toggle wildfire{% if 'wildfire' in summary_map_layers %} is-summary-relevant{% endif %}" id="wildfire-toggle" onclick="toggleLayer('wildfire')"><i class="fas fa-square layer-icon"></i><span>CAL FIRE Hazard Severity Zones</span></div>
+                    <button type="button" class="layer-toggle wildfire{% if 'wildfire' in summary_map_layers %} is-summary-relevant{% endif %}" id="wildfire-toggle" aria-pressed="false" onclick="toggleLayer('wildfire')"><i class="fas fa-square layer-icon"></i><span>CAL FIRE Hazard Severity Zones</span></button>
                 </div>
                 <div>
                     <h3>CGS Earthquake Zones</h3>
-                    <div class="layer-toggle cgs{% if cgs_map_evidence | selectattr('map_layer_key', 'equalto', 'liquefaction') | selectattr('matched', 'equalto', true) | list %} active{% endif %}" id="cgs-liquefaction-toggle" data-cgs-layer="liquefaction" data-cgs-legend="liquefaction" onclick="toggleLayer('cgs-liquefaction')"><i class="fas fa-square layer-icon"></i><span>CGS Liquefaction Zones</span></div>
-                    <div class="layer-toggle cgs{% if cgs_map_evidence | selectattr('map_layer_key', 'equalto', 'earthquake-landslide') | selectattr('matched', 'equalto', true) | list %} active{% endif %}" id="cgs-earthquake-landslide-toggle" data-cgs-layer="earthquake-landslide" data-cgs-legend="earthquake-landslide" onclick="toggleLayer('cgs-earthquake-landslide')"><i class="fas fa-square layer-icon"></i><span>CGS Earthquake-Induced Landslide Zones</span></div>
+                    <button type="button" class="layer-toggle cgs{% if cgs_map_evidence | selectattr('map_layer_key', 'equalto', 'liquefaction') | selectattr('matched', 'equalto', true) | list %} active{% endif %}" id="cgs-liquefaction-toggle" aria-pressed="{{ 'true' if cgs_map_evidence | selectattr('map_layer_key', 'equalto', 'liquefaction') | selectattr('matched', 'equalto', true) | list else 'false' }}" data-cgs-layer="liquefaction" data-cgs-legend="liquefaction" onclick="toggleLayer('cgs-liquefaction')"><i class="fas fa-square layer-icon"></i><span>CGS Liquefaction Zones</span></button>
+                    <button type="button" class="layer-toggle cgs{% if cgs_map_evidence | selectattr('map_layer_key', 'equalto', 'earthquake-landslide') | selectattr('matched', 'equalto', true) | list %} active{% endif %}" id="cgs-earthquake-landslide-toggle" aria-pressed="{{ 'true' if cgs_map_evidence | selectattr('map_layer_key', 'equalto', 'earthquake-landslide') | selectattr('matched', 'equalto', true) | list else 'false' }}" data-cgs-layer="earthquake-landslide" data-cgs-legend="earthquake-landslide" onclick="toggleLayer('cgs-earthquake-landslide')"><i class="fas fa-square layer-icon"></i><span>CGS Earthquake-Induced Landslide Zones</span></button>
                 </div>
                 <div>
                     <h3>Faults</h3>
-                    <div class="layer-toggle earthquake{% if 'earthquake' in summary_map_layers %} is-summary-relevant{% endif %}" id="earthquake-toggle" onclick="toggleLayer('earthquake')"><i class="fas fa-square layer-icon"></i><span>Mapped Fault Traces</span></div>
-                    <div class="layer-toggle cgs{% if cgs_map_evidence | selectattr('map_layer_key', 'equalto', 'alquist-priolo') | selectattr('matched', 'equalto', true) | list %} active{% endif %}" id="cgs-alquist-priolo-toggle" data-cgs-layer="alquist-priolo" data-cgs-legend="alquist-priolo" onclick="toggleLayer('cgs-alquist-priolo')"><i class="fas fa-square layer-icon"></i><span>CGS Alquist-Priolo Fault Zones</span></div>
+                    <button type="button" class="layer-toggle earthquake{% if 'earthquake' in summary_map_layers %} is-summary-relevant{% endif %}" id="earthquake-toggle" aria-pressed="false" onclick="toggleLayer('earthquake')"><i class="fas fa-square layer-icon"></i><span>Mapped Fault Traces</span></button>
+                    <button type="button" class="layer-toggle cgs{% if cgs_map_evidence | selectattr('map_layer_key', 'equalto', 'alquist-priolo') | selectattr('matched', 'equalto', true) | list %} active{% endif %}" id="cgs-alquist-priolo-toggle" aria-pressed="{{ 'true' if cgs_map_evidence | selectattr('map_layer_key', 'equalto', 'alquist-priolo') | selectattr('matched', 'equalto', true) | list else 'false' }}" data-cgs-layer="alquist-priolo" data-cgs-legend="alquist-priolo" onclick="toggleLayer('cgs-alquist-priolo')"><i class="fas fa-square layer-icon"></i><span>CGS Alquist-Priolo Fault Zones</span></button>
                 </div>
                 <div>
                     <h3>Tsunami</h3>
-                    <div class="layer-toggle cgs{% if cgs_map_evidence | selectattr('map_layer_key', 'equalto', 'tsunami') | selectattr('matched', 'equalto', true) | list %} active{% endif %}" id="cgs-tsunami-toggle" data-cgs-layer="tsunami" data-cgs-legend="tsunami" onclick="toggleLayer('cgs-tsunami')"><i class="fas fa-square layer-icon"></i><span>CGS Tsunami Hazard Areas</span></div>
+                    <button type="button" class="layer-toggle cgs{% if cgs_map_evidence | selectattr('map_layer_key', 'equalto', 'tsunami') | selectattr('matched', 'equalto', true) | list %} active{% endif %}" id="cgs-tsunami-toggle" aria-pressed="{{ 'true' if cgs_map_evidence | selectattr('map_layer_key', 'equalto', 'tsunami') | selectattr('matched', 'equalto', true) | list else 'false' }}" data-cgs-layer="tsunami" data-cgs-legend="tsunami" onclick="toggleLayer('cgs-tsunami')"><i class="fas fa-square layer-icon"></i><span>CGS Tsunami Hazard Areas</span></button>
                 </div>
                 <div>
                     <h3>Recent activity</h3>
-                    <div class="layer-toggle live" id="live-toggle" onclick="toggleLayer('live')"><i class="fas fa-square layer-icon"></i><span>Recent Bay Area Earthquakes</span></div>
+                    <button type="button" class="layer-toggle live" id="live-toggle" aria-pressed="false" onclick="toggleLayer('live')"><i class="fas fa-square layer-icon"></i><span>Recent Bay Area Earthquakes</span></button>
                 </div>
             </div>
             <p id="map-loading-status" aria-live="polite">Checking official mapped data only when a layer is opened.</p>
@@ -82,7 +83,7 @@
                         <div class="sr-map-source-details">
                             <p><strong>FEMA flood zones:</strong> Floodplain-management and insurance mapping; not every flood mechanism.</p>
                             <p><strong>FEMA Zone X:</strong> Generally outside the Special Flood Hazard Area or with lower or undetermined mapped flood hazard. It does not mean flooding cannot occur.</p>
-                            <p><strong>CAL FIRE zones:</strong> Long-term wildfire hazard conditions; not live fire or evacuation tracking.</p>
+                            <p><strong>CAL FIRE zones:</strong> Effective SRA zones and 2025 LRA recommendations are labeled separately. Recommendations are not presented as locally adopted zones. Neither is live fire or evacuation tracking.</p>
                             <p><strong>CGS liquefaction:</strong> Areas where strong shaking may cause wet, loose soil to lose strength.</p>
                             <p><strong>CGS landslide:</strong> Slopes where earthquake shaking may trigger landslides.</p>
                             <p><strong>Fault zones:</strong> Surface-fault context; not a forecast of shaking or damage.</p>
@@ -98,6 +99,22 @@
                 </aside>
             </div>
             <div class="active-layers visually-hidden" id="active-layers"><span class="active-layer-badge">ZIP {{ zip_code }}</span></div>
+        </section>
+
+        <section class="sr-map-text-alternative" aria-labelledby="map-text-alternative-title">
+            <h2 id="map-text-alternative-title">Map information as a list</h2>
+            <p>The map is optional. This list names every available layer and whether the saved summary marked it as relevant. Open the summary for complete findings, non-matches, unavailable checks, and limitations.</p>
+            <ul>
+                <li><strong>ZIP boundary:</strong> approximate display context; never address evidence.</li>
+                <li><strong>FEMA flood zones:</strong> {{ 'included in the saved summary context' if 'flood' in summary_map_layers else 'not marked in the saved summary; open the layer to check availability' }}.</li>
+                <li><strong>CAL FIRE hazard severity zones:</strong> effective SRA zones and 2025 LRA recommendations are distinct; local LRA adoption is not assumed. {{ 'Included in the saved summary context' if 'wildfire' in summary_map_layers else 'Not marked in the saved summary; open the layer to check availability' }}.</li>
+                <li><strong>Mapped fault traces:</strong> {{ 'included in the saved summary context' if 'earthquake' in summary_map_layers else 'not marked in the saved summary; open the layer to check availability' }}.</li>
+                <li><strong>DWR/DSOD dam-failure scenarios:</strong> {{ 'included in the saved summary context' if 'dam-inundation' in summary_map_layers else 'not marked in the saved summary; open the layer to check availability' }}.</li>
+                {% for evidence in cgs_map_evidence %}
+                <li><strong>{{ evidence.dataset_name }}:</strong> {{ 'included in the saved summary context' if evidence.matched else 'not marked in the saved summary; open the layer to check availability' }}. <a href="{{ evidence.source_url }}" target="_blank" rel="noopener noreferrer">Official source</a>.</li>
+                {% endfor %}
+            </ul>
+            <a href="{{ url_for('risk_summary') }}">Read the complete text summary</a>
         </section>
 
         <p class="sr-map-disclaimer">StayReady is an independent educational tool using official public data. It is not an official emergency service and does not replace AC Alert, evacuation orders, 911, or instructions from public agencies. California Geological Survey · Official source, provisional StayReady integration. This application uses information from the California Geological Survey. It is not officially endorsed by that agency. California DWR/DSOD · Official mapped planning source, provisional StayReady integration. StayReady is not officially endorsed by DWR or DSOD.</p>

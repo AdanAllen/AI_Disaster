@@ -670,6 +670,6 @@ def build_resident_plan(location_context: Dict, structured_hazards: List[Dict], 
             "StayReady is educational guidance and does not replace official emergency alerts, evacuation orders, inspections, insurance advice, or 911.",
             "Address checks are point checks against layers currently loaded by the app; they are not parcel determinations.",
             "A layer not matching the address does not mean the hazard cannot affect the household.",
-            "Local-plan context is used only when reviewed or draft-reviewed source data exists; otherwise county fallback language is shown.",
+            "Local-plan context is used only when a named external reviewer has approved the claim; otherwise county fallback language is shown.",
         ],
     }

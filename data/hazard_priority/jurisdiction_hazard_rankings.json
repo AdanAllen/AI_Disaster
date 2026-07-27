@@ -1,5 +1,20 @@
 {
   "schema_version": 1,
+  "review_gate": {
+    "production_statuses": [
+      "externally_reviewed"
+    ],
+    "required_fields": [
+      "human_reviewer",
+      "human_reviewed_at",
+      "source_document",
+      "source_page",
+      "source_table",
+      "limitations"
+    ],
+    "unreviewed_behavior": "withhold",
+    "automated_extraction_is_human_approval": false
+  },
   "records": [
     {
       "jurisdiction": "oakland",
@@ -17,6 +32,9 @@
       "publication_date": "2026",
       "document_status": "draft",
       "confidence": "Medium",
+      "review_status": "pending_external_review",
+      "human_reviewer": null,
+      "human_reviewed_at": null,
       "limitations": ["Draft source; not an adopted-plan production label without visible disclosure."]
     },
     {
@@ -35,6 +53,9 @@
       "publication_date": "2026",
       "document_status": "draft",
       "confidence": "Medium",
+      "review_status": "pending_external_review",
+      "human_reviewer": null,
+      "human_reviewed_at": null,
       "limitations": ["Draft source; wildfire official PRI includes a qualitative adjustment factor not used in StayReady's simplified matrix."]
     },
     {
@@ -53,6 +74,9 @@
       "publication_date": "2026",
       "document_status": "draft",
       "confidence": "Medium",
+      "review_status": "pending_external_review",
+      "human_reviewer": null,
+      "human_reviewed_at": null,
       "limitations": ["Draft source.", "StayReady's simplified Probability/Impact priority differs from the official PRI ranking because the official PRI uses additional factors."]
     },
     {
@@ -71,6 +95,9 @@
       "publication_date": "2026",
       "document_status": "draft",
       "confidence": "Medium",
+      "review_status": "pending_external_review",
+      "human_reviewer": null,
+      "human_reviewed_at": null,
       "limitations": ["Draft source.", "Address-level landslide concern should come from official susceptibility or hazard-zone layers."]
     },
     {
@@ -89,6 +116,9 @@
       "publication_date": "2026",
       "document_status": "draft",
       "confidence": "Medium",
+      "review_status": "pending_external_review",
+      "human_reviewer": null,
+      "human_reviewed_at": null,
       "limitations": ["Draft source.", "Address-level tsunami status must come from an official tsunami hazard-area intersection."]
     },
     {
@@ -107,6 +137,9 @@
       "publication_date": "2026",
       "document_status": "draft",
       "confidence": "Low",
+      "review_status": "pending_external_review",
+      "human_reviewer": null,
+      "human_reviewed_at": null,
       "limitations": ["Test fixture only."]
     }
   ]

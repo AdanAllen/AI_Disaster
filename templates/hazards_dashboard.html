@@ -16,7 +16,7 @@
         </div>
     </header>
 
-    <main class="sr-hazard-library-main">
+    <div class="sr-hazard-library-main">
         <div class="container">
             <!-- This strip may display the selected address, so block recording and autocapture. -->
             <section class="sr-hazard-location-strip ph-no-capture" aria-labelledby="hazard-location-title">
@@ -26,7 +26,7 @@
                     <h2 id="hazard-location-title">{{ library.location.display_name }}</h2>
                     <p>
                         {{ library.location.message }}
-                        View your Risk Summary for ranked preparedness priorities.
+                        View your hazard findings for ranked preparedness priorities.
                     </p>
                     {% else %}
                     <h2 id="hazard-location-title">Explore the library or check an address</h2>
@@ -35,7 +35,7 @@
                 </div>
                 <div class="sr-hazard-location-actions">
                     {% if library.location.active %}
-                    <a class="btn sr-button sr-button-primary" href="{{ url_for('risk_summary') }}">View Risk Summary</a>
+                    <a class="btn sr-button sr-button-primary" href="{{ url_for('risk_summary') }}">View hazard findings</a>
                     <a class="btn sr-button sr-button-secondary" href="{{ url_for('map') }}">View Map</a>
                     {% else %}
                     <a class="btn sr-button sr-button-primary" href="{{ url_for('home') }}#location">Check my address</a>
@@ -124,12 +124,12 @@
                 </div>
                 <div class="sr-hazard-role-grid">
                     <p><strong>Hazard Library</strong><span>Learn what hazards mean and how they are checked.</span></p>
-                    <p><strong>Risk Summary</strong><span>Review ranked preparedness priorities for your location.</span></p>
+                    <p><strong>Hazard findings</strong><span>Review preparedness priorities for your location.</span></p>
                     <p><strong>Map</strong><span>Explore available geographic layers and nearby context.</span></p>
                     <p><strong>Sources</strong><span>Read source methodology, review status, and limitations.</span></p>
                 </div>
             </section>
         </div>
-    </main>
+    </div>
 </div>
 {% endblock %}

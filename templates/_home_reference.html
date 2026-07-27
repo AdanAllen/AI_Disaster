@@ -4,7 +4,7 @@
             <div class="sr-home-hero-grid">
                 <div class="sr-home-hero-copy">
                     <h1 id="home-hero-title">What hazards affect your address?</h1>
-                    <p>Check an Alameda County street address to see official mapped findings, reviewed local-plan context, important unknowns, and the first actions your household can take.</p>
+                    <p>Check an Alameda County street address to see available mapped findings, externally approved local-plan context when eligible, important unknowns, and the first actions your household can take.</p>
                     <div class="sr-civic-note" role="note">
                         <strong>StayReady is an independent educational tool using official public data.</strong>
                         It is not an official emergency service and does not replace AC Alert, evacuation orders, 911, or instructions from public agencies.
@@ -12,6 +12,7 @@
 
                     <!-- Exact address and household selections must never be recorded or autocaptured by PostHog. -->
                     <form action="{{ url_for('process_form') }}" method="POST" id="emergency-form" class="sr-home-search sr-form ph-no-capture">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         {% if error %}<div class="form-messages error mb-3">{{ error }}</div>{% endif %}
                         <div class="search-type-toggle sr-toggle sr-home-search-toggle">
                             <div class="btn-group" role="group" aria-label="Choose location search type">
@@ -28,13 +29,17 @@
                                 <span class="input-group-text"><i class="fas fa-location-dot" aria-hidden="true"></i></span>
                                 <input type="text" class="form-control" id="address" name="address"
                                        placeholder="Enter your Alameda County address" autocomplete="street-address"
+                                       aria-describedby="address-help address-suggestions"
                                        value="{{ form_data.address if form_data else '' }}">
+                                <input type="hidden" id="location_candidate_id" name="location_candidate_id" value="">
                                 <button class="btn sr-home-locate" type="button" id="locate-me-btn" aria-label="Use my current location">
                                     <i class="fas fa-location-arrow" aria-hidden="true"></i>
                                 </button>
                                 <button type="submit" class="btn sr-primary-action">Check this address</button>
                             </div>
-                            <div id="address-suggestions" class="list-group mt-2" style="display: none;"></div>
+                            <p id="address-help" class="form-text">Choose the matching county address point before continuing. Units identify an address but do not move its hazard point.</p>
+                            <div id="address-suggestions" class="list-group mt-2" role="listbox" aria-label="Address matches" aria-live="polite" style="display: none;"></div>
+                            <a class="form-text d-inline-block mt-2" href="{{ url_for('map', placement=1) }}">Cannot find the address? Place a map pin</a>
                         </div>
 
                         <div class="search-container" id="zip-search-container" style="display: none;">
@@ -44,7 +49,7 @@
                                 <input type="text" class="form-control" id="zip_code" name="zip_code"
                                        placeholder="Enter a 5-digit ZIP code" maxlength="5"
                                        value="{{ form_data.zip_code if form_data else '' }}">
-                                <button type="submit" class="btn sr-primary-action">See my risks</button>
+                                <button type="submit" class="btn sr-primary-action">Check preparedness context</button>
                             </div>
                         </div>
 
@@ -104,7 +109,7 @@
         <div class="container">
             <div class="sr-home-pillar-grid">
                 <article><span><i class="fas fa-location-crosshairs"></i></span><div><h2>Address-point checks</h2><p>See exact categories returned by the available FEMA, CAL FIRE, CGS, and DWR/DSOD layers.</p></div></article>
-                <article><span><i class="fas fa-map-location-dot"></i></span><div><h2>Local planning context</h2><p>Understand what reviewed city, planning-area, or county hazard plans add—and what they do not say about a property.</p></div></article>
+                <article><span><i class="fas fa-map-location-dot"></i></span><div><h2>Local planning context</h2><p>Understand what externally approved city, planning-area, or county plan claims add—and what they do not say about a property.</p></div></article>
                 <article><span><i class="fas fa-list-check"></i></span><div><h2>Actions tied to findings</h2><p>Start with deduplicated, source-backed steps selected from the returned evidence and optional household needs.</p></div></article>
             </div>
         </div>
@@ -115,7 +120,7 @@
             <header class="sr-home-result-heading"><span class="sr-section-kicker">One useful result</span><h2 id="home-result-title">Your summary separates evidence that should never be blended</h2></header>
             <div class="sr-home-result-grid">
                 <article><span>1</span><h3>At the address</h3><p>Official polygon matches, returned categories, non-matches, failed checks, and fault proximity.</p></article>
-                <article><span>2</span><h3>In the local plan</h3><p>Reviewed planning-area, city, or county context labeled at its real geographic scope.</p></article>
+                <article><span>2</span><h3>In the local plan</h3><p>Externally approved planning-area, city, or county claims labeled at their real geographic scope.</p></article>
                 <article><span>3</span><h3>What remains unknown</h3><p>Building condition, retrofit status, household vulnerability, and future damage probability.</p></article>
                 <article><span>4</span><h3>What to do next</h3><p>Practical actions with a clear reason for appearing, plus relevant map layers and sources.</p></article>
             </div>
@@ -134,6 +139,7 @@
                 </article>
                 <!-- Contact details are excluded from PostHog replay and autocapture. -->
                 <form class="sr-interest-form ph-no-capture" method="post" action="{{ url_for('subscribe_updates') }}" novalidate>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     {{ update_form.hidden_tag() }}
                     <div class="sr-honeypot" aria-hidden="true">
                         {{ update_form.website.label }}

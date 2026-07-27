@@ -61,6 +61,16 @@ def normalize_jurisdiction_name(value: str) -> str:
 
 def get_local_plan_for_city(city: str) -> Dict:
     city_key = normalize_jurisdiction_name(city)
+    if city_key in {
+        "ashland",
+        "castro_valley",
+        "cherryland",
+        "fairview",
+        "hayward_acres",
+        "san_lorenzo",
+        "sunol",
+    }:
+        city_key = "unincorporated_alameda_county"
     for plan in load_local_plans():
         if normalize_jurisdiction_name(plan.get("name", "")) == city_key:
             return plan
@@ -87,6 +97,16 @@ def get_city_chunks(city: str, hazard_type: str) -> List[Dict]:
 
 def get_resident_guidance(city: str, hazard_type: str, limit: int = 12) -> List[Dict]:
     city_key = normalize_jurisdiction_name(city)
+    if city_key in {
+        "ashland",
+        "castro_valley",
+        "cherryland",
+        "fairview",
+        "hayward_acres",
+        "san_lorenzo",
+        "sunol",
+    }:
+        city_key = "unincorporated_alameda_county"
     hazard_key = (hazard_type or "").strip().lower()
     reviewed_statuses = {"reviewed", "draft_reviewed"}
     plan = get_local_plan_for_city(city)
@@ -188,8 +208,8 @@ def _source_status(source: Dict) -> Dict[str, str]:
     confidence = (source.get("confidence") or "").lower()
     if review_status == "reviewed" and confidence == "source_backed":
         return {
-            "label": "Reviewed official guidance",
-            "detail": "StayReady reviewed this official source for the guidance described here.",
+            "label": "Official guidance; source link checked",
+            "detail": "StayReady checked the cited official page. This does not mean an external expert or agency approved StayReady's wording.",
             "tone": "reviewed",
         }
     if review_status in {"reviewed", "draft_reviewed"}:

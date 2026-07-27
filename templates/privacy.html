@@ -16,9 +16,10 @@
 
             <h2 class="h4 mt-4">Location checks</h2>
             <p>
-                When you enter an address, StayReady may send it to OpenStreetMap's Nominatim geocoding service to find coordinates.
-                StayReady may then contact official public map services, including agency GIS services, to check mapped hazard information.
-                Those services receive the location needed to answer the map query and may have their own logging and privacy practices.
+                When you enter an address, StayReady first checks the official Alameda County Address Points service.
+                If no county match exists, an authenticated ArcGIS World Geocoding fallback may be used. Your browser
+                receives opaque address candidates without coordinates. StayReady may then contact official public map
+                services to check mapped hazard information.
             </p>
 
             <h2 class="h4 mt-4">Temporary result state</h2>
@@ -34,18 +35,16 @@
                 access, or vulnerability notes. Optional selections are kept only with the short-lived result and are not used to change hazard evidence.
             </p>
 
-            <h2 class="h4 mt-4">Analytics and session recordings</h2>
+            <h2 class="h4 mt-4">Privacy-safe aggregate analytics</h2>
             <p>
-                StayReady uses PostHog analytics to understand pageviews, pageleaves, clicks and other interactions,
-                performance and web-vitals metrics, heatmaps, browser errors, and session recordings. Session recordings
-                mask all page text and input fields. Sensitive areas, including address input, household details and
-                personalization, user-specific risk summaries, maps showing selected locations, search boxes, feedback,
-                and contact forms, are intended to be blocked from both recordings and automatic interaction capture.
+                StayReady uses PostHog analytics only for allowlisted aggregate completion, source-availability, and error events.
+                Automatic pageviews, pageleaves, interaction capture, performance capture, heatmaps, and session recordings are disabled.
+                Exact address input, household details, user-specific summaries, and selected map locations are excluded from analytics.
             </p>
             <p>
                 StayReady is configured not to send exact addresses, exact coordinates, household details, names, emails, phone numbers,
-                emergency notes, or raw user-entered search text to PostHog. Query strings are stripped from captured URLs and
-                session-recording network request names. Analytics are for improving this educational site only. StayReady is
+                emergency notes, or raw user-entered search text to PostHog. Query strings are stripped from any allowlisted
+                error or source event. Analytics are for improving this educational site only. StayReady is
                 not an official emergency service and must not be relied on for alerts, evacuation orders, or emergency response.
             </p>
 

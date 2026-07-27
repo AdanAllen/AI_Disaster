@@ -33,7 +33,7 @@
             <div>
                 <span class="sr-section-kicker">Address-specific preparedness</span>
                 <h1>Your local hazard summary</h1>
-                <p>{% if is_zip_fallback %}Broad ZIP fallback context only—no address-level map findings are inferred.{% else %}What official maps and reviewed local planning sources say about this location.{% endif %}</p>
+                <p>{% if is_zip_fallback %}Broad ZIP fallback context only—no address-level map findings are inferred.{% else %}What official maps and externally approved local-plan claims say about this location.{% endif %}</p>
             </div>
             <a class="btn sr-button sr-button-secondary" href="{{ url_for('home') }}#get-started">Change address</a>
         </div>
@@ -97,7 +97,7 @@
                             {% if hazard.subarea_context.status == "available" %}
                                 <span class="sr-scope-label">Oakland planning area · {{ hazard.subarea_context.subarea_name }}</span>
                                 <p>{{ hazard.subarea_context.findings[0].text }}</p>
-                                <small>Draft 2026–2031 LHMP planning context; reviewed claim, not a property rating.</small>
+                                <small>Draft 2026–2031 LHMP planning context; externally reviewed claim, not a property rating.</small>
                             {% elif hazard.regional_context.status == "available" %}
                                 <span class="sr-scope-label">{{ hazard.regional_context.scope_label }}</span>
                                 <p>{{ hazard.regional_context.explanation }}</p>
@@ -159,7 +159,7 @@
         </section>
 
         <section class="sr-next-actions" aria-labelledby="next-actions-title">
-            <header><span class="sr-section-kicker">What to do first</span><h2 id="next-actions-title">Start with these high-impact actions</h2><p>Actions are deduplicated and ordered from returned hazard evidence, reviewed guidance, and any household factors supplied in this short-lived session.</p></header>
+            <header><span class="sr-section-kicker">What to do first</span><h2 id="next-actions-title">Start with these high-impact actions</h2><p>Actions are deduplicated and ordered from returned hazard evidence, approved guidance, and any household factors supplied in this short-lived session.</p></header>
             <ol>
                 {% for item in resident_plan.what_to_do_now[:5] %}
                 <li data-action-id="{{ item.action.action_id }}"><span>{{ loop.index }}</span><div><strong>{{ item.action.title }}</strong><p>{{ item.action.instruction }}</p><small>Shown for: {{ item.hazard }}</small></div></li>

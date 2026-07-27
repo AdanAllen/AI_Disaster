@@ -55,12 +55,13 @@ def hazard(slug="earthquake", *, exposure="no_mapped_match", data_status="not_in
     }
 
 
-def oakland_priority():
+def oakland_priority(*, publishable=False):
     return {
         "slug": "earthquake",
         "probability": "High",
         "impact": "Medium",
         "official_lhmp_priority": "High",
+        "claim_record_publishable": publishable,
         "document_status": "draft",
         "source_document": "Draft Oakland 2026-2031 Local Hazard Mitigation Plan",
         "source_page": 316,
@@ -91,27 +92,42 @@ class CanonicalRiskSummaryTests(unittest.TestCase):
         self.assertEqual(item["vulnerability"]["status"], "unknown")
         self.assertNotRegex(str(item["address_evidence"]), re.compile(r"address.{0,12}(High|Medium|Low)", re.I))
 
-    def test_oakland_draft_citywide_rating_remains_visibly_citywide(self):
+    def test_oakland_draft_citywide_rating_is_withheld_without_external_review(self):
         record = evidence(matched=False, dataset="CGS Liquefaction Zones", label="No mapped match found.")
         model = build_canonical_risk_summary(location("Oakland"), [hazard(records=[record])], [oakland_priority()])
         item = model["hazards"][0]
-        self.assertEqual(item["regional_context"]["priority_label"], "High")
+        self.assertEqual(item["regional_context"]["priority_label"], "")
+        self.assertEqual(item["regional_context"]["status"], "unavailable")
         self.assertEqual(item["regional_context"]["source_status"], "draft")
-        self.assertIn("citywide", item["regional_context"]["explanation"])
+        self.assertIn("No eligible", item["regional_context"]["explanation"])
         self.assertEqual(item["address_evidence"]["outcome"], "checked_no_match")
         self.assertNotIn("High", item["address_evidence"]["label"])
 
-    def test_oakland_subarea_context_is_separate_reviewed_and_cited(self):
+    def test_externally_reviewed_citywide_context_can_be_displayed(self):
+        record = evidence(
+            matched=False,
+            dataset="CGS Liquefaction Zones",
+            label="No mapped match found.",
+        )
+        item = build_canonical_risk_summary(
+            location("Oakland"),
+            [hazard(records=[record])],
+            [oakland_priority(publishable=True)],
+        )["hazards"][0]
+
+        self.assertEqual(item["regional_context"]["status"], "available")
+        self.assertEqual(item["regional_context"]["priority_label"], "High")
+        self.assertIn("citywide", item["regional_context"]["explanation"])
+
+    def test_oakland_subarea_context_is_withheld_without_external_review(self):
         record = evidence(matched=False, dataset="CGS Liquefaction Zones", label="No mapped match found.")
         item = build_canonical_risk_summary(location("Oakland"), [hazard(records=[record])], [oakland_priority()])["hazards"][0]
-        self.assertEqual(item["subarea_context"]["status"], "available")
+        self.assertEqual(item["subarea_context"]["status"], "unavailable")
         self.assertEqual(item["subarea_context"]["subarea_name"], "Downtown")
-        self.assertEqual(item["subarea_context"]["source_status"], "draft")
-        self.assertIn("Hayward M7.05 scenario", item["subarea_context"]["findings"][0]["text"])
-        self.assertIn("Table 9-6", item["subarea_context"]["findings"][0]["reference"])
-        self.assertIn("Table 9-6", item["subarea_context"]["claims"][0]["reference"])
-        self.assertIn("PDF page 186", item["subarea_context"]["claims"][0]["reference"])
-        self.assertEqual(item["regional_context"]["priority_label"], "High")
+        self.assertEqual(item["subarea_context"]["source_status"], "")
+        self.assertEqual(item["subarea_context"]["findings"], [])
+        self.assertEqual(item["subarea_context"]["claims"], [])
+        self.assertEqual(item["regional_context"]["priority_label"], "")
         self.assertEqual(item["address_evidence"]["outcome"], "checked_no_match")
         self.assertNotRegex(str(item["subarea_context"]), re.compile(r"property.{0,12}(High|Medium|Low)", re.I))
 
@@ -123,7 +139,7 @@ class CanonicalRiskSummaryTests(unittest.TestCase):
             [oakland_priority()],
         )["hazards"][0]
         self.assertEqual(item["attention"]["label"], "Direct mapped concern")
-        self.assertEqual(item["subarea_context"]["status"], "available")
+        self.assertEqual(item["subarea_context"]["status"], "unavailable")
 
     def test_unreviewed_subarea_value_is_withheld(self):
         source = hazard_priority.load_priority_data()

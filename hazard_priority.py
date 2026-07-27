@@ -78,9 +78,28 @@ def _ranking_record(jurisdiction: str, hazard: str) -> Optional[Dict]:
     jurisdiction_key = _slug(jurisdiction)
     hazard_key = _canonical_hazard(hazard)
     for record in load_priority_data().get("rankings", {}).get("records", []):
-        if _slug(record.get("jurisdiction")) == jurisdiction_key and _canonical_hazard(record.get("hazard")) == hazard_key:
+        if (
+            _slug(record.get("jurisdiction")) == jurisdiction_key
+            and _canonical_hazard(record.get("hazard")) == hazard_key
+        ):
             return record
     return None
+
+
+def _claim_record_is_publishable(record: Dict) -> bool:
+    ranking_data = load_priority_data().get("rankings", {})
+    review_gate = ranking_data.get("review_gate") or {}
+    production_statuses = set(
+        review_gate.get("production_statuses") or {"externally_reviewed"}
+    )
+    required_fields = review_gate.get("required_fields") or [
+        "human_reviewer",
+        "human_reviewed_at",
+    ]
+    return (
+        record.get("review_status") in production_statuses
+        and all(record.get(field) not in (None, "", []) for field in required_fields)
+    )
 
 
 def calculate_citywide_priority(probability: str, impact: str) -> str:
@@ -853,36 +872,6 @@ def _mapped_finding_for_hazard(hazard: str, local: Dict) -> Dict:
     }
 
 
-def _legacy_local_hazard_level(hazard: str, citywide_priority: str, local: Dict, has_citywide_record: bool) -> Tuple[str, str]:
-    status = local.get("local_exposure_status")
-    terms = " ".join(local.get("source_specific_terminology") or []).lower()
-    if not has_citywide_record:
-        return UNKNOWN, "No source-backed citywide LHMP record is available, so the local hazard priority is Unknown."
-    if status == LOCAL_UNAVAILABLE:
-        return UNKNOWN, "Official GIS evidence was unavailable for this hazard, so StayReady does not assign a local hazard priority."
-    if citywide_priority == UNKNOWN:
-        return UNKNOWN, "The citywide LHMP Probability or Impact value is Unknown, so StayReady does not assign a local hazard priority."
-    if status == LOCAL_DIRECT:
-        if hazard == "flood":
-            if any(token in terms for token in [" ae", "zone ae", " a ", "1%", "special flood hazard", "sfha"]):
-                return "High", "FEMA/local flood mapping directly applies and indicates a higher mapped concern."
-            if "0.2" in terms or "500" in terms or " x" in terms:
-                return _max_rating(citywide_priority, "Medium"), "FEMA/local flood mapping directly applies; the source category is retained without treating it as a personal prediction."
-        if hazard == "wildfire":
-            if "very high" in terms or "high" in terms:
-                return "High", "CAL FIRE/official FHSZ mapping directly applies; severity-zone language is mapped concern, not annual probability."
-            if "moderate" in terms:
-                return _max_rating(citywide_priority, "Medium"), "CAL FIRE/official FHSZ mapping directly applies; severity-zone language is mapped concern, not annual probability."
-        if hazard == "tsunami":
-            return _max_rating(citywide_priority, "Medium"), "Official tsunami hazard-area mapping directly applies at the address point."
-        return _max_rating(citywide_priority, "Medium"), "Official mapped evidence directly applies at the address point."
-    if status == LOCAL_ADDITIONAL:
-        if hazard == "earthquake":
-            return _max_rating(citywide_priority, "High"), "Official ground-failure or fault-proximity context adds mapped concern while preserving citywide earthquake Probability and Impact."
-        return _max_rating(citywide_priority, "Medium"), "Official mapped evidence adds local concern while preserving citywide Probability and Impact."
-    return citywide_priority, "No official address-specific layer increased the citywide LHMP hazard priority."
-
-
 def _rank_sort_key(item: Dict) -> Tuple[int, int, int, int, int]:
     rules = load_priority_data().get("top_four", {})
     priority_order = rules.get("priority_order", {})
@@ -996,6 +985,12 @@ def build_hazard_priority_results(
             "calculated_citywide_priority": calculated,
             "official_lhmp_priority": official or UNKNOWN,
             "official_lhmp_priority_basis": (record or {}).get("official_lhmp_priority_basis") or "",
+            "claim_record_publishable": bool(
+                record and _claim_record_is_publishable(record)
+            ),
+            "claim_review_status": (
+                (record or {}).get("review_status") or "pending_external_review"
+            ),
             "official_priority_differs": official_differs,
             "official_lhmp_area_rating": official_area["official_lhmp_area_rating"],
             "stayready_fallback_rating": fallback_rating,

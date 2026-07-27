@@ -1,0 +1,37 @@
+name: Source change monitor
+
+on:
+  schedule:
+    - cron: "17 9 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Build source-change report
+        run: python scripts/source_change_report.py --output source-change-report.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: source-change-report
+          path: source-change-report.json
+      - name: Open human review task
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          review_count=$(jq -r .review_task_count source-change-report.json)
+          if [ "$review_count" -gt 0 ]; then
+            report_body=$(jq -r '"A scheduled source check found " + (.review_task_count|tostring) + " dataset change(s) or outage(s). Review the workflow artifact. Do not publish claims or promote dataset status automatically."' source-change-report.json)
+            gh issue create --title "Source review required: $(date -u +%F)" --body "$report_body"
+          fi

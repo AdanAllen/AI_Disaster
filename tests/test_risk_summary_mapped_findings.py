@@ -240,7 +240,7 @@ class RiskSummaryMappedFindingsTests(unittest.TestCase):
     def test_summary_notices_and_plan_area_are_jurisdiction_scoped(self):
         oakland = _render("Oakland")
         self.assertIn("Oakland planning area · Glenview/Redwood Heights", oakland)
-        self.assertIn("Draft 2026–2031 LHMP planning context; reviewed claim, not a property rating.", oakland)
+        self.assertIn("Draft 2026–2031 LHMP planning context; externally reviewed claim, not a property rating.", oakland)
 
         hayward = _render("Hayward")
         self.assertIn("No eligible, exactly cited local-plan category is available", hayward)

@@ -1,0 +1,2101 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-27T20:33:38+00:00",
+  "mode": "deterministic_snapshot",
+  "policy": "Automated technical comparison is not human approval. Provisional datasets remain withheld in production.",
+  "summary": {
+    "passed": 34,
+    "known_mismatch": 0,
+    "failed": 0,
+    "skipped_external_review": 6,
+    "total": 40
+  },
+  "datasets": {
+    "fema_nfhl_local": {
+      "edition": "Alameda County NFHL 06001C_20260525",
+      "dataset_version": "nfhl-mapserver28-20260727-sha256-147c9049",
+      "passed": 5,
+      "known_mismatch": 0,
+      "failed": 0,
+      "skipped_external_review": 0,
+      "publication_status": "provisional",
+      "external_review_required": true
+    },
+    "calfire_fhsz_local": {
+      "edition": "Effective SRA 23_3 + 2025 LRA recommendations + responsibility areas 26_1",
+      "dataset_version": "calfire-sra23_3-lra25-responsibility26_1",
+      "passed": 5,
+      "known_mismatch": 0,
+      "failed": 0,
+      "skipped_external_review": 0,
+      "publication_status": "provisional",
+      "external_review_required": true
+    },
+    "usgs_cgs_faults_local": {
+      "edition": "Lineage unverified \u2014 withheld",
+      "dataset_version": "local-snapshot-sha256-5c1b7015",
+      "passed": 4,
+      "known_mismatch": 0,
+      "failed": 0,
+      "skipped_external_review": 1,
+      "publication_status": "provisional",
+      "external_review_required": true
+    },
+    "cgs_alquist_priolo_remote": {
+      "edition": "CGS published service, 2025 metadata",
+      "dataset_version": "official-feature-service-accessed-2026-06-06",
+      "passed": 4,
+      "known_mismatch": 0,
+      "failed": 0,
+      "skipped_external_review": 1,
+      "publication_status": "provisional",
+      "external_review_required": true
+    },
+    "cgs_liquefaction_remote": {
+      "edition": "CGS published service, 2025 metadata",
+      "dataset_version": "official-feature-service-accessed-2026-06-06",
+      "passed": 4,
+      "known_mismatch": 0,
+      "failed": 0,
+      "skipped_external_review": 1,
+      "publication_status": "provisional",
+      "external_review_required": true
+    },
+    "cgs_earthquake_landslide_remote": {
+      "edition": "CGS published service, 2025 metadata",
+      "dataset_version": "official-feature-service-accessed-2026-06-06",
+      "passed": 4,
+      "known_mismatch": 0,
+      "failed": 0,
+      "skipped_external_review": 1,
+      "publication_status": "provisional",
+      "external_review_required": true
+    },
+    "cgs_tsunami_hazard_area_remote": {
+      "edition": "CGS current published tsunami hazard-area service",
+      "dataset_version": "official-feature-service-accessed-2026-06-06",
+      "passed": 4,
+      "known_mismatch": 0,
+      "failed": 0,
+      "skipped_external_review": 1,
+      "publication_status": "provisional",
+      "external_review_required": true
+    },
+    "dwr_dsod_dam_inundation_remote": {
+      "edition": "Approved inundation boundaries as of October 1, 2025",
+      "dataset_version": "approved-boundaries-2025-10-01-accessed-2026-06-15",
+      "passed": 4,
+      "known_mismatch": 0,
+      "failed": 0,
+      "skipped_external_review": 1,
+      "publication_status": "provisional",
+      "external_review_required": true
+    }
+  },
+  "cases": [
+    {
+      "case_id": "fema-positive-ae",
+      "dataset_id": "fema_nfhl_local",
+      "test_case_type": "positive",
+      "public_fixture": "Official FEMA polygon 06001C_1016 internal sample",
+      "expected_scope": "FEMA flood-hazard polygon at the selected point",
+      "official": {
+        "status": "matched",
+        "categories": [
+          "AE"
+        ],
+        "feature_count": 1
+      },
+      "stayready": {
+        "status": "matched",
+        "categories": [
+          "AE"
+        ],
+        "claim_type": "regulatory_zone",
+        "limitations": [
+          "This official-source snapshot is provisional until a named human reviewer compares it with the agency's official viewer and approves this dataset version.",
+          "A non-match does not establish overall flood risk for the property.",
+          "This is not a parcel, insurance, elevation-certificate, or building-specific determination."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "This is a point-in-polygon comparison, not a parcel, elevation, insurance, or building determination."
+      ],
+      "uncertainty": "The repository snapshot lineage remains unverified even where this point agrees with the current official service.",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.fema-positive-ae",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "fema-negative-sunol-school",
+      "dataset_id": "fema_nfhl_local",
+      "test_case_type": "negative",
+      "public_fixture": "Sunol Glen Unified School District",
+      "expected_scope": "No FEMA Special Flood Hazard Area match at the selected point",
+      "official": {
+        "status": "not_matched",
+        "categories": [
+          "X"
+        ],
+        "feature_count": 1
+      },
+      "stayready": {
+        "status": "not_matched",
+        "categories": [
+          "X"
+        ],
+        "claim_type": "regulatory_zone",
+        "limitations": [
+          "This official-source snapshot is provisional until a named human reviewer compares it with the agency's official viewer and approves this dataset version.",
+          "A non-match does not establish overall flood risk for the property.",
+          "This is not a parcel, insurance, elevation-certificate, or building-specific determination."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "The official Zone X category is preserved but is not presented as zero flood risk or as an SFHA match."
+      ],
+      "uncertainty": "Point evidence remains distinct from parcel, elevation-certificate, insurance, and building determinations.",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.fema-negative-sunol-school",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "fema-boundary-ae",
+      "dataset_id": "fema_nfhl_local",
+      "test_case_type": "boundary",
+      "public_fixture": "Official FEMA 06001C_1016 polygon boundary sample",
+      "expected_scope": "FEMA polygon boundary at address-point precision",
+      "official": {
+        "status": "matched",
+        "categories": [
+          "AE"
+        ],
+        "feature_count": 1
+      },
+      "stayready": {
+        "status": "matched",
+        "categories": [
+          "AE"
+        ],
+        "claim_type": "regulatory_zone",
+        "limitations": [
+          "This official-source snapshot is provisional until a named human reviewer compares it with the agency's official viewer and approves this dataset version.",
+          "A non-match does not establish overall flood risk for the property.",
+          "This is not a parcel, insurance, elevation-certificate, or building-specific determination."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "Boundary inclusion can change with service geometry precision and must be inspected in the official viewer."
+      ],
+      "uncertainty": "Boundary inclusion is checked against the unsimplified county snapshot generated from the official package.",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.fema-boundary-ae",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "fema-not-evaluated",
+      "dataset_id": "fema_nfhl_local",
+      "test_case_type": "not_evaluated",
+      "public_fixture": "NFHL evaluation-scope control",
+      "expected_scope": "Official Zone D and effective-panel applicability, not polygon absence",
+      "official": {
+        "status": "not_evaluated",
+        "categories": [
+          "D"
+        ],
+        "feature_count": 3
+      },
+      "stayready": {
+        "status": "not_evaluated",
+        "categories": [
+          "D"
+        ],
+        "claim_type": "regulatory_zone",
+        "limitations": [
+          "This official-source snapshot is provisional until a named human reviewer compares it with the agency's official viewer and approves this dataset version.",
+          "A non-match does not establish overall flood risk for the property.",
+          "This is not a parcel, insurance, elevation-certificate, or building-specific determination."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "FEMA Zone D identifies possible but undetermined flood hazards; it is not a checked no-match and does not establish safety."
+      ],
+      "uncertainty": "The control automates the FEMA category and panel record; public interpretation still requires named methodology review.",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.fema-not-evaluated",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "fema-unavailable",
+      "dataset_id": "fema_nfhl_local",
+      "test_case_type": "unavailable",
+      "public_fixture": "Deterministic missing-snapshot simulation",
+      "expected_scope": "Only the FEMA source is unavailable",
+      "official": {
+        "status": "unavailable",
+        "categories": []
+      },
+      "stayready": {
+        "status": "data_unavailable",
+        "categories": [],
+        "limitations": [
+          "The registered dataset is not available for an address check.",
+          "A non-match does not establish overall flood risk for the property.",
+          "This is not a parcel, insurance, elevation-certificate, or building-specific determination."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "An outage must never become a non-match."
+      ],
+      "uncertainty": "",
+      "external_review_required": true,
+      "official_response_reference": "not applicable",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "calfire-positive-sunol-school",
+      "dataset_id": "calfire_fhsz_local",
+      "test_case_type": "positive",
+      "public_fixture": "Sunol Glen Unified School District",
+      "expected_scope": "Current SRA FHSZ and 2025 recommended LRA comparison",
+      "official": {
+        "status": "matched",
+        "categories": [
+          "High"
+        ],
+        "feature_count": 2
+      },
+      "stayready": {
+        "status": "matched",
+        "categories": [
+          "High"
+        ],
+        "claim_type": "hazard_zone",
+        "limitations": [
+          "Fire Hazard Severity Zone is hazard, not complete wildfire risk; local adoption may differ from state recommendations."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "Fire Hazard Severity Zone is hazard, not complete wildfire risk; local adoption may differ from state recommendations."
+      ],
+      "uncertainty": "The point is selected through the current responsibility-area snapshot before the effective SRA severity snapshot.",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.calfire-positive-sunol-school",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "calfire-negative-alameda-city-hall",
+      "dataset_id": "calfire_fhsz_local",
+      "test_case_type": "negative",
+      "public_fixture": "Alameda City Hall",
+      "expected_scope": "No Moderate, High, or Very High FHSZ match at the point",
+      "official": {
+        "status": "not_matched",
+        "categories": [],
+        "feature_count": 2
+      },
+      "stayready": {
+        "status": "not_matched",
+        "categories": [],
+        "claim_type": "hazard_zone",
+        "limitations": [
+          "A non-match does not address smoke, embers, evacuation, utilities, or building vulnerability."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "A non-match does not address smoke, embers, evacuation, utilities, or building vulnerability."
+      ],
+      "uncertainty": "Local adoption status still requires jurisdiction review.",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.calfire-negative-alameda-city-hall",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "calfire-boundary-high",
+      "dataset_id": "calfire_fhsz_local",
+      "test_case_type": "boundary",
+      "public_fixture": "Unverified local High-zone boundary sample",
+      "expected_scope": "FHSZ polygon boundary at point precision",
+      "official": {
+        "status": "matched",
+        "categories": [
+          "High"
+        ],
+        "feature_count": 2
+      },
+      "stayready": {
+        "status": "matched",
+        "categories": [
+          "High"
+        ],
+        "claim_type": "hazard_zone",
+        "limitations": [
+          "Boundary behavior and SRA/LRA responsibility must be inspected manually."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "Boundary behavior and SRA/LRA responsibility must be inspected manually."
+      ],
+      "uncertainty": "The exact recorded point intersects the effective SRA High polygon in both official and deterministic geometry.",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.calfire-boundary-high",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "calfire-not-evaluated",
+      "dataset_id": "calfire_fhsz_local",
+      "test_case_type": "not_evaluated",
+      "public_fixture": "FRA/SRA/LRA applicability control",
+      "expected_scope": "Responsibility-area and local-adoption applicability",
+      "official": {
+        "status": "not_evaluated",
+        "categories": [],
+        "feature_count": 1
+      },
+      "stayready": {
+        "status": "not_evaluated",
+        "categories": [],
+        "claim_type": "hazard_zone",
+        "limitations": [
+          "The official responsibility layer identifies FRA; CAL FIRE SRA/LRA severity absence is not treated as a checked non-match."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "The official responsibility layer identifies FRA; CAL FIRE SRA/LRA severity absence is not treated as a checked non-match."
+      ],
+      "uncertainty": "Federal-land fire mapping is outside the CAL FIRE SRA/LRA evidence contract and remains a separate preparedness limitation.",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.calfire-not-evaluated",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "calfire-unavailable",
+      "dataset_id": "calfire_fhsz_local",
+      "test_case_type": "unavailable",
+      "public_fixture": "Deterministic missing-snapshot simulation",
+      "expected_scope": "Only the FHSZ source is unavailable",
+      "official": {
+        "status": "unavailable",
+        "categories": []
+      },
+      "stayready": {
+        "status": "data_unavailable",
+        "categories": [],
+        "limitations": [
+          "The registered dataset is not available for an address check.",
+          "A non-match does not mean wildfire, smoke, ember, evacuation, or power-shutoff impacts are impossible.",
+          "The layer does not predict when a fire will occur or the damage a specific building will experience."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "An unavailable FHSZ source must not become a low or absent wildfire finding."
+      ],
+      "uncertainty": "",
+      "external_review_required": true,
+      "official_response_reference": "not applicable",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "fault-positive-hayward-city-hall",
+      "dataset_id": "usgs_cgs_faults_local",
+      "test_case_type": "positive",
+      "public_fixture": "Hayward City Hall",
+      "expected_scope": "Proximity within 2 km; never polygon membership",
+      "official": {
+        "status": "matched",
+        "categories": [
+          "Hayward fault zone"
+        ],
+        "distance_km": 0.245,
+        "feature_count": 126
+      },
+      "stayready": {
+        "status": "matched",
+        "categories": [
+          "Hayward fault zone"
+        ],
+        "distance_km": 0.24,
+        "claim_type": "proximity",
+        "limitations": [
+          "Mapped trace distance is approximate and is not a fault-zone, parcel, engineering, or rupture determination."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "Mapped trace distance is approximate and is not a fault-zone, parcel, engineering, or rupture determination."
+      ],
+      "uncertainty": "Local snapshot lineage still requires approval.",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.fault-positive-hayward-city-hall",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "fault-negative-alameda-city-hall",
+      "dataset_id": "usgs_cgs_faults_local",
+      "test_case_type": "negative",
+      "public_fixture": "Alameda City Hall",
+      "expected_scope": "Nearest mapped trace is outside the 2 km proximity threshold",
+      "official": {
+        "status": "not_matched",
+        "categories": [
+          "Hayward fault zone"
+        ],
+        "distance_km": 5.4285,
+        "feature_count": 107
+      },
+      "stayready": {
+        "status": "not_matched",
+        "categories": [
+          "Hayward fault zone"
+        ],
+        "distance_km": 5.43,
+        "claim_type": "proximity",
+        "limitations": [
+          "Outside the proximity threshold is not a low earthquake-risk conclusion."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "Outside the proximity threshold is not a low earthquake-risk conclusion."
+      ],
+      "uncertainty": "Distance should be sampled by a qualified reviewer.",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.fault-negative-alameda-city-hall",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "fault-boundary-two-km",
+      "dataset_id": "usgs_cgs_faults_local",
+      "test_case_type": "boundary",
+      "public_fixture": "Synthetic 2 km proximity-threshold sample",
+      "expected_scope": "Approximately 2 km from the nearest loaded mapped trace",
+      "official": {
+        "status": "not_matched",
+        "categories": [
+          "Hayward fault zone"
+        ],
+        "distance_km": 2.0019,
+        "feature_count": 117
+      },
+      "stayready": {
+        "status": "not_matched",
+        "categories": [
+          "Hayward fault zone"
+        ],
+        "distance_km": 2.0,
+        "claim_type": "proximity",
+        "limitations": [
+          "Rounding must not change a greater-than-2-km result into an in-threshold result."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "Rounding must not change a greater-than-2-km result into an in-threshold result."
+      ],
+      "uncertainty": "Official distance is approximately 2.002 km; manual sampling is required.",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.fault-boundary-two-km",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "fault-not-evaluated",
+      "dataset_id": "usgs_cgs_faults_local",
+      "test_case_type": "not_evaluated",
+      "public_fixture": "Fault-map completeness control",
+      "expected_scope": "Completeness and applicable fault-map age/class",
+      "official": {
+        "status": "not_evaluated",
+        "categories": []
+      },
+      "stayready": {
+        "status": "not_evaluated",
+        "categories": [],
+        "limitations": [
+          "No nearby loaded trace does not establish absence of faults or earthquake hazard."
+        ],
+        "skipped_reason": "The registered source does not contain a separate authoritative evaluation-coverage control."
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "skipped_external_review",
+      "comparison_expectation": "external_review",
+      "limitations": [
+        "No nearby loaded trace does not establish absence of faults or earthquake hazard."
+      ],
+      "uncertainty": "The local file mixes USGS and CGS records and has no verified download lineage.",
+      "external_review_required": true,
+      "official_response_reference": "not applicable",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "fault-unavailable",
+      "dataset_id": "usgs_cgs_faults_local",
+      "test_case_type": "unavailable",
+      "public_fixture": "Deterministic unreadable-layer simulation",
+      "expected_scope": "Only fault proximity is unavailable",
+      "official": {
+        "status": "unavailable",
+        "categories": []
+      },
+      "stayready": {
+        "status": "data_unavailable",
+        "categories": [],
+        "limitations": [
+          "Simulated unreadable local fault layer."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "An unreadable fault layer must not create a distant or safe result."
+      ],
+      "uncertainty": "",
+      "external_review_required": true,
+      "official_response_reference": "not applicable",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "ap-positive-oakland-east",
+      "dataset_id": "cgs_alquist_priolo_remote",
+      "test_case_type": "positive",
+      "public_fixture": "CGS Oakland East zone OBJECTID 883 internal sample",
+      "expected_scope": "Alquist-Priolo regulatory fault zone polygon",
+      "official": {
+        "status": "matched",
+        "categories": [
+          "Oakland East"
+        ],
+        "feature_count": 1
+      },
+      "stayready": {
+        "status": "matched",
+        "categories": [
+          "Oakland East"
+        ],
+        "claim_type": "regulatory_zone",
+        "limitations": [
+          "This official remote dataset is provisional until a named human reviewer compares known locations with the agency's official viewer.",
+          "This layer does not determine general earthquake risk or predict shaking damage.",
+          "A non-match does not establish overall earthquake, fault-movement, or seismic risk.",
+          "This is not a site-specific engineering, legal, insurance, disclosure, or property determination."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "This is not a site-specific fault-rupture or legal disclosure determination."
+      ],
+      "uncertainty": "",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.ap-positive-oakland-east",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "ap-negative-alameda-city-hall",
+      "dataset_id": "cgs_alquist_priolo_remote",
+      "test_case_type": "negative",
+      "public_fixture": "Alameda City Hall",
+      "expected_scope": "No returned Alquist-Priolo polygon at the point",
+      "official": {
+        "status": "not_matched",
+        "categories": [],
+        "feature_count": 0
+      },
+      "stayready": {
+        "status": "not_matched",
+        "categories": [],
+        "claim_type": "regulatory_zone",
+        "limitations": [
+          "This official remote dataset is provisional until a named human reviewer compares known locations with the agency's official viewer.",
+          "This layer does not determine general earthquake risk or predict shaking damage.",
+          "A non-match does not establish overall earthquake, fault-movement, or seismic risk.",
+          "This is not a site-specific engineering, legal, insurance, disclosure, or property determination."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "No mapped match is not an overall earthquake or surface-rupture safety conclusion."
+      ],
+      "uncertainty": "Evaluation coverage still needs external confirmation.",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.ap-negative-alameda-city-hall",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "ap-boundary-oakland-east",
+      "dataset_id": "cgs_alquist_priolo_remote",
+      "test_case_type": "boundary",
+      "public_fixture": "CGS Oakland East polygon boundary sample",
+      "expected_scope": "Service boundary behavior at recorded coordinate precision",
+      "official": {
+        "status": "not_matched",
+        "categories": [],
+        "feature_count": 0
+      },
+      "stayready": {
+        "status": "not_matched",
+        "categories": [],
+        "claim_type": "regulatory_zone",
+        "limitations": [
+          "This official remote dataset is provisional until a named human reviewer compares known locations with the agency's official viewer.",
+          "This layer does not determine general earthquake risk or predict shaking damage.",
+          "A non-match does not establish overall earthquake, fault-movement, or seismic risk.",
+          "This is not a site-specific engineering, legal, insurance, disclosure, or property determination."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "The service returns no match at the rounded boundary point; the viewer must be inspected."
+      ],
+      "uncertainty": "Boundary result is precision-sensitive.",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.ap-boundary-oakland-east",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "ap-not-evaluated",
+      "dataset_id": "cgs_alquist_priolo_remote",
+      "test_case_type": "not_evaluated",
+      "public_fixture": "CGS regulatory-map coverage control",
+      "expected_scope": "CGS regulatory-map evaluation coverage",
+      "official": {
+        "status": "not_evaluated",
+        "categories": []
+      },
+      "stayready": {
+        "status": "not_evaluated",
+        "categories": [],
+        "limitations": [
+          "Polygon absence must not be used to infer that a quadrangle was evaluated."
+        ],
+        "skipped_reason": "The registered source does not contain a separate authoritative evaluation-coverage control."
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "skipped_external_review",
+      "comparison_expectation": "external_review",
+      "limitations": [
+        "Polygon absence must not be used to infer that a quadrangle was evaluated."
+      ],
+      "uncertainty": "A CGS map-index or evaluation-coverage authority is required.",
+      "external_review_required": true,
+      "official_response_reference": "not applicable",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "ap-unavailable",
+      "dataset_id": "cgs_alquist_priolo_remote",
+      "test_case_type": "unavailable",
+      "public_fixture": "Deterministic ArcGIS timeout simulation",
+      "expected_scope": "Only the Alquist-Priolo source is unavailable",
+      "official": {
+        "status": "unavailable",
+        "categories": []
+      },
+      "stayready": {
+        "status": "data_unavailable",
+        "categories": [],
+        "limitations": [
+          "The official remote service was unavailable or unreadable, so the layer was not checked.",
+          "This layer does not determine general earthquake risk or predict shaking damage.",
+          "A non-match does not establish overall earthquake, fault-movement, or seismic risk.",
+          "This is not a site-specific engineering, legal, insurance, disclosure, or property determination."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "Timeout must not become a checked non-match."
+      ],
+      "uncertainty": "",
+      "external_review_required": true,
+      "official_response_reference": "not applicable",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "liquefaction-positive-newark",
+      "dataset_id": "cgs_liquefaction_remote",
+      "test_case_type": "positive",
+      "public_fixture": "CGS Newark quadrangle OBJECTID 84 internal sample",
+      "expected_scope": "CGS liquefaction regulatory-zone polygon",
+      "official": {
+        "status": "matched",
+        "categories": [
+          "Newark"
+        ],
+        "feature_count": 1
+      },
+      "stayready": {
+        "status": "matched",
+        "categories": [
+          "Newark"
+        ],
+        "claim_type": "regulatory_zone",
+        "limitations": [
+          "This official remote dataset is provisional until a named human reviewer compares known locations with the agency's official viewer.",
+          "A mapped match does not mean liquefaction or damage is guaranteed.",
+          "A non-match does not establish that ground failure cannot occur.",
+          "This is not a site-specific geotechnical, engineering, legal, insurance, or property determination."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "This is not a building, soil-boring, geotechnical, or damage prediction."
+      ],
+      "uncertainty": "",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.liquefaction-positive-newark",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "liquefaction-negative-piedmont-city-hall",
+      "dataset_id": "cgs_liquefaction_remote",
+      "test_case_type": "negative",
+      "public_fixture": "Piedmont City Hall",
+      "expected_scope": "No returned liquefaction regulatory polygon at the point",
+      "official": {
+        "status": "not_matched",
+        "categories": [],
+        "feature_count": 0
+      },
+      "stayready": {
+        "status": "not_matched",
+        "categories": [],
+        "claim_type": "regulatory_zone",
+        "limitations": [
+          "This official remote dataset is provisional until a named human reviewer compares known locations with the agency's official viewer.",
+          "A mapped match does not mean liquefaction or damage is guaranteed.",
+          "A non-match does not establish that ground failure cannot occur.",
+          "This is not a site-specific geotechnical, engineering, legal, insurance, or property determination."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "No mapped match does not establish low liquefaction or earthquake risk."
+      ],
+      "uncertainty": "Evaluation coverage still requires confirmation.",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.liquefaction-negative-piedmont-city-hall",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "liquefaction-boundary-newark",
+      "dataset_id": "cgs_liquefaction_remote",
+      "test_case_type": "boundary",
+      "public_fixture": "CGS Newark polygon boundary sample",
+      "expected_scope": "Service boundary behavior at recorded coordinate precision",
+      "official": {
+        "status": "not_matched",
+        "categories": [],
+        "feature_count": 0
+      },
+      "stayready": {
+        "status": "not_matched",
+        "categories": [],
+        "claim_type": "regulatory_zone",
+        "limitations": [
+          "This official remote dataset is provisional until a named human reviewer compares known locations with the agency's official viewer.",
+          "A mapped match does not mean liquefaction or damage is guaranteed.",
+          "A non-match does not establish that ground failure cannot occur.",
+          "This is not a site-specific geotechnical, engineering, legal, insurance, or property determination."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "The rounded boundary point is not returned as intersecting; visual inspection is required."
+      ],
+      "uncertainty": "Boundary result is precision-sensitive.",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.liquefaction-boundary-newark",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "liquefaction-not-evaluated",
+      "dataset_id": "cgs_liquefaction_remote",
+      "test_case_type": "not_evaluated",
+      "public_fixture": "CGS seismic-hazard-map coverage control",
+      "expected_scope": "CGS seismic-hazard-map evaluation coverage",
+      "official": {
+        "status": "not_evaluated",
+        "categories": []
+      },
+      "stayready": {
+        "status": "not_evaluated",
+        "categories": [],
+        "limitations": [
+          "Zone polygon absence and map-evaluation coverage are different facts."
+        ],
+        "skipped_reason": "The registered source does not contain a separate authoritative evaluation-coverage control."
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "skipped_external_review",
+      "comparison_expectation": "external_review",
+      "limitations": [
+        "Zone polygon absence and map-evaluation coverage are different facts."
+      ],
+      "uncertainty": "A separate map-index comparison is required.",
+      "external_review_required": true,
+      "official_response_reference": "not applicable",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "liquefaction-unavailable",
+      "dataset_id": "cgs_liquefaction_remote",
+      "test_case_type": "unavailable",
+      "public_fixture": "Deterministic ArcGIS invalid-response simulation",
+      "expected_scope": "Only the liquefaction source is unavailable",
+      "official": {
+        "status": "unavailable",
+        "categories": []
+      },
+      "stayready": {
+        "status": "data_unavailable",
+        "categories": [],
+        "limitations": [
+          "The official remote service was unavailable or unreadable, so the layer was not checked.",
+          "A mapped match does not mean liquefaction or damage is guaranteed.",
+          "A non-match does not establish that ground failure cannot occur.",
+          "This is not a site-specific geotechnical, engineering, legal, insurance, or property determination."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "Invalid service responses must not become non-matches."
+      ],
+      "uncertainty": "",
+      "external_review_required": true,
+      "official_response_reference": "not applicable",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "landslide-positive-dublin",
+      "dataset_id": "cgs_earthquake_landslide_remote",
+      "test_case_type": "positive",
+      "public_fixture": "CGS Dublin quadrangle OBJECTID 2697 internal sample",
+      "expected_scope": "CGS earthquake-induced landslide regulatory-zone polygon",
+      "official": {
+        "status": "matched",
+        "categories": [
+          "Dublin"
+        ],
+        "feature_count": 1
+      },
+      "stayready": {
+        "status": "matched",
+        "categories": [
+          "Dublin"
+        ],
+        "claim_type": "regulatory_zone",
+        "limitations": [
+          "This official remote dataset is provisional until a named human reviewer compares known locations with the agency's official viewer.",
+          "This layer is not a general landslide forecast and does not predict when slope movement will occur.",
+          "A non-match does not establish overall landslide or slope-hazard risk.",
+          "This is not a site-specific geotechnical, engineering, legal, insurance, or property determination."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "This is not a general landslide forecast or site-specific slope-stability determination."
+      ],
+      "uncertainty": "",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.landslide-positive-dublin",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "landslide-negative-alameda-city-hall",
+      "dataset_id": "cgs_earthquake_landslide_remote",
+      "test_case_type": "negative",
+      "public_fixture": "Alameda City Hall",
+      "expected_scope": "No returned earthquake-induced landslide polygon at the point",
+      "official": {
+        "status": "not_matched",
+        "categories": [],
+        "feature_count": 0
+      },
+      "stayready": {
+        "status": "not_matched",
+        "categories": [],
+        "claim_type": "regulatory_zone",
+        "limitations": [
+          "This official remote dataset is provisional until a named human reviewer compares known locations with the agency's official viewer.",
+          "This layer is not a general landslide forecast and does not predict when slope movement will occur.",
+          "A non-match does not establish overall landslide or slope-hazard risk.",
+          "This is not a site-specific geotechnical, engineering, legal, insurance, or property determination."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "No mapped match is not a general landslide or slope-safety conclusion."
+      ],
+      "uncertainty": "Evaluation coverage still requires confirmation.",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.landslide-negative-alameda-city-hall",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "landslide-boundary-dublin",
+      "dataset_id": "cgs_earthquake_landslide_remote",
+      "test_case_type": "boundary",
+      "public_fixture": "CGS Dublin polygon boundary sample",
+      "expected_scope": "Earthquake-induced landslide polygon boundary",
+      "official": {
+        "status": "matched",
+        "categories": [
+          "Dublin"
+        ],
+        "feature_count": 1
+      },
+      "stayready": {
+        "status": "matched",
+        "categories": [
+          "Dublin"
+        ],
+        "claim_type": "regulatory_zone",
+        "limitations": [
+          "This official remote dataset is provisional until a named human reviewer compares known locations with the agency's official viewer.",
+          "This layer is not a general landslide forecast and does not predict when slope movement will occur.",
+          "A non-match does not establish overall landslide or slope-hazard risk.",
+          "This is not a site-specific geotechnical, engineering, legal, insurance, or property determination."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "Boundary inclusion can change with geometry precision and requires viewer inspection."
+      ],
+      "uncertainty": "Automated service intersection returns a match at the recorded precision.",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.landslide-boundary-dublin",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "landslide-not-evaluated",
+      "dataset_id": "cgs_earthquake_landslide_remote",
+      "test_case_type": "not_evaluated",
+      "public_fixture": "CGS seismic-hazard-map coverage control",
+      "expected_scope": "CGS seismic-hazard-map evaluation coverage",
+      "official": {
+        "status": "not_evaluated",
+        "categories": []
+      },
+      "stayready": {
+        "status": "not_evaluated",
+        "categories": [],
+        "limitations": [
+          "A polygon non-match cannot establish evaluation coverage."
+        ],
+        "skipped_reason": "The registered source does not contain a separate authoritative evaluation-coverage control."
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "skipped_external_review",
+      "comparison_expectation": "external_review",
+      "limitations": [
+        "A polygon non-match cannot establish evaluation coverage."
+      ],
+      "uncertainty": "A separate official map-index comparison is required.",
+      "external_review_required": true,
+      "official_response_reference": "not applicable",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "landslide-unavailable",
+      "dataset_id": "cgs_earthquake_landslide_remote",
+      "test_case_type": "unavailable",
+      "public_fixture": "Deterministic ArcGIS timeout simulation",
+      "expected_scope": "Only the earthquake-induced landslide source is unavailable",
+      "official": {
+        "status": "unavailable",
+        "categories": []
+      },
+      "stayready": {
+        "status": "data_unavailable",
+        "categories": [],
+        "limitations": [
+          "The official remote service was unavailable or unreadable, so the layer was not checked.",
+          "This layer is not a general landslide forecast and does not predict when slope movement will occur.",
+          "A non-match does not establish overall landslide or slope-hazard risk.",
+          "This is not a site-specific geotechnical, engineering, legal, insurance, or property determination."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "Timeout must not become a checked non-match."
+      ],
+      "uncertainty": "",
+      "external_review_required": true,
+      "official_response_reference": "not applicable",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "tsunami-positive-alameda-area",
+      "dataset_id": "cgs_tsunami_hazard_area_remote",
+      "test_case_type": "positive",
+      "public_fixture": "CGS Alameda tsunami area OBJECTID 12 internal sample",
+      "expected_scope": "Tsunami evacuation and response planning area",
+      "official": {
+        "status": "matched",
+        "categories": [
+          "Yes, Tsunami Hazard Area"
+        ],
+        "feature_count": 1
+      },
+      "stayready": {
+        "status": "matched",
+        "categories": [
+          "Yes, Tsunami Hazard Area"
+        ],
+        "claim_type": "hazard_zone",
+        "limitations": [
+          "This official remote dataset is provisional until a named human reviewer compares known locations with the agency's official viewer.",
+          "This result is for evacuation and response planning, not a legal or property disclosure determination.",
+          "A non-match does not establish overall tsunami, coastal flooding, access, utility, or indirect-impact risk.",
+          "This is not a live warning or emergency evacuation order."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "This is not a live warning, evacuation order, property disclosure, or wave prediction."
+      ],
+      "uncertainty": "",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.tsunami-positive-alameda-area",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "tsunami-negative-oakland-city-hall",
+      "dataset_id": "cgs_tsunami_hazard_area_remote",
+      "test_case_type": "negative",
+      "public_fixture": "Oakland City Hall",
+      "expected_scope": "Outside the returned tsunami evacuation-planning area",
+      "official": {
+        "status": "not_matched",
+        "categories": [
+          "No, Outside Hazard Area"
+        ],
+        "feature_count": 1
+      },
+      "stayready": {
+        "status": "not_matched",
+        "categories": [],
+        "claim_type": "hazard_zone",
+        "limitations": [
+          "This official remote dataset is provisional until a named human reviewer compares known locations with the agency's official viewer.",
+          "This result is for evacuation and response planning, not a legal or property disclosure determination.",
+          "A non-match does not establish overall tsunami, coastal flooding, access, utility, or indirect-impact risk.",
+          "This is not a live warning or emergency evacuation order."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "Outside the mapped area does not eliminate indirect, access, utility, or coastal impacts."
+      ],
+      "uncertainty": "",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.tsunami-negative-oakland-city-hall",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "tsunami-boundary-alameda",
+      "dataset_id": "cgs_tsunami_hazard_area_remote",
+      "test_case_type": "boundary",
+      "public_fixture": "CGS Alameda tsunami-area boundary sample",
+      "expected_scope": "Shared boundary between outside and evacuation-planning polygons",
+      "official": {
+        "status": "matched",
+        "categories": [
+          "No, Outside Hazard Area",
+          "Yes, Tsunami Hazard Area"
+        ],
+        "feature_count": 2
+      },
+      "stayready": {
+        "status": "matched",
+        "categories": [
+          "Yes, Tsunami Hazard Area"
+        ],
+        "claim_type": "hazard_zone",
+        "limitations": [
+          "This official remote dataset is provisional until a named human reviewer compares known locations with the agency's official viewer.",
+          "This result is for evacuation and response planning, not a legal or property disclosure determination.",
+          "A non-match does not establish overall tsunami, coastal flooding, access, utility, or indirect-impact risk.",
+          "This is not a live warning or emergency evacuation order."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "The point intersects both categories; residents must use official emergency instructions."
+      ],
+      "uncertainty": "Shared-boundary behavior requires manual inspection.",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.tsunami-boundary-alameda",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "tsunami-not-evaluated",
+      "dataset_id": "cgs_tsunami_hazard_area_remote",
+      "test_case_type": "not_evaluated",
+      "public_fixture": "Tsunami populated-coast evaluation-scope control",
+      "expected_scope": "Populated coastal evaluation coverage",
+      "official": {
+        "status": "not_evaluated",
+        "categories": []
+      },
+      "stayready": {
+        "status": "not_evaluated",
+        "categories": [],
+        "limitations": [
+          "An inland point is not evidence that every indirect tsunami consequence was evaluated."
+        ],
+        "skipped_reason": "The registered source does not contain a separate authoritative evaluation-coverage control."
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "skipped_external_review",
+      "comparison_expectation": "external_review",
+      "limitations": [
+        "An inland point is not evidence that every indirect tsunami consequence was evaluated."
+      ],
+      "uncertainty": "Official scope wording needs reviewer approval.",
+      "external_review_required": true,
+      "official_response_reference": "not applicable",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "tsunami-unavailable",
+      "dataset_id": "cgs_tsunami_hazard_area_remote",
+      "test_case_type": "unavailable",
+      "public_fixture": "Deterministic ArcGIS invalid-response simulation",
+      "expected_scope": "Only the tsunami source is unavailable",
+      "official": {
+        "status": "unavailable",
+        "categories": []
+      },
+      "stayready": {
+        "status": "data_unavailable",
+        "categories": [],
+        "limitations": [
+          "The official remote service was unavailable or unreadable, so the layer was not checked.",
+          "This result is for evacuation and response planning, not a legal or property disclosure determination.",
+          "A non-match does not establish overall tsunami, coastal flooding, access, utility, or indirect-impact risk.",
+          "This is not a live warning or emergency evacuation order."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "Invalid service data must not become outside the hazard area."
+      ],
+      "uncertainty": "",
+      "external_review_required": true,
+      "official_response_reference": "not applicable",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "dam-positive-san-leandro-scenarios",
+      "dataset_id": "dwr_dsod_dam_inundation_remote",
+      "test_case_type": "positive",
+      "public_fixture": "Official DSOD internal scenario sample near San Leandro",
+      "expected_scope": "Published hypothetical dam-failure inundation scenarios",
+      "official": {
+        "status": "matched",
+        "categories": [
+          "Chabot \u00b7 Scenario1 \u00b7 Sunny Day",
+          "New Upper San Leandro \u00b7 Scenario1 \u00b7 Sunny Day"
+        ],
+        "feature_count": 2
+      },
+      "stayready": {
+        "status": "matched",
+        "categories": [
+          "Chabot \u00b7 Scenario1 \u00b7 Sunny Day",
+          "New Upper San Leandro \u00b7 Scenario1 \u00b7 Sunny Day"
+        ],
+        "claim_type": "scenario",
+        "limitations": [
+          "This official remote dataset is provisional until a named human reviewer compares known locations with the agency's official viewer.",
+          "This mapped planning data does not predict that a dam failure will occur or estimate its probability.",
+          "A non-match does not establish safety from flooding, infrastructure failure, indirect impacts, or evacuation disruption.",
+          "Published boundaries are approximate, may omit federal dams or redacted information, and may change as DSOD approves updated maps.",
+          "Actual evacuation zones, routes, timing, and instructions come from local emergency officials.",
+          "Do not use LHMP or EOP screenshots for address-level dam inundation conclusions.",
+          "Dam inundation boundaries show hypothetical dam or critical-structure failure scenarios for emergency planning; they do not predict that a failure will occur.",
+          "A non-match does not establish that a location is safe from flooding, infrastructure failure, indirect impacts, or evacuation disruption.",
+          "StayReady does not use LHMP or EOP screenshots for address-level dam inundation conclusions."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "These are planning scenarios, not predictions, live conditions, or evacuation orders."
+      ],
+      "uncertainty": "",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.dam-positive-san-leandro-scenarios",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "dam-negative-alameda-city-hall",
+      "dataset_id": "dwr_dsod_dam_inundation_remote",
+      "test_case_type": "negative",
+      "public_fixture": "Alameda City Hall",
+      "expected_scope": "No returned approved dam-failure scenario polygon",
+      "official": {
+        "status": "not_matched",
+        "categories": [],
+        "feature_count": 0
+      },
+      "stayready": {
+        "status": "not_matched",
+        "categories": [],
+        "claim_type": "scenario",
+        "limitations": [
+          "This official remote dataset is provisional until a named human reviewer compares known locations with the agency's official viewer.",
+          "This mapped planning data does not predict that a dam failure will occur or estimate its probability.",
+          "A non-match does not establish safety from flooding, infrastructure failure, indirect impacts, or evacuation disruption.",
+          "Published boundaries are approximate, may omit federal dams or redacted information, and may change as DSOD approves updated maps.",
+          "Actual evacuation zones, routes, timing, and instructions come from local emergency officials.",
+          "Do not use LHMP or EOP screenshots for address-level dam inundation conclusions.",
+          "Dam inundation boundaries show hypothetical dam or critical-structure failure scenarios for emergency planning; they do not predict that a failure will occur.",
+          "A non-match does not establish that a location is safe from flooding, infrastructure failure, indirect impacts, or evacuation disruption.",
+          "StayReady does not use LHMP or EOP screenshots for address-level dam inundation conclusions."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "No scenario intersection does not establish safety from flooding, infrastructure failure, or evacuation impacts."
+      ],
+      "uncertainty": "",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.dam-negative-alameda-city-hall",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "dam-boundary-new-upper-san-leandro",
+      "dataset_id": "dwr_dsod_dam_inundation_remote",
+      "test_case_type": "boundary",
+      "public_fixture": "DSOD New Upper San Leandro Scenario1 boundary sample",
+      "expected_scope": "Published hypothetical scenario boundary",
+      "official": {
+        "status": "matched",
+        "categories": [
+          "New Upper San Leandro \u00b7 Scenario1 \u00b7 Sunny Day"
+        ],
+        "feature_count": 1
+      },
+      "stayready": {
+        "status": "matched",
+        "categories": [
+          "New Upper San Leandro \u00b7 Scenario1 \u00b7 Sunny Day"
+        ],
+        "claim_type": "scenario",
+        "limitations": [
+          "This official remote dataset is provisional until a named human reviewer compares known locations with the agency's official viewer.",
+          "This mapped planning data does not predict that a dam failure will occur or estimate its probability.",
+          "A non-match does not establish safety from flooding, infrastructure failure, indirect impacts, or evacuation disruption.",
+          "Published boundaries are approximate, may omit federal dams or redacted information, and may change as DSOD approves updated maps.",
+          "Actual evacuation zones, routes, timing, and instructions come from local emergency officials.",
+          "Do not use LHMP or EOP screenshots for address-level dam inundation conclusions.",
+          "Dam inundation boundaries show hypothetical dam or critical-structure failure scenarios for emergency planning; they do not predict that a failure will occur.",
+          "A non-match does not establish that a location is safe from flooding, infrastructure failure, indirect impacts, or evacuation disruption.",
+          "StayReady does not use LHMP or EOP screenshots for address-level dam inundation conclusions."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "Boundary inclusion is geometry-precision sensitive and is not an evacuation instruction."
+      ],
+      "uncertainty": "Manual viewer inspection is required.",
+      "external_review_required": true,
+      "official_response_reference": "data/geospatial/evidence_gold_set_official_snapshots.json#cases.dam-boundary-new-upper-san-leandro",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "dam-not-evaluated",
+      "dataset_id": "dwr_dsod_dam_inundation_remote",
+      "test_case_type": "not_evaluated",
+      "public_fixture": "DSOD approved-scenario applicability control",
+      "expected_scope": "Completeness of approved scenario submissions",
+      "official": {
+        "status": "not_evaluated",
+        "categories": []
+      },
+      "stayready": {
+        "status": "not_evaluated",
+        "categories": [],
+        "limitations": [
+          "Absence of an approved polygon does not mean every dam, loading condition, cascading failure, or downstream consequence was evaluated."
+        ],
+        "skipped_reason": "The registered source does not contain a separate authoritative evaluation-coverage control."
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "skipped_external_review",
+      "comparison_expectation": "external_review",
+      "limitations": [
+        "Absence of an approved polygon does not mean every dam, loading condition, cascading failure, or downstream consequence was evaluated."
+      ],
+      "uncertainty": "Scenario completeness requires DSOD subject-matter review.",
+      "external_review_required": true,
+      "official_response_reference": "not applicable",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    },
+    {
+      "case_id": "dam-unavailable",
+      "dataset_id": "dwr_dsod_dam_inundation_remote",
+      "test_case_type": "unavailable",
+      "public_fixture": "Deterministic ArcGIS timeout simulation",
+      "expected_scope": "Only the dam-scenario source is unavailable",
+      "official": {
+        "status": "unavailable",
+        "categories": []
+      },
+      "stayready": {
+        "status": "data_unavailable",
+        "categories": [],
+        "limitations": [
+          "The official remote service was unavailable or unreadable, so the layer was not checked.",
+          "This mapped planning data does not predict that a dam failure will occur or estimate its probability.",
+          "A non-match does not establish safety from flooding, infrastructure failure, indirect impacts, or evacuation disruption.",
+          "Published boundaries are approximate, may omit federal dams or redacted information, and may change as DSOD approves updated maps.",
+          "Actual evacuation zones, routes, timing, and instructions come from local emergency officials.",
+          "Do not use LHMP or EOP screenshots for address-level dam inundation conclusions."
+        ]
+      },
+      "checks": {
+        "official_status": true,
+        "official_category": true,
+        "stayready_status": true,
+        "stayready_category": true
+      },
+      "outcome": "passed",
+      "comparison_expectation": "pass",
+      "limitations": [
+        "Timeout must not become no scenario intersection."
+      ],
+      "uncertainty": "",
+      "external_review_required": true,
+      "official_response_reference": "not applicable",
+      "stayready_result_reference": "hazard_engine.py / geospatial adapters / dam_inundation.py"
+    }
+  ],
+  "live": {
+    "generated_at": "2026-07-27T20:33:51+00:00",
+    "mode": "optional_live_source_check",
+    "summary": {
+      "passed": 26,
+      "failed": 0,
+      "unavailable": 0,
+      "total": 26
+    },
+    "cases": [
+      {
+        "case_id": "fema-positive-ae",
+        "outcome": "passed",
+        "recorded": {
+          "status": "matched",
+          "categories": [
+            "AE"
+          ],
+          "feature_count": 1
+        },
+        "live": {
+          "status": "matched",
+          "categories": [
+            "AE"
+          ],
+          "feature_count": 1
+        }
+      },
+      {
+        "case_id": "fema-negative-sunol-school",
+        "outcome": "passed",
+        "recorded": {
+          "status": "not_matched",
+          "categories": [
+            "X"
+          ],
+          "feature_count": 1
+        },
+        "live": {
+          "status": "not_matched",
+          "categories": [
+            "X"
+          ],
+          "feature_count": 1
+        }
+      },
+      {
+        "case_id": "fema-boundary-ae",
+        "outcome": "passed",
+        "recorded": {
+          "status": "matched",
+          "categories": [
+            "AE"
+          ],
+          "feature_count": 1
+        },
+        "live": {
+          "status": "matched",
+          "categories": [
+            "AE"
+          ],
+          "feature_count": 1
+        }
+      },
+      {
+        "case_id": "fema-not-evaluated",
+        "outcome": "passed",
+        "recorded": {
+          "status": "not_evaluated",
+          "categories": [
+            "D"
+          ],
+          "feature_count": 3
+        },
+        "live": {
+          "status": "not_evaluated",
+          "categories": [
+            "D"
+          ],
+          "feature_count": 3
+        }
+      },
+      {
+        "case_id": "calfire-positive-sunol-school",
+        "outcome": "passed",
+        "recorded": {
+          "status": "matched",
+          "categories": [
+            "High"
+          ],
+          "feature_count": 2
+        },
+        "live": {
+          "status": "matched",
+          "categories": [
+            "High"
+          ],
+          "feature_count": 2
+        }
+      },
+      {
+        "case_id": "calfire-negative-alameda-city-hall",
+        "outcome": "passed",
+        "recorded": {
+          "status": "not_matched",
+          "categories": [],
+          "feature_count": 2
+        },
+        "live": {
+          "status": "not_matched",
+          "categories": [],
+          "feature_count": 2
+        }
+      },
+      {
+        "case_id": "calfire-boundary-high",
+        "outcome": "passed",
+        "recorded": {
+          "status": "matched",
+          "categories": [
+            "High"
+          ],
+          "feature_count": 2
+        },
+        "live": {
+          "status": "matched",
+          "categories": [
+            "High"
+          ],
+          "feature_count": 2
+        }
+      },
+      {
+        "case_id": "calfire-not-evaluated",
+        "outcome": "passed",
+        "recorded": {
+          "status": "not_evaluated",
+          "categories": [],
+          "feature_count": 1
+        },
+        "live": {
+          "status": "not_evaluated",
+          "categories": [],
+          "feature_count": 1
+        }
+      },
+      {
+        "case_id": "fault-positive-hayward-city-hall",
+        "outcome": "passed",
+        "recorded": {
+          "status": "matched",
+          "categories": [
+            "Hayward fault zone"
+          ],
+          "distance_km": 0.245,
+          "feature_count": 126
+        },
+        "live": {
+          "status": "matched",
+          "categories": [
+            "Hayward fault zone"
+          ],
+          "distance_km": 0.245,
+          "feature_count": 126
+        }
+      },
+      {
+        "case_id": "fault-negative-alameda-city-hall",
+        "outcome": "passed",
+        "recorded": {
+          "status": "not_matched",
+          "categories": [
+            "Hayward fault zone"
+          ],
+          "distance_km": 5.4285,
+          "feature_count": 107
+        },
+        "live": {
+          "status": "not_matched",
+          "categories": [
+            "Hayward fault zone"
+          ],
+          "distance_km": 5.4285,
+          "feature_count": 107
+        }
+      },
+      {
+        "case_id": "fault-boundary-two-km",
+        "outcome": "passed",
+        "recorded": {
+          "status": "not_matched",
+          "categories": [
+            "Hayward fault zone"
+          ],
+          "distance_km": 2.0019,
+          "feature_count": 117
+        },
+        "live": {
+          "status": "not_matched",
+          "categories": [
+            "Hayward fault zone"
+          ],
+          "distance_km": 2.0019,
+          "feature_count": 117
+        }
+      },
+      {
+        "case_id": "ap-positive-oakland-east",
+        "outcome": "passed",
+        "recorded": {
+          "status": "matched",
+          "categories": [
+            "Oakland East"
+          ],
+          "feature_count": 1
+        },
+        "live": {
+          "status": "matched",
+          "categories": [
+            "Oakland East"
+          ],
+          "feature_count": 1
+        }
+      },
+      {
+        "case_id": "ap-negative-alameda-city-hall",
+        "outcome": "passed",
+        "recorded": {
+          "status": "not_matched",
+          "categories": [],
+          "feature_count": 0
+        },
+        "live": {
+          "status": "not_matched",
+          "categories": [],
+          "feature_count": 0
+        }
+      },
+      {
+        "case_id": "ap-boundary-oakland-east",
+        "outcome": "passed",
+        "recorded": {
+          "status": "not_matched",
+          "categories": [],
+          "feature_count": 0
+        },
+        "live": {
+          "status": "not_matched",
+          "categories": [],
+          "feature_count": 0
+        }
+      },
+      {
+        "case_id": "liquefaction-positive-newark",
+        "outcome": "passed",
+        "recorded": {
+          "status": "matched",
+          "categories": [
+            "Newark"
+          ],
+          "feature_count": 1
+        },
+        "live": {
+          "status": "matched",
+          "categories": [
+            "Newark"
+          ],
+          "feature_count": 1
+        }
+      },
+      {
+        "case_id": "liquefaction-negative-piedmont-city-hall",
+        "outcome": "passed",
+        "recorded": {
+          "status": "not_matched",
+          "categories": [],
+          "feature_count": 0
+        },
+        "live": {
+          "status": "not_matched",
+          "categories": [],
+          "feature_count": 0
+        }
+      },
+      {
+        "case_id": "liquefaction-boundary-newark",
+        "outcome": "passed",
+        "recorded": {
+          "status": "not_matched",
+          "categories": [],
+          "feature_count": 0
+        },
+        "live": {
+          "status": "not_matched",
+          "categories": [],
+          "feature_count": 0
+        }
+      },
+      {
+        "case_id": "landslide-positive-dublin",
+        "outcome": "passed",
+        "recorded": {
+          "status": "matched",
+          "categories": [
+            "Dublin"
+          ],
+          "feature_count": 1
+        },
+        "live": {
+          "status": "matched",
+          "categories": [
+            "Dublin"
+          ],
+          "feature_count": 1
+        }
+      },
+      {
+        "case_id": "landslide-negative-alameda-city-hall",
+        "outcome": "passed",
+        "recorded": {
+          "status": "not_matched",
+          "categories": [],
+          "feature_count": 0
+        },
+        "live": {
+          "status": "not_matched",
+          "categories": [],
+          "feature_count": 0
+        }
+      },
+      {
+        "case_id": "landslide-boundary-dublin",
+        "outcome": "passed",
+        "recorded": {
+          "status": "matched",
+          "categories": [
+            "Dublin"
+          ],
+          "feature_count": 1
+        },
+        "live": {
+          "status": "matched",
+          "categories": [
+            "Dublin"
+          ],
+          "feature_count": 1
+        }
+      },
+      {
+        "case_id": "tsunami-positive-alameda-area",
+        "outcome": "passed",
+        "recorded": {
+          "status": "matched",
+          "categories": [
+            "Yes, Tsunami Hazard Area"
+          ],
+          "feature_count": 1
+        },
+        "live": {
+          "status": "matched",
+          "categories": [
+            "Yes, Tsunami Hazard Area"
+          ],
+          "feature_count": 1
+        }
+      },
+      {
+        "case_id": "tsunami-negative-oakland-city-hall",
+        "outcome": "passed",
+        "recorded": {
+          "status": "not_matched",
+          "categories": [
+            "No, Outside Hazard Area"
+          ],
+          "feature_count": 1
+        },
+        "live": {
+          "status": "not_matched",
+          "categories": [
+            "No, Outside Hazard Area"
+          ],
+          "feature_count": 1
+        }
+      },
+      {
+        "case_id": "tsunami-boundary-alameda",
+        "outcome": "passed",
+        "recorded": {
+          "status": "matched",
+          "categories": [
+            "No, Outside Hazard Area",
+            "Yes, Tsunami Hazard Area"
+          ],
+          "feature_count": 2
+        },
+        "live": {
+          "status": "matched",
+          "categories": [
+            "No, Outside Hazard Area",
+            "Yes, Tsunami Hazard Area"
+          ],
+          "feature_count": 2
+        }
+      },
+      {
+        "case_id": "dam-positive-san-leandro-scenarios",
+        "outcome": "passed",
+        "recorded": {
+          "status": "matched",
+          "categories": [
+            "Chabot \u00b7 Scenario1 \u00b7 Sunny Day",
+            "New Upper San Leandro \u00b7 Scenario1 \u00b7 Sunny Day"
+          ],
+          "feature_count": 2
+        },
+        "live": {
+          "status": "matched",
+          "categories": [
+            "Chabot \u00b7 Scenario1 \u00b7 Sunny Day",
+            "New Upper San Leandro \u00b7 Scenario1 \u00b7 Sunny Day"
+          ],
+          "feature_count": 2
+        }
+      },
+      {
+        "case_id": "dam-negative-alameda-city-hall",
+        "outcome": "passed",
+        "recorded": {
+          "status": "not_matched",
+          "categories": [],
+          "feature_count": 0
+        },
+        "live": {
+          "status": "not_matched",
+          "categories": [],
+          "feature_count": 0
+        }
+      },
+      {
+        "case_id": "dam-boundary-new-upper-san-leandro",
+        "outcome": "passed",
+        "recorded": {
+          "status": "matched",
+          "categories": [
+            "New Upper San Leandro \u00b7 Scenario1 \u00b7 Sunny Day"
+          ],
+          "feature_count": 1
+        },
+        "live": {
+          "status": "matched",
+          "categories": [
+            "New Upper San Leandro \u00b7 Scenario1 \u00b7 Sunny Day"
+          ],
+          "feature_count": 1
+        }
+      }
+    ]
+  }
+}

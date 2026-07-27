@@ -1,0 +1,53 @@
+{
+  "catalog_version": "2026-07-26",
+  "policy": "Safety claims may be published only after professional translation and in-context review.",
+  "required_keys": [
+    "emergency_warning",
+    "check_location",
+    "confirm_match",
+    "address_not_found",
+    "ambiguous_address",
+    "po_box_fallback",
+    "mapped_finding",
+    "source_unavailable",
+    "what_is_unknown",
+    "take_three_actions",
+    "privacy_summary",
+    "result_expired"
+  ],
+  "locales": {
+    "en": {
+      "name": "English",
+      "review_status": "source_language_review_required",
+      "reviewer": "",
+      "reviewed_at": null,
+      "messages": {
+        "emergency_warning": "StayReady is not an emergency alert service. Follow AC Alert, Genasys, 911, and instructions from public agencies.",
+        "check_location": "Check an Alameda County location",
+        "confirm_match": "Confirm the matching address",
+        "address_not_found": "No county address-point match was found. Use ZIP fallback or place a map pin.",
+        "ambiguous_address": "More than one address matches. Choose one before continuing.",
+        "po_box_fallback": "PO boxes cannot receive address-level mapped evidence. Use a ZIP code or community.",
+        "mapped_finding": "Mapped finding at the selected point",
+        "source_unavailable": "This source was unavailable, so it was not treated as a non-match.",
+        "what_is_unknown": "What StayReady cannot determine",
+        "take_three_actions": "Start with these three actions",
+        "privacy_summary": "Address and coordinates remain in short-lived server state for 30 minutes and are not placed in URLs, analytics, or durable resident tables.",
+        "result_expired": "This result expired. Check the location again."
+      }
+    },
+    "es": {
+      "name": "Español",
+      "review_status": "professional_translation_required",
+      "reviewer": "",
+      "reviewed_at": null,
+      "messages": {}
+    },
+    "ar": {"name": "العربية", "review_status": "keys_prepared", "messages": {}},
+    "zh-Hans": {"name": "简体中文", "review_status": "keys_prepared", "messages": {}},
+    "zh-Hant": {"name": "繁體中文", "review_status": "keys_prepared", "messages": {}},
+    "fa": {"name": "فارسی", "review_status": "keys_prepared", "messages": {}},
+    "tl": {"name": "Tagalog", "review_status": "keys_prepared", "messages": {}},
+    "vi": {"name": "Tiếng Việt", "review_status": "keys_prepared", "messages": {}}
+  }
+}

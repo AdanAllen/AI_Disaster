@@ -21,6 +21,13 @@ def location_from_session(session_data: Dict) -> LocationResult:
     if location_mode == "address":
         confidence = "source_backed" if lat is not None and lon is not None else "needs_review"
         precision_note = "Address was geocoded to a latitude/longitude point."
+    elif location_mode == "map_pin":
+        confidence = "mixed_support" if lat is not None and lon is not None else "needs_review"
+        precision_note = (
+            "This point was placed by the resident and checked against official county "
+            "boundaries; it is not a verified street-address match."
+        )
+        limitations.append(precision_note)
     elif location_mode == "zip":
         confidence = "mixed_support"
         precision_note = "ZIP-only input does not support address-level hazard zone checks."
@@ -63,7 +70,7 @@ def location_from_session(session_data: Dict) -> LocationResult:
         zip_code=zip_code,
         neighborhood=session_data.get("neighborhood") or "",
         census_tract=session_data.get("census_tract") or "",
-        geocoder=session_data.get("geocoder") or "nominatim",
+        geocoder=session_data.get("geocoder") or "county_location_service",
         geocode_confidence=confidence,
         limitations=limitations,
     )
@@ -97,7 +104,7 @@ def location_from_geocode(
         county=county,
         zip_code=zip_code,
         neighborhood=neighborhood,
-        geocoder="nominatim",
+        geocoder="county_location_service",
         geocode_confidence="source_backed" if lat is not None and lon is not None else "needs_review",
         limitations=[] if lat is not None and lon is not None else ["Address could not be resolved to a usable point."],
     )

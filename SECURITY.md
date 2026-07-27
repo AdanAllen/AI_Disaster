@@ -24,10 +24,12 @@ and profile choices are held in a short-lived server-local cache so result
 pages work, then expire. StayReady does not request medical/access free text.
 The cookie is HttpOnly, SameSite=Lax, and Secure in production.
 
-Address geocoding uses OpenStreetMap's Nominatim service. Official public GIS
-services may also receive a coordinate for a mapped-data query. StayReady does
-not intentionally log raw addresses or coordinates, but those third-party
-services have their own operational logging and privacy practices.
+Address matching uses the official Alameda County Address Points service first.
+An authenticated ArcGIS World Geocoding request is permitted only as a fallback,
+and its coordinates are still validated against official county boundaries.
+Official GIS services may receive a coordinate for a mapped-data query.
+StayReady does not intentionally log raw addresses or coordinates, but those
+third-party services have their own operational logging and privacy practices.
 
 ## Secrets
 
@@ -43,9 +45,9 @@ repository files, logs, or health responses.
 - CGS remote map layers: 20 requests per minute per apparent client IP.
 - USGS live earthquake feed: 20 requests per minute per apparent client IP.
 
-The built-in limiter is process-local. Before material public traffic, replace
-it with a shared Cloudflare or Redis-backed limit so all Gunicorn workers share
-the same counters.
+Production and staging use the managed Redis-compatible store for shared rate
+limits, temporary location state, response caches, and circuit-breaker state.
+The process-local limiter and filesystem cache are development-only fallbacks.
 
 ## Supabase
 

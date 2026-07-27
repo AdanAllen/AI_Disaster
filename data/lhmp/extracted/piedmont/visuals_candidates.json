@@ -1,17 +1,32 @@
 [
   {
-    "id": "lhmp_visual_87f73f8335cdbb39",
+    "id": "lhmp_visual_b24be9ae26cca7ee",
     "city": "piedmont",
-    "source_document": "piedmont-lhmp-2019.pdf",
-    "pdf_page": 22,
+    "source_document": "piedmont-lhmp-2026-public-review-draft.pdf",
+    "pdf_page": 18,
     "page_label": "",
-    "section_heading": "April 2019",
+    "section_heading": "June 2025",
     "suggested_hazard": null,
     "extraction_reason": "PDF text matched a figure or table caption pattern.",
     "review_status": "candidate",
     "visual_type": "figure",
-    "caption": "Figure 2-1 City of Piedmont",
-    "page_image_path": "data/lhmp/extracted/piedmont/page-images/page-0022.png",
+    "caption": "Figure 1-1 Natural Hazard Mitigation Savings by Hazard Type and Mitigation Type",
+    "page_image_path": "data/lhmp/extracted/piedmont/page-images/page-0018.png",
+    "address_specific": false
+  },
+  {
+    "id": "lhmp_visual_e14397583ebac078",
+    "city": "piedmont",
+    "source_document": "piedmont-lhmp-2026-public-review-draft.pdf",
+    "pdf_page": 20,
+    "page_label": "",
+    "section_heading": "June 2025",
+    "suggested_hazard": null,
+    "extraction_reason": "PDF text matched a figure or table caption pattern.",
+    "review_status": "candidate",
+    "visual_type": "figure",
+    "caption": "Figure 1-2 City of Piedmont",
+    "page_image_path": "data/lhmp/extracted/piedmont/page-images/page-0020.png",
     "address_specific": false
   }
 ]

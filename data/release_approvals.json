@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "policy": {
+    "automated_checks_are_external_approval": false,
+    "note": "Only evidence supplied by a real, named reviewer or authorized operator may change these gates."
+  },
+  "mapped_methodology": {
+    "status": "pending_external_review",
+    "named_reviewer": null,
+    "reviewed_at": null,
+    "evidence_reference": null
+  },
+  "resident_research": {
+    "status": "planned",
+    "completed_sessions": 0,
+    "spanish_preferring_sessions": 0,
+    "access_needs_sessions": 0,
+    "approved_by": null,
+    "evidence_reference": "docs/resident-research-plan.md"
+  },
+  "accessibility": {
+    "status": "pending_independent_audit",
+    "standard": "WCAG 2.2 AA",
+    "auditor": null,
+    "critical_findings_open": null,
+    "serious_findings_open": null,
+    "evidence_reference": null
+  },
+  "production_operations": {
+    "status": "pending_configuration",
+    "always_on_hosting_confirmed": false,
+    "shared_state_confirmed": false,
+    "monitoring_confirmed": false,
+    "rollback_confirmed": false,
+    "production_credentials_confirmed": false,
+    "authorized_operator": null,
+    "evidence_reference": "docs/incident-runbook.md"
+  },
+  "rollout": {
+    "status": "not_authorized",
+    "authorized_by": null,
+    "authorized_at": null,
+    "evidence_reference": null
+  }
+}

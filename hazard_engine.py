@@ -227,7 +227,7 @@ def _local_locations(result: HazardResult) -> List[str]:
     return _dedupe_text(locations)
 
 
-@lru_cache(maxsize=4)
+@lru_cache(maxsize=12)
 def load_geojson(filename: str) -> Dict:
     path = os.path.join(BASE_DIR, "static", filename)
     if not os.path.exists(path):
@@ -384,10 +384,9 @@ def _check_flood_zip_slice(lat: float, lon: float, zip_code: str) -> Optional[Di
 def check_flood_layer(lat: Optional[float], lon: Optional[float], zip_code: Optional[str] = None) -> Dict:
     if lat is None or lon is None:
         return _not_checked_result()
-    if zip_code:
-        zip_result = _check_flood_zip_slice(float(lat), float(lon), zip_code)
-        if zip_result is not None:
-            return zip_result
+    # ZIP-clipped files are simplified display artifacts. They must never drive
+    # address evidence or boundary decisions.
+    del zip_code
     try:
         evidence = GeospatialEvidenceService(project_root=BASE_DIR).check_point(
             "fema_nfhl_local",
@@ -413,11 +412,25 @@ def check_flood_layer(lat: Optional[float], lon: Optional[float], zip_code: Opti
         layer for layer in evidence.matched_features
         if _fema_layer_is_sfha(layer)
     ]
+    zones = {
+        str(layer.get("zone") or "").strip().upper()
+        for layer in evidence.matched_features
+    }
+    evaluation_status = "not_evaluated" if "D" in zones else (
+        "matched" if sfha_layers else "not_matched"
+    )
     return {
         "checked": True,
-        "data_status": "checked" if sfha_layers else "not_in_layer",
+        "data_status": (
+            "needs_review"
+            if evaluation_status == "not_evaluated"
+            else "checked"
+            if sfha_layers
+            else "not_in_layer"
+        ),
         "message": "",
         "inside": bool(sfha_layers),
+        "evaluation_status": evaluation_status,
         "polygon_match": polygon_match,
         "sfha_match": bool(sfha_layers),
         "sfha_layers": sfha_layers,
@@ -431,42 +444,151 @@ def check_wildfire_layer(lat: Optional[float], lon: Optional[float]) -> Dict:
         return _not_checked_result()
 
     point = Point(float(lon), float(lat))
-    loaded = load_geojson("FireHaz.geojson")
-    if not loaded["available"]:
+    responsibility = load_geojson("FireResponsibilityAreas.geojson")
+    sra = load_geojson("FireHazSRA.geojson")
+    lra_recommended = load_geojson("FireHazLRARecommended.geojson")
+    if not all(
+        item["available"] for item in (responsibility, sra, lra_recommended)
+    ):
         return _unavailable_result()
-    data = loaded["data"]
-    layers = []
-    valid_features = 0
-    for feature in data.get("features", []):
-        geometry = feature.get("geometry")
-        if not geometry:
+
+    def matches(payload):
+        matched = []
+        valid = 0
+        for feature in payload["data"].get("features", []):
+            geometry = feature.get("geometry")
+            if not geometry:
+                continue
+            try:
+                polygon = shape(geometry)
+            except Exception:
+                continue
+            if polygon.is_empty or not polygon.is_valid:
+                continue
+            valid += 1
+            if polygon.contains(point) or polygon.touches(point):
+                matched.append(feature)
+        return matched, valid
+
+    responsibility_matches, responsibility_valid = matches(responsibility)
+    if not responsibility_valid:
+        return _unavailable_result()
+    responsibility_types = {
+        str((feature.get("properties") or {}).get("SRA") or "").upper()
+        for feature in responsibility_matches
+    }
+    if not responsibility_types:
+        return {
+            **_not_checked_result(),
+            "evaluation_status": "not_evaluated",
+            "applicability_status": "outside_responsibility_snapshot",
+            "responsibility_area": "",
+            "limitations": [
+                "No official CAL FIRE responsibility-area polygon covered the point; "
+                "no severity non-match was inferred."
+            ],
+        }
+    # Boundary points can intersect multiple authorities. Do not choose the more
+    # favorable result silently; require review instead.
+    if len(responsibility_types) != 1:
+        return {
+            **_not_checked_result(),
+            "evaluation_status": "not_evaluated",
+            "applicability_status": "responsibility_boundary_ambiguous",
+            "responsibility_area": "/".join(sorted(responsibility_types)),
+            "limitations": [
+                "The point intersects multiple responsibility areas at the recorded "
+                "precision; CAL FIRE severity was not selected automatically."
+            ],
+        }
+
+    responsibility_type = next(iter(responsibility_types))
+    if responsibility_type == "FRA":
+        return {
+            "checked": False,
+            "data_status": "not_checked",
+            "message": "CAL FIRE SRA/LRA severity layers are not applicable in an FRA.",
+            "inside": False,
+            "layers": [],
+            "recommendation_layers": [],
+            "evaluation_status": "not_evaluated",
+            "applicability_status": "federal_responsibility_area",
+            "responsibility_area": "FRA",
+            "limitations": [
+                "The official responsibility layer identifies a Federal "
+                "Responsibility Area. CAL FIRE SRA and LRA severity polygons were "
+                "not used to infer a non-match."
+            ],
+        }
+
+    selected = sra if responsibility_type == "SRA" else lra_recommended
+    selected_matches, selected_valid = matches(selected)
+    if not selected_valid:
+        return _unavailable_result()
+    severity_layers = []
+    for feature in selected_matches:
+        props = feature.get("properties") or {}
+        hazard_class = (
+            props.get("FHSZ_Description")
+            or props.get("HAZ_CLASS")
+            or props.get("VH_REC")
+            or "Unknown"
+        )
+        if str(hazard_class).strip().casefold() not in {
+            "moderate",
+            "high",
+            "very high",
+        }:
             continue
-        try:
-            polygon = shape(geometry)
-        except Exception:
-            continue
-        if polygon.is_empty or not polygon.is_valid:
-            continue
-        valid_features += 1
-        if polygon.contains(point) or polygon.touches(point):
-            props = feature.get("properties", {})
-            hazard_class = props.get("HAZ_CLASS") or props.get("VH_REC") or "Unknown"
-            layers.append({
-                "layer_id": f"calfire_fhsz_{props.get('HAZ_CODE', 'unknown')}",
+        severity_layers.append(
+            {
+                "layer_id": f"calfire_fhsz_{props.get('OBJECTID', 'unknown')}",
                 "name": f"CAL FIRE Fire Hazard Severity Zone: {hazard_class}",
                 "hazard_class": hazard_class,
-                "state_responsibility_area": props.get("SRA", ""),
-                "incorporated": props.get("INCORP", ""),
-            })
+                "state_responsibility_area": responsibility_type,
+                "authority": props.get("AUTHORITY", ""),
+                "adoption_status": props.get("ADOPTION_STATUS", ""),
+            }
+        )
 
-    if valid_features == 0:
-        return _unavailable_result()
+    if responsibility_type == "LRA":
+        return {
+            "checked": True,
+            "data_status": "needs_review" if severity_layers else "not_in_layer",
+            "message": (
+                "CAL FIRE 2025 LRA recommendation checked; local ordinance adoption "
+                "is unresolved and no adopted-zone match is claimed."
+            ),
+            "inside": False,
+            "layers": [],
+            "recommendation_layers": severity_layers,
+            "evaluation_status": (
+                "local_adoption_unresolved" if severity_layers else "not_matched"
+            ),
+            "applicability_status": "lra_recommendation_only",
+            "responsibility_area": "LRA",
+            "limitations": [
+                "The 2025 CAL FIRE LRA layer is a recommendation. It is not treated "
+                "as a locally adopted severity zone without ordinance evidence.",
+                "Fire Hazard Severity Zone describes hazard severity, not complete "
+                "wildfire risk.",
+            ],
+        }
+
     return {
         "checked": True,
-        "data_status": "checked" if layers else "not_in_layer",
+        "data_status": "checked" if severity_layers else "not_in_layer",
         "message": "",
-        "inside": bool(layers),
-        "layers": layers,
+        "inside": bool(severity_layers),
+        "layers": severity_layers,
+        "recommendation_layers": [],
+        "evaluation_status": "matched" if severity_layers else "not_matched",
+        "applicability_status": "effective_sra",
+        "responsibility_area": "SRA",
+        "limitations": [
+            "Fire Hazard Severity Zone describes hazard severity, not complete "
+            "wildfire risk."
+        ],
     }
 
 

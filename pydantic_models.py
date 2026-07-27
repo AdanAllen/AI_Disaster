@@ -7,6 +7,19 @@ from pydantic import AnyHttpUrl, BaseModel, Field, StrictInt, StringConstraints,
 Scope = Literal["address_level", "jurisdiction_level", "zip_estimate", "county_fallback"]
 Basis = Literal["gis_overlay", "official_registry", "zip_csv_heuristic", "county_guidance"]
 LocationPrecision = Literal["address_point", "city", "neighborhood", "census_tract", "zip", "county", "unknown"]
+LocationMatchType = Literal[
+    "address_point",
+    "subaddress",
+    "street",
+    "zip_fallback",
+    "map_pin",
+]
+LocationProvider = Literal[
+    "alameda_county_address_points",
+    "arcgis_world_geocoder",
+    "resident_map_pin",
+    "zip_fallback",
+]
 DataStatus = Literal["checked", "not_checked", "data_unavailable", "not_in_layer", "fallback_used", "needs_review"]
 MatchType = Literal[
     "inside",
@@ -47,9 +60,52 @@ class LocationResult(BaseModel):
     zip_code: str = ""
     neighborhood: str = ""
     census_tract: str = ""
-    geocoder: str = "nominatim"
+    geocoder: str = "county_location_service"
     geocode_confidence: ConfidenceLabel = "needs_review"
     limitations: List[str] = Field(default_factory=list)
+
+
+class ResolvedLocation(BaseModel):
+    """County-authoritative location contract used before any hazard lookup."""
+
+    match_id: NonEmptyText
+    normalized_display_address: NonEmptyText
+    latitude: float = Field(ge=-90, le=90, exclude=True)
+    longitude: float = Field(ge=-180, le=180, exclude=True)
+    zip_code: str = ""
+    incorporated_jurisdiction: str = ""
+    unincorporated_community: str = ""
+    is_unincorporated: bool = False
+    match_type: LocationMatchType
+    match_score: float = Field(ge=0, le=100)
+    precision: LocationPrecision
+    provider: LocationProvider
+    boundary_version: NonEmptyText
+    limitations: List[str] = Field(default_factory=list)
+
+    @property
+    def jurisdiction(self) -> str:
+        return self.incorporated_jurisdiction or (
+            "Unincorporated Alameda County"
+            if self.is_unincorporated or self.unincorporated_community
+            else ""
+        )
+
+    def public_payload(self) -> Dict[str, Any]:
+        """Return the deliberately coordinate-free resident/API representation."""
+        return {
+            "match_id": self.match_id,
+            "display_label": self.normalized_display_address,
+            "zip_code": self.zip_code,
+            "jurisdiction": self.jurisdiction,
+            "community": self.unincorporated_community,
+            "match_type": self.match_type,
+            "match_score": self.match_score,
+            "precision": self.precision,
+            "provider": self.provider,
+            "boundary_version": self.boundary_version,
+            "limitations": list(self.limitations),
+        }
 
 
 class SourceRecord(BaseModel):

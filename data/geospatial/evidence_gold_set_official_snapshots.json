@@ -1,0 +1,1234 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-27T20:05:04+00:00",
+  "policy": "Technical observations only. Refreshing this file never changes expected answers, dataset review status, or human approval.",
+  "cases": {
+    "fema-positive-ae": {
+      "retrieved_at": "2026-07-27T20:04:56+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-122.098343463,37.5928077388",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28",
+          "service_version": "11.1",
+          "schema_fingerprint": "9b9433d31207914c4ad807bbf99fd691ebcf48a717a278a62b9ba2c06d581881",
+          "last_edit_epoch_ms": null,
+          "data_last_edit_epoch_ms": null
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28",
+          "attributes": [
+            {
+              "OBJECTID": 25857069,
+              "FLD_AR_ID": "06001C_1016",
+              "FLD_ZONE": "AE",
+              "ZONE_SUBTY": null,
+              "SFHA_TF": "T",
+              "SOURCE_CIT": "06001C_FIRM9"
+            }
+          ]
+        }
+      ],
+      "normalized": {
+        "status": "matched",
+        "categories": [
+          "AE"
+        ],
+        "feature_count": 1
+      }
+    },
+    "fema-negative-sunol-school": {
+      "retrieved_at": "2026-07-27T20:04:57+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-121.8876726,37.5944011",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28",
+          "service_version": "11.1",
+          "schema_fingerprint": "9b9433d31207914c4ad807bbf99fd691ebcf48a717a278a62b9ba2c06d581881",
+          "last_edit_epoch_ms": null,
+          "data_last_edit_epoch_ms": null
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28",
+          "attributes": [
+            {
+              "OBJECTID": 25858229,
+              "FLD_AR_ID": "06001C_2239",
+              "FLD_ZONE": "X",
+              "ZONE_SUBTY": "AREA OF MINIMAL FLOOD HAZARD",
+              "SFHA_TF": "F",
+              "SOURCE_CIT": "06001C_FIRM4"
+            }
+          ]
+        }
+      ],
+      "normalized": {
+        "status": "not_matched",
+        "categories": [
+          "X"
+        ],
+        "feature_count": 1
+      }
+    },
+    "fema-boundary-ae": {
+      "retrieved_at": "2026-07-27T20:04:57+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-122.1412945052,37.58550595",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28",
+          "service_version": "11.1",
+          "schema_fingerprint": "9b9433d31207914c4ad807bbf99fd691ebcf48a717a278a62b9ba2c06d581881",
+          "last_edit_epoch_ms": null,
+          "data_last_edit_epoch_ms": null
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28",
+          "attributes": [
+            {
+              "OBJECTID": 25857069,
+              "FLD_AR_ID": "06001C_1016",
+              "FLD_ZONE": "AE",
+              "ZONE_SUBTY": null,
+              "SFHA_TF": "T",
+              "SOURCE_CIT": "06001C_FIRM9"
+            }
+          ]
+        }
+      ],
+      "normalized": {
+        "status": "matched",
+        "categories": [
+          "AE"
+        ],
+        "feature_count": 1
+      }
+    },
+    "fema-not-evaluated": {
+      "retrieved_at": "2026-07-27T20:04:57+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-122.0868773141,37.5519146164",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28",
+          "service_version": "11.1",
+          "schema_fingerprint": "9b9433d31207914c4ad807bbf99fd691ebcf48a717a278a62b9ba2c06d581881",
+          "last_edit_epoch_ms": null,
+          "data_last_edit_epoch_ms": null
+        },
+        {
+          "endpoint": "https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/3",
+          "service_version": "11.1",
+          "schema_fingerprint": "811b62fcfd2f40bd657f93073b336940db4d337560d5a8bd31350c403380625f",
+          "last_edit_epoch_ms": null,
+          "data_last_edit_epoch_ms": null
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28",
+          "attributes": [
+            {
+              "OBJECTID": 25856140,
+              "FLD_AR_ID": "06001C_35",
+              "FLD_ZONE": "D",
+              "ZONE_SUBTY": null,
+              "SFHA_TF": "F",
+              "SOURCE_CIT": "06001C_FIRM3"
+            }
+          ]
+        },
+        {
+          "endpoint": "https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/3",
+          "attributes": [
+            {
+              "OBJECTID": 789287,
+              "FIRM_PAN": "06001C0440G",
+              "PANEL_TYP": "Countywide, Panel Printed",
+              "EFF_DATE": 1249257600000,
+              "PNP_REASON": "",
+              "SOURCE_CIT": "06001C_STUDY1"
+            },
+            {
+              "OBJECTID": 674375,
+              "FIRM_PAN": "06081C0215F",
+              "PANEL_TYP": "Countywide, Panel Printed",
+              "EFF_DATE": 1554422400000,
+              "PNP_REASON": "",
+              "SOURCE_CIT": "06081C_STUDY1"
+            }
+          ]
+        }
+      ],
+      "normalized": {
+        "status": "not_evaluated",
+        "categories": [
+          "D"
+        ],
+        "feature_count": 3
+      }
+    },
+    "calfire-positive-sunol-school": {
+      "retrieved_at": "2026-07-27T20:04:58+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-121.8876726,37.5944011",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSZSRA_23_3/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "09f74c852205c031cbbfcc9328f1e4b36b13fc13bd51661e4e48d30ca1aae461",
+          "last_edit_epoch_ms": 1751056245660,
+          "data_last_edit_epoch_ms": 1751056245660
+        },
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSALRA25_v1_All/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "ef53f5e07398bb6e2c82abb79b53ee11424563cf14009b7a2ee3a9c81637673c",
+          "last_edit_epoch_ms": 1770053647455,
+          "data_last_edit_epoch_ms": 1757523815712
+        },
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/State_Responsibility_Area/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "18c15446daac8f08e1da723520e9309d32bd192fc29cd779f0c9523f36a6c523",
+          "last_edit_epoch_ms": 1775759178216,
+          "data_last_edit_epoch_ms": 1775759178216
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSZSRA_23_3/FeatureServer/0",
+          "attributes": [
+            {
+              "OBJECTID": 6521,
+              "SRA": "SRA",
+              "FHSZ": 2,
+              "FHSZ_Description": "High"
+            }
+          ]
+        },
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSALRA25_v1_All/FeatureServer/0",
+          "attributes": []
+        },
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/State_Responsibility_Area/FeatureServer/0",
+          "attributes": [
+            {
+              "OBJECTID": 16526,
+              "SRA": "SRA"
+            }
+          ]
+        }
+      ],
+      "normalized": {
+        "status": "matched",
+        "categories": [
+          "High"
+        ],
+        "feature_count": 2
+      }
+    },
+    "calfire-negative-alameda-city-hall": {
+      "retrieved_at": "2026-07-27T20:04:58+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-122.2436494,37.7664278",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSZSRA_23_3/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "09f74c852205c031cbbfcc9328f1e4b36b13fc13bd51661e4e48d30ca1aae461",
+          "last_edit_epoch_ms": 1751056245660,
+          "data_last_edit_epoch_ms": 1751056245660
+        },
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSALRA25_v1_All/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "ef53f5e07398bb6e2c82abb79b53ee11424563cf14009b7a2ee3a9c81637673c",
+          "last_edit_epoch_ms": 1770053647455,
+          "data_last_edit_epoch_ms": 1757523815712
+        },
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/State_Responsibility_Area/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "18c15446daac8f08e1da723520e9309d32bd192fc29cd779f0c9523f36a6c523",
+          "last_edit_epoch_ms": 1775759178216,
+          "data_last_edit_epoch_ms": 1775759178216
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSZSRA_23_3/FeatureServer/0",
+          "attributes": []
+        },
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSALRA25_v1_All/FeatureServer/0",
+          "attributes": [
+            {
+              "OBJECTID": 7555,
+              "SRA": "LRA",
+              "FHSZ": -3,
+              "FHSZ_Description": "NonWildland"
+            }
+          ]
+        },
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/State_Responsibility_Area/FeatureServer/0",
+          "attributes": [
+            {
+              "OBJECTID": 13830,
+              "SRA": "LRA"
+            }
+          ]
+        }
+      ],
+      "normalized": {
+        "status": "not_matched",
+        "categories": [],
+        "feature_count": 2
+      }
+    },
+    "calfire-boundary-high": {
+      "retrieved_at": "2026-07-27T20:04:59+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-121.7678299634,37.5880604163",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSZSRA_23_3/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "09f74c852205c031cbbfcc9328f1e4b36b13fc13bd51661e4e48d30ca1aae461",
+          "last_edit_epoch_ms": 1751056245660,
+          "data_last_edit_epoch_ms": 1751056245660
+        },
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSALRA25_v1_All/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "ef53f5e07398bb6e2c82abb79b53ee11424563cf14009b7a2ee3a9c81637673c",
+          "last_edit_epoch_ms": 1770053647455,
+          "data_last_edit_epoch_ms": 1757523815712
+        },
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/State_Responsibility_Area/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "18c15446daac8f08e1da723520e9309d32bd192fc29cd779f0c9523f36a6c523",
+          "last_edit_epoch_ms": 1775759178216,
+          "data_last_edit_epoch_ms": 1775759178216
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSZSRA_23_3/FeatureServer/0",
+          "attributes": [
+            {
+              "OBJECTID": 6722,
+              "SRA": "SRA",
+              "FHSZ": 2,
+              "FHSZ_Description": "High"
+            }
+          ]
+        },
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSALRA25_v1_All/FeatureServer/0",
+          "attributes": []
+        },
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/State_Responsibility_Area/FeatureServer/0",
+          "attributes": [
+            {
+              "OBJECTID": 16526,
+              "SRA": "SRA"
+            }
+          ]
+        }
+      ],
+      "normalized": {
+        "status": "matched",
+        "categories": [
+          "High"
+        ],
+        "feature_count": 2
+      }
+    },
+    "calfire-not-evaluated": {
+      "retrieved_at": "2026-07-27T20:04:59+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-121.7075976692,37.6803311499",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSZSRA_23_3/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "09f74c852205c031cbbfcc9328f1e4b36b13fc13bd51661e4e48d30ca1aae461",
+          "last_edit_epoch_ms": 1751056245660,
+          "data_last_edit_epoch_ms": 1751056245660
+        },
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSALRA25_v1_All/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "ef53f5e07398bb6e2c82abb79b53ee11424563cf14009b7a2ee3a9c81637673c",
+          "last_edit_epoch_ms": 1770053647455,
+          "data_last_edit_epoch_ms": 1757523815712
+        },
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/State_Responsibility_Area/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "18c15446daac8f08e1da723520e9309d32bd192fc29cd779f0c9523f36a6c523",
+          "last_edit_epoch_ms": 1775759178216,
+          "data_last_edit_epoch_ms": 1775759178216
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSZSRA_23_3/FeatureServer/0",
+          "attributes": []
+        },
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSALRA25_v1_All/FeatureServer/0",
+          "attributes": []
+        },
+        {
+          "endpoint": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/State_Responsibility_Area/FeatureServer/0",
+          "attributes": [
+            {
+              "OBJECTID": 4805,
+              "SRA": "FRA"
+            }
+          ]
+        }
+      ],
+      "normalized": {
+        "status": "not_evaluated",
+        "categories": [],
+        "feature_count": 1
+      }
+    },
+    "fault-positive-hayward-city-hall": {
+      "retrieved_at": "2026-07-27T20:05:00+00:00",
+      "request_parameters": {
+        "f": "geojson",
+        "where": "1=1",
+        "geometry": "-122.0857972,37.6708955",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "distance": "10",
+        "units": "esriSRUnit_Kilometer",
+        "outSR": "4326",
+        "outFields": "*",
+        "returnGeometry": "true",
+        "resultRecordCount": "2000"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://earthquake.usgs.gov/arcgis/rest/services/haz/Qfaults/MapServer/4",
+          "service_version": "11.5",
+          "schema_fingerprint": "5eb29623a60380f81713541961e9e8690387a44c8afdfba9a9a50a5d5f7a0159",
+          "last_edit_epoch_ms": null,
+          "data_last_edit_epoch_ms": null
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://earthquake.usgs.gov/arcgis/rest/services/haz/Qfaults/MapServer/4",
+          "nearest": {
+            "fault_name": "Hayward fault zone",
+            "fault_id": "55",
+            "section_id": "b",
+            "distance_km": 0.245
+          }
+        }
+      ],
+      "normalized": {
+        "status": "matched",
+        "categories": [
+          "Hayward fault zone"
+        ],
+        "distance_km": 0.245,
+        "feature_count": 126
+      }
+    },
+    "fault-negative-alameda-city-hall": {
+      "retrieved_at": "2026-07-27T20:05:00+00:00",
+      "request_parameters": {
+        "f": "geojson",
+        "where": "1=1",
+        "geometry": "-122.2436494,37.7664278",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "distance": "10",
+        "units": "esriSRUnit_Kilometer",
+        "outSR": "4326",
+        "outFields": "*",
+        "returnGeometry": "true",
+        "resultRecordCount": "2000"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://earthquake.usgs.gov/arcgis/rest/services/haz/Qfaults/MapServer/4",
+          "service_version": "11.5",
+          "schema_fingerprint": "5eb29623a60380f81713541961e9e8690387a44c8afdfba9a9a50a5d5f7a0159",
+          "last_edit_epoch_ms": null,
+          "data_last_edit_epoch_ms": null
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://earthquake.usgs.gov/arcgis/rest/services/haz/Qfaults/MapServer/4",
+          "nearest": {
+            "fault_name": "Hayward fault zone",
+            "fault_id": "55",
+            "section_id": "a",
+            "distance_km": 5.4285
+          }
+        }
+      ],
+      "normalized": {
+        "status": "not_matched",
+        "categories": [
+          "Hayward fault zone"
+        ],
+        "distance_km": 5.4285,
+        "feature_count": 107
+      }
+    },
+    "fault-boundary-two-km": {
+      "retrieved_at": "2026-07-27T20:05:00+00:00",
+      "request_parameters": {
+        "f": "geojson",
+        "where": "1=1",
+        "geometry": "-122.0985339828,37.6578036475",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "distance": "10",
+        "units": "esriSRUnit_Kilometer",
+        "outSR": "4326",
+        "outFields": "*",
+        "returnGeometry": "true",
+        "resultRecordCount": "2000"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://earthquake.usgs.gov/arcgis/rest/services/haz/Qfaults/MapServer/4",
+          "service_version": "11.5",
+          "schema_fingerprint": "5eb29623a60380f81713541961e9e8690387a44c8afdfba9a9a50a5d5f7a0159",
+          "last_edit_epoch_ms": null,
+          "data_last_edit_epoch_ms": null
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://earthquake.usgs.gov/arcgis/rest/services/haz/Qfaults/MapServer/4",
+          "nearest": {
+            "fault_name": "Hayward fault zone",
+            "fault_id": "55",
+            "section_id": "b",
+            "distance_km": 2.0019
+          }
+        }
+      ],
+      "normalized": {
+        "status": "not_matched",
+        "categories": [
+          "Hayward fault zone"
+        ],
+        "distance_km": 2.0019,
+        "feature_count": 117
+      }
+    },
+    "ap-positive-oakland-east": {
+      "retrieved_at": "2026-07-27T20:05:01+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-122.2001358404,37.8125012258",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/arcgis/rest/services/CGS_Alquist_Priolo_Fault_Zones/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "6f6d556c26e620629002931b4d1fec6b3a79da7f4acd4bbcf29e2c8a41442e8d",
+          "last_edit_epoch_ms": 1763573940333,
+          "data_last_edit_epoch_ms": 1763573873826
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/arcgis/rest/services/CGS_Alquist_Priolo_Fault_Zones/FeatureServer/0",
+          "attributes": [
+            {
+              "OBJECTID": 883,
+              "QUAD_NAME": "Oakland East",
+              "MAP_RELEASED": "1982-01-01",
+              "MAP_REVISED": "Y",
+              "ZN_RELEASED": "1982-01-01",
+              "ZN_REVISED": "Y",
+              "GEOPDFLINK": "https://www.conservation.ca.gov/cgs/Documents/Publications/EZRIM/OAKLAND_EAST_EZRIM_a11y.pdf",
+              "REPORTLINK": "https://gmw.conservation.ca.gov/SHP/EZRIM/Reports/FER/102/"
+            }
+          ]
+        }
+      ],
+      "normalized": {
+        "status": "matched",
+        "categories": [
+          "Oakland East"
+        ],
+        "feature_count": 1
+      }
+    },
+    "ap-negative-alameda-city-hall": {
+      "retrieved_at": "2026-07-27T20:05:01+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-122.2436494,37.7664278",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/arcgis/rest/services/CGS_Alquist_Priolo_Fault_Zones/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "6f6d556c26e620629002931b4d1fec6b3a79da7f4acd4bbcf29e2c8a41442e8d",
+          "last_edit_epoch_ms": 1763573940333,
+          "data_last_edit_epoch_ms": 1763573873826
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/arcgis/rest/services/CGS_Alquist_Priolo_Fault_Zones/FeatureServer/0",
+          "attributes": []
+        }
+      ],
+      "normalized": {
+        "status": "not_matched",
+        "categories": [],
+        "feature_count": 0
+      }
+    },
+    "ap-boundary-oakland-east": {
+      "retrieved_at": "2026-07-27T20:05:01+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-122.1594917634,37.758955091",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/arcgis/rest/services/CGS_Alquist_Priolo_Fault_Zones/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "6f6d556c26e620629002931b4d1fec6b3a79da7f4acd4bbcf29e2c8a41442e8d",
+          "last_edit_epoch_ms": 1763573940333,
+          "data_last_edit_epoch_ms": 1763573873826
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/arcgis/rest/services/CGS_Alquist_Priolo_Fault_Zones/FeatureServer/0",
+          "attributes": []
+        }
+      ],
+      "normalized": {
+        "status": "not_matched",
+        "categories": [],
+        "feature_count": 0
+      }
+    },
+    "liquefaction-positive-newark": {
+      "retrieved_at": "2026-07-27T20:05:01+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-122.0487537372,37.5624395247",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/arcgis/rest/services/CGS_Liquefaction_Zones/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "696c95c187a37428302f29566de62836eee0ff89a554e96460ecfe757d3db636",
+          "last_edit_epoch_ms": 1763574477353,
+          "data_last_edit_epoch_ms": 1763574392920
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/arcgis/rest/services/CGS_Liquefaction_Zones/FeatureServer/0",
+          "attributes": [
+            {
+              "OBJECTID": 84,
+              "QUAD_NAME": "Newark",
+              "RELEASED": "2003-07-02",
+              "REVISED": "N",
+              "GEOPDFLINK": "https://gmw.conservation.ca.gov/SHP/EZRIM/Maps/NEWARK_EZRIM.pdf",
+              "REPORTLINK": "https://gmw.conservation.ca.gov/SHP/EZRIM/Reports/SHZR/SHZR_090_Newark.pdf"
+            }
+          ]
+        }
+      ],
+      "normalized": {
+        "status": "matched",
+        "categories": [
+          "Newark"
+        ],
+        "feature_count": 1
+      }
+    },
+    "liquefaction-negative-piedmont-city-hall": {
+      "retrieved_at": "2026-07-27T20:05:01+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-122.2324831,37.8243618",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/arcgis/rest/services/CGS_Liquefaction_Zones/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "696c95c187a37428302f29566de62836eee0ff89a554e96460ecfe757d3db636",
+          "last_edit_epoch_ms": 1763574477353,
+          "data_last_edit_epoch_ms": 1763574392920
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/arcgis/rest/services/CGS_Liquefaction_Zones/FeatureServer/0",
+          "attributes": []
+        }
+      ],
+      "normalized": {
+        "status": "not_matched",
+        "categories": [],
+        "feature_count": 0
+      }
+    },
+    "liquefaction-boundary-newark": {
+      "retrieved_at": "2026-07-27T20:05:01+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-122.0038067109,37.5671972945",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/arcgis/rest/services/CGS_Liquefaction_Zones/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "696c95c187a37428302f29566de62836eee0ff89a554e96460ecfe757d3db636",
+          "last_edit_epoch_ms": 1763574477353,
+          "data_last_edit_epoch_ms": 1763574392920
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/arcgis/rest/services/CGS_Liquefaction_Zones/FeatureServer/0",
+          "attributes": []
+        }
+      ],
+      "normalized": {
+        "status": "not_matched",
+        "categories": [],
+        "feature_count": 0
+      }
+    },
+    "landslide-positive-dublin": {
+      "retrieved_at": "2026-07-27T20:05:01+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-121.9736728949,37.6639006447",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/arcgis/rest/services/CGS_Landslide_Zones/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "696c95c187a37428302f29566de62836eee0ff89a554e96460ecfe757d3db636",
+          "last_edit_epoch_ms": 1763592143463,
+          "data_last_edit_epoch_ms": 1763581038289
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/arcgis/rest/services/CGS_Landslide_Zones/FeatureServer/0",
+          "attributes": [
+            {
+              "OBJECTID": 2697,
+              "QUAD_NAME": "Dublin",
+              "RELEASED": "2008-08-27",
+              "REVISED": "N",
+              "GEOPDFLINK": "https://www.conservation.ca.gov/cgs/Documents/Publications/EZRIM/DUBLIN_EZRIM_a11y.pdf",
+              "REPORTLINK": "https://gmw.conservation.ca.gov/SHP/EZRIM/Reports/SHZR/SHZR_112_Dublin.pdf"
+            }
+          ]
+        }
+      ],
+      "normalized": {
+        "status": "matched",
+        "categories": [
+          "Dublin"
+        ],
+        "feature_count": 1
+      }
+    },
+    "landslide-negative-alameda-city-hall": {
+      "retrieved_at": "2026-07-27T20:05:01+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-122.2436494,37.7664278",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/arcgis/rest/services/CGS_Landslide_Zones/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "696c95c187a37428302f29566de62836eee0ff89a554e96460ecfe757d3db636",
+          "last_edit_epoch_ms": 1763592143463,
+          "data_last_edit_epoch_ms": 1763581038289
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/arcgis/rest/services/CGS_Landslide_Zones/FeatureServer/0",
+          "attributes": []
+        }
+      ],
+      "normalized": {
+        "status": "not_matched",
+        "categories": [],
+        "feature_count": 0
+      }
+    },
+    "landslide-boundary-dublin": {
+      "retrieved_at": "2026-07-27T20:05:02+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-121.9474598106,37.628667849",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/arcgis/rest/services/CGS_Landslide_Zones/FeatureServer/0",
+          "service_version": "12",
+          "schema_fingerprint": "696c95c187a37428302f29566de62836eee0ff89a554e96460ecfe757d3db636",
+          "last_edit_epoch_ms": 1763592143463,
+          "data_last_edit_epoch_ms": 1763581038289
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/arcgis/rest/services/CGS_Landslide_Zones/FeatureServer/0",
+          "attributes": [
+            {
+              "OBJECTID": 2697,
+              "QUAD_NAME": "Dublin",
+              "RELEASED": "2008-08-27",
+              "REVISED": "N",
+              "GEOPDFLINK": "https://www.conservation.ca.gov/cgs/Documents/Publications/EZRIM/DUBLIN_EZRIM_a11y.pdf",
+              "REPORTLINK": "https://gmw.conservation.ca.gov/SHP/EZRIM/Reports/SHZR/SHZR_112_Dublin.pdf"
+            }
+          ]
+        }
+      ],
+      "normalized": {
+        "status": "matched",
+        "categories": [
+          "Dublin"
+        ],
+        "feature_count": 1
+      }
+    },
+    "tsunami-positive-alameda-area": {
+      "retrieved_at": "2026-07-27T20:05:02+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-122.2053058724,37.6760266294",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://gis.conservation.ca.gov/server/rest/services/CGS/IW_Tsunami_Hazard_Area/FeatureServer/0",
+          "service_version": "11.5",
+          "schema_fingerprint": "099e079799e463ce040b376af4b6163c8956768e6db1e94c5384f5ef06e0c743",
+          "last_edit_epoch_ms": null,
+          "data_last_edit_epoch_ms": null
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://gis.conservation.ca.gov/server/rest/services/CGS/IW_Tsunami_Hazard_Area/FeatureServer/0",
+          "attributes": [
+            {
+              "OBJECTID": 12,
+              "Evacuate": "Yes, Tsunami Hazard Area",
+              "County": "Alameda",
+              "GIS_Link": "https://www.conservation.ca.gov/cgs/Documents/Publications/Tsunami-Maps/CGS_Tsunami_Hazard_Area_for_Emergency_Planning.zip",
+              "KMZ_Link": "https://www.conservation.ca.gov/cgs/Documents/Publications/Tsunami-Maps/Tsunami_Hazard_Area_Alameda_County.kmz",
+              "Map_Link": "https://www.conservation.ca.gov/cgs/Documents/Publications/Tsunami-Maps/Tsunami_Hazard_Area_Map_Alameda_County_a11y.pdf"
+            }
+          ]
+        }
+      ],
+      "normalized": {
+        "status": "matched",
+        "categories": [
+          "Yes, Tsunami Hazard Area"
+        ],
+        "feature_count": 1
+      }
+    },
+    "tsunami-negative-oakland-city-hall": {
+      "retrieved_at": "2026-07-27T20:05:03+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-122.2727836,37.8053968",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://gis.conservation.ca.gov/server/rest/services/CGS/IW_Tsunami_Hazard_Area/FeatureServer/0",
+          "service_version": "11.5",
+          "schema_fingerprint": "099e079799e463ce040b376af4b6163c8956768e6db1e94c5384f5ef06e0c743",
+          "last_edit_epoch_ms": null,
+          "data_last_edit_epoch_ms": null
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://gis.conservation.ca.gov/server/rest/services/CGS/IW_Tsunami_Hazard_Area/FeatureServer/0",
+          "attributes": [
+            {
+              "OBJECTID": 1,
+              "Evacuate": "No, Outside Hazard Area",
+              "County": "Alameda",
+              "GIS_Link": "https://www.conservation.ca.gov/cgs/Documents/Publications/Tsunami-Maps/CGS_Tsunami_Hazard_Area_for_Emergency_Planning.zip",
+              "KMZ_Link": "https://www.conservation.ca.gov/cgs/Documents/Publications/Tsunami-Maps/Tsunami_Hazard_Area_Alameda_County.kmz",
+              "Map_Link": "https://www.conservation.ca.gov/cgs/Documents/Publications/Tsunami-Maps/Tsunami_Hazard_Area_Map_Alameda_County_a11y.pdf"
+            }
+          ]
+        }
+      ],
+      "normalized": {
+        "status": "not_matched",
+        "categories": [
+          "No, Outside Hazard Area"
+        ],
+        "feature_count": 1
+      }
+    },
+    "tsunami-boundary-alameda": {
+      "retrieved_at": "2026-07-27T20:05:04+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-122.2623306534,37.8017952729",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://gis.conservation.ca.gov/server/rest/services/CGS/IW_Tsunami_Hazard_Area/FeatureServer/0",
+          "service_version": "11.5",
+          "schema_fingerprint": "099e079799e463ce040b376af4b6163c8956768e6db1e94c5384f5ef06e0c743",
+          "last_edit_epoch_ms": null,
+          "data_last_edit_epoch_ms": null
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://gis.conservation.ca.gov/server/rest/services/CGS/IW_Tsunami_Hazard_Area/FeatureServer/0",
+          "attributes": [
+            {
+              "OBJECTID": 1,
+              "Evacuate": "No, Outside Hazard Area",
+              "County": "Alameda",
+              "GIS_Link": "https://www.conservation.ca.gov/cgs/Documents/Publications/Tsunami-Maps/CGS_Tsunami_Hazard_Area_for_Emergency_Planning.zip",
+              "KMZ_Link": "https://www.conservation.ca.gov/cgs/Documents/Publications/Tsunami-Maps/Tsunami_Hazard_Area_Alameda_County.kmz",
+              "Map_Link": "https://www.conservation.ca.gov/cgs/Documents/Publications/Tsunami-Maps/Tsunami_Hazard_Area_Map_Alameda_County_a11y.pdf"
+            },
+            {
+              "OBJECTID": 12,
+              "Evacuate": "Yes, Tsunami Hazard Area",
+              "County": "Alameda",
+              "GIS_Link": "https://www.conservation.ca.gov/cgs/Documents/Publications/Tsunami-Maps/CGS_Tsunami_Hazard_Area_for_Emergency_Planning.zip",
+              "KMZ_Link": "https://www.conservation.ca.gov/cgs/Documents/Publications/Tsunami-Maps/Tsunami_Hazard_Area_Alameda_County.kmz",
+              "Map_Link": "https://www.conservation.ca.gov/cgs/Documents/Publications/Tsunami-Maps/Tsunami_Hazard_Area_Map_Alameda_County_a11y.pdf"
+            }
+          ]
+        }
+      ],
+      "normalized": {
+        "status": "matched",
+        "categories": [
+          "No, Outside Hazard Area",
+          "Yes, Tsunami Hazard Area"
+        ],
+        "feature_count": 2
+      }
+    },
+    "dam-positive-san-leandro-scenarios": {
+      "retrieved_at": "2026-07-27T20:05:04+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-122.16716282,37.7182092365",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://services.arcgis.com/aa38u6OgfNoCkTJ6/arcgis/rest/services/Approved_InundationBoundaries_As_of_Oct01_2025/FeatureServer/100",
+          "service_version": "12",
+          "schema_fingerprint": "1dcf740416a03b8aeefb424eaaf657ed9e9585b2556c3e0cc06f02e19d9728e8",
+          "last_edit_epoch_ms": 1773944413259,
+          "data_last_edit_epoch_ms": 1771957058698
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://services.arcgis.com/aa38u6OgfNoCkTJ6/arcgis/rest/services/Approved_InundationBoundaries_As_of_Oct01_2025/FeatureServer/100",
+          "attributes": [
+            {
+              "FID": 418,
+              "NID": "CA00165",
+              "StateID": "31.005",
+              "DamName": "Chabot",
+              "FailedStr": "MainDam",
+              "Scenario": "Scenario1",
+              "LoadingScn": "Sunny Day",
+              "PubDate": 1580976000000,
+              "HazardCl": "Extremely High"
+            },
+            {
+              "FID": 720,
+              "NID": "CA01082",
+              "StateID": "31.031",
+              "DamName": "New Upper San Leandro",
+              "FailedStr": "MainDam",
+              "Scenario": "Scenario1",
+              "LoadingScn": "Sunny Day",
+              "PubDate": 1604563200000,
+              "HazardCl": "Extremely High"
+            }
+          ]
+        }
+      ],
+      "normalized": {
+        "status": "matched",
+        "categories": [
+          "Chabot \u00b7 Scenario1 \u00b7 Sunny Day",
+          "New Upper San Leandro \u00b7 Scenario1 \u00b7 Sunny Day"
+        ],
+        "feature_count": 2
+      }
+    },
+    "dam-negative-alameda-city-hall": {
+      "retrieved_at": "2026-07-27T20:05:04+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-122.2436494,37.7664278",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://services.arcgis.com/aa38u6OgfNoCkTJ6/arcgis/rest/services/Approved_InundationBoundaries_As_of_Oct01_2025/FeatureServer/100",
+          "service_version": "12",
+          "schema_fingerprint": "1dcf740416a03b8aeefb424eaaf657ed9e9585b2556c3e0cc06f02e19d9728e8",
+          "last_edit_epoch_ms": 1773944413259,
+          "data_last_edit_epoch_ms": 1771957058698
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://services.arcgis.com/aa38u6OgfNoCkTJ6/arcgis/rest/services/Approved_InundationBoundaries_As_of_Oct01_2025/FeatureServer/100",
+          "attributes": []
+        }
+      ],
+      "normalized": {
+        "status": "not_matched",
+        "categories": [],
+        "feature_count": 0
+      }
+    },
+    "dam-boundary-new-upper-san-leandro": {
+      "retrieved_at": "2026-07-27T20:05:04+00:00",
+      "request_parameters": {
+        "f": "json",
+        "where": "1=1",
+        "geometry": "-122.2285460674,37.7270835913",
+        "geometryType": "esriGeometryPoint",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
+        "returnGeometry": "false"
+      },
+      "service_metadata": [
+        {
+          "endpoint": "https://services.arcgis.com/aa38u6OgfNoCkTJ6/arcgis/rest/services/Approved_InundationBoundaries_As_of_Oct01_2025/FeatureServer/100",
+          "service_version": "12",
+          "schema_fingerprint": "1dcf740416a03b8aeefb424eaaf657ed9e9585b2556c3e0cc06f02e19d9728e8",
+          "last_edit_epoch_ms": 1773944413259,
+          "data_last_edit_epoch_ms": 1771957058698
+        }
+      ],
+      "responses": [
+        {
+          "endpoint": "https://services.arcgis.com/aa38u6OgfNoCkTJ6/arcgis/rest/services/Approved_InundationBoundaries_As_of_Oct01_2025/FeatureServer/100",
+          "attributes": [
+            {
+              "FID": 720,
+              "NID": "CA01082",
+              "StateID": "31.031",
+              "DamName": "New Upper San Leandro",
+              "FailedStr": "MainDam",
+              "Scenario": "Scenario1",
+              "LoadingScn": "Sunny Day",
+              "PubDate": 1604563200000,
+              "HazardCl": "Extremely High"
+            }
+          ]
+        }
+      ],
+      "normalized": {
+        "status": "matched",
+        "categories": [
+          "New Upper San Leandro \u00b7 Scenario1 \u00b7 Sunny Day"
+        ],
+        "feature_count": 1
+      }
+    }
+  }
+}

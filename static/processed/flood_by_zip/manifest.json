@@ -1,203 +1,203 @@
 {
   "source": "static/FldHaz.geojson",
   "zip_count": 49,
-  "skipped_invalid_features": 6,
+  "skipped_invalid_features": 0,
   "files": {
     "94502": {
       "feature_count": 54,
-      "bytes": 96506
+      "bytes": 94654
     },
     "94577": {
-      "feature_count": 69,
-      "bytes": 103881
+      "feature_count": 70,
+      "bytes": 104241
     },
     "94579": {
-      "feature_count": 132,
-      "bytes": 124461
+      "feature_count": 134,
+      "bytes": 132012
     },
     "94603": {
       "feature_count": 23,
-      "bytes": 25984
+      "bytes": 25397
     },
     "94605": {
-      "feature_count": 14,
-      "bytes": 21558
+      "feature_count": 15,
+      "bytes": 23527
     },
     "94621": {
-      "feature_count": 87,
-      "bytes": 110017
+      "feature_count": 90,
+      "bytes": 108527
     },
     "94501": {
-      "feature_count": 117,
-      "bytes": 220659
+      "feature_count": 135,
+      "bytes": 226536
     },
     "94606": {
-      "feature_count": 31,
-      "bytes": 36758
+      "feature_count": 37,
+      "bytes": 39164
     },
     "94607": {
       "feature_count": 53,
-      "bytes": 105975
+      "bytes": 105255
     },
     "94610": {
-      "feature_count": 15,
-      "bytes": 15350
+      "feature_count": 22,
+      "bytes": 18398
     },
     "94612": {
-      "feature_count": 6,
-      "bytes": 7661
+      "feature_count": 8,
+      "bytes": 8637
     },
     "94608": {
       "feature_count": 39,
-      "bytes": 39998
+      "bytes": 40360
     },
     "94609": {
       "feature_count": 6,
-      "bytes": 6126
+      "bytes": 6144
     },
     "94618": {
       "feature_count": 6,
-      "bytes": 10495
+      "bytes": 10352
     },
     "94702": {
       "feature_count": 4,
-      "bytes": 4595
+      "bytes": 4543
     },
     "94703": {
       "feature_count": 3,
-      "bytes": 4352
+      "bytes": 4451
     },
     "94704": {
       "feature_count": 2,
-      "bytes": 2963
+      "bytes": 2922
     },
     "94705": {
       "feature_count": 3,
-      "bytes": 7608
+      "bytes": 7489
     },
     "94709": {
       "feature_count": 1,
-      "bytes": 1096
+      "bytes": 1071
     },
     "94710": {
       "feature_count": 49,
-      "bytes": 60757
+      "bytes": 60184
     },
     "94720": {
       "feature_count": 4,
-      "bytes": 6625
+      "bytes": 6579
     },
     "94601": {
-      "feature_count": 24,
-      "bytes": 33847
+      "feature_count": 97,
+      "bytes": 82163
     },
     "94602": {
-      "feature_count": 13,
-      "bytes": 15652
+      "feature_count": 97,
+      "bytes": 67897
     },
     "94611": {
-      "feature_count": 8,
-      "bytes": 20444
+      "feature_count": 10,
+      "bytes": 21410
     },
     "94613": {
-      "feature_count": 2,
-      "bytes": 1726
+      "feature_count": 3,
+      "bytes": 2228
     },
     "94619": {
-      "feature_count": 3,
-      "bytes": 8233
+      "feature_count": 5,
+      "bytes": 12732
     },
     "94706": {
       "feature_count": 13,
-      "bytes": 11690
+      "bytes": 11329
     },
     "94707": {
       "feature_count": 7,
-      "bytes": 6721
+      "bytes": 6496
     },
     "94708": {
       "feature_count": 2,
-      "bytes": 4387
+      "bytes": 4363
     },
     "94538": {
       "feature_count": 97,
-      "bytes": 127008
+      "bytes": 125008
     },
     "94555": {
       "feature_count": 55,
-      "bytes": 60288
+      "bytes": 58361
     },
     "94560": {
       "feature_count": 72,
-      "bytes": 84008
+      "bytes": 82589
     },
     "94539": {
-      "feature_count": 76,
-      "bytes": 80392
+      "feature_count": 77,
+      "bytes": 80072
     },
     "94550": {
       "feature_count": 188,
-      "bytes": 209548
+      "bytes": 205562
     },
     "94536": {
-      "feature_count": 36,
-      "bytes": 54548
+      "feature_count": 37,
+      "bytes": 54560
     },
     "94542": {
-      "feature_count": 4,
-      "bytes": 6561
+      "feature_count": 5,
+      "bytes": 13042
     },
     "94544": {
-      "feature_count": 82,
-      "bytes": 116062
+      "feature_count": 83,
+      "bytes": 117672
     },
     "94545": {
-      "feature_count": 101,
-      "bytes": 109021
+      "feature_count": 102,
+      "bytes": 107058
     },
     "94587": {
-      "feature_count": 55,
-      "bytes": 84201
+      "feature_count": 56,
+      "bytes": 89343
     },
     "94541": {
-      "feature_count": 152,
-      "bytes": 119788
+      "feature_count": 154,
+      "bytes": 138882
     },
     "94546": {
-      "feature_count": 97,
-      "bytes": 80145
+      "feature_count": 99,
+      "bytes": 105746
     },
     "94552": {
-      "feature_count": 12,
-      "bytes": 15051
+      "feature_count": 14,
+      "bytes": 38790
     },
     "94578": {
-      "feature_count": 33,
-      "bytes": 41053
+      "feature_count": 34,
+      "bytes": 44582
     },
     "94580": {
-      "feature_count": 292,
-      "bytes": 231384
+      "feature_count": 296,
+      "bytes": 292792
     },
     "94566": {
-      "feature_count": 99,
-      "bytes": 97217
+      "feature_count": 94,
+      "bytes": 93181
     },
     "94568": {
-      "feature_count": 79,
-      "bytes": 72850
+      "feature_count": 81,
+      "bytes": 76100
     },
     "94586": {
-      "feature_count": 19,
-      "bytes": 44850
+      "feature_count": 20,
+      "bytes": 51655
     },
     "94588": {
-      "feature_count": 144,
-      "bytes": 135422
+      "feature_count": 145,
+      "bytes": 147761
     },
     "94551": {
       "feature_count": 163,
-      "bytes": 169345
+      "bytes": 172748
     }
   }
 }

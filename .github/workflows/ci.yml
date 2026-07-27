@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - name: Compile and lint
+        run: |
+          python -m compileall -q .
+          ruff check --select E9,F63,F7,F82 .
+      - name: Validate product and source contracts
+        run: |
+          python scripts/build_local_plan_claim_queue.py --check
+          python scripts/verify_evidence_gold_set.py --no-write
+          python scripts/validate_release.py
+          python scripts/check_location_acceptance.py
+      - name: Dependency audit
+        run: pip-audit -r requirements.txt
+      - name: Unit and integration tests
+        env:
+          PYTHONPATH: .
+        run: pytest -q
+      - name: Production startup contract
+        env:
+          FLASK_ENV: development
+          PYTHONPATH: .
+        run: |
+          gunicorn --bind 127.0.0.1:8099 --workers 1 --threads 2 app:app &
+          server_pid=$!
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent http://127.0.0.1:8099/api/health >/dev/null; then
+              kill "$server_pid"
+              exit 0
+            fi
+            sleep 1
+          done
+          kill "$server_pid"
+          exit 1

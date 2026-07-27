@@ -111,25 +111,26 @@ Figure 4-1 (PDF page 85) shows the nine assessment sub-areas. Hazard figures are
 - Tsunami Table 14-2 population in the tsunami hazard area.
 - Wildfire Table 15-5 population in the Very High FHSZ.
 
-Each record contains jurisdiction, stable sub-area ID/name, hazard ID, metric type, raw value, unit, scenario, scope, draft status, chapter/page/table, LHMP source, exact display claim, review status/method/date, permitted use, and limitations. Production accepts only records with an allowed review status, all required provenance fields, and `permitted_use: subarea_context_only`. Candidate/unreviewed extraction is withheld.
+Each record contains jurisdiction, stable sub-area ID/name, hazard ID, metric type, raw value, unit, scenario, scope, draft status, chapter/page/table, LHMP source, exact display claim, automated check metadata, permitted use, and limitations. Production accepts only records with `review_status: externally_reviewed`, a named human reviewer and review date, all required provenance fields, and `permitted_use: subarea_context_only`. Candidate and automation-only extraction is withheld.
 
-The records were visually checked against rendered source pages, including table headers, rows, units, sources, and notes. This review is explicitly recorded as Codex source-page visual verification, not represented as City adoption or external expert certification.
+The records received an automated source-page visual comparison against rendered pages, including table headers, rows, units, sources, and notes. That automation is not human approval. All 63 records remain `pending_external_review` and are withheld from resident-facing summaries.
 
 ## Hazards with and without usable sub-area context
 
-**Usable and implemented for existing canonical hazard rows:** earthquake, flood, wildfire, landslide, tsunami, and dam failure (when a dam-failure row is present). **Reviewed and structured but not added as a new hazard row:** sea-level rise.
+**Structured but withheld pending external review:** earthquake, flood, wildfire, landslide, tsunami, dam failure, and sea-level rise.
 
 **Audited but deliberately not promoted to the Risk Summary:** drought and severe weather. Their sub-area tables largely repeat EPC population distribution while treating the whole city as exposed, so they add community-demographic context but little hazard-specific address prioritization. Baseline buildings/lifelines are also not displayed without a hazard overlay.
 
 ## UI and claim behavior
 
-The canonical hazard item now has an independent `subarea_context` object. The Risk Summary displays one concise reviewed finding, draft status, and exact table/page citation, with all reviewed details and limitations in an expansion below. It is not merged into `regional_context`, `address_evidence`, or `vulnerability`.
+The canonical hazard item has an independent `subarea_context` object. The Risk Summary displays that context only after the record passes the external-review gate; otherwise it is withheld. It is not merged into `regional_context`, `address_evidence`, or `vulnerability`.
 
-Presentation precedence is: positive address mapped finding; reviewed sub-area context; reviewed citywide priority; preparedness context; checked no match; unavailable. Both a positive map match and sub-area statistic remain visible. This hierarchy is display logic, not a scientific score.
+Presentation precedence is: positive address mapped finding; externally reviewed sub-area context; externally reviewed citywide priority; preparedness context; checked no match; unavailable. Both a positive map match and an approved sub-area statistic can remain visible. This hierarchy is display logic, not a scientific score.
 
 ## Remaining blockers and deferred work
 
 - Obtain a named City data-owner confirmation that the current Plan Area CW geometry is the exact geometry used for draft Figure 4-1.
+- Obtain named external review of all 63 prepared claims before changing any record to `externally_reviewed`.
 - Complete cell-level review before promoting any additional tables listed in the inventory.
 - Do not expose old adopted-plan area ratings as if they were draft-plan findings; do not average them into a new rating.
 - Sea-level rise is structured but awaits a supported canonical hazard row and address-evidence methodology before UI exposure.

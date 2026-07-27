@@ -20,6 +20,7 @@ PROVISIONAL_LIMIT = (
     "This official-source snapshot is provisional until a named human reviewer "
     "compares it with the agency's official viewer and approves this dataset version."
 )
+CAL_FIRE_SEVERITY_CLASSES = {"moderate", "high", "very high"}
 
 
 @lru_cache(maxsize=8)
@@ -188,6 +189,21 @@ class LocalGeoJSONAdapter(GeospatialAdapter):
             }
         return {"name": dataset.dataset_name}
 
+    @staticmethod
+    def _is_publishable_match(
+        dataset: DatasetProvenance,
+        feature: Dict[str, Any],
+    ) -> bool:
+        if dataset.dataset_id != "calfire_fhsz_local":
+            return True
+        properties = feature.get("properties") or {}
+        hazard_class = str(
+            properties.get("HAZ_CLASS")
+            or properties.get("VH_REC")
+            or ""
+        ).strip().casefold()
+        return hazard_class in CAL_FIRE_SEVERITY_CLASSES
+
     def check_point(
         self,
         dataset: DatasetProvenance,
@@ -262,7 +278,13 @@ class LocalGeoJSONAdapter(GeospatialAdapter):
         address_point = Point(point.lon, point.lat)
         matched_features = []
         for geometry_shape, feature in layer["prepared"]:
-            if geometry_shape.contains(address_point) or geometry_shape.touches(address_point):
+            if (
+                self._is_publishable_match(dataset, feature)
+                and (
+                    geometry_shape.contains(address_point)
+                    or geometry_shape.touches(address_point)
+                )
+            ):
                 matched_features.append(self._feature_payload(dataset, feature))
 
         warnings = []

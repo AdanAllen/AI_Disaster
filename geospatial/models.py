@@ -34,6 +34,7 @@ class GeoPoint(BaseModel):
 class DatasetProvenance(BaseModel):
     dataset_id: NonEmptyText
     dataset_version: NonEmptyText
+    edition: str = ""
     hazard_type: NonEmptyText
     agency: NonEmptyText
     authoritative_landing_url: NonEmptyText
@@ -45,9 +46,13 @@ class DatasetProvenance(BaseModel):
     coverage_area: NonEmptyText
     coverage_bbox: Optional[Dict[str, float]] = None
     intended_claim: NonEmptyText
+    permitted_public_claim: str = ""
     prohibited_claims: List[NonEmptyText] = Field(min_length=1)
     retrieved_at: Optional[date] = None
+    source_checked_at: Optional[date] = None
     effective_date: Optional[str] = None
+    schema_fingerprint: str = ""
+    service_version: str = ""
     local_path: str = ""
     sha256: str = ""
     record_count: Optional[int] = Field(default=None, ge=0)
@@ -57,6 +62,10 @@ class DatasetProvenance(BaseModel):
     human_reviewer: str = ""
     human_reviewed_at: Optional[date] = None
     official_viewer_url: str = ""
+    official_comparison_endpoints: List[NonEmptyText] = Field(default_factory=list)
+    automated_verified_at: Optional[date] = None
+    service_last_edit_at: Optional[str] = None
+    known_limitations: List[NonEmptyText] = Field(default_factory=list)
     match_field: str = ""
     match_values: List[str] = Field(default_factory=list)
     result_label: str = ""
@@ -73,6 +82,17 @@ class DatasetProvenance(BaseModel):
         ):
             raise ValueError("sha256 must be a 64-character hexadecimal checksum")
         return checksum
+
+    @field_validator("schema_fingerprint")
+    @classmethod
+    def validate_schema_fingerprint(cls, value: str) -> str:
+        fingerprint = value.strip().lower()
+        if fingerprint and (
+            len(fingerprint) != 64
+            or any(character not in "0123456789abcdef" for character in fingerprint)
+        ):
+            raise ValueError("schema_fingerprint must be a 64-character hexadecimal checksum")
+        return fingerprint
 
     @field_validator("coverage_bbox")
     @classmethod

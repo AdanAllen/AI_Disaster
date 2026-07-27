@@ -1,18 +1,123 @@
 [
   {
-    "jurisdiction_id": "alameda_county",
-    "name": "Alameda County",
-    "type": "county",
+    "jurisdiction_id": "alameda",
+    "name": "Alameda",
+    "type": "city",
     "state": "California",
-    "supported_hazards": ["wildfire", "flood", "earthquake"],
-    "notes": "Countywide fallback and source registry context for the two-week demo."
+    "location_authority": "Alameda County City Boundaries",
+    "supported_hazards": ["flood", "wildfire", "earthquake", "tsunami", "extreme_heat", "poor_air_quality", "sea_level_rise", "utility_disruption"]
+  },
+  {
+    "jurisdiction_id": "albany",
+    "name": "Albany",
+    "type": "city",
+    "state": "California",
+    "location_authority": "Alameda County City Boundaries",
+    "supported_hazards": ["flood", "wildfire", "earthquake", "extreme_heat", "poor_air_quality", "utility_disruption"]
+  },
+  {
+    "jurisdiction_id": "berkeley",
+    "name": "Berkeley",
+    "type": "city",
+    "state": "California",
+    "location_authority": "Alameda County City Boundaries",
+    "supported_hazards": ["flood", "wildfire", "earthquake", "landslide", "extreme_heat", "poor_air_quality", "utility_disruption"]
+  },
+  {
+    "jurisdiction_id": "dublin",
+    "name": "Dublin",
+    "type": "city",
+    "state": "California",
+    "location_authority": "Alameda County City Boundaries",
+    "supported_hazards": ["flood", "wildfire", "earthquake", "landslide", "extreme_heat", "poor_air_quality", "drought", "utility_disruption"]
+  },
+  {
+    "jurisdiction_id": "emeryville",
+    "name": "Emeryville",
+    "type": "city",
+    "state": "California",
+    "location_authority": "Alameda County City Boundaries",
+    "supported_hazards": ["flood", "wildfire", "earthquake", "tsunami", "extreme_heat", "poor_air_quality", "sea_level_rise", "utility_disruption"]
+  },
+  {
+    "jurisdiction_id": "fremont",
+    "name": "Fremont",
+    "type": "city",
+    "state": "California",
+    "location_authority": "Alameda County City Boundaries",
+    "supported_hazards": ["flood", "wildfire", "earthquake", "landslide", "tsunami", "extreme_heat", "poor_air_quality", "sea_level_rise", "utility_disruption"]
+  },
+  {
+    "jurisdiction_id": "hayward",
+    "name": "Hayward",
+    "type": "city",
+    "state": "California",
+    "location_authority": "Alameda County City Boundaries",
+    "supported_hazards": ["flood", "wildfire", "earthquake", "landslide", "tsunami", "extreme_heat", "poor_air_quality", "sea_level_rise", "utility_disruption"]
+  },
+  {
+    "jurisdiction_id": "livermore",
+    "name": "Livermore",
+    "type": "city",
+    "state": "California",
+    "location_authority": "Alameda County City Boundaries",
+    "supported_hazards": ["flood", "wildfire", "earthquake", "landslide", "extreme_heat", "poor_air_quality", "drought", "utility_disruption"]
+  },
+  {
+    "jurisdiction_id": "newark",
+    "name": "Newark",
+    "type": "city",
+    "state": "California",
+    "location_authority": "Alameda County City Boundaries",
+    "supported_hazards": ["flood", "wildfire", "earthquake", "tsunami", "extreme_heat", "poor_air_quality", "sea_level_rise", "utility_disruption"]
   },
   {
     "jurisdiction_id": "oakland",
     "name": "Oakland",
     "type": "city",
     "state": "California",
-    "supported_hazards": ["wildfire", "flood", "earthquake"],
-    "notes": "Existing JSON hazard dataset is Oakland-focused and should be labeled carefully when used."
+    "location_authority": "Alameda County City Boundaries",
+    "supported_hazards": ["flood", "wildfire", "earthquake", "landslide", "tsunami", "extreme_heat", "poor_air_quality", "sea_level_rise", "utility_disruption"]
+  },
+  {
+    "jurisdiction_id": "piedmont",
+    "name": "Piedmont",
+    "type": "city",
+    "state": "California",
+    "location_authority": "Alameda County City Boundaries",
+    "supported_hazards": ["flood", "wildfire", "earthquake", "landslide", "extreme_heat", "poor_air_quality", "utility_disruption"]
+  },
+  {
+    "jurisdiction_id": "pleasanton",
+    "name": "Pleasanton",
+    "type": "city",
+    "state": "California",
+    "location_authority": "Alameda County City Boundaries",
+    "supported_hazards": ["flood", "wildfire", "earthquake", "landslide", "extreme_heat", "poor_air_quality", "drought", "utility_disruption"]
+  },
+  {
+    "jurisdiction_id": "san_leandro",
+    "name": "San Leandro",
+    "type": "city",
+    "state": "California",
+    "location_authority": "Alameda County City Boundaries",
+    "supported_hazards": ["flood", "wildfire", "earthquake", "landslide", "tsunami", "extreme_heat", "poor_air_quality", "sea_level_rise", "utility_disruption"]
+  },
+  {
+    "jurisdiction_id": "union_city",
+    "name": "Union City",
+    "type": "city",
+    "state": "California",
+    "location_authority": "Alameda County City Boundaries",
+    "supported_hazards": ["flood", "wildfire", "earthquake", "landslide", "tsunami", "extreme_heat", "poor_air_quality", "sea_level_rise", "utility_disruption"]
+  },
+  {
+    "jurisdiction_id": "unincorporated_alameda_county",
+    "name": "Unincorporated Alameda County",
+    "type": "unincorporated",
+    "state": "California",
+    "location_authority": "Alameda County Unincorporated Area Boundaries",
+    "official_communities": ["Ashland", "Castro Valley", "Cherryland", "Fairview", "Hayward Acres", "San Lorenzo", "Sunol"],
+    "supported_hazards": ["flood", "wildfire", "earthquake", "landslide", "tsunami", "extreme_heat", "poor_air_quality", "drought", "sea_level_rise", "utility_disruption"]
   }
 ]

@@ -113,8 +113,8 @@ class HazardLibraryRouteTests(unittest.TestCase):
         html = self.client.get("/hazards").get_data(as_text=True)
 
         self.assertIn("ZIP 94619", html)
-        self.assertIn("View your Risk Summary for ranked preparedness priorities", html)
-        self.assertIn("View summary", html)
+        self.assertIn("View your hazard findings for ranked preparedness priorities", html)
+        self.assertIn("View hazard findings", html)
         self.assertNotIn("hazard-profile-form", html)
 
     def test_local_plan_secondary_hazards_are_cited(self):
@@ -128,8 +128,8 @@ class HazardLibraryRouteTests(unittest.TestCase):
         })
         html = self.client.get("/hazards").get_data(as_text=True)
 
-        self.assertIn("Climate Adaptation and Hazard Mitigation Plan", html)
-        self.assertIn("does not yet provide a full address-level guide", html)
+        self.assertNotIn("Climate Adaptation and Hazard Mitigation Plan", html)
+        self.assertIn("still reviewing local source coverage", html)
 
     def test_detail_pages_share_public_guide_structure(self):
         for slug in ("earthquake", "flood", "wildfire"):

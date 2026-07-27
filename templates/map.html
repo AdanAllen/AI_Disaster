@@ -615,219 +615,9 @@
 
 {% block content %}
 {% include "_map_reference.html" %}
-{% if false %}
-<!-- Page Header -->
-<div class="page-header">
-    <div class="container">
-        <div class="page-header-content">
-            <h1>Hazard map</h1>
-            <p class="lead">View official provisional hazard layers for your selected location. Map matches are informational, not property-safety determinations.</p>
-        </div>
-    </div>
-</div>
-
-<div class="container">
-    {% if map_notice %}
-    <div class="alert alert-warning" role="alert">
-        {{ map_notice }}
-    </div>
-    {% endif %}
-    <div class="surface-card p-3 p-lg-4 mb-4">
-        <div class="row g-3 align-items-center">
-            <div class="col-lg-8">
-                <span class="section-eyebrow">Location Context</span>
-                <h2 class="h4 fw-bold mb-2">
-                    {% if has_precise_location %}
-                    Precise address view
-                    {% else %}
-                    ZIP-based view
-                    {% endif %}
-                </h2>
-                <p class="mb-0 text-muted">
-                    {% if has_precise_location %}
-                    The map is centered on your saved address and also shows the surrounding ZIP boundary for context.
-                    {% else %}
-                    The map is centered on the ZIP boundary only. No address marker is shown because the selected location is ZIP-level rather than a verified street address.
-                    {% endif %}
-                </p>
-            </div>
-            <div class="col-lg-4">
-                <div class="d-grid gap-2">
-                    {% if oakland_hazard_ready %}
-                    <a class="btn btn-primary" href="{{ url_for('hazards_dashboard') }}">
-                        <i class="fas fa-triangle-exclamation me-2"></i>Open Hazard Dashboard
-                    </a>
-                    {% endif %}
-                    <a class="btn btn-outline-secondary" href="{{ url_for('risk_summary') }}">
-                        <i class="fas fa-chart-line me-2"></i>Back to Risk Summary
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="main-container">
-        <!-- Map Section -->
-        <div class="map-section">
-            <!-- Risk Overview & Controls -->
-            <div class="control-panel">
-                {% if structured_hazards %}
-                <details class="map-context-details">
-                    <summary>Hazard context for this location</summary>
-                <div class="risk-overview">
-                    {% for hazard in structured_hazards %}
-                    {% set exposure_key = hazard.exposure_level | lower %}
-                    {% set level_class = 'level-high' if exposure_key == 'high' else 'level-moderate' if exposure_key == 'medium' else 'level-unknown' %}
-                    <div class="risk-card {{ hazard.slug }}" data-hazard="{{ hazard.slug }}" onclick="toggleRiskFocus('{{ hazard.slug }}')">
-                        <div class="risk-score">{{ hazard.scope_label }}</div>
-                        <div class="risk-label">{{ hazard.name }}</div>
-                        <span class="risk-level {{ level_class }}">{{ hazard.data_status_label }}</span>
-                        <div class="risk-evidence">{{ hazard.location_precision_label }} · {{ hazard.why_shown }}</div>
-                    </div>
-                    {% endfor %}
-                </div>
-                </details>
-                {% endif %}
-
-                <!-- Layer Toggle Controls -->
-                <h3 class="map-layer-heading">Map layers</h3>
-                <p class="map-layer-intro">Turn official hazard boundaries and reference information on or off.</p>
-                <div class="layer-controls">
-                    <div class="layer-toggle zip active" id="zip-toggle" onclick="toggleLayer('zip')">
-                        <i class="fas fa-map-marker-alt layer-icon"></i>
-                        <span>ZIP Boundary ({{ zip_code }})</span>
-                    </div>
-
-                    <div class="layer-toggle wildfire" id="wildfire-toggle" onclick="toggleLayer('wildfire')">
-                        <i class="fas fa-fire layer-icon"></i>
-                        <span>Wildfire Zones</span>
-                    </div>
-
-                    <div class="layer-toggle flood" id="flood-toggle" onclick="toggleLayer('flood')">
-                        <i class="fas fa-water layer-icon"></i>
-                        <span>Flood Zones</span>
-                    </div>
-
-                    <div class="layer-toggle earthquake" id="earthquake-toggle" onclick="toggleLayer('earthquake')">
-                        <i class="fas fa-mountain layer-icon"></i>
-                        <span>Fault Lines</span>
-                    </div>
-
-                    <div class="layer-toggle live" id="live-toggle" onclick="toggleLayer('live')">
-                        <i class="fas fa-broadcast-tower layer-icon"></i>
-                        <span>Recent Bay Area Earthquakes</span>
-                    </div>
-
-                    <div class="layer-toggle dam-inundation" id="dam-inundation-toggle" onclick="toggleLayer('dam-inundation')">
-                        <i class="fas fa-water layer-icon"></i>
-                        <span>{{ dam_inundation_map_layer.label }}</span>
-                    </div>
-
-                    {% for layer_key, layer in cgs_map_layers.items() %}
-                    <div class="layer-toggle cgs{% if cgs_map_evidence | selectattr('map_layer_key', 'equalto', layer_key) | selectattr('matched', 'equalto', true) | list %} active{% endif %}"
-                         id="cgs-{{ layer_key }}-toggle"
-                         data-cgs-layer="{{ layer_key }}"
-                         onclick="toggleLayer('cgs-{{ layer_key }}')">
-                        <i class="fas fa-layer-group layer-icon"></i>
-                        <span>{{ layer.label }}</span>
-                    </div>
-                    {% endfor %}
-                </div>
-                <p class="small text-muted mt-2 mb-0" id="map-loading-status" aria-live="polite">
-                    Checking official mapped data only when a layer is opened.
-                </p>
-                <p class="small mt-2 mb-0">
-                    <a href="/feedback?category=incorrect_source&amp;page_context=map">Report a map or source issue</a>
-                </p>
-
-                <details class="map-help">
-                    <summary>Definitions and limits</summary>
-                    <div class="map-help-terms">
-                    <div class="map-definition"><strong>Mapped match</strong><span>Your selected point falls inside that dataset's boundary. It signals a reason to review the hazard, not expected damage.</span></div>
-                    <div class="map-definition"><strong>No mapped match</strong><span>The point is outside the displayed boundary. Related hazards, indirect impacts, and unmapped conditions may still occur.</span></div>
-                    <div class="map-definition"><strong>Official source, provisional StayReady integration</strong><span>Useful public planning information, but not a legal, engineering, insurance, or property-safety determination.</span></div>
-                    </div>
-                    <p class="small text-muted">
-                        This application uses public data from FEMA, USGS, CAL FIRE, and the California Geological Survey. It is not officially endorsed by these agencies.
-                    </p>
-                <div class="cgs-legend-grid mt-3" aria-label="Core map layer explanations">
-                    <div class="cgs-legend-card">
-                        <strong>FEMA flood polygons</strong>
-                        <small>Areas FEMA maps for floodplain management and insurance purposes. Use them to prompt flood preparation; they do not capture every way flooding can occur.</small>
-                        <div class="cgs-status">FEMA · Official source, provisional StayReady integration</div>
-                    </div>
-                    <div class="cgs-legend-card">
-                        <strong>CAL FIRE hazard zones</strong>
-                        <small>Areas classified by long-term wildfire hazard conditions. They support preparedness and building-code decisions, not live fire or evacuation tracking.</small>
-                        <div class="cgs-status">CAL FIRE · Official source, provisional StayReady integration</div>
-                    </div>
-                    <div class="cgs-legend-card">
-                        <strong>Mapped fault traces</strong>
-                        <small>Known surface locations of faults. Proximity helps explain earthquake context but does not predict shaking strength or building damage.</small>
-                        <div class="cgs-status">USGS / contributing CGS records · Official source, provisional StayReady integration</div>
-                    </div>
-                    <div class="cgs-legend-card">
-                        <strong>
-                            <span class="cgs-legend-swatch" style="background: {{ dam_inundation_map_layer.color }}"></span>
-                            Dam failure inundation
-                        </strong>
-                        <small>Areas that could be flooded in hypothetical dam or critical-structure failure scenarios approved by DSOD for emergency planning. This is not a prediction or live evacuation map.</small>
-                        <div class="cgs-status">California DWR / DSOD · Official mapped planning data, provisional StayReady integration</div>
-                        <a class="small d-inline-block mt-2" href="https://water.ca.gov/programs/all-programs/division-of-safety-of-dams/inundation-maps" target="_blank" rel="noopener noreferrer">Open official DWR source</a>
-                    </div>
-                </div>
-
-                    <div class="cgs-legend-grid">
-                        {% for evidence in cgs_map_evidence %}
-                        <div class="cgs-legend-card" data-cgs-legend="{{ evidence.map_layer_key }}">
-                            <strong>
-                                <span class="cgs-legend-swatch" style="background: {{ cgs_map_layers[evidence.map_layer_key].color }}"></span>
-                                {{ evidence.dataset_name }}
-                            </strong>
-                            {% if evidence.map_layer_key == 'alquist-priolo' %}
-                            <small>Areas around active fault traces where surface rupture must be considered before certain development. This is not a shaking forecast.</small>
-                            {% elif evidence.map_layer_key == 'liquefaction' %}
-                            <small>Areas where strong shaking may cause loose, wet soil to lose strength. The map does not predict whether a specific building will be damaged.</small>
-                            {% elif evidence.map_layer_key == 'earthquake-landslide' %}
-                            <small>Slopes where earthquake shaking may trigger landslides. Conditions outside mapped zones can still fail.</small>
-                            {% elif evidence.map_layer_key == 'tsunami' %}
-                            <small>Coastal areas used for tsunami hazard and evacuation planning. Follow official warnings and evacuation instructions during an event.</small>
-                            {% endif %}
-                            <div class="cgs-status">California Geological Survey · Official source, provisional StayReady integration</div>
-                            {% if evidence.source_url %}
-                            <a class="small d-inline-block mt-2" href="{{ evidence.source_url }}" target="_blank" rel="noopener noreferrer">Open official CGS source</a>
-                            {% endif %}
-                        </div>
-                        {% endfor %}
-                    </div>
-                </details>
-            </div>
-
-            <!-- Interactive Map -->
-            <div class="map-container">
-                <div class="map-header">
-                    <div class="map-title">
-                        <i class="fas fa-map"></i>
-                        <span>Multi-Hazard Risk Map</span>
-                    </div>
-                <div class="active-layers" id="active-layers">
-                        <div class="active-layer-badge">ZIP {{ zip_code }}</div>
-                        {% if has_precise_location %}
-                        <div class="active-layer-badge">Address Pin</div>
-                        {% endif %}
-                    </div>
-                </div>
-                <div id="map"></div>
-            </div>
-        </div>
-
-    </div>
-
-</div>
-
-{% endif %}
 <!-- Leaflet CSS & JS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/leaflet.css', v='1.9.4') }}" />
+<script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js', v='1.9.4') }}"></script>
 
 <script>
     // Global variables
@@ -1004,8 +794,8 @@
         }
 
         if (['empty', 'unavailable'].includes(layerRequestState[layerType])) {
-            setLayerFeedback(layerType, layerRequestState[layerType]);
-            return;
+            // A resident can explicitly retry a previously empty or failed layer.
+            layerRequestState[layerType] = 'idle';
         }
 
         setLoadingState(layerType, true);
@@ -1052,6 +842,7 @@
         }
         if (toggle) {
             toggle.dataset.layerState = state;
+            toggle.setAttribute('aria-pressed', toggle.classList.contains('active') ? 'true' : 'false');
         }
 
         const defaultMessages = {
@@ -1211,7 +1002,7 @@
                 
                 layers.wildfire = L.geoJSON(data, {
                     style: function(feature) {
-                        const hazClass = feature.properties.HAZ_CLASS || "Unknown";
+                        const hazClass = feature.properties.FHSZ_Description || feature.properties.HAZ_CLASS || "Unknown";
                         return {
                             color: getWildfireColor(hazClass),
                             weight: 2,
@@ -1220,11 +1011,17 @@
                         };
                     },
                     onEachFeature: (feature, layer) => {
-                        let popup = '<strong>Wildfire Hazard Zone</strong><br>';
-                        for (const key in feature.properties) {
-                            const val = feature.properties[key];
-                            if (val) popup += `<strong>${escapeHTML(key)}:</strong> ${escapeHTML(val)}<br>`;
-                        }
+                        const properties = feature.properties || {};
+                        const severity = properties.FHSZ_Description || properties.HAZ_CLASS || 'Unspecified';
+                        const isRecommendation = properties.AUTHORITY === 'calfire_2025_lra_recommendation';
+                        const authorityLabel = isRecommendation
+                            ? 'CAL FIRE 2025 LRA recommendation — local adoption not established here'
+                            : 'Effective CAL FIRE State Responsibility Area zone';
+                        let popup = `
+                            <strong>Fire Hazard Severity Zone: ${escapeHTML(severity)}</strong><br>
+                            <span>${escapeHTML(authorityLabel)}</span><br>
+                            <small>Hazard severity is not complete wildfire risk, a building assessment, or an evacuation order.</small>
+                        `;
                         layer.bindPopup(popup);
                     }
                 }).addTo(map);
@@ -1442,6 +1239,7 @@
         activeLayers.innerHTML = '';
         
         activeToggles.forEach(toggle => {
+            toggle.setAttribute('aria-pressed', 'true');
             const layerName = toggle.querySelector('span').textContent;
             if (!layerName.includes('Loading')) {
                 const badge = document.createElement('div');
@@ -1457,6 +1255,9 @@
             badge.textContent = 'No layers active';
             activeLayers.appendChild(badge);
         }
+        document.querySelectorAll('.layer-toggle:not(.active)').forEach(toggle => {
+            toggle.setAttribute('aria-pressed', 'false');
+        });
     }
 
     // Toggle risk focus (highlight specific risk card)
@@ -1542,17 +1343,66 @@
         initMap();
         updateActiveLayers();
 
-        document.querySelectorAll('.layer-toggle').forEach(toggle => {
-            toggle.setAttribute('role', 'button');
-            toggle.setAttribute('tabindex', '0');
-            toggle.addEventListener('keydown', event => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    toggle.click();
+        const mapPinButton = document.getElementById('map-pin-mode');
+        let mapPinMode = new URLSearchParams(window.location.search).get('placement') === '1';
+        if (mapPinButton) {
+            mapPinButton.setAttribute('aria-pressed', String(mapPinMode));
+            if (mapPinMode) {
+                mapPinButton.textContent = 'Click the map to place this location';
+                setLayerFeedback('zip', 'hidden', 'Click the map once to place a location point. You will confirm the resulting jurisdiction in the summary.');
+            }
+            mapPinButton.addEventListener('click', () => {
+                mapPinMode = !mapPinMode;
+                mapPinButton.setAttribute('aria-pressed', String(mapPinMode));
+                mapPinButton.textContent = mapPinMode
+                    ? 'Click the map to place this location'
+                    : 'Place a location point';
+                const status = document.getElementById('map-loading-status');
+                if (status) {
+                    status.textContent = mapPinMode
+                        ? 'Click the map once to place a location point.'
+                        : 'Map-pin placement canceled.';
                 }
             });
+        }
+
+        map.on('click', async event => {
+            if (!mapPinMode || !mapPinButton) {
+                return;
+            }
+            mapPinMode = false;
+            mapPinButton.disabled = true;
+            mapPinButton.setAttribute('aria-pressed', 'false');
+            mapPinButton.textContent = 'Verifying official jurisdiction…';
+            try {
+                const response = await fetch('/api/location/resolve', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        mode: 'map_pin',
+                        latitude: event.latlng.lat,
+                        longitude: event.latlng.lng
+                    })
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'The point could not be verified.');
+                }
+                window.location.assign('/risk_summary');
+            } catch (error) {
+                mapPinButton.disabled = false;
+                mapPinButton.textContent = 'Place a location point';
+                const status = document.getElementById('map-loading-status');
+                if (status) {
+                    status.textContent = error.message || 'The point could not be verified. Try another point or use ZIP fallback.';
+                }
+            }
         });
-        
+
         const userLat = {{ user_lat|tojson }};
         const userLon = {{ user_lon|tojson }};
         const hasPreciseLocation = {{ has_precise_location|tojson }};

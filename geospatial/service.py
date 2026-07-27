@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import os
 from pathlib import Path
 from typing import Optional
 
@@ -30,6 +31,15 @@ class GeospatialEvidenceService:
         if dataset is None:
             raise DatasetRegistryError(f"Dataset is not registered: {dataset_id}")
         point = GeoPoint(lat=lat, lon=lon)
+        if (
+            (os.getenv("STAYREADY_REQUIRE_VERIFIED_DATASETS") or "").strip() == "1"
+            and dataset.status != "verified"
+        ):
+            return self._not_checked(
+                dataset,
+                "This dataset is visibly withheld until a named human reviewer approves "
+                "this exact edition and its official-viewer comparison.",
+            )
         if dataset.coverage_bbox and not self._inside_coverage(point, dataset.coverage_bbox):
             return self._not_covered(dataset)
         if dataset.source_type == "local_snapshot":
@@ -51,6 +61,13 @@ class GeospatialEvidenceService:
             raise DatasetRegistryError(f"Dataset is not registered: {dataset_id}")
         if dataset.source_type != "remote_service":
             raise DatasetRegistryError("Map GeoJSON is only supported for remote services.")
+        if (
+            (os.getenv("STAYREADY_REQUIRE_VERIFIED_DATASETS") or "").strip() == "1"
+            and dataset.status != "verified"
+        ):
+            raise DatasetRegistryError(
+                "This map layer is withheld pending named human verification."
+            )
         point = GeoPoint(lat=lat, lon=lon)
         if dataset.coverage_bbox and not self._inside_coverage(point, dataset.coverage_bbox):
             raise DatasetRegistryError("The point is outside the registered dataset coverage.")

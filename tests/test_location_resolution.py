@@ -2,6 +2,8 @@ import unittest
 from unittest.mock import patch
 
 import app
+from county_location_service import LocationCandidate
+from pydantic_models import ResolvedLocation
 
 
 class FakeLocation:
@@ -16,6 +18,25 @@ class FakeLocation:
 class FakeGeocoder:
     def geocode(self, *args, **kwargs):
         return FakeLocation()
+
+
+def resolved_observatory():
+    return ResolvedLocation(
+        match_id="county-match-observatory",
+        normalized_display_address=(
+            "4183 Observatory Avenue, Oakland Hills, Oakland, "
+            "Alameda County, California, 94619, United States"
+        ),
+        latitude=37.7889314,
+        longitude=-122.1791837,
+        zip_code="94619",
+        incorporated_jurisdiction="Oakland",
+        match_type="address_point",
+        match_score=100,
+        precision="address_point",
+        provider="alameda_county_address_points",
+        boundary_version="city:test;unincorporated:test",
+    )
 
 
 class LocationResolutionTests(unittest.TestCase):
@@ -41,9 +62,23 @@ class LocationResolutionTests(unittest.TestCase):
         self.assertNotIn("4183;4191", display)
         self.assertNotIn("94613", display)
 
-    @patch("app.get_zip_from_coordinates", return_value="94619")
-    @patch("app.Nominatim", return_value=FakeGeocoder())
-    def test_geocode_address_returns_verified_display_address(self, _nominatim, _zip_lookup):
+    @patch("app.resolve_candidate", return_value=resolved_observatory())
+    @patch(
+        "app.suggest_locations",
+        return_value=[
+            LocationCandidate(
+                candidate_id="county-match-observatory",
+                display_label="4183 Observatory Avenue, Oakland, CA, 94619",
+                latitude=37.7889314,
+                longitude=-122.1791837,
+                zip_code="94619",
+                provider="alameda_county_address_points",
+                match_type="address_point",
+                match_score=100,
+            )
+        ],
+    )
+    def test_geocode_address_returns_verified_display_address(self, _suggest, _resolve):
         result = app.geocode_address("4183, Observatory Avenue, Oakland, CA")
         self.assertEqual(result[2], "94619")
         self.assertEqual(
@@ -55,18 +90,10 @@ class LocationResolutionTests(unittest.TestCase):
         )
 
     @patch(
-        "app.geocode_address",
-        return_value=(
-            37.7889314,
-            -122.1791837,
-            "94619",
-            (
-                "4183 Observatory Avenue, Oakland Hills, Oakland, "
-                "Alameda County, California, 94619, United States"
-            ),
-        ),
+        "app.resolve_address_input",
+        return_value=resolved_observatory(),
     )
-    def test_form_summary_uses_verified_zip_and_canonical_address(self, _geocode):
+    def test_form_summary_uses_verified_zip_and_canonical_address(self, _resolve):
         app.app.config.update(TESTING=True)
         with app.app.test_client() as client:
             response = client.post(
