@@ -38,7 +38,7 @@ For every scenario, confirm:
 - Should not claim: building safety or retrofit status.
 
 5. Fremont residential scenario
-- Expected top hazards: earthquake, flood, and wildfire/fire context from Tri-City planning only where a named external reviewer has approved the claim.
+- Expected top hazards: earthquake, flood, and wildfire/fire context from Tri-City planning only where the exact citation and scope completed the applicable beta review gate.
 - Expected guidance: if local structured facts are missing, county fallback language should be visible.
 - Should not claim: city-specific neighborhood risk without reviewed facts.
 

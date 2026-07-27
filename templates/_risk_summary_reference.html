@@ -33,7 +33,7 @@
             <div>
                 <span class="sr-section-kicker">Address-specific preparedness</span>
                 <h1>Your local hazard summary</h1>
-                <p>{% if is_zip_fallback %}Broad ZIP fallback context only—no address-level map findings are inferred.{% else %}What official maps and externally approved local-plan claims say about this location.{% endif %}</p>
+                <p>{% if is_zip_fallback %}Broad ZIP fallback context only—no address-level map findings are inferred.{% else %}What official maps and reviewed, citation-backed local-plan claims say about this location.{% endif %}</p>
             </div>
             <a class="btn sr-button sr-button-secondary" href="{{ url_for('home') }}#get-started">Change address</a>
         </div>

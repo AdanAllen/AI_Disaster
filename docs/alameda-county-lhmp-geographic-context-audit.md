@@ -5,6 +5,15 @@
 **Product boundary:** planning context only; never a property-risk calculation  
 **Implementation status:** design and source audit only; no production code, UI, or canonical Risk Summary contract was changed
 
+> **July 27, 2026 implementation update:** This document is a historical audit.
+> The San Leandro source blocker described below is resolved: the repository now
+> selects the City of San Leandro July 1, 2026 version 0.8 public review draft
+> LHMP. It remains explicitly draft, its adoption section is `TBD`, and the 2025
+> Environmental Hazards Element remains separate provenance. Current selection
+> policy is documented in `docs/lhmp-source-policy.md`: the newest official
+> publication may be used as jurisdiction planning context even when it is a
+> draft, with exact status labeling and no implication of adoption.
+
 ## 1. Executive conclusion
 
 The county cannot be represented honestly by one Oakland-shaped data model or one translated High/Medium/Low scale. The fifteen enabled registry entries use at least six materially different evidence patterns:

@@ -29,26 +29,27 @@ TRI_VALLEY_PAGE_RANGES = {
 
 SOURCE_ALIGNMENT = {
     "alameda": {
-        "status": "current_document_adoption_pending",
+        "status": "latest_official_draft_selected",
         "detail": (
-            "The current official PDF is the June 2026 Final Review Draft. Its "
-            "filename reports Cal OES approval, but local adoption and FEMA approval "
-            "have not been verified."
+            "The June 2026 Final Review Draft is the newest official publication. "
+            "It is eligible for draft-labeled planning context without implying "
+            "local adoption or FEMA approval."
         ),
     },
     "piedmont": {
-        "status": "adopted_with_draft_labeled_published_text",
+        "status": "latest_official_publication_status_discrepancy",
         "detail": (
             "The city reports Council adoption on March 2, 2026, but the official "
-            "plan page still links a PDF labeled as the 2025 public draft."
+            "plan page still links a PDF labeled as the 2025 public draft. Claims "
+            "must use the PDF's draft label unless adopted-text identity is proven."
         ),
     },
     "san-leandro": {
-        "status": "official_lhmp_pdf_unavailable",
+        "status": "latest_official_draft_selected",
         "detail": (
-            "The official LHMP page linked an unrelated civic-center directory on "
-            "2026-07-27. The archived 2025 Environmental Hazards Element is a "
-            "different document type and remains withheld."
+            "The project-owner supplied City of San Leandro version 0.8 public "
+            "review draft dated July 1, 2026. City identity is verified from the "
+            "document; adoption and FEMA approval are not established."
         ),
     },
 }
@@ -99,6 +100,98 @@ SUBSTANTIVE_MARKERS = (
     "located",
     "histor",
     "action",
+)
+
+SAN_LEANDRO_CURATED_CLAIMS = (
+    {
+        "hazard": "earthquake",
+        "pdf_page": 146,
+        "section": "5.4.4 Earthquake and Seismic Hazards",
+        "table_or_figure": None,
+        "excerpt": (
+            "The City is located close to one of the most seismically active faults "
+            "in the State of California: the Hayward Fault."
+        ),
+        "paraphrase": (
+            "The draft's citywide vulnerability assessment identifies the Hayward "
+            "Fault as a major seismic context for San Leandro."
+        ),
+        "limitation": (
+            "The plan's citywide scenario discussion is not a building assessment "
+            "or an address-level mapped finding."
+        ),
+    },
+    {
+        "hazard": "flood",
+        "pdf_page": 147,
+        "section": "5.4.5 Flooding",
+        "table_or_figure": "Table 5-4",
+        "excerpt": (
+            "The 100-year floodplain overlaps with 3,583 parcels and 24.0 miles of road."
+        ),
+        "paraphrase": (
+            "The draft reports that its mapped 100-year floodplain overlaps 3,583 "
+            "parcels and 24.0 miles of road at city scale."
+        ),
+        "limitation": (
+            "This is a draft-plan GIS summary; it does not determine whether a "
+            "particular address intersects an effective FEMA flood zone."
+        ),
+    },
+    {
+        "hazard": "landslide",
+        "pdf_page": 147,
+        "section": "5.4.6 Landslide",
+        "table_or_figure": None,
+        "excerpt": (
+            "Creep has verifiably damaged some City infrastructure – notably Lake "
+            "Chabot Road."
+        ),
+        "paraphrase": (
+            "The draft reports observed creep damage on Lake Chabot Road and keeps "
+            "that infrastructure concern separate from address-level landslide mapping."
+        ),
+        "limitation": (
+            "The observation is jurisdiction planning context and is not a forecast "
+            "for another road, slope, or property."
+        ),
+    },
+    {
+        "hazard": "tsunami",
+        "pdf_page": 147,
+        "section": "5.4.8 Tsunami",
+        "table_or_figure": "Table 5-5 begins on PDF page 148",
+        "excerpt": (
+            "As expected, the tsunami inundation zone exclusively applies to the San "
+            "Leandro coastline."
+        ),
+        "paraphrase": (
+            "The draft limits its tsunami-inundation discussion to the San Leandro "
+            "coastline and treats it as planning context, not a live warning."
+        ),
+        "limitation": (
+            "This draft-plan statement is not a live tsunami warning, evacuation "
+            "order, prediction, or property disclosure."
+        ),
+    },
+    {
+        "hazard": "dam_failure",
+        "pdf_page": 144,
+        "section": "5.4.3 Dam Inundation",
+        "table_or_figure": "Table 5-3 follows the cited discussion",
+        "excerpt": (
+            "there are three (3) “extremely high hazard dams” with inundation zones "
+            "that overlap with the City of San Leandro."
+        ),
+        "paraphrase": (
+            "The draft identifies three extremely high-hazard dam inundation "
+            "scenarios overlapping San Leandro without estimating failure probability."
+        ),
+        "limitation": (
+            "Hazard classification and hypothetical inundation extent do not state "
+            "failure probability or provide live evacuation direction."
+        ),
+    },
 )
 
 
@@ -170,6 +263,9 @@ def _within_plan_scope(slug: str, page: int) -> bool:
 
 
 def _pick_candidates(slug: str, records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    if slug == "san-leandro":
+        return _san_leandro_curated_candidates(records)
+
     ranked: list[tuple[int, str, dict[str, Any]]] = []
     for record in records:
         page = int(record.get("pdf_page", 0))
@@ -199,6 +295,78 @@ def _pick_candidates(slug: str, records: list[dict[str, Any]]) -> list[dict[str,
     return selected
 
 
+def _san_leandro_curated_candidates(
+    records: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    records_by_page: dict[int, list[dict[str, Any]]] = {}
+    for record in records:
+        records_by_page.setdefault(int(record.get("pdf_page", 0)), []).append(record)
+
+    selected = []
+    for specification in SAN_LEANDRO_CURATED_CLAIMS:
+        page_records = records_by_page.get(specification["pdf_page"], [])
+        page_text = _normalize(
+            " ".join(record.get("extracted_snippet", "") for record in page_records)
+        )
+        if _normalize(specification["excerpt"]) not in page_text:
+            raise ValueError(
+                "San Leandro curated excerpt not found on PDF page "
+                f"{specification['pdf_page']}: {specification['hazard']}"
+            )
+        source_document = page_records[0]["source_document"]
+        claim_id = hashlib.sha256(
+            (
+                f"san-leandro|{source_document}|{specification['pdf_page']}|"
+                f"{specification['hazard']}|{specification['excerpt']}"
+            ).encode()
+        ).hexdigest()[:16]
+        selected.append(
+            {
+                "claim_candidate_id": f"local_plan_claim_{claim_id}",
+                "hazard": specification["hazard"],
+                "claim_type": "jurisdiction_plan_context",
+                "geographic_scope": (
+                    "San Leandro jurisdiction-wide draft-plan context; "
+                    "not address-level evidence"
+                ),
+                "source_document": source_document,
+                "pdf_page": specification["pdf_page"],
+                "page_label": str(specification["pdf_page"]),
+                "printed_page": str(specification["pdf_page"]),
+                "section_heading": specification["section"],
+                "supporting_excerpt": specification["excerpt"],
+                "supporting_excerpt_word_count": len(
+                    specification["excerpt"].split()
+                ),
+                "candidate_paraphrase": specification["paraphrase"],
+                "permitted_public_claim": (
+                    "After citation and scope verification under the beta review "
+                    "policy, present only as clearly draft-labeled San Leandro "
+                    "jurisdiction planning context."
+                ),
+                "prohibited_claims": [
+                    "Do not treat this candidate as address-level evidence.",
+                    "Do not infer a property risk rating or probability.",
+                    "Do not describe the draft as adopted, final, FEMA-approved, or legally operative.",
+                    "Do not publish unless the citation is verified or keep it withheld.",
+                ],
+                "automated_verification_status": (
+                    "exact_excerpt_located_in_selected_source_pdf"
+                ),
+                "human_review_status": "pending_targeted_review",
+                "human_reviewer": None,
+                "human_reviewed_at": None,
+                "limitations": [
+                    specification["limitation"],
+                    "Source is version 0.8 public review draft dated July 1, 2026.",
+                    "Section 8 adoption documentation remains TBD.",
+                ],
+                "exact_table_or_figure": specification["table_or_figure"],
+            }
+        )
+    return selected
+
+
 def _to_claim_candidate(
     slug: str, hazard: str, record: dict[str, Any]
 ) -> dict[str, Any]:
@@ -219,6 +387,7 @@ def _to_claim_candidate(
         "source_document": record["source_document"],
         "pdf_page": int(record["pdf_page"]),
         "page_label": record.get("page_label") or None,
+        "printed_page": record.get("page_label") or str(record["pdf_page"]),
         "section_heading": record.get("section_heading") or None,
         "supporting_excerpt": excerpt,
         "supporting_excerpt_word_count": len(excerpt.replace("…", "").split()),
@@ -227,20 +396,21 @@ def _to_claim_candidate(
             "the jurisdiction's planning context."
         ),
         "permitted_public_claim": (
-            "After named human approval, present only as jurisdiction-level plan "
-            "context with this edition and page citation."
+            "After citation and scope verification under the beta review policy, "
+            "present only as jurisdiction-level plan context with this edition and "
+            "page citation."
         ),
         "prohibited_claims": [
             "Do not treat this candidate as address-level evidence.",
             "Do not infer a property risk rating or probability.",
-            "Do not publish before a named reviewer verifies the PDF page and scope.",
+            "Do not publish unless the citation is verified or keep it withheld.",
         ],
         "automated_verification_status": "source_pdf_text_located",
-        "human_review_status": "pending_external_review",
+        "human_review_status": "pending_targeted_review",
         "human_reviewer": None,
         "human_reviewed_at": None,
         "limitations": [
-            "Machine-selected excerpt; exact meaning and context require human review.",
+            "Machine-selected excerpt; exact meaning and context require targeted review.",
             "Plan status and edition must be reconfirmed against the official page.",
         ],
     }
@@ -272,19 +442,43 @@ def build_queue() -> dict[str, Any]:
             "adoption_status",
             local_plan["adoption_status"],
         )
+        publication_status = plan.get(
+            "publication_status",
+            "official_publication_status_unresolved",
+        )
+        is_draft = "draft" in publication_status
+        status_label = publication_status.replace("_", " ").title()
         for claim in claims:
+            if is_draft:
+                claim["prohibited_claims"].append(
+                    "Do not label this draft source as adopted, final, FEMA-approved, "
+                    "or legally operative."
+                )
+                if not any("draft" in item.lower() for item in claim["limitations"]):
+                    claim["limitations"].insert(
+                        0,
+                        f"Source status: {status_label}.",
+                    )
             claim.update(
                 {
                     "jurisdiction": local_plan["name"],
                     "plan_title": plan["plan_title"],
                     "edition": str(plan["plan_year"]),
                     "document_type": document_type,
+                    "publication_date": plan.get("publication_date"),
+                    "official_publication_status": publication_status,
+                    "source_status_label": status_label,
+                    "source_badge": (
+                        f"{status_label} · {plan.get('publication_date')}"
+                    ),
+                    "is_draft": is_draft,
+                    "selection_reason": plan.get("selection_reason"),
                     "adopted_draft_status": adopted_draft_status,
                     "adoption_evidence": plan.get("adoption_evidence"),
                     "official_url": official_url,
                     "exact_section": claim.get("section_heading"),
-                    "exact_table_or_figure": None,
-                    "external_review_status": "pending_named_claim_review",
+                    "exact_table_or_figure": claim.get("exact_table_or_figure"),
+                    "external_review_status": "pending_targeted_review",
                 }
             )
         source_alignment = SOURCE_ALIGNMENT.get(
@@ -303,22 +497,18 @@ def build_queue() -> dict[str, Any]:
                 "jurisdiction_name": local_plan["name"],
                 "plan_title": plan["plan_title"],
                 "plan_year": plan["plan_year"],
-                "adoption_status": local_plan["adoption_status"],
+                "adoption_status": adopted_draft_status,
+                "publication_date": plan.get("publication_date"),
+                "document_type": document_type,
+                "official_publication_status": publication_status,
+                "selection_reason": plan.get("selection_reason"),
+                "is_draft": is_draft,
                 "official_page": local_plan["url"],
                 "local_pdf_path": plan["local_pdf_path"],
                 "source_checked_at": local_plan["source_checked_at"],
                 "source_alignment": source_alignment,
                 "automated_claim_candidate_count": len(claims),
-                "publication_status": (
-                    "withheld_source_mismatch"
-                    if source_alignment["status"]
-                    in {
-                        "superseded_local_pdf",
-                        "different_document_type",
-                        "official_lhmp_pdf_unavailable",
-                    }
-                    else "withheld_pending_external_review"
-                ),
+                "publication_status": "withheld_pending_targeted_review",
                 "tri_valley_pdf_page_range": TRI_VALLEY_PAGE_RANGES.get(slug),
                 "claims": claims,
             }
@@ -328,10 +518,14 @@ def build_queue() -> dict[str, Any]:
         "schema_version": 1,
         "generated_at": datetime.now(UTC).isoformat(),
         "purpose": (
-            "Machine-generated citation queue for named human review; these records "
-            "are not approved public claims."
+            "Machine-generated citation queue for exact citation checks and targeted "
+            "human sampling; these records are not approved public claims."
         ),
-        "publication_status": "withheld_pending_external_review",
+        "selection_policy": (
+            "Use each jurisdiction's latest official publication. Official drafts "
+            "are eligible only as visibly draft-labeled jurisdiction planning context."
+        ),
+        "publication_status": "withheld_pending_targeted_review",
         "jurisdiction_count": len(jurisdictions),
         "candidate_claim_count": sum(
             item["automated_claim_candidate_count"] for item in jurisdictions
@@ -369,7 +563,7 @@ def main() -> int:
         )
     print(
         f"Local-plan queue: {result['candidate_claim_count']} candidates across "
-        f"{result['jurisdiction_count']} jurisdictions; all withheld for human review."
+        f"{result['jurisdiction_count']} jurisdictions; all withheld for targeted review."
     )
     return 0
 

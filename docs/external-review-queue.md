@@ -31,9 +31,14 @@ decision. The script must never fill those fields.
 ## 2. Local-plan claims: jurisdiction reviewer queue
 
 Automation located 75 citation candidates—five for each jurisdiction—with a PDF
-page, short excerpt, hazard tag, scope, and prohibited claims. Every candidate is
-withheld in `data/lhmp/claim_candidates.json`; `local_plans.json` still contains
-zero approved claim records.
+page, short excerpt, hazard tag, source-status badge, scope, and prohibited
+claims. Every candidate is withheld in `data/lhmp/claim_candidates.json`;
+`local_plans.json` still contains zero approved claim records.
+
+Source selection follows the latest-official-publication policy: the newest
+official jurisdiction publication is selected even when it is a draft. Drafts
+must remain visibly draft-labeled in every source badge, citation, limitation,
+and claim record. Adoption is not itself a beta publication requirement.
 
 The repository also contains 63 Oakland sub-area table records and five Oakland
 citywide hazard-ranking records from the draft 2026–2031 plan. Earlier automated
@@ -56,30 +61,35 @@ recorded.
 | Oakland | 2021–2026 plan adopted; 2026–2031 plan remains draft | Draft 2026 plan | 5 | Keep adopted and draft claims distinct; verify current Council status |
 | Piedmont | Updated plan adopted 2026-03-02 after reported Cal OES/FEMA review | Current linked 721-page text imported, but it remains draft-labeled | 5 | Confirm the published text is identical to the adopted plan; then review five regenerated citations |
 | Pleasanton | Tri-Valley plan adopted 2024-02-20; FEMA approved 2023-12-15 | Pages 84–113 only | 5 | Verify annex range and citations |
-| San Leandro | 2025 Environmental Hazards Element adopted; 2026 LHMP public review closed 2026-07-21 | Official LHMP link returned an unrelated civic-center directory; element remains separate and withheld | 5 | Obtain the correct draft/final LHMP from the City; do not review element candidates as LHMP claims |
+| San Leandro | City LHMP version 0.8 public review draft dated 2026-07-01; adoption section is TBD | Project-owner supplied, City-branded 253-page LHMP imported; 2025 Environmental Hazards Element remains separate provenance | 5 | Verify the five exact draft citations and, when available, record an official direct-PDF URL; do not imply adoption or FEMA approval |
 | Union City | Tri-City plan is FEMA-approved; Union City adoption record not established | City annex | 5 | Locate Union City resolution and verify Annex C citations |
 
-For every approved claim, the reviewer must verify: jurisdiction, geographic
-scope, exact PDF page and table/section, plan edition, adopted/draft status,
-faithful paraphrase, limitation, and whether the source supports publication.
+For a beta-reviewed batch, targeted human sampling must verify jurisdiction,
+geographic scope, exact PDF page and table/section, plan edition, draft/adopted
+status, faithful paraphrase, limitation, and whether sampled evidence supports
+the documented publication decision. Ambiguous or high-impact claims require
+individual review. Unsampled or unresolved claims remain withheld.
 
-## 3. Spanish and language access
+## 3. English public-beta language review
 
-- Professional safety translation and in-context review are still missing.
-- `data/i18n/critical_journey.json` must not set Spanish to
-  `professionally_reviewed` until a named translator signs off on every required
-  key, errors, privacy copy, limitations, and emergency warnings.
-- Arabic, Chinese, Farsi, Tagalog, and Vietnamese remain key-structure work for
-  general availability, not a beta launch claim.
+- A named reviewer must approve the complete English critical journey, including
+  errors, privacy copy, limitations, and emergency warnings.
+- Spanish is disabled and is not a blocker for the English-only initial beta.
+- Professional Spanish translation, in-context review, and Spanish usability
+  testing remain required for the later Spanish release.
+- Arabic, Chinese, Farsi, Tagalog, and Vietnamese remain later milestones.
 
 ## 4. Accessibility and resident usability
 
 - Complete an independent WCAG 2.2 AA audit with keyboard, VoiceOver/NVDA,
   200% zoom, high contrast, reduced motion, error recovery, print, and slow
   network. Close every critical and serious finding.
-- Complete the 30-session resident protocol in
-  `docs/resident-research-plan.md`, including the required Spanish and access-needs
-  cohorts. Store participant IDs, not addresses or diagnoses.
+- Complete the eight-session English beta round in
+  `docs/resident-research-plan.md`: four county regions, three access-needs
+  participants, a findings report, and no unresolved critical comprehension or
+  safety issue.
+- Retain the 30-session, Spanish-inclusive study as a later language-access and
+  general-availability milestone.
 - Record responsive evidence at 320, 375, 430, 768, 1024, and 1440 CSS pixels.
 
 ## 5. Operations, privacy, and rollout

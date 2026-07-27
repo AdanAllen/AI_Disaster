@@ -17,16 +17,27 @@ def test_local_plan_queue_covers_all_jurisdictions_without_fake_approval():
 
     assert queue["jurisdiction_count"] == 15
     assert queue["candidate_claim_count"] >= 45
-    assert queue["publication_status"] == "withheld_pending_external_review"
+    assert queue["publication_status"] == "withheld_pending_targeted_review"
+    assert "latest official publication" in queue["selection_policy"]
 
     for jurisdiction in queue["jurisdictions"]:
         assert jurisdiction["automated_claim_candidate_count"] >= 3
         assert jurisdiction["publication_status"].startswith("withheld_")
+        assert jurisdiction["selection_reason"] in {
+            "latest_official_publication",
+            "latest_official_draft",
+            "current_adopted_plan",
+            "official_source_unresolved",
+        }
         for claim in jurisdiction["claims"]:
             assert claim["pdf_page"] > 0
+            assert claim["printed_page"]
             assert 0 < claim["supporting_excerpt_word_count"] <= 22
-            assert claim["automated_verification_status"] == "source_pdf_text_located"
-            assert claim["human_review_status"] == "pending_external_review"
+            assert claim["automated_verification_status"] in {
+                "source_pdf_text_located",
+                "exact_excerpt_located_in_selected_source_pdf",
+            }
+            assert claim["human_review_status"] == "pending_targeted_review"
             assert claim["human_reviewer"] is None
             assert claim["human_reviewed_at"] is None
             assert "not address-level evidence" in claim["geographic_scope"]
@@ -35,6 +46,11 @@ def test_local_plan_queue_covers_all_jurisdictions_without_fake_approval():
                 "plan_title",
                 "edition",
                 "document_type",
+                "publication_date",
+                "official_publication_status",
+                "source_status_label",
+                "source_badge",
+                "selection_reason",
                 "adopted_draft_status",
                 "official_url",
                 "exact_section",
@@ -61,26 +77,56 @@ def test_tri_valley_candidates_stay_inside_their_annex_ranges():
         )
 
 
-def test_known_plan_source_mismatches_are_withheld():
+def test_latest_official_drafts_are_selected_but_remain_withheld():
     jurisdictions = {
         item["jurisdiction_id"]: item for item in load_queue()["jurisdictions"]
     }
 
     assert (
         jurisdictions["alameda"]["source_alignment"]["status"]
-        == "current_document_adoption_pending"
+        == "latest_official_draft_selected"
     )
     assert (
         jurisdictions["piedmont"]["source_alignment"]["status"]
-        == "adopted_with_draft_labeled_published_text"
+        == "latest_official_publication_status_discrepancy"
     )
     assert (
         jurisdictions["san_leandro"]["source_alignment"]["status"]
-        == "official_lhmp_pdf_unavailable"
+        == "latest_official_draft_selected"
     )
-    assert jurisdictions["alameda"]["publication_status"] == "withheld_pending_external_review"
-    assert jurisdictions["piedmont"]["publication_status"] == "withheld_pending_external_review"
-    assert jurisdictions["san_leandro"]["publication_status"] == "withheld_source_mismatch"
+    for jurisdiction_id in ("alameda", "piedmont", "san_leandro"):
+        assert (
+            jurisdictions[jurisdiction_id]["publication_status"]
+            == "withheld_pending_targeted_review"
+        )
+
+
+def test_san_leandro_uses_exact_public_review_draft_citations():
+    jurisdiction = next(
+        item
+        for item in load_queue()["jurisdictions"]
+        if item["jurisdiction_id"] == "san_leandro"
+    )
+
+    assert jurisdiction["plan_title"].endswith("Public Review Draft")
+    assert jurisdiction["publication_date"] == "2026-07-01"
+    assert jurisdiction["official_publication_status"] == "public_review_draft"
+    assert jurisdiction["selection_reason"] == "latest_official_draft"
+    assert jurisdiction["is_draft"] is True
+    assert jurisdiction["automated_claim_candidate_count"] == 5
+    assert {claim["hazard"] for claim in jurisdiction["claims"]} == {
+        "earthquake",
+        "flood",
+        "landslide",
+        "tsunami",
+        "dam_failure",
+    }
+    for claim in jurisdiction["claims"]:
+        assert claim["source_status_label"] == "Public Review Draft"
+        assert claim["is_draft"] is True
+        assert claim["exact_section"]
+        assert "draft" in " ".join(claim["limitations"]).lower()
+        assert "adopted" not in claim["source_status_label"].lower()
 
 
 def test_claim_queue_builder_validates_without_writing():
@@ -97,7 +143,7 @@ def test_claim_queue_builder_validates_without_writing():
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "all withheld for human review" in result.stdout
+    assert "all withheld for targeted review" in result.stdout
 
 
 def test_automated_oakland_page_checks_are_not_human_approvals():

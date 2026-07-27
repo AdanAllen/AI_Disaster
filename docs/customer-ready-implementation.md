@@ -1,9 +1,13 @@
 # Customer-ready implementation status
 
-StayReady is being prepared as an independent Alameda County preparedness public
-beta. The repository now has stronger technical contracts, but the product is
-**not approved to launch**. It is not an alert, evacuation-order, engineering,
-insurance, or emergency-response service.
+StayReady is being prepared as an independent, English-only Alameda County
+preparedness public beta. The repository now has stronger technical contracts,
+but the product is **not approved to launch**. It is not an alert,
+evacuation-order, engineering, insurance, legal-disclosure, property-risk, or
+emergency-response service.
+
+The initial beta does not claim bilingual support. Professionally reviewed
+Spanish and Spanish usability work belong to a later language-access release.
 
 ## Implemented
 
@@ -23,21 +27,41 @@ insurance, or emergency-response service.
 - CAL FIRE evidence now resolves SRA/LRA/FRA applicability first, keeps effective
   SRA and 2025 LRA recommendation geometry separate, and withholds every LRA
   adoption claim pending ordinance evidence.
-- A 75-item local-plan citation queue covers all 15 jurisdictions. It identifies
-  superseded or mismatched local documents and withholds every machine-selected
-  claim pending named review.
+- A 75-item local-plan citation queue covers all 15 jurisdictions. The selected
+  source is each jurisdiction's latest official publication. Official drafts
+  are eligible as current planning context only with visible draft status,
+  exact citations, and no implication of adoption or final authority.
+- The July 1, 2026 City of San Leandro LHMP version 0.8 public review draft is
+  the selected San Leandro source. Its adoption section remains `TBD`, and the
+  separate 2025 Environmental Hazards Element is retained only as provenance.
 - Source schemas and local checksums are monitored without automatically promoting claims.
 - Native map controls, coordinate-free text alternatives, self-hosted core UI/map dependencies, report-only CSP, CSRF, readiness checks, and privacy-safe aggregate analytics are in place.
 - Paid production and staging Render blueprints are defined, including shared state and nightly source monitoring.
 
-## Gates that require people or credentials
+## Initial English public-beta gates
 
 - A named emergency-management/GIS reviewer must complete and sign the evidence gold set.
-- A professional translator must complete and approve every Spanish critical-journey key in context.
-- Thirty resident sessions must be completed across all six county regions and required access/language cohorts.
+- A named reviewer must approve the complete English safety-critical journey.
+- At least eight English usability sessions must cover four county regions,
+  including three access-needs participants, with a findings report and no open
+  critical comprehension or safety issue.
 - An independent WCAG 2.2 AA audit must close all critical and serious findings.
 - Render, ArcGIS, monitoring, domain, and rollback credentials must be configured by an authorized operator.
 - Production rollout must use 5%, 25%, and 100% stages with a 48-hour review at each stage.
+
+Unreviewed local-plan candidates may remain withheld without blocking the beta.
+Any displayed plan claim must have exact source status and citation, faithful
+wording, preserved scope and limitations, and the required beta review evidence.
+Formal adoption is not required when the newest official publication is a
+clearly labeled draft.
+
+## Later language-access milestone
+
+- Complete and professionally review the Spanish critical journey.
+- Conduct Spanish usability sessions.
+- Enable Spanish resident-facing controls only after those gates pass.
+- Treat Arabic, Chinese, Farsi, Tagalog, Vietnamese, and other county languages
+  as separately reviewed future milestones.
 
 External approval state is recorded in `data/release_approvals.json`. Its initial
 values are deliberately pending; only evidence from a real named reviewer,

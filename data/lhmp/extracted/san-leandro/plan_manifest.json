@@ -1,29 +1,33 @@
 {
   "schema_version": 1,
   "city": "san-leandro",
-  "source_document": "san-leandro-environmental-hazards-element-2025.pdf",
-  "source_pdf_path": "data/raw/lhmps/san-leandro/san-leandro-environmental-hazards-element-2025.pdf",
+  "source_document": "san-leandro-lhmp-2026-07-01-public-review-draft.pdf",
+  "source_pdf_path": "data/raw/lhmps/san-leandro/san-leandro-lhmp-2026-07-01-public-review-draft.pdf",
   "markdown_path": "",
-  "source_url": "https://www.sanleandro.org/332/General-Plan",
-  "source_pdf_sha256": "067ff6bd9d177c808c51b72cbe66372fd36595ac797e31953065a00894061008",
-  "source_pdf_size_bytes": 2847322,
-  "pdf_page_count": 84,
-  "extracted_at": "2026-06-13T04:18:29.054562Z",
+  "source_url": "https://www.sanleandro.org/HazardMitigation",
+  "source_pdf_sha256": "c3019c3740e5c6a82fafd2d16edb3063ef99f9894765150597d24546aac96f94",
+  "source_pdf_size_bytes": 10509255,
+  "pdf_page_count": 253,
+  "extracted_at": "2026-07-27T21:27:19.633161Z",
   "extractor_version": "1.0.0",
   "pymupdf_version": "1.27.2.3",
   "hazard_filter": null,
   "rendered_pdf_pages": [
-    3,
-    4,
     5,
     9,
     10,
-    35,
-    41,
-    42
+    14,
+    15,
+    16,
+    18,
+    19,
+    20,
+    21,
+    22,
+    24
   ],
   "warnings": [
-    "Visual page limit reached (8); 3 likely pages were not rendered."
+    "Visual page limit reached (12); 103 likely pages were not rendered."
   ],
   "review_status": "candidate"
 }

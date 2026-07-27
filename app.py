@@ -721,11 +721,13 @@ def get_local_plan_for_context(location_context):
 
 def get_additional_local_hazards(location_context, shown_hazards=None, limit=6):
     plan = get_local_plan_for_context(location_context)
+    publishable_review_statuses = {"beta_context_reviewed", "externally_reviewed"}
     if (
         not plan
-        or plan.get("review_status") != "externally_reviewed"
+        or plan.get("review_status") not in publishable_review_statuses
         or not plan.get("human_reviewer")
         or not plan.get("human_reviewed_at")
+        or not plan.get("review_evidence")
     ):
         return []
 
@@ -739,11 +741,35 @@ def get_additional_local_hazards(location_context, shown_hazards=None, limit=6):
     priority_index = {hazard: index for index, hazard in enumerate(priority_order)}
 
     candidates = []
-    for hazard_id in plan.get("hazards", []):
+    for claim in plan.get("claim_records", []):
+        if claim.get("publication_status") != "approved_for_context":
+            continue
+        if not all(
+            claim.get(field)
+            for field in (
+                "hazard",
+                "source_document",
+                "pdf_page",
+                "candidate_paraphrase",
+                "source_status_label",
+            )
+        ):
+            continue
+        if claim.get("is_draft") and "draft" not in claim["source_status_label"].lower():
+            continue
+        hazard_id = claim["hazard"]
         normalized = slugify_hazard_name(hazard_id).replace("-", "_")
         if normalized in excluded or normalized == "all":
             continue
         label = ADDITIONAL_HAZARD_LABELS.get(normalized, hazard_id.replace("_", " ").title())
+        source_reference = (
+            f"{claim['source_document']}, PDF page {claim['pdf_page']}"
+        )
+        review_description = (
+            "targeted English-beta citation review"
+            if plan.get("review_status") == "beta_context_reviewed"
+            else "named external review"
+        )
         candidates.append({
             "hazard_id": normalized,
             "label": label,
@@ -752,8 +778,19 @@ def get_additional_local_hazards(location_context, shown_hazards=None, limit=6):
             "review_status": plan.get("review_status", "draft"),
             "plan_name": plan.get("plan_name"),
             "plan_url": plan.get("url"),
-            "why_shown": f"{label} is included because a named external reviewer approved the cited local-plan claim for {city}.",
-            "limitations": "This is not one of the current address-level GIS checks. It is local source context, not a property finding.",
+            "source_status_label": claim["source_status_label"],
+            "source_reference": source_reference,
+            "is_draft": bool(claim.get("is_draft")),
+            "finding": claim["candidate_paraphrase"],
+            "why_shown": (
+                f"{label} is included as jurisdiction planning context after "
+                f"{review_description}; source: {source_reference}."
+            ),
+            "limitations": (
+                f"{claim.get('limitation') or 'This is jurisdiction-level planning context.'} "
+                "It is not an address-level GIS check, property finding, live alert, "
+                "or overall risk rating."
+            ),
             "next_step": ADDITIONAL_HAZARD_CONTEXT.get(normalized, "Review the local plan source and official guidance before making address-level claims."),
             "priority_rank": priority_index.get(normalized, 999),
         })

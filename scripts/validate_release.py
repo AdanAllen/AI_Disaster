@@ -98,6 +98,20 @@ def validate(public_beta=False):
     required_keys = set(catalog["required_keys"])
     if not required_keys.issubset(catalog["locales"]["en"]["messages"]):
         errors.append("English critical-journey catalog is incomplete")
+    enabled_locales = {
+        locale
+        for locale, record in catalog["locales"].items()
+        if record.get("resident_facing_enabled") is True
+    }
+    beta_locales = set(
+        catalog.get("release_scopes", {})
+        .get("initial_public_beta", {})
+        .get("enabled_locales", [])
+    )
+    if enabled_locales != {"en"} or beta_locales != {"en"}:
+        errors.append("initial public beta must expose English and no other locale")
+    if catalog["locales"]["es"].get("resident_facing_enabled") is not False:
+        errors.append("unreviewed Spanish must remain disabled")
 
     fixtures = load_json("data/location_acceptance_fixtures.json")
     fixture_cities = {
@@ -151,6 +165,28 @@ def validate(public_beta=False):
     if report_summary.get("failed") != 0 or report_summary.get("total") != 40:
         errors.append("deterministic mapped-evidence report is not green for all 40 cases")
 
+    plan_registry = load_json("data/lhmp/plan_registry.json")
+    if len(plan_registry) != 15:
+        errors.append("local-plan source registry must contain 15 selected publications")
+    for plan in plan_registry:
+        for field in (
+            "publication_date",
+            "document_type",
+            "publication_status",
+            "selection_reason",
+            "retrieval_date",
+            "limitations",
+        ):
+            if not plan.get(field):
+                errors.append(f"{plan.get('city')}: selected plan is missing {field}")
+        if plan.get("selection_reason") not in {
+            "latest_official_publication",
+            "latest_official_draft",
+            "current_adopted_plan",
+            "official_source_unresolved",
+        }:
+            errors.append(f"{plan.get('city')}: invalid plan selection reason")
+
     plan_queue = load_json("data/lhmp/claim_candidates.json")
     if plan_queue.get("jurisdiction_count") != 15:
         errors.append("local-plan claim queue must cover all 15 jurisdictions")
@@ -161,7 +197,7 @@ def validate(public_beta=False):
             )
         for claim in jurisdiction.get("claims", []):
             if (
-                claim.get("human_review_status") != "pending_external_review"
+                claim.get("human_review_status") != "pending_targeted_review"
                 or claim.get("human_reviewer") is not None
                 or claim.get("human_reviewed_at") is not None
             ):
@@ -169,6 +205,35 @@ def validate(public_beta=False):
                     f"{claim.get('claim_candidate_id')}: automated claim was presented "
                     "as human-reviewed"
                 )
+            for field in (
+                "publication_date",
+                "official_publication_status",
+                "source_status_label",
+                "source_badge",
+                "selection_reason",
+                "printed_page",
+            ):
+                if claim.get(field) in (None, ""):
+                    errors.append(
+                        f"{claim.get('claim_candidate_id')}: missing source-status field {field}"
+                    )
+            if claim.get("is_draft"):
+                label_text = " ".join(
+                    str(claim.get(field, ""))
+                    for field in (
+                        "source_status_label",
+                        "source_badge",
+                        "adopted_draft_status",
+                    )
+                ).lower()
+                if "draft" not in label_text:
+                    errors.append(
+                        f"{claim.get('claim_candidate_id')}: draft lacks visible draft label"
+                    )
+                if claim.get("official_publication_status") == "adopted":
+                    errors.append(
+                        f"{claim.get('claim_candidate_id')}: draft was labeled adopted"
+                    )
 
     oakland_context = load_json("data/hazard_priority/sub_area_evidence.json")
     if oakland_context.get("review_gate", {}).get(
@@ -201,39 +266,26 @@ def validate(public_beta=False):
         errors.append("release policy must keep automated checks separate from external approval")
 
     if public_beta:
-        spanish = catalog["locales"]["es"]
+        english = catalog["locales"]["en"]
+        english_approval = release_approvals.get("english_critical_journey", {})
         if (
-            spanish["review_status"] != "professionally_reviewed"
-            or not required_keys.issubset(spanish["messages"])
+            english["review_status"] != "reviewed_for_english_public_beta"
+            or english_approval.get("status") != "approved"
+            or not english_approval.get("named_reviewer")
+            or not english_approval.get("reviewed_at")
+            or not english_approval.get("evidence_reference")
         ):
-            errors.append("Spanish critical journey lacks professional approval")
+            errors.append("English critical journey lacks documented safety review")
         if any(dataset.status not in {"verified", "data_unavailable"} for dataset in datasets):
             errors.append("mapped datasets must be verified or explicitly unavailable")
-        plans = load_json("local_plans.json")
         if any(
-            plan.get("review_status") != "externally_reviewed"
-            or not plan.get("human_reviewer")
-            or not plan.get("human_reviewed_at")
-            for plan in plans
-        ):
-            errors.append("one or more local-plan jurisdictions still need claim review")
-        if any(
-            jurisdiction.get("publication_status")
-            != "approved_for_publication"
+            not (
+                str(jurisdiction.get("publication_status", "")).startswith("withheld_")
+                or jurisdiction.get("publication_status") == "approved_for_publication"
+            )
             for jurisdiction in plan_queue.get("jurisdictions", [])
         ):
-            errors.append("local-plan candidate queue still requires external approval")
-        if any(
-            record.get("review_status") != "externally_reviewed"
-            for record in oakland_context.get("records", [])
-        ):
-            errors.append("Oakland sub-area plan context still requires external approval")
-        if any(
-            record.get("jurisdiction") != "test_jurisdiction"
-            and record.get("review_status") != "externally_reviewed"
-            for record in ranking_context.get("records", [])
-        ):
-            errors.append("citywide plan rankings still require external approval")
+            errors.append("local-plan claim publication state is not fail-closed")
         methodology = release_approvals.get("mapped_methodology", {})
         if (
             methodology.get("status") != "approved"
@@ -242,15 +294,23 @@ def validate(public_beta=False):
             or not methodology.get("evidence_reference")
         ):
             errors.append("mapped-data methodology lacks named external approval")
-        research = release_approvals.get("resident_research", {})
+        research = (
+            release_approvals.get("resident_research", {})
+            .get("english_public_beta", {})
+        )
         if (
             research.get("status") != "complete"
-            or research.get("completed_sessions", 0) < 30
-            or research.get("spanish_preferring_sessions", 0) < 10
-            or research.get("access_needs_sessions", 0) < 8
+            or research.get("completed_sessions", 0)
+            < research.get("minimum_sessions", 8)
+            or research.get("county_regions_represented", 0)
+            < research.get("minimum_county_regions", 4)
+            or research.get("access_needs_sessions", 0)
+            < research.get("minimum_access_needs_sessions", 3)
+            or research.get("critical_comprehension_or_safety_findings_open") != 0
+            or not research.get("findings_reference")
             or not research.get("approved_by")
         ):
-            errors.append("resident usability session requirements are incomplete")
+            errors.append("English public-beta usability round is incomplete")
         accessibility = release_approvals.get("accessibility", {})
         if (
             accessibility.get("status") != "passed"

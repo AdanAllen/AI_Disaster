@@ -1,8 +1,34 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "policy": {
     "automated_checks_are_external_approval": false,
-    "note": "Only evidence supplied by a real, named reviewer or authorized operator may change these gates."
+    "initial_public_beta_scope": "English-only Alameda County public beta",
+    "note": "Only evidence supplied by a real, named reviewer, research owner, auditor, or authorized operator may complete a human or operational gate."
+  },
+  "release_scopes": {
+    "english_public_beta": {
+      "status": "pending",
+      "enabled_locales": ["en"],
+      "spanish_is_launch_blocker": false,
+      "multilingual_support_claim_allowed": false
+    },
+    "future_spanish_release": {
+      "status": "planned",
+      "enabled_locales": [],
+      "professional_translation_required": true,
+      "spanish_usability_required": true
+    },
+    "future_multilingual_general_availability": {
+      "status": "planned",
+      "enabled_locales": [],
+      "additional_languages_require_separate_review": true
+    }
+  },
+  "english_critical_journey": {
+    "status": "pending_safety_review",
+    "named_reviewer": null,
+    "reviewed_at": null,
+    "evidence_reference": null
   },
   "mapped_methodology": {
     "status": "pending_external_review",
@@ -11,12 +37,29 @@
     "evidence_reference": null
   },
   "resident_research": {
-    "status": "planned",
-    "completed_sessions": 0,
-    "spanish_preferring_sessions": 0,
-    "access_needs_sessions": 0,
-    "approved_by": null,
-    "evidence_reference": "docs/resident-research-plan.md"
+    "english_public_beta": {
+      "status": "planned",
+      "minimum_sessions": 8,
+      "completed_sessions": 0,
+      "minimum_county_regions": 4,
+      "county_regions_represented": 0,
+      "minimum_access_needs_sessions": 3,
+      "access_needs_sessions": 0,
+      "critical_comprehension_or_safety_findings_open": null,
+      "findings_reference": null,
+      "approved_by": null,
+      "evidence_reference": "docs/resident-research-plan.md"
+    },
+    "future_language_access_and_broader_research": {
+      "status": "planned",
+      "minimum_sessions": 30,
+      "completed_sessions": 0,
+      "minimum_spanish_preferring_sessions": 10,
+      "spanish_preferring_sessions": 0,
+      "minimum_access_needs_sessions": 8,
+      "access_needs_sessions": 0,
+      "evidence_reference": "docs/resident-research-plan.md"
+    }
   },
   "accessibility": {
     "status": "pending_independent_audit",

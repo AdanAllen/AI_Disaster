@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generated_at": "2026-07-27",
-  "policy": "Checksums and source identities are technical controls, not plan-status or claim approval. Drafts, annexes, and non-LHMP documents remain distinct.",
+  "policy": "Select each jurisdiction's latest official publication. Official drafts are eligible for planning context only with visible draft labels and without implying adoption, final approval, or legal authority. Checksums and source identities are technical controls, not claim approval.",
   "jurisdiction_count": 15,
   "externally_approved_claim_count": 0,
   "sources": [
@@ -10,7 +10,10 @@
       "slug": "alameda-county",
       "plan_title": "Alameda County Hazard Mitigation Plan",
       "edition": "2022",
-      "document_type": "local_hazard_mitigation_plan_or_annex_requires_review",
+      "publication_date": "2022",
+      "document_type": "county_local_hazard_mitigation_plan",
+      "publication_status": "adopted",
+      "selection_reason": "current_adopted_plan",
       "adoption_status": "adoption details require official-jurisdiction confirmation",
       "adoption_evidence": null,
       "official_page_url": "https://www.acgov.org/cda/planning/generalplans/2022-hazard-mitigation-plan.htm",
@@ -19,8 +22,12 @@
       "pdf_sha256": "a5bbb3f6dbfd8f0849d8c1c56c6c7a615c487dd040d55f6b2e8c560800dec4eb",
       "pdf_bytes": 10234872,
       "source_checked_at": "2026-07-27",
+      "retrieval_date": "2026-07-27",
       "supersedes": null,
-      "publication_status": "withheld_pending_named_claim_review",
+      "claim_publication_status": "withheld_pending_targeted_review",
+      "limitations": [
+        "Countywide planning context; city and community annex scope must remain explicit."
+      ],
       "notes": "Countywide plan retained as a regional reference; city plans and annexes are audited separately."
     },
     {
@@ -28,7 +35,10 @@
       "slug": "alameda",
       "plan_title": "Climate Adaptation and Hazard Mitigation Plan \u2014 Final Review Draft",
       "edition": "2026",
+      "publication_date": "2026-06",
       "document_type": "final_review_draft",
+      "publication_status": "final_review_draft",
+      "selection_reason": "latest_official_draft",
       "adoption_status": "Cal OES approved filename; document identifies itself as June 2026 Final Review Draft; local adoption and FEMA approval not verified",
       "adoption_evidence": null,
       "official_page_url": "https://www.alamedaca.gov/Departments/Planning-Building-and-Transportation/Sustainability-and-Resilience/Climate-Adaptation-and-Hazard-Mitigation-Plan",
@@ -37,8 +47,12 @@
       "pdf_sha256": "84577a65fa6c7ee4fe641f71c79264642368b63e12ebd785595adce8cd8812c3",
       "pdf_bytes": 60897071,
       "source_checked_at": "2026-07-27",
+      "retrieval_date": "2026-07-27",
       "supersedes": "data/raw/lhmps/alameda/alameda-cahmp-2022.pdf",
-      "publication_status": "withheld_pending_named_claim_review",
+      "claim_publication_status": "withheld_pending_targeted_review",
+      "limitations": [
+        "Newest City publication is a final review draft; local adoption and FEMA approval are not established."
+      ],
       "notes": "The official URL changed in July 2026. The current PDF supersedes the stored 2022 plan but is not represented as adopted merely from its filename."
     },
     {
@@ -46,7 +60,10 @@
       "slug": "albany",
       "plan_title": "Draft Local Hazard Mitigation Plan Update",
       "edition": "2023",
-      "document_type": "local_hazard_mitigation_plan_or_annex_requires_review",
+      "publication_date": "2023",
+      "document_type": "local_hazard_mitigation_plan_draft",
+      "publication_status": "draft",
+      "selection_reason": "latest_official_draft",
       "adoption_status": "adoption details require official-jurisdiction confirmation",
       "adoption_evidence": null,
       "official_page_url": "https://www.albanyca.org/departments/fire-emergency-medical-services/emergency-preparedness/hazard-mitigation-plan",
@@ -55,8 +72,12 @@
       "pdf_sha256": "196895dc7343dc7a96910f07fced3698790dffb1a9cc1326ccf027f838e5e9c3",
       "pdf_bytes": 3211579,
       "source_checked_at": "2026-07-27",
+      "retrieval_date": "2026-07-27",
       "supersedes": null,
-      "publication_status": "withheld_pending_named_claim_review",
+      "claim_publication_status": "withheld_pending_targeted_review",
+      "limitations": [
+        "Official draft planning context; adoption and final approval are not established."
+      ],
       "notes": "Draft plan; all outputs remain review candidates."
     },
     {
@@ -64,7 +85,10 @@
       "slug": "berkeley",
       "plan_title": "Local Hazard Mitigation Plan",
       "edition": "2024",
-      "document_type": "local_hazard_mitigation_plan_or_annex_requires_review",
+      "publication_date": "2024",
+      "document_type": "local_hazard_mitigation_plan",
+      "publication_status": "adopted",
+      "selection_reason": "current_adopted_plan",
       "adoption_status": "adoption details require official-jurisdiction confirmation",
       "adoption_evidence": null,
       "official_page_url": "https://berkeleyca.gov/safety-health/disaster-readiness/local-hazard-mitigation-plan",
@@ -73,8 +97,12 @@
       "pdf_sha256": "4c6905c2d5569f563cf61bd19e766c1874fa6afda758834135e94e5ee49335a3",
       "pdf_bytes": 102280685,
       "source_checked_at": "2026-07-27",
+      "retrieval_date": "2026-07-27",
       "supersedes": null,
-      "publication_status": "withheld_pending_named_claim_review",
+      "claim_publication_status": "withheld_pending_targeted_review",
+      "limitations": [
+        "Jurisdiction-level planning context; not address-level evidence."
+      ],
       "notes": ""
     },
     {
@@ -82,7 +110,10 @@
       "slug": "dublin",
       "plan_title": "Tri-Valley Local Hazard Mitigation Plan, Volume 2: City Annexes",
       "edition": "2024",
-      "document_type": "local_hazard_mitigation_plan_or_annex_requires_review",
+      "publication_date": "2024",
+      "document_type": "multi_jurisdictional_lhmp_city_annex",
+      "publication_status": "official_publication_adoption_unresolved",
+      "selection_reason": "latest_official_publication",
       "adoption_status": "adoption details require official-jurisdiction confirmation",
       "adoption_evidence": null,
       "official_page_url": "https://www.dublin.ca.gov/2258/Local-Hazard-Mitigation-Plan",
@@ -91,8 +122,12 @@
       "pdf_sha256": "e982172949428b644a9522604c090be983019ca6d02f0b96d14925b73084e387",
       "pdf_bytes": 21903453,
       "source_checked_at": "2026-07-27",
+      "retrieval_date": "2026-07-27",
       "supersedes": null,
-      "publication_status": "withheld_pending_named_claim_review",
+      "claim_publication_status": "withheld_pending_targeted_review",
+      "limitations": [
+        "Only the Dublin annex page range may support Dublin planning context; local adoption details remain unresolved."
+      ],
       "notes": "Shared multi-city annex volume; city-specific findings require human review."
     },
     {
@@ -100,7 +135,10 @@
       "slug": "emeryville",
       "plan_title": "Local Hazard Mitigation Plan 2025-2030 Final Draft",
       "edition": "2025",
-      "document_type": "local_hazard_mitigation_plan_or_annex_requires_review",
+      "publication_date": "2025",
+      "document_type": "local_hazard_mitigation_plan_final_draft",
+      "publication_status": "final_draft",
+      "selection_reason": "latest_official_draft",
       "adoption_status": "adoption details require official-jurisdiction confirmation",
       "adoption_evidence": null,
       "official_page_url": "https://www.ci.emeryville.ca.us/1527/Local-Hazard-Mitigation-Plan",
@@ -109,8 +147,12 @@
       "pdf_sha256": "d8a370d8e7920257999295d46ca5799624a4b7bf3c1b398f87eb56245959596b",
       "pdf_bytes": 95530852,
       "source_checked_at": "2026-07-27",
+      "retrieval_date": "2026-07-27",
       "supersedes": null,
-      "publication_status": "withheld_pending_named_claim_review",
+      "claim_publication_status": "withheld_pending_targeted_review",
+      "limitations": [
+        "Newest official publication is a final draft; adoption and final approval are not established."
+      ],
       "notes": "Final draft; all outputs remain review candidates."
     },
     {
@@ -118,7 +160,10 @@
       "slug": "fremont",
       "plan_title": "Tri-City Multi-jurisdictional Local Hazard Mitigation Plan: Fremont Annex",
       "edition": "2024",
-      "document_type": "local_hazard_mitigation_plan_or_annex_requires_review",
+      "publication_date": "2024",
+      "document_type": "multi_jurisdictional_lhmp_city_annex",
+      "publication_status": "adopted",
+      "selection_reason": "current_adopted_plan",
       "adoption_status": "adoption details require official-jurisdiction confirmation",
       "adoption_evidence": null,
       "official_page_url": "https://www.fremont.gov/government/departments/fire/emergency-preparedness/local-hazard-mitigation-plan",
@@ -127,8 +172,12 @@
       "pdf_sha256": "001cfa4999308241188a63488915008359e8f4b1d0efc8f507c42dd3311a3e9e",
       "pdf_bytes": 29967852,
       "source_checked_at": "2026-07-27",
+      "retrieval_date": "2026-07-27",
       "supersedes": null,
-      "publication_status": "withheld_pending_named_claim_review",
+      "claim_publication_status": "withheld_pending_targeted_review",
+      "limitations": [
+        "Claims must remain within Fremont Annex A and at jurisdiction scope."
+      ],
       "notes": "City annex; the separate Tri-City base plan remains source material."
     },
     {
@@ -136,7 +185,10 @@
       "slug": "hayward",
       "plan_title": "Hayward Local Resilience Plan Update",
       "edition": "2021",
-      "document_type": "local_hazard_mitigation_plan_or_annex_requires_review",
+      "publication_date": "2021",
+      "document_type": "local_resilience_plan",
+      "publication_status": "adopted",
+      "selection_reason": "current_adopted_plan",
       "adoption_status": "adoption details require official-jurisdiction confirmation",
       "adoption_evidence": null,
       "official_page_url": "https://www.hayward-ca.gov/discover/community-dashboard/local-hazard-mitigation-plan",
@@ -145,8 +197,12 @@
       "pdf_sha256": "9c2869ea55be8c19f2ecde70d9c23482db782e63b8a4b1be0a3c94ccc87aec41",
       "pdf_bytes": 5267506,
       "source_checked_at": "2026-07-27",
+      "retrieval_date": "2026-07-27",
       "supersedes": null,
-      "publication_status": "withheld_pending_named_claim_review",
+      "claim_publication_status": "withheld_pending_targeted_review",
+      "limitations": [
+        "Local Resilience Plan context must not be represented as address-level mapped evidence."
+      ],
       "notes": "Previously used as the first extractor fixture."
     },
     {
@@ -154,7 +210,10 @@
       "slug": "livermore",
       "plan_title": "Tri-Valley Local Hazard Mitigation Plan, Volume 2: City Annexes",
       "edition": "2024",
-      "document_type": "local_hazard_mitigation_plan_or_annex_requires_review",
+      "publication_date": "2024",
+      "document_type": "multi_jurisdictional_lhmp_city_annex",
+      "publication_status": "adopted",
+      "selection_reason": "current_adopted_plan",
       "adoption_status": "adoption details require official-jurisdiction confirmation",
       "adoption_evidence": null,
       "official_page_url": "https://www.livermoreca.gov/departments/community-development/planning/local-hazard-mitigation-plan",
@@ -163,8 +222,12 @@
       "pdf_sha256": "e982172949428b644a9522604c090be983019ca6d02f0b96d14925b73084e387",
       "pdf_bytes": 21903453,
       "source_checked_at": "2026-07-27",
+      "retrieval_date": "2026-07-27",
       "supersedes": null,
-      "publication_status": "withheld_pending_named_claim_review",
+      "claim_publication_status": "withheld_pending_targeted_review",
+      "limitations": [
+        "Only the Livermore annex page range may support Livermore planning context."
+      ],
       "notes": "Shared multi-city annex volume; city-specific findings require human review."
     },
     {
@@ -172,7 +235,10 @@
       "slug": "newark",
       "plan_title": "Tri-City Multi-jurisdictional Local Hazard Mitigation Plan: Newark Annex",
       "edition": "2024",
-      "document_type": "local_hazard_mitigation_plan_or_annex_requires_review",
+      "publication_date": "2024",
+      "document_type": "multi_jurisdictional_lhmp_city_annex",
+      "publication_status": "official_publication_adoption_unresolved",
+      "selection_reason": "latest_official_publication",
       "adoption_status": "adoption details require official-jurisdiction confirmation",
       "adoption_evidence": null,
       "official_page_url": "https://www.newark.org/departments/police/emergency-services/local-hazard-mitigation-plan",
@@ -181,8 +247,12 @@
       "pdf_sha256": "6612a632028856c0b4edd83ea40a6217c4bb96f0dede432958e714eb830e70b7",
       "pdf_bytes": 22543795,
       "source_checked_at": "2026-07-27",
+      "retrieval_date": "2026-07-27",
       "supersedes": null,
-      "publication_status": "withheld_pending_named_claim_review",
+      "claim_publication_status": "withheld_pending_targeted_review",
+      "limitations": [
+        "Claims must remain within Newark Annex B; local adoption details remain unresolved."
+      ],
       "notes": "City annex; the separate Tri-City base plan remains source material."
     },
     {
@@ -190,7 +260,10 @@
       "slug": "oakland",
       "plan_title": "Draft Local Hazard Mitigation Plan 2026-2031",
       "edition": "2026",
-      "document_type": "local_hazard_mitigation_plan_or_annex_requires_review",
+      "publication_date": "2026",
+      "document_type": "local_hazard_mitigation_plan_draft",
+      "publication_status": "draft",
+      "selection_reason": "latest_official_draft",
       "adoption_status": "adoption details require official-jurisdiction confirmation",
       "adoption_evidence": null,
       "official_page_url": "https://www.oaklandca.gov/topics/local-hazard-mitigation-plan",
@@ -199,8 +272,12 @@
       "pdf_sha256": "ec63b335266713c5f5d0c1dd375dd747e94d97e57ebbb6191f9815478562b9f4",
       "pdf_bytes": 14089915,
       "source_checked_at": "2026-07-27",
-      "supersedes": null,
-      "publication_status": "withheld_pending_named_claim_review",
+      "retrieval_date": "2026-07-27",
+      "supersedes": "City of Oakland 2021-2026 adopted LHMP for latest-publication context only",
+      "claim_publication_status": "withheld_pending_targeted_review",
+      "limitations": [
+        "Newest publication is a draft; the 2021-2026 adopted plan remains separate provenance and must not be silently mixed."
+      ],
       "notes": "Draft plan; all outputs remain review candidates."
     },
     {
@@ -208,7 +285,10 @@
       "slug": "piedmont",
       "plan_title": "Local Hazard Mitigation Plan Update \u2014 published public-review text",
       "edition": "2025",
+      "publication_date": "2025",
       "document_type": "public_review_draft_text_with_separate_adoption_evidence",
+      "publication_status": "public_review_draft_text_with_separate_adoption_evidence",
+      "selection_reason": "latest_official_publication",
       "adoption_status": "City Council adopted an updated LHMP on 2026-03-02; official plan page still links draft-labeled text",
       "adoption_evidence": "https://piedmont.ca.gov/news/city_council_adopts_hazard_plan_march_2026",
       "official_page_url": "https://piedmont.ca.gov/LHMP",
@@ -217,8 +297,12 @@
       "pdf_sha256": "1cfef32d8332be3f616f3dd51d1b54d4867ba85aa6427233369d6266b4e833f6",
       "pdf_bytes": 36805731,
       "source_checked_at": "2026-07-27",
+      "retrieval_date": "2026-07-27",
       "supersedes": "data/raw/lhmps/piedmont/piedmont-lhmp-2019.pdf",
-      "publication_status": "withheld_pending_named_claim_review",
+      "claim_publication_status": "withheld_pending_targeted_review",
+      "limitations": [
+        "The published PDF remains draft-labeled; it cannot be represented as the adopted text until identity is confirmed."
+      ],
       "notes": "The city confirms adoption and prior Cal OES/FEMA review, but the linked PDF identifies itself as the June/July 2025 public draft. Claim review must verify that adopted text is identical."
     },
     {
@@ -226,7 +310,10 @@
       "slug": "pleasanton",
       "plan_title": "Tri-Valley Local Hazard Mitigation Plan, Volume 2: City Annexes",
       "edition": "2024",
-      "document_type": "local_hazard_mitigation_plan_or_annex_requires_review",
+      "publication_date": "2024",
+      "document_type": "multi_jurisdictional_lhmp_city_annex",
+      "publication_status": "adopted",
+      "selection_reason": "current_adopted_plan",
       "adoption_status": "adoption details require official-jurisdiction confirmation",
       "adoption_evidence": null,
       "official_page_url": "https://www.cityofpleasantonca.gov/your-community/emergency-preparedness/",
@@ -235,34 +322,51 @@
       "pdf_sha256": "e982172949428b644a9522604c090be983019ca6d02f0b96d14925b73084e387",
       "pdf_bytes": 21903453,
       "source_checked_at": "2026-07-27",
+      "retrieval_date": "2026-07-27",
       "supersedes": null,
-      "publication_status": "withheld_pending_named_claim_review",
+      "claim_publication_status": "withheld_pending_targeted_review",
+      "limitations": [
+        "Only the Pleasanton annex page range may support Pleasanton planning context."
+      ],
       "notes": "Shared multi-city annex volume; city-specific findings require human review."
     },
     {
       "jurisdiction": "San Leandro",
       "slug": "san-leandro",
-      "plan_title": "Environmental Hazards Element \u2014 archived separate context",
-      "edition": "2025",
-      "document_type": "environmental_hazards_element_not_lhmp",
-      "adoption_status": "2025 Environmental Hazards Element adopted; separate 2026 draft LHMP not adopted and source PDF unavailable",
-      "adoption_evidence": "https://www.sanleandro.org/m/newsflash/home/detail/433",
-      "official_page_url": "https://www.sanleandro.org/332/General-Plan",
+      "plan_title": "City of San Leandro Local Hazard Mitigation Plan \u2014 Public Review Draft",
+      "edition": "2026",
+      "publication_date": "2026-07-01",
+      "document_type": "local_hazard_mitigation_plan_public_review_draft",
+      "publication_status": "public_review_draft",
+      "selection_reason": "latest_official_draft",
+      "adoption_status": "Version 0.8 public review draft dated 2026-07-01; Section 8 adoption documentation is TBD; adoption and FEMA approval not established",
+      "adoption_evidence": null,
+      "official_page_url": "https://www.sanleandro.org/HazardMitigation",
       "official_pdf_url": null,
-      "local_pdf_path": "data/raw/lhmps/san-leandro/san-leandro-environmental-hazards-element-2025.pdf",
-      "pdf_sha256": "067ff6bd9d177c808c51b72cbe66372fd36595ac797e31953065a00894061008",
-      "pdf_bytes": 2847322,
+      "local_pdf_path": "data/raw/lhmps/san-leandro/san-leandro-lhmp-2026-07-01-public-review-draft.pdf",
+      "pdf_sha256": "c3019c3740e5c6a82fafd2d16edb3063ef99f9894765150597d24546aac96f94",
+      "pdf_bytes": 10509255,
       "source_checked_at": "2026-07-27",
-      "supersedes": null,
-      "publication_status": "withheld_pending_named_claim_review",
-      "notes": "The official LHMP page's DocumentCenter link 7266 returned a one-page 2022 civic-center directory, not an LHMP. The 2025 Environmental Hazards Element remains archived as a different document type and its candidates stay withheld."
+      "retrieval_date": "2026-07-27",
+      "supersedes": "data/raw/lhmps/san-leandro/san-leandro-environmental-hazards-element-2025.pdf as selected LHMP context; the element remains separate provenance",
+      "claim_publication_status": "withheld_pending_targeted_review",
+      "limitations": [
+        "Public review draft version 0.8; not adopted, final, FEMA-approved, or legally operative.",
+        "Section 8 contains TBD instead of adoption documentation.",
+        "Official direct PDF URL remains unresolved; the project owner supplied this City-branded copy.",
+        "Jurisdiction-level planning context only; not address-level evidence or a property-risk rating."
+      ],
+      "notes": "Selected as the newest official planning publication. The adopted 2025 Environmental Hazards Element remains a separate document type and is not used as a substitute LHMP."
     },
     {
       "jurisdiction": "Union City",
       "slug": "union-city",
       "plan_title": "Tri-City Multi-jurisdictional Local Hazard Mitigation Plan: Union City Annex",
       "edition": "2024",
-      "document_type": "local_hazard_mitigation_plan_or_annex_requires_review",
+      "publication_date": "2024",
+      "document_type": "multi_jurisdictional_lhmp_city_annex",
+      "publication_status": "official_publication_adoption_unresolved",
+      "selection_reason": "latest_official_publication",
       "adoption_status": "adoption details require official-jurisdiction confirmation",
       "adoption_evidence": null,
       "official_page_url": "https://www.unioncity.org/183/Emergency-Preparedness",
@@ -271,8 +375,12 @@
       "pdf_sha256": "ad421aad40cafc5188de506801b14734ecb4afb8e591cdc0e91f190258923d64",
       "pdf_bytes": 21894510,
       "source_checked_at": "2026-07-27",
+      "retrieval_date": "2026-07-27",
       "supersedes": null,
-      "publication_status": "withheld_pending_named_claim_review",
+      "claim_publication_status": "withheld_pending_targeted_review",
+      "limitations": [
+        "Claims must remain within Union City Annex C; local adoption details remain unresolved."
+      ],
       "notes": "City annex; the separate Tri-City base plan remains source material."
     }
   ]

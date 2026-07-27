@@ -26,9 +26,18 @@ def build() -> dict:
                 "slug": plan["city"],
                 "plan_title": plan["plan_title"],
                 "edition": str(plan["plan_year"]),
+                "publication_date": plan.get("publication_date"),
                 "document_type": plan.get(
                     "document_type",
                     "local_hazard_mitigation_plan_or_annex_requires_review",
+                ),
+                "publication_status": plan.get(
+                    "publication_status",
+                    "official_publication_status_unresolved",
+                ),
+                "selection_reason": plan.get(
+                    "selection_reason",
+                    "official_source_unresolved",
                 ),
                 "adoption_status": plan.get(
                     "adoption_status",
@@ -41,8 +50,13 @@ def build() -> dict:
                 "pdf_sha256": hashlib.sha256(raw).hexdigest(),
                 "pdf_bytes": len(raw),
                 "source_checked_at": plan.get("source_checked_at", "2026-07-27"),
+                "retrieval_date": plan.get(
+                    "retrieval_date",
+                    plan.get("source_checked_at", "2026-07-27"),
+                ),
                 "supersedes": plan.get("supersedes"),
-                "publication_status": "withheld_pending_named_claim_review",
+                "claim_publication_status": "withheld_pending_targeted_review",
+                "limitations": plan.get("limitations", []),
                 "notes": plan.get("notes", ""),
             }
         )
@@ -50,8 +64,10 @@ def build() -> dict:
         "schema_version": 1,
         "generated_at": "2026-07-27",
         "policy": (
-            "Checksums and source identities are technical controls, not plan-status "
-            "or claim approval. Drafts, annexes, and non-LHMP documents remain distinct."
+            "Select each jurisdiction's latest official publication. Official drafts "
+            "are eligible for planning context only with visible draft labels and "
+            "without implying adoption, final approval, or legal authority. Checksums "
+            "and source identities are technical controls, not claim approval."
         ),
         "jurisdiction_count": len(sources),
         "externally_approved_claim_count": 0,

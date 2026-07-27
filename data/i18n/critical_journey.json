@@ -1,6 +1,21 @@
 {
-  "catalog_version": "2026-07-26",
-  "policy": "Safety claims may be published only after professional translation and in-context review.",
+  "catalog_version": "2026-07-27",
+  "policy": "The initial Alameda County public beta is English-only. English safety copy requires documented review. Spanish remains disabled until professional translation and in-context review for a later language-access release.",
+  "release_scopes": {
+    "initial_public_beta": {
+      "enabled_locales": ["en"],
+      "support_claim": "English only"
+    },
+    "future_spanish_release": {
+      "enabled_locales": [],
+      "required_locale": "es",
+      "requires_professional_review": true
+    },
+    "future_multilingual_general_availability": {
+      "enabled_locales": [],
+      "prepared_locales": ["ar", "zh-Hans", "zh-Hant", "fa", "tl", "vi"]
+    }
+  },
   "required_keys": [
     "emergency_warning",
     "check_location",
@@ -18,6 +33,8 @@
   "locales": {
     "en": {
       "name": "English",
+      "resident_facing_enabled": true,
+      "release_milestone": "initial_public_beta",
       "review_status": "source_language_review_required",
       "reviewer": "",
       "reviewed_at": null,
@@ -38,16 +55,18 @@
     },
     "es": {
       "name": "Español",
+      "resident_facing_enabled": false,
+      "release_milestone": "future_spanish_release",
       "review_status": "professional_translation_required",
       "reviewer": "",
       "reviewed_at": null,
       "messages": {}
     },
-    "ar": {"name": "العربية", "review_status": "keys_prepared", "messages": {}},
-    "zh-Hans": {"name": "简体中文", "review_status": "keys_prepared", "messages": {}},
-    "zh-Hant": {"name": "繁體中文", "review_status": "keys_prepared", "messages": {}},
-    "fa": {"name": "فارسی", "review_status": "keys_prepared", "messages": {}},
-    "tl": {"name": "Tagalog", "review_status": "keys_prepared", "messages": {}},
-    "vi": {"name": "Tiếng Việt", "review_status": "keys_prepared", "messages": {}}
+    "ar": {"name": "العربية", "resident_facing_enabled": false, "release_milestone": "future_multilingual_general_availability", "review_status": "keys_prepared", "messages": {}},
+    "zh-Hans": {"name": "简体中文", "resident_facing_enabled": false, "release_milestone": "future_multilingual_general_availability", "review_status": "keys_prepared", "messages": {}},
+    "zh-Hant": {"name": "繁體中文", "resident_facing_enabled": false, "release_milestone": "future_multilingual_general_availability", "review_status": "keys_prepared", "messages": {}},
+    "fa": {"name": "فارسی", "resident_facing_enabled": false, "release_milestone": "future_multilingual_general_availability", "review_status": "keys_prepared", "messages": {}},
+    "tl": {"name": "Tagalog", "resident_facing_enabled": false, "release_milestone": "future_multilingual_general_availability", "review_status": "keys_prepared", "messages": {}},
+    "vi": {"name": "Tiếng Việt", "resident_facing_enabled": false, "release_milestone": "future_multilingual_general_availability", "review_status": "keys_prepared", "messages": {}}
   }
 }
