@@ -15,6 +15,7 @@ from action_library_service import select_actions
 from dam_inundation import check_dam_inundation
 from geospatial.registry import DatasetRegistryError
 from geospatial.service import GeospatialEvidenceService
+from geospatial.streaming_geojson import scan_polygon_features_at_point
 from pydantic_models import HazardResult, PreparednessAction, RecoveryQuestion, ResidentGuidanceItem, SpecializedGuidance
 from source_registry import get_city_chunks, get_local_plan_for_city, get_resident_guidance, get_source, get_sources_for_hazard
 
@@ -70,6 +71,7 @@ _LOCATION_CHECK_CACHE = {}
 _LOCATION_CHECK_CACHE_LOCK = threading.Lock()
 _LOCATION_CHECK_CACHE_TTL_SECONDS = 300
 _LOCATION_CHECK_FAILURE_TTL_SECONDS = 30
+_LOCATION_CHECK_CACHE_MAX_ENTRIES = 128
 
 RECOVERY_CITATION = {
     "source_id": "ready_recovery",
@@ -443,34 +445,24 @@ def check_wildfire_layer(lat: Optional[float], lon: Optional[float]) -> Dict:
     if lat is None or lon is None:
         return _not_checked_result()
 
-    point = Point(float(lon), float(lat))
-    responsibility = load_geojson("FireResponsibilityAreas.geojson")
-    sra = load_geojson("FireHazSRA.geojson")
-    lra_recommended = load_geojson("FireHazLRARecommended.geojson")
-    if not all(
-        item["available"] for item in (responsibility, sra, lra_recommended)
-    ):
+    def matches(filename):
+        scan = scan_polygon_features_at_point(
+            os.path.join(BASE_DIR, "static", filename),
+            latitude=float(lat),
+            longitude=float(lon),
+        )
+        if scan.get("error"):
+            return None, 0
+        return (
+            [{"properties": properties} for properties in scan["matched_properties"]],
+            scan["valid_geometry_count"],
+        )
+
+    responsibility_matches, responsibility_valid = matches(
+        "FireResponsibilityAreas.geojson"
+    )
+    if responsibility_matches is None:
         return _unavailable_result()
-
-    def matches(payload):
-        matched = []
-        valid = 0
-        for feature in payload["data"].get("features", []):
-            geometry = feature.get("geometry")
-            if not geometry:
-                continue
-            try:
-                polygon = shape(geometry)
-            except Exception:
-                continue
-            if polygon.is_empty or not polygon.is_valid:
-                continue
-            valid += 1
-            if polygon.contains(point) or polygon.touches(point):
-                matched.append(feature)
-        return matched, valid
-
-    responsibility_matches, responsibility_valid = matches(responsibility)
     if not responsibility_valid:
         return _unavailable_result()
     responsibility_types = {
@@ -521,8 +513,14 @@ def check_wildfire_layer(lat: Optional[float], lon: Optional[float]) -> Dict:
             ],
         }
 
-    selected = sra if responsibility_type == "SRA" else lra_recommended
-    selected_matches, selected_valid = matches(selected)
+    selected_filename = (
+        "FireHazSRA.geojson"
+        if responsibility_type == "SRA"
+        else "FireHazLRARecommended.geojson"
+    )
+    selected_matches, selected_valid = matches(selected_filename)
+    if selected_matches is None:
+        return _unavailable_result()
     if not selected_valid:
         return _unavailable_result()
     severity_layers = []
@@ -831,6 +829,27 @@ def clear_location_check_cache():
         _LOCATION_CHECK_CACHE.clear()
 
 
+def _prune_location_check_cache(now: float, *, reserve_slot: bool = False) -> None:
+    expired = [
+        key
+        for key, value in _LOCATION_CHECK_CACHE.items()
+        if value["expires_at"] <= now
+    ]
+    for key in expired:
+        _LOCATION_CHECK_CACHE.pop(key, None)
+    target_size = (
+        _LOCATION_CHECK_CACHE_MAX_ENTRIES - 1
+        if reserve_slot
+        else _LOCATION_CHECK_CACHE_MAX_ENTRIES
+    )
+    while len(_LOCATION_CHECK_CACHE) > target_size:
+        oldest_key = min(
+            _LOCATION_CHECK_CACHE,
+            key=lambda key: _LOCATION_CHECK_CACHE[key]["expires_at"],
+        )
+        _LOCATION_CHECK_CACHE.pop(oldest_key, None)
+
+
 def _collect_location_checks(lat: float, lon: float, zip_code: Optional[str] = None) -> Dict:
     # Coordinates are held only in short-lived process memory and rounded to
     # roughly meter scale. Full addresses are never part of this cache key.
@@ -846,6 +865,7 @@ def _collect_location_checks(lat: float, lon: float, zip_code: Optional[str] = N
     )
     now = time.monotonic()
     with _LOCATION_CHECK_CACHE_LOCK:
+        _prune_location_check_cache(now)
         cached = _LOCATION_CHECK_CACHE.get(cache_key)
         if cached and cached["expires_at"] > now:
             return deepcopy(cached["payload"])
@@ -899,6 +919,7 @@ def _collect_location_checks(lat: float, lon: float, zip_code: Optional[str] = N
         else _LOCATION_CHECK_CACHE_TTL_SECONDS
     )
     with _LOCATION_CHECK_CACHE_LOCK:
+        _prune_location_check_cache(now, reserve_slot=True)
         _LOCATION_CHECK_CACHE[cache_key] = {
             "expires_at": now + ttl,
             "payload": deepcopy(payload),

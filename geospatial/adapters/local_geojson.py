@@ -1,11 +1,8 @@
 import hashlib
-import json
 from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, Optional
-
-from shapely.geometry import Point, shape
 
 from geospatial.adapters.base import GeospatialAdapter
 from geospatial.models import (
@@ -14,6 +11,7 @@ from geospatial.models import (
     GeoPoint,
     GeospatialEvidence,
 )
+from geospatial.streaming_geojson import read_geojson_header, scan_polygon_features_at_point
 
 
 PROVISIONAL_LIMIT = (
@@ -32,61 +30,34 @@ def _load_validated_layer(
     expected_record_count: int,
     expected_crs: str,
 ) -> Dict[str, Any]:
-    """Parse and validate an unchanged local snapshot once per process."""
+    """Validate immutable file identity without retaining the full layer."""
     del modified_ns, file_size
     path = Path(path_string)
     try:
-        raw_bytes = path.read_bytes()
+        digest = hashlib.sha256()
+        with path.open("rb") as source:
+            for chunk in iter(lambda: source.read(1024 * 1024), b""):
+                digest.update(chunk)
     except OSError:
         return {"error": "missing"}
 
-    if hashlib.sha256(raw_bytes).hexdigest() != expected_sha256:
+    if digest.hexdigest() != expected_sha256:
         return {"error": "checksum"}
-    try:
-        payload = json.loads(raw_bytes)
-    except (UnicodeError, json.JSONDecodeError):
-        return {"error": "json"}
 
-    features = payload.get("features") if isinstance(payload, dict) else None
-    if payload.get("type") != "FeatureCollection" or not isinstance(features, list) or not features:
+    header = read_geojson_header(path)
+    if header.get("error"):
+        return {"error": header["error"]}
+    if header.get("type") != "FeatureCollection":
         return {"error": "schema"}
-    if len(features) != expected_record_count:
-        return {"error": "record_count"}
-
     source_crs = str(
-        ((payload.get("crs") or {}).get("properties") or {}).get("name")
+        ((header.get("crs") or {}).get("properties") or {}).get("name")
         or ""
     )
     if not source_crs or source_crs != expected_crs:
         return {"error": "crs"}
-
-    prepared = []
-    invalid_geometry_count = 0
-    for feature in features:
-        geometry = feature.get("geometry")
-        if not geometry:
-            invalid_geometry_count += 1
-            continue
-        try:
-            geometry_shape = shape(geometry)
-        except Exception:
-            invalid_geometry_count += 1
-            continue
-        if (
-            geometry_shape.is_empty
-            or not geometry_shape.is_valid
-            or geometry_shape.geom_type not in {"Polygon", "MultiPolygon"}
-        ):
-            invalid_geometry_count += 1
-            continue
-        prepared.append((geometry_shape, feature))
-
-    if not prepared:
-        return {"error": "geometry"}
     return {
-        "prepared": prepared,
-        "valid_geometry_count": len(prepared),
-        "invalid_geometry_count": invalid_geometry_count,
+        "expected_record_count": expected_record_count,
+        "source_crs": source_crs,
     }
 
 
@@ -275,24 +246,49 @@ class LocalGeoJSONAdapter(GeospatialAdapter):
                 "The local layer failed schema or provenance validation and was not checked.",
             )
 
-        address_point = Point(point.lon, point.lat)
+        scan = scan_polygon_features_at_point(
+            path,
+            latitude=point.lat,
+            longitude=point.lon,
+        )
+        scan_error = scan.get("error")
+        if not scan_error and scan.get("record_count") != dataset.record_count:
+            scan_error = "record_count"
+        if scan_error:
+            error_messages = {
+                "json": "Local dataset is not valid JSON.",
+                "schema": "Local dataset is not a non-empty GeoJSON FeatureCollection.",
+                "record_count": "Feature count does not match registered provenance.",
+                "geometry": "No valid polygon geometry was available.",
+            }
+            validation = self._validation(
+                dataset,
+                status="invalid",
+                checked_at=checked_at,
+                checksum_matches=True,
+                record_count_matches=False if scan_error == "record_count" else None,
+                crs_matches=True,
+                errors=[error_messages.get(scan_error, "Local dataset validation failed.")],
+            )
+            return self._unavailable(
+                dataset,
+                checked_at,
+                validation,
+                "The local layer failed schema or provenance validation and was not checked.",
+            )
+
         matched_features = []
-        for geometry_shape, feature in layer["prepared"]:
-            if (
-                self._is_publishable_match(dataset, feature)
-                and (
-                    geometry_shape.contains(address_point)
-                    or geometry_shape.touches(address_point)
-                )
-            ):
+        for properties in scan["matched_properties"]:
+            feature = {"properties": properties}
+            if self._is_publishable_match(dataset, feature):
                 matched_features.append(self._feature_payload(dataset, feature))
 
         warnings = []
         if dataset.status == "provisional":
             warnings.append("Dataset version requires human verification.")
-        if layer["invalid_geometry_count"]:
+        if scan["invalid_geometry_count"]:
             warnings.append(
-                f"{layer['invalid_geometry_count']} records did not contain valid polygon geometry."
+                f"{scan['invalid_geometry_count']} records did not contain valid polygon geometry."
             )
         validation = self._validation(
             dataset,
@@ -301,7 +297,7 @@ class LocalGeoJSONAdapter(GeospatialAdapter):
             checksum_matches=True,
             record_count_matches=True,
             crs_matches=True,
-            valid_geometry_count=layer["valid_geometry_count"],
+            valid_geometry_count=scan["valid_geometry_count"],
             warnings=warnings,
         )
         public_status = (

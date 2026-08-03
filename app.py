@@ -1,10 +1,11 @@
 from flask import Flask, flash, render_template, request, redirect, url_for, session, jsonify
+import csv
+import json
+import os
 import requests
 from dotenv import load_dotenv
-import os, json
 import resource
 from shapely.geometry import Point, mapping, shape
-import pandas as pd
 from jinja2 import TemplateNotFound
 import logging
 from flask import send_from_directory
@@ -38,7 +39,7 @@ from feedback_forms import (
 from geospatial.registry import DatasetRegistryError, get_default_registry
 from geospatial.service import GeospatialEvidenceService
 from hazard_guide import build_hazard_detail_guide, build_hazard_library
-from hazard_engine import build_hazard_results, check_flood_layer, merge_structured_result
+from hazard_engine import build_hazard_results, merge_structured_result
 from location_service import location_from_session
 from rag_service import retrieve_chunks
 from resident_guidance_engine import build_resident_plan
@@ -844,8 +845,16 @@ def is_valid_coordinate(lat, lon):
 
 def load_risk_data():
     try:
-        risk_df = pd.read_csv(os.path.join(BASE_DIR, "static", "zip_risk_scores.csv"), dtype={"ZIP": str})
-        return risk_df.set_index("ZIP").to_dict(orient="index")
+        path = os.path.join(BASE_DIR, "static", "zip_risk_scores.csv")
+        with open(path, "r", encoding="utf-8", newline="") as source:
+            rows = csv.DictReader(source)
+            return {
+                str(row.get("ZIP") or "").strip(): {
+                    key: value for key, value in row.items() if key != "ZIP"
+                }
+                for row in rows
+                if str(row.get("ZIP") or "").strip()
+            }
     except Exception:
         logger.exception("Risk CSV failed to load.")
         return {}

@@ -7,6 +7,8 @@ from geospatial.adapters.local_geojson import LocalGeoJSONAdapter, _load_validat
 from geospatial.registry import get_default_registry
 from geospatial.models import GeoPoint
 from hazard_engine import (
+    _LOCATION_CHECK_CACHE,
+    _LOCATION_CHECK_CACHE_MAX_ENTRIES,
     _collect_location_checks,
     build_hazard_results,
     clear_location_check_cache,
@@ -35,6 +37,16 @@ class StaticLayerCacheTests(unittest.TestCase):
         second["validation"].pop("checked_at")
         self.assertEqual(first, second)
         self.assertGreaterEqual(_load_validated_layer.cache_info().hits, 1)
+        # The cache holds only file identity metadata, never parsed polygons or
+        # original GeoJSON feature dictionaries.
+        self.assertNotIn("prepared", _load_validated_layer(
+            str(BASE_DIR / dataset.local_path),
+            (BASE_DIR / dataset.local_path).stat().st_mtime_ns,
+            (BASE_DIR / dataset.local_path).stat().st_size,
+            dataset.sha256,
+            dataset.record_count,
+            dataset.source_crs,
+        ))
 
     def test_public_geojson_loader_reuses_static_parse(self):
         load_geojson_file.cache_clear()
@@ -87,6 +99,19 @@ class LocationCheckCacheTests(unittest.TestCase):
         self.assertEqual(wildfire.call_count, 1)
         self.assertEqual(fault.call_count, 1)
         self.assertEqual(cgs.call_count, 2)
+
+    @patch("hazard_engine.check_dam_inundation", return_value={})
+    @patch("hazard_engine.check_cgs_layers", return_value=[])
+    @patch("hazard_engine.check_fault_layer", return_value={"data_status": "checked"})
+    @patch("hazard_engine.check_wildfire_layer", return_value={"data_status": "checked"})
+    @patch("hazard_engine.check_flood_layer", return_value={"data_status": "checked"})
+    def test_location_cache_is_bounded(self, *_checks):
+        for offset in range(_LOCATION_CHECK_CACHE_MAX_ENTRIES + 5):
+            _collect_location_checks(37.5 + offset / 100_000, -122.2)
+        self.assertLessEqual(
+            len(_LOCATION_CHECK_CACHE),
+            _LOCATION_CHECK_CACHE_MAX_ENTRIES,
+        )
 
     @patch("hazard_engine.check_cgs_layers", return_value=[])
     @patch("hazard_engine.check_fault_layer")
