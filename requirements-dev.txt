@@ -1,4 +1,5 @@
 -r requirements.txt
+-r requirements-lhmp.txt
 pip-audit==2.9.0
 pyogrio==0.11.1
 pyproj==3.7.1

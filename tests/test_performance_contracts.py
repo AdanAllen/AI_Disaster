@@ -1,11 +1,13 @@
 import unittest
 import json
+import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
 from geospatial.adapters.local_geojson import LocalGeoJSONAdapter, _load_validated_layer
 from geospatial.registry import get_default_registry
 from geospatial.models import GeoPoint
+from geospatial.streaming_geojson import scan_polygon_features_at_point
 from hazard_engine import (
     _LOCATION_CHECK_CACHE,
     _LOCATION_CHECK_CACHE_MAX_ENTRIES,
@@ -54,6 +56,27 @@ class StaticLayerCacheTests(unittest.TestCase):
         second = load_geojson_file("countbound.geojson")
         self.assertEqual(first, second)
         self.assertGreaterEqual(load_geojson_file.cache_info().hits, 1)
+
+    def test_large_address_layers_use_the_committed_point_index(self):
+        scan = scan_polygon_features_at_point(
+            BASE_DIR / "static" / "FireResponsibilityAreas.geojson",
+            latitude=37.78888178915282,
+            longitude=-122.17908576187834,
+        )
+        self.assertTrue(scan.get("indexed"))
+        self.assertNotIn("error", scan)
+
+    def test_large_unindexed_layer_fails_closed_instead_of_full_scan(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "large.geojson"
+            with path.open("wb") as destination:
+                destination.truncate(4_000_001)
+            scan = scan_polygon_features_at_point(
+                path,
+                latitude=37.78,
+                longitude=-122.18,
+            )
+        self.assertEqual(scan, {"error": "spatial_index"})
 
 
 class LocationCheckCacheTests(unittest.TestCase):

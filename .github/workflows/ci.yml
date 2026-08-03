@@ -26,6 +26,7 @@ jobs:
       - name: Validate product and source contracts
         run: |
           python scripts/build_local_plan_claim_queue.py --check
+          python scripts/build_address_point_index.py --check
           python scripts/verify_evidence_gold_set.py --no-write
           python scripts/validate_release.py
           python scripts/check_location_acceptance.py
