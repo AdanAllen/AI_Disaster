@@ -17,7 +17,6 @@ from research.oakland_hazard_assessment.review_history import (
 )
 from research.oakland_hazard_assessment.second_pass import (
     deterministic_sample_row_ids,
-    required_second_pass_row_ids,
 )
 from research.oakland_hazard_assessment.table_review import (
     records_may_be_assessment_eligible,
@@ -32,7 +31,16 @@ RESEARCH_DIR = BASE_DIR / "research" / "oakland_hazard_assessment"
 def load_first_batch():
     catalog = json.loads((RESEARCH_DIR / "adopted_priority_a_table_catalog.json").read_text(encoding="utf-8"))
     batch_id = catalog["tables"][0]["batch_id"]
-    return json.loads((RESEARCH_DIR / "table_review_batches" / f"{batch_id}.json").read_text(encoding="utf-8"))
+    batch = json.loads((RESEARCH_DIR / "table_review_batches" / f"{batch_id}.json").read_text(encoding="utf-8"))
+    source_path = BASE_DIR / batch["source_url_or_local_file"]
+    if not source_path.is_file():
+        # Raw source PDFs are intentionally excluded from repository checkouts.
+        # Use the tracked review image as a stable source fixture so these unit
+        # tests exercise fingerprint behavior without weakening production's
+        # requirement that a real source file must exist.
+        batch["source_url_or_local_file"] = batch["page_image_reference"]
+        batch["fingerprints"] = batch_fingerprints(batch, BASE_DIR)
+    return batch
 
 
 def approval_event(batch, **overrides):

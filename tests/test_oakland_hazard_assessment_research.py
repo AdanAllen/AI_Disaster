@@ -1,6 +1,7 @@
 import ast
 import json
 import subprocess
+import sys
 import unittest
 from copy import deepcopy
 from pathlib import Path
@@ -508,13 +509,16 @@ class OaklandHazardAssessmentResearchTests(unittest.TestCase):
         self.assertIn("correction_reason", corrected)
 
     def test_regenerating_table_batches_does_not_erase_review_decisions(self):
+        source_pdf = BASE_DIR / load_batch()["source_url_or_local_file"]
+        if not source_pdf.is_file():
+            self.skipTest("Offline source PDF is not included in the repository checkout.")
         decision_dir = RESEARCH_DIR / "table_review_decisions"
         decision_dir.mkdir(exist_ok=True)
         sentinel = decision_dir / "sentinel_test_decision.json"
         sentinel.write_text('{"keep": true}\n', encoding="utf-8")
         self.addCleanup(lambda: sentinel.exists() and sentinel.unlink())
         subprocess.run(
-            ["venv/bin/python", "scripts/generate_oakland_table_review_batches.py"],
+            [sys.executable, "scripts/generate_oakland_table_review_batches.py"],
             cwd=BASE_DIR,
             check=True,
             stdout=subprocess.PIPE,
