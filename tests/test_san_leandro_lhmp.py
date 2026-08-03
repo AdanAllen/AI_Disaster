@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 
 import fitz
+import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -17,6 +18,8 @@ EXPECTED_SHA256 = (
 
 
 def test_san_leandro_source_identity_and_draft_status():
+    if not PDF_PATH.is_file():
+        pytest.skip("Offline source PDF is not included in the repository checkout.")
     assert hashlib.sha256(PDF_PATH.read_bytes()).hexdigest() == EXPECTED_SHA256
 
     document = fitz.open(PDF_PATH)
