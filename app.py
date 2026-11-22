@@ -16,6 +16,7 @@ from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from pathlib import Path
+from werkzeug.exceptions import HTTPException
 
 from action_library_service import select_action_ids
 from county_location_service import (
@@ -1218,6 +1219,8 @@ def internal_error(error):
 
 @app.errorhandler(Exception)
 def handle_unexpected_error(error):
+    if isinstance(error, HTTPException):
+        return error
     logger.exception("Unhandled exception on %s", request.path)
     return safe_render(
         "error.html",

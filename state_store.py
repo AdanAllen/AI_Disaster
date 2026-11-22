@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import tempfile
+from uuid import uuid4
 
 from cachelib import FileSystemCache, RedisCache
 
@@ -41,7 +42,7 @@ def store_backend_name(store) -> str:
 
 
 def store_is_ready(store) -> bool:
-    probe_key = "readiness-probe"
+    probe_key = f"readiness-probe:{uuid4().hex}"
     try:
         store.set(probe_key, {"ok": True}, timeout=5)
         ready = store.get(probe_key) == {"ok": True}

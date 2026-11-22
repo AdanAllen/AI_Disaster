@@ -44,6 +44,12 @@ class SecurityRouteTests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
+    def test_missing_csrf_token_returns_bad_request(self):
+        with patch.dict(app.config, TESTING=False):
+            response = self.client.post("/api/location/resolve", json={})
+
+        self.assertEqual(response.status_code, 400)
+
     def test_invalid_map_parameters_are_rejected(self):
         response = self.client.get("/api/flood-zones?zip=../../etc/passwd")
         self.assertEqual(response.status_code, 400)
