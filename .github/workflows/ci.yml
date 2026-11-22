@@ -12,6 +12,16 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - "127.0.0.1:6379:6379"
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -38,17 +48,58 @@ jobs:
         run: pytest -q
       - name: Production startup contract
         env:
-          FLASK_ENV: development
+          FLASK_ENV: production
+          DEPLOYMENT_ENV: staging
+          STAYREADY_REQUIRE_VERIFIED_DATASETS: "1"
           PYTHONPATH: .
         run: |
-          gunicorn --bind 127.0.0.1:8099 --workers 1 --threads 2 app:app &
-          server_pid=$!
-          for attempt in 1 2 3 4 5; do
-            if curl --fail --silent http://127.0.0.1:8099/api/health >/dev/null; then
-              kill "$server_pid"
-              exit 0
+          export FLASK_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')"
+          server_pid=
+          stop_server() {
+            if [[ -n "$server_pid" ]]; then
+              kill "$server_pid" 2>/dev/null || true
+              wait "$server_pid" || true
+              server_pid=
             fi
-            sleep 1
-          done
-          kill "$server_pid"
-          exit 1
+          }
+          trap stop_server EXIT
+
+          check_startup() {
+            local expected_backend="$1" expected_status="$2"
+            gunicorn --bind 127.0.0.1:8099 --workers 2 --threads 4 app:app &
+            server_pid=$!
+            python - "$expected_backend" "$expected_status" <<'PY'
+          import sys
+          import time
+
+          import requests
+
+          backend, expected_status = sys.argv[1], int(sys.argv[2])
+          base = "http://127.0.0.1:8099"
+          for _ in range(30):
+              try:
+                  health = requests.get(f"{base}/api/health", timeout=2)
+                  if health.ok:
+                      break
+              except requests.ConnectionError:
+                  pass
+              time.sleep(0.5)
+          else:
+              raise SystemExit("Gunicorn did not become healthy")
+
+          assert health.json()["ephemeral_state_backend"] == backend, health.text
+          response = requests.get(f"{base}/api/ready", timeout=5)
+          assert response.status_code == expected_status, response.text
+          report = response.json()
+          expected_ready = expected_status == 200
+          assert report["ready"] is expected_ready, report
+          assert report["checks"]["shared_state"] is expected_ready, report
+          print(f"Production readiness with {backend}: HTTP {response.status_code}")
+          PY
+            stop_server
+          }
+
+          export REDIS_URL=redis://127.0.0.1:6379
+          check_startup redis 200
+          unset REDIS_URL
+          check_startup filesystem 503
