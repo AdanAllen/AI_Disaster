@@ -9,7 +9,7 @@ ijson==3.3.0
 Jinja2==3.1.6
 MarkupSafe==3.0.2
 msgspec==0.19.0
-Werkzeug==3.1.6
+Werkzeug==3.1.9
 python-dotenv==1.2.2
 shapely==2.1.1
 requests==2.33.0
